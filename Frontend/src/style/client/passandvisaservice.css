@@ -280,8 +280,162 @@
 .passport-card-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 18px;
 }
+
+/* PASSPORT SERVICE CARD */
+.passport-service-card.ant-card {
+    width: 100%;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #dfe5ee;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(31, 42, 68, 0.07);
+    cursor: pointer;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.passport-service-card.ant-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(48, 87, 151, 0.45);
+    box-shadow: 0 14px 30px rgba(31, 42, 68, 0.15);
+}
+
+.passport-service-card.ant-card:focus-visible {
+    outline: 3px solid rgba(48, 87, 151, 0.25);
+    outline-offset: 3px;
+}
+
+.passport-service-card .ant-card-body {
+    height: 100%;
+    padding: 22px !important;
+}
+
+.passport-service-card-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 280px;
+}
+
+.passport-service-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 62px;
+    height: 62px;
+    margin-bottom: 18px;
+    background: rgba(48, 87, 151, 0.1);
+    border-radius: 16px;
+    transition:
+        background-color 0.25s ease,
+        transform 0.25s ease;
+}
+
+.passport-service-card:hover .passport-service-icon-container {
+    background: rgba(48, 87, 151, 0.17);
+    transform: scale(1.05);
+}
+
+.passport-service-icon {
+    width: 35px;
+    height: 35px;
+    object-fit: contain;
+}
+
+.passport-service-information {
+    flex: 1;
+}
+
+.passport-service-label {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    color: #305797;
+    background: #eef4ff;
+    border-radius: 999px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.passport-service-information h3 {
+    margin: 0 0 10px;
+    color: #1f2a44;
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.passport-service-information p {
+    margin: 0;
+    color: #64748b;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.passport-service-footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #edf0f4;
+}
+
+.passport-service-price-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.passport-service-price {
+    color: #244574;
+    font-family: "Montserrat", sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.passport-service-price-label {
+    color: #929292;
+    font-family: "Roboto", sans-serif;
+    font-size: 11px;
+}
+
+.passport-service-button.ant-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 38px;
+    padding: 0 16px;
+    color: #ffffff;
+    background: #305797;
+    border: none;
+    border-radius: 0px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.35px;
+    box-shadow: none;
+}
+
+.passport-service-button.ant-btn:hover,
+.passport-service-button.ant-btn:focus {
+    color: #ffffff !important;
+    background: #244575 !important;
+    transform: translateY(-2px);
+}
+
 
 .passport-card-grid .passport-card {
     width: 100%;
@@ -654,6 +808,23 @@
 
     .passandvisa-hero-content h1 {
         font-size: 30px;
+    }
+
+    .passport-service-card .ant-card-body {
+        padding: 18px !important;
+    }
+
+    .passport-service-card-content {
+        min-height: 260px;
+    }
+
+    .passport-service-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .passport-service-button.ant-btn {
+        width: 100%;
     }
 }
 

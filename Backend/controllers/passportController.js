@@ -1056,7 +1056,7 @@ const suggestAppointmentSchedules = async (req, res) => {
                                                 
                                                 <p style="color:#555;">We’ve found available schedules for your passport application.</p>
                     
-                                                <div style="text-align:center; color:#333; margin-top:15px;">
+                                                <div style="text-align:left; color:#333; margin-top:15px;">
                                                     <p style="font-size:16px; margin-bottom:10px;">Hello ${user.firstname || user.username},</p>
                                                     <p>Please review the available appointment slots below:</p>
                     
@@ -1079,13 +1079,6 @@ const suggestAppointmentSchedules = async (req, res) => {
                                                 style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
                                                 Login to Your Account
                                                 </a>
-                                            </div>
-                    
-                                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                                                <p>M&RC Travel and Tours</p>
-                                                <p>info1@mrctravels.com</p>
-                                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
                                             </div>
                     
                                     </div>
@@ -1261,13 +1254,6 @@ const requestPassportDocumentResubmission = async (req, res) => {
                                 style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
                                 Login to Your Account
                             </a>
-                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                                <p>M&RC Travel and Tours</p>
-                                <p>info1@mrctravels.com</p>
-                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                            </div>
                         </div>
                     </div>
                 `
@@ -1371,13 +1357,6 @@ const updatePassportStatus = async (req, res) => {
                                 Login to Your Account
                                 </a>
 
-                                <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-                                <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                                    <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                                    <p>M&RC Travel and Tours</p>
-                                    <p>info1@mrctravels.com</p>
-                                    <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                                </div>
                             </div>
                         </div>
                         `

@@ -207,7 +207,6 @@
 
 .application-doc-item {
     width: 100%;
-    max-width: 250px;
 }
 
 .application-doc-preview-box {
@@ -289,8 +288,8 @@
     font-family: "Roboto", sans-serif;
     font-size: 13px;
     font-weight: 600;
-    background-color: #ffffff;
-    color: #305797;
+    background-color: #305797;
+    color: #ffffff;
     border-radius: 16px;
     width: 250px;
     height: 36px;

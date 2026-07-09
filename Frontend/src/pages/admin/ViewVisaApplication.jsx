@@ -687,24 +687,24 @@ export default function ViewVisaApplication() {
                                                                     {isPdfFile ? (
                                                                         <Button
                                                                             className="application-doc-preview-button application-doc-preview-media"
-                                                                            type="default"
-                                                                            icon={<FilePdfOutlined style={{ fontSize: '18px', color: '#305797' }} />}
+                                                                            type="primary"
+                                                                            icon={<FilePdfOutlined style={{ fontSize: '18px', color: '#ffffff' }} />}
                                                                             onClick={() => window.open(url, '_blank')}
                                                                             size="small"
                                                                             block
                                                                         >
-                                                                            Preview File
+                                                                            Preview
                                                                         </Button>
                                                                     ) : (
                                                                         <Button
                                                                             className="application-doc-preview-button application-doc-preview-media"
-                                                                            type="default"
-                                                                            icon={<PictureOutlined style={{ fontSize: '18px', color: '#305797' }} />}
+                                                                            type="primary"
+                                                                            icon={<PictureOutlined style={{ fontSize: '18px', color: '#ffffff' }} />}
                                                                             onClick={() => window.open(url, '_blank')}
                                                                             size="small"
                                                                             block
                                                                         >
-                                                                            Preview File
+                                                                            Preview
                                                                         </Button>
                                                                     )}
 
@@ -715,7 +715,7 @@ export default function ViewVisaApplication() {
                                                                         type="default"
                                                                         onClick={() => handleResubmitDocuments(documentKey)}
                                                                         disabled={isUpdatingStatus}
-                                                                        style={{ width: '50%', height: 36 }}
+                                                                        style={{ width: '100%', height: 36, borderRadius: 16 }}
                                                                     >
                                                                         Resubmit {isPdfFile ? 'PDF' : 'Image'}
                                                                     </Button>

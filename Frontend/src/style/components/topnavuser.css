@@ -328,12 +328,12 @@
 }
 
 .logout-cancel-btn {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #992A46 !important;
     color: #fff !important;
-    border-radius: 10px;
+    border-radius: 16px;
     min-width: 220px;
     height: 40px;
     border: none !important;
@@ -347,12 +347,12 @@
 }
 
 .logout-confirm-btn {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
+    border-radius: 16px;
     width: 220px;
     height: 40px;
     border: none !important;
@@ -360,13 +360,13 @@
 }
 
 .logout-confirm-btn:hover {
-    background-color: #e9e9e9 !important;
-    color: #305797 !important;
+    background-color: #244575 !important;
+    color: #fff !important;
 }
 
 .logout-cancel-btn:hover {
-    background-color: #e9e9e9 !important;
-    color: #992A46 !important;
+    background-color: #7D2239 !important;
+    color: #fff !important;
 }
 
 /* Profile dropdown menu */

@@ -67,7 +67,8 @@ export default function VisaApplication() {
         application?.onPenalty && isPenaltyEligible
     );
 
-    const normalizeResubmissionTarget = (target) => String(target || '').trim();
+    const normalizeResubmissionTarget = (target) =>
+        String(target || '').trim().toLowerCase();
 
 
     //determine if the application has requested resubmission targets, and normalize them for comparison
@@ -367,22 +368,59 @@ export default function VisaApplication() {
     //submit the uploaded documents to the backend and update the application status accordingly
     const handleSubmitDocuments = async () => {
         if (uploading) {
-            notification.warning({ message: "Please wait until uploads finish", placement: 'topRight' });
+            notification.warning({
+                message: "Please wait until uploads finish",
+                placement: "topRight",
+            });
             return;
         }
 
         try {
             setUploading(true);
 
-            const formData = new FormData();
-            const orderedRequirements = visibleRequirements.map((req, idx) => ({
-                key: req.key || req.req || `${req.label}-${idx}`,
-                label: req.req || req.label || `Requirement ${idx + 1}`
-            }));
+            /*
+             * Initial submission:
+             * Require every document.
+             *
+             * Resubmission:
+             * Require only the documents requested by the admin.
+             */
+            const requirementsToUpload = visibleRequirements
+                .map((req, idx) => ({
+                    requirement: req,
+                    index: idx,
+                    key: req.key || req.req || `${req.label}-${idx}`,
+                    label:
+                        req.req ||
+                        req.label ||
+                        `Requirement ${idx + 1}`,
+                }))
+                .filter(item =>
+                    !resubmissionRequested ||
+                    isRequestedResubmissionTarget(
+                        item.requirement,
+                        item.index
+                    )
+                );
 
+            if (
+                resubmissionRequested &&
+                requirementsToUpload.length === 0
+            ) {
+                notification.warning({
+                    message:
+                        "The requested document is not available for upload.",
+                    placement: "topRight",
+                });
+                return;
+            }
+
+            const formData = new FormData();
             const missingRequirements = [];
-            orderedRequirements.forEach((req) => {
+
+            requirementsToUpload.forEach(req => {
                 const fileItem = requirementFiles[req.key]?.[0];
+
                 if (fileItem?.originFileObj) {
                     formData.append("files", fileItem.originFileObj);
                 } else {
@@ -391,52 +429,84 @@ export default function VisaApplication() {
             });
 
             if (missingRequirements.length > 0) {
-                notification.warning({ message: "Please upload all required documents before submitting.", placement: 'topRight' });
-                return;
-            }
-
-            if (resubmissionRequested && orderedRequirements.length === 0) {
-                notification.warning({ message: "The requested document is not available for upload.", placement: 'topRight' });
+                notification.warning({
+                    message: resubmissionRequested
+                        ? `Please upload the requested document${missingRequirements.length > 1 ? "s" : ""
+                        } before submitting.`
+                        : "Please upload all required documents before submitting.",
+                    placement: "topRight",
+                });
                 return;
             }
 
             const uploadRes = await apiFetch.post(
-                '/upload/upload-visa-requirements',
+                "/upload/upload-visa-requirements",
                 formData,
-                { headers: { "Content-Type": "multipart/form-data" } }
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
             );
 
-            const uploaded = uploadRes.urls || [];
-            const submittedDocuments = {};
-            let uploadIndex = 0;
+            const uploadedUrls =
+                uploadRes?.urls ||
+                uploadRes?.data?.urls ||
+                [];
 
-            orderedRequirements.forEach((req) => {
-                if (requirementFiles[req.key]?.length) {
-                    submittedDocuments[req.key] = uploaded[uploadIndex] || null;
-                    uploadIndex += 1;
-                } else {
-                    submittedDocuments[req.key] = null;
+            if (uploadedUrls.length !== requirementsToUpload.length) {
+                throw new Error(
+                    "Some documents were not successfully uploaded."
+                );
+            }
+
+            const submittedDocuments = {
+                ...(application?.submittedDocuments || {}),
+            };
+
+            requirementsToUpload.forEach((req, index) => {
+                submittedDocuments[req.key] =
+                    uploadedUrls[index];
+            });
+
+            await apiFetch.put(
+                `/visa/applications/${id}/documents`,
+                {
+                    submittedDocuments,
                 }
-            });
+            );
 
-            await apiFetch.put(`/visa/applications/${id}/documents`, {
-                submittedDocuments
-            });
+            const documentsStatus =
+                process.find(
+                    step =>
+                        String(step.title || "").toLowerCase() ===
+                        "documents uploaded"
+                )?.title || "Documents uploaded";
 
-            const documentsStatus = process.find(
-                step => String(step.title || '').toLowerCase() === 'documents uploaded'
-            )?.title || 'Documents uploaded';
+            await apiFetch.put(
+                `/visa/applications/${id}/status`,
+                {
+                    status: documentsStatus,
+                }
+            );
 
-            await apiFetch.put(`/visa/applications/${id}/status`, {
-                status: documentsStatus
-            });
+            const refreshed = await apiFetch.get(
+                `/visa/applications/${id}`
+            );
 
-            const refreshed = await apiFetch.get(`/visa/applications/${id}`);
             setApplication(refreshed);
+            setRequirementFiles({});
             setIsDocumentsUploadedModalOpen(true);
         } catch (err) {
-            console.error(err);
-            notification.error({ message: "Failed to submit documents", placement: 'topRight' });
+            console.error("Document submission error:", err);
+
+            notification.error({
+                message:
+                    err?.response?.data?.message ||
+                    err?.message ||
+                    "Failed to submit documents",
+                placement: "topRight",
+            });
         } finally {
             setUploading(false);
         }
@@ -628,9 +698,21 @@ export default function VisaApplication() {
 
 
     //determine if a specific requirement is among the requested resubmission targets, allowing for conditional rendering or actions
-    const isRequestedResubmissionTarget = (target) => {
+    const isRequestedResubmissionTarget = (requirement, index) => {
         if (!resubmissionRequested) return true;
-        return requestedResubmissionTargets.includes(normalizeResubmissionTarget(target));
+
+        const aliases = [
+            requirement?.key,
+            requirement?.req,
+            requirement?.label,
+            requirement?.label ? `${requirement.label}-${index}` : null,
+        ]
+            .map(normalizeResubmissionTarget)
+            .filter(Boolean);
+
+        return aliases.some(alias =>
+            requestedResubmissionTargets.includes(alias)
+        );
     };
 
 
@@ -895,13 +977,15 @@ export default function VisaApplication() {
                                     <div style={{ marginBottom: 32, width: '100%' }}>
                                         <div style={{ display: 'flex', flexDirection: 'row', gap: 24, flexWrap: 'wrap' }}>
                                             <div style={{ flex: '1 1 620px', minWidth: 320 }}>
+                                                <h3 style={{ marginTop: 0 }}>Application Details</h3>
+
                                                 <Descriptions
-                                                    className="app-info-card"
                                                     bordered
                                                     column={1}
                                                     size="small"
                                                     style={{ background: '#fff' }}
                                                 >
+
                                                     <Descriptions.Item label="Reference" labelStyle={{ color: '#305797', fontWeight: 700 }}>
                                                         {application.applicationNumber || application._id}
                                                     </Descriptions.Item>
@@ -933,7 +1017,7 @@ export default function VisaApplication() {
 
                                                 {/* RELEASE OPTION */}
                                                 {statusValue && statusValue.toLowerCase() === 'embassy approved' && (
-                                                    <div style={{ marginTop: 20 }}>
+                                                    <div className="visaapplication-release-option" style={{ marginTop: 20 }}>
                                                         <h3 style={{ fontSize: 16 }}>Choose Your Release Option</h3>
                                                         <div
                                                             style={{
@@ -947,7 +1031,7 @@ export default function VisaApplication() {
 
                                                             <div
                                                                 onClick={() => setReleaseOption('pickup')}
-                                                                className={`visaapplication-selection-card visaapplication-suggestedoption-card ${selectedSuggestedIndex === 'others' ? 'selected' : ''
+                                                                className={`visaapplication-selection-card visaapplication-suggestedoption-card ${releaseOption === 'pickup' ? 'selected' : ''
                                                                     }`}
                                                                 style={{
                                                                     border: releaseOption === 'pickup'
@@ -976,7 +1060,7 @@ export default function VisaApplication() {
 
                                                             <div
                                                                 onClick={() => setReleaseOption('delivery')}
-                                                                className={`visaapplication-selection-card visaapplication-suggestedoption-card ${selectedSuggestedIndex === 'others' ? 'selected' : ''
+                                                                className={`visaapplication-selection-card visaapplication-suggestedoption-card ${releaseOption === 'delivery' ? 'selected' : ''
                                                                     }`}
                                                                 style={{
                                                                     border: releaseOption === 'delivery'
@@ -1049,7 +1133,7 @@ export default function VisaApplication() {
                                                                             <div
                                                                                 key={`${slot.date || 'date'}-${slot.time || 'time'}-${index}`}
                                                                                 onClick={() => setSelectedSuggestedIndex(index)}
-                                                                                className={`visaapplication-selection-card visaapplication-suggestedoption-card ${selectedSuggestedIndex === 'others' ? 'selected' : ''
+                                                                                className={`visaapplication-selection-card visaapplication-suggestedoption-card ${isSelected ? 'selected' : ''
                                                                                     }`}
                                                                                 style={{
                                                                                     border: isSelected ? '2px solid #305797' : '1px solid #f0f0f0',
@@ -1075,7 +1159,7 @@ export default function VisaApplication() {
                                                                     {/* "Others" Option Card */}
                                                                     <div
                                                                         onClick={() => setSelectedSuggestedIndex('others')}
-                                                                        className={`visaapplication-suggestedoption-card ${selectedSuggestedIndex === 'others' ? 'selected' : ''
+                                                                        className={`visaapplication-selection-card visaapplication-suggestedoption-card ${selectedSuggestedIndex === 'others' ? 'selected' : ''
                                                                             }`}
                                                                         style={{
                                                                             padding: 16,
@@ -1495,6 +1579,12 @@ export default function VisaApplication() {
                                                                     className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
                                                                     style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                                 >
+                                                                    {method === "paymongo" && (
+                                                                        <span className="payment-card-selected-tag">
+                                                                            Selected
+                                                                        </span>
+                                                                    )}
+
                                                                     <div className="card-content" >
                                                                         <h3>Paymongo (Delivery Fee)</h3>
                                                                         <p>Pay your delivery fee securely via Credit Card, GCash, or Maya.</p>
@@ -1508,6 +1598,12 @@ export default function VisaApplication() {
                                                                     style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
 
                                                                 >
+                                                                    {method === "manual" && (
+                                                                        <span className="payment-card-selected-tag">
+                                                                            Selected
+                                                                        </span>
+                                                                    )}
+
                                                                     <div className="card-content">
                                                                         <h3>Manual Payment (Delivery Fee)</h3>
                                                                         <p>Direct deposit for your delivery fee. Upload proof of payment for manual verification by our team.</p>
@@ -1614,7 +1710,7 @@ export default function VisaApplication() {
                                                                 const previewSource = uploadedFile || existingUrl;
                                                                 const isPdf = (uploadedFile && (uploadedFile.type === 'application/pdf' || uploadedFile.originFileObj?.type === 'application/pdf' || uploadedFile.name?.toLowerCase().endsWith('.pdf'))) || (typeof existingUrl === 'string' && existingUrl.toLowerCase().split(/[?#]/)[0].endsWith('.pdf'));
 
-                                                                const isRequested = isRequestedResubmissionTarget(requirementKey);
+                                                                const isRequested = isRequestedResubmissionTarget(req, idx);
 
                                                                 return (
                                                                     <div className="visa-requirement-card" key={requirementKey}>
@@ -1695,7 +1791,7 @@ export default function VisaApplication() {
 
                                                 {/* DOCUMENTS UPLOADED */}
                                                 {statusValue && statusValue.toLowerCase() === 'documents uploaded' && (
-                                                    <div style={{ marginTop: 32, marginBottom: 32 }}>
+                                                    <div className='visaapplication-uploaded-documents' style={{ marginTop: 32, marginBottom: 32 }}>
                                                         <h3 style={{ marginTop: 0 }}>Uploaded Documents</h3>
                                                         {application.submittedDocuments && (
                                                             <div style={{ display: 'flex', flexDirection: 'row', gap: 50, flexWrap: 'wrap', justifyContent: 'center' }}>

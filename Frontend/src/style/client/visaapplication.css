@@ -255,11 +255,25 @@
 .visaapplication-back-button:hover,
 .visaapplication-upload-button:hover,
 .visaapplication-uploadreceipt-button:hover,
-.visaapplication-submit-button:hover,
-.visaapplication-download-button:hover,
-.visaapplication-submitdate-button:hover {
+.visaapplication-download-button:hover {
     background-color: #244575 !important;
     color: #fff !important;
+}
+
+.visaapplication-submitdate-button:not(:disabled):not(.ant-btn-disabled):hover,
+.visaapplication-submit-button:not(:disabled):not(.ant-btn-disabled):hover {
+    background-color: #244575 !important;
+    color: #fff !important;
+}
+
+.visaapplication-submitdate-button:disabled,
+.visaapplication-submitdate-button.ant-btn-disabled,
+.visaapplication-submit-button:disabled,
+.visaapplication-submit-button.ant-btn-disabled {
+    background-color: #d9d9d9 !important;
+    color: rgba(0, 0, 0, 0.25) !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
 }
 
 .visa-requirements-grid {
@@ -559,4 +573,16 @@
 
 .app-detail-barcode-card {
     width: 100%;
+}
+
+.visaapplication-uploaded-documents,
+.visaapplication-release-option {
+    border: 1px dashed #cfd8ee;
+    background: #f7f9ff;
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 6px 18px rgba(31, 42, 68, 0.04);
 }

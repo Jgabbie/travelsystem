@@ -258,10 +258,24 @@
 
 
 .passport-submit:hover,
-.passport-submitdate:hover,
 .passport-back-button:hover {
     background-color: #244575 !important;
     color: #fff !important;
+}
+
+
+.passport-submitdate:not(:disabled):not(.ant-btn-disabled):hover {
+    background-color: #244575 !important;
+    color: #fff !important;
+}
+
+
+.passport-submitdate:disabled,
+.passport-submitdate.ant-btn-disabled {
+    background-color: #d9d9d9 !important;
+    color: rgba(0, 0, 0, 0.25) !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
 }
 
 .error-message {

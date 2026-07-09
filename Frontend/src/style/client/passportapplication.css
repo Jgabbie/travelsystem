@@ -334,11 +334,27 @@
 .passportapplication-back-button:hover,
 .passportapplication-upload-button:hover,
 .passportapplication-uploadreceipt-button:hover,
-.passportapplication-submit-button:hover,
 .passportapplication-download-button:hover {
     background-color: #244575 !important;
     color: #fff !important;
 }
+
+.passportapplication-submit-button:disabled,
+.passportapplication-submit-button.ant-btn-disabled {
+    background-color: #b8c3d3 !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    opacity: 0.7;
+}
+
+.passportapplication-submit-button:not(:disabled):hover {
+    background-color: #244575 !important;
+    color: #fff !important;
+}
+
+
 
 .passport-document-container {
     display: flex;
@@ -356,12 +372,14 @@
 }
 
 .passport-document-uploaded-section {
-    margin-bottom: 20px;
-    border: 1px solid #dde4ef;
+    border: 1px dashed #cfd8ee;
+    background: #f7f9ff;
+    padding: 16px;
     border-radius: 12px;
-    padding: 12px;
-    margin-top: 20px;
-    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 6px 18px rgba(31, 42, 68, 0.04);
 }
 
 .passport-document-uploaded-container {
@@ -415,8 +433,8 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
+    justify-content: start;
+    align-items: start;
     margin-left: 30px;
     gap: 70px;
     max-width: 100%;

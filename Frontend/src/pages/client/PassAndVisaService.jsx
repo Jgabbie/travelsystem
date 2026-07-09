@@ -267,51 +267,133 @@ export default function PassAndVisaService() {
                                 <p>Select the passport service you need.</p>
                             </div>
                             <div className="passport-card-grid">
-                                <div
-                                    className="passport-card"
+                                <Card
+                                    className="passport-service-card"
+                                    hoverable
                                     role="button"
                                     tabIndex={0}
-                                    onClick={() => handleProtectedNavigation('/new-passport')}
+                                    onClick={() =>
+                                        handleProtectedNavigation('/new-passport')
+                                    }
                                     onKeyDown={(event) => {
-                                        if (event.key === 'Enter') {
+                                        if (event.key === 'Enter' || event.key === ' ') {
+                                            event.preventDefault()
                                             handleProtectedNavigation('/new-passport')
                                         }
                                     }}
                                 >
-                                    <div className='passport-card-heading'>
-                                        <img
-                                            src="/images/plus-circle-svgrepo-com.svg"
-                                            alt=""
-                                            className="passport-card-icon"
-                                        />
-                                        <h3>New Passport</h3>
-                                    </div>
+                                    <div className="passport-service-card-content">
+                                        <div className="passport-service-icon-container">
+                                            <img
+                                                src="/images/plus-circle-svgrepo-com.svg"
+                                                alt="New passport"
+                                                className="passport-service-icon"
+                                                draggable={false}
+                                            />
+                                        </div>
 
-                                    <p>Apply for a passport for first-time applicants.</p>
-                                    <p className="passport-price">₱ 2000</p>
-                                </div>
-                                <div
-                                    className="passport-card"
+                                        <div className="passport-service-information">
+                                            <span className="passport-service-label">
+                                                First-Time Applicant
+                                            </span>
+
+                                            <h3>New Passport</h3>
+
+                                            <p>
+                                                Apply for a new passport with complete
+                                                assistance throughout the application process.
+                                            </p>
+                                        </div>
+
+                                        <div className="passport-service-footer">
+                                            <div className="passport-service-price-container">
+                                                <span className="passport-service-price">
+                                                    ₱2,000
+                                                </span>
+
+                                                <span className="passport-service-price-label">
+                                                    Service fee
+                                                </span>
+                                            </div>
+
+                                            <Button
+                                                type="primary"
+                                                className="passport-service-button"
+                                                icon={<FileTextOutlined />}
+                                                onClick={(event) => {
+                                                    event.stopPropagation()
+                                                    handleProtectedNavigation('/new-passport')
+                                                }}
+                                            >
+                                                APPLY NOW
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </Card>
+
+                                <Card
+                                    className="passport-service-card"
+                                    hoverable
                                     role="button"
                                     tabIndex={0}
-                                    onClick={() => handleProtectedNavigation('/renew-passport')}
+                                    onClick={() =>
+                                        handleProtectedNavigation('/renew-passport')
+                                    }
                                     onKeyDown={(event) => {
-                                        if (event.key === 'Enter') {
+                                        if (event.key === 'Enter' || event.key === ' ') {
+                                            event.preventDefault()
                                             handleProtectedNavigation('/renew-passport')
                                         }
                                     }}
                                 >
-                                    <div className='passport-card-heading'>
-                                        <img
-                                            src="/images/refresh-f-svgrepo-com.svg"
-                                            alt=""
-                                            className="passport-card-icon"
-                                        />
-                                        <h3>Renew Passport</h3>
+                                    <div className="passport-service-card-content">
+                                        <div className="passport-service-icon-container">
+                                            <img
+                                                src="/images/refresh-f-svgrepo-com.svg"
+                                                alt="Renew passport"
+                                                className="passport-service-icon"
+                                                draggable={false}
+                                            />
+                                        </div>
+
+                                        <div className="passport-service-information">
+                                            <span className="passport-service-label">
+                                                Existing Passport Holder
+                                            </span>
+
+                                            <h3>Renew Passport</h3>
+
+                                            <p>
+                                                Renew your existing passport with guided
+                                                document preparation and application assistance.
+                                            </p>
+                                        </div>
+
+                                        <div className="passport-service-footer">
+                                            <div className="passport-service-price-container">
+                                                <span className="passport-service-price">
+                                                    ₱2,000
+                                                </span>
+
+                                                <span className="passport-service-price-label">
+                                                    Service fee
+                                                </span>
+                                            </div>
+
+                                            <Button
+                                                type="primary"
+                                                className="passport-service-button"
+                                                icon={<FileTextOutlined />}
+                                                onClick={(event) => {
+                                                    event.stopPropagation()
+                                                    handleProtectedNavigation('/renew-passport')
+                                                }}
+                                            >
+                                                APPLY NOW
+                                            </Button>
+                                        </div>
                                     </div>
-                                    <p>Renew your existing passport quickly.</p>
-                                    <p className="passport-price">₱ 2000</p>
-                                </div>
+                                </Card>
                             </div>
                         </section>
                     </div>

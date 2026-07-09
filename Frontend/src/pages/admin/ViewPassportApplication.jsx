@@ -339,17 +339,16 @@ export default function ViewPassportApplication() {
             <div className="application-doc-item" style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'stretch' }}>
                 <Button
                     className="viewpassport-preview-button"
-                    size="small"
-                    type="default"
+                    type="primary"
                     icon={<EyeOutlined />}
                     onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
                 >
                     {isPdf ? (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                            Preview PDF File
+                            Preview
                         </span>
                     ) : (
-                        'Preview File'
+                        'Preview'
                     )}
                 </Button>
 
@@ -677,7 +676,7 @@ export default function ViewPassportApplication() {
                                                     return (
                                                         <>
                                                             {docs.birthCertificate && (
-                                                                <div style={{ width: "320px" }}>
+                                                                <div >
                                                                     <b style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>PSA Birth Certificate:</b>
                                                                     {renderReadOnlyFile(docs.birthCertificate, "Birth Certificate")}
                                                                     <div style={{ marginTop: 8 }}>
@@ -685,6 +684,7 @@ export default function ViewPassportApplication() {
                                                                             type="default"
                                                                             onClick={() => handleResubmitDocuments('birthCertificate')}
                                                                             disabled={isUpdatingStatus}
+                                                                            style={{ width: '100%', height: 36, borderRadius: 16 }}
                                                                         >
                                                                             Resubmit
                                                                         </Button>
@@ -693,7 +693,7 @@ export default function ViewPassportApplication() {
                                                             )}
 
                                                             {docs.applicationForm && (
-                                                                <div style={{ width: "320px" }}>
+                                                                <div >
                                                                     <b style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>Application Form:</b>
                                                                     {renderReadOnlyFile(docs.applicationForm, "Application Form")}
                                                                     <div style={{ marginTop: 8 }}>
@@ -701,6 +701,7 @@ export default function ViewPassportApplication() {
                                                                             type="default"
                                                                             onClick={() => handleResubmitDocuments('applicationForm')}
                                                                             disabled={isUpdatingStatus}
+                                                                            style={{ width: '100%', height: 36, borderRadius: 16 }}
                                                                         >
                                                                             Resubmit
                                                                         </Button>
@@ -709,7 +710,7 @@ export default function ViewPassportApplication() {
                                                             )}
 
                                                             {docs.govId && (
-                                                                <div style={{ width: "320px" }}>
+                                                                <div >
                                                                     <b style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>Government-issued ID:</b>
                                                                     {renderReadOnlyFile(docs.govId, "Government ID")}
                                                                     <div style={{ marginTop: 8 }}>
@@ -717,6 +718,7 @@ export default function ViewPassportApplication() {
                                                                             type="default"
                                                                             onClick={() => handleResubmitDocuments('govId')}
                                                                             disabled={isUpdatingStatus}
+                                                                            style={{ width: '100%', height: 36, borderRadius: 16 }}
                                                                         >
                                                                             Resubmit
                                                                         </Button>
