@@ -1482,6 +1482,186 @@ const passportReleaseOptionUpdate = async (req, res) => {
     }
 };
 
+const sendVisaDeliveryDetailsEmail = async ({
+    application,
+    user,
+    deliveryFee,
+    deliveryDate
+}) => {
+    if (!application || !user?.email) {
+        return {
+            sent: false,
+            reason: 'Application or user email is missing'
+        };
+    }
+
+    const displayName =
+        user.firstname ||
+        user.username ||
+        'Customer';
+
+    const applicationNumber =
+        application.applicationNumber ||
+        'Your visa application';
+
+    const formattedFee = Number(deliveryFee).toLocaleString(
+        'en-PH',
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    );
+
+    const parsedDeliveryDate = dayjs(deliveryDate);
+
+    const formattedDeliveryDate = parsedDeliveryDate.isValid()
+        ? parsedDeliveryDate.format('MMMM DD, YYYY')
+        : deliveryDate;
+
+    const deliveryAddress =
+        application.deliveryAddress ||
+        'Your registered delivery address';
+
+    try {
+        const mailResult = await transporter.sendMail({
+            from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+            to: user.email,
+            subject: `Visa Delivery Details Available: ${applicationNumber}`,
+            text: [
+                `Hello ${displayName},`,
+                `The delivery details for visa application ${applicationNumber} are now available.`,
+                `Delivery fee: PHP ${formattedFee}`,
+                `Target delivery date: ${formattedDeliveryDate}`,
+                `Delivery address: ${deliveryAddress}`,
+                'Log in to your account for more information.'
+            ].join('\n'),
+            html: `
+                <div style="
+                    max-width:560px;
+                    margin:0 auto;
+                    background:#ffffff;
+                    padding:30px 32px;
+                    text-align:left;
+                ">
+                    <p style="
+                        margin:0 0 14px;
+                        color:#2f2f2f;
+                        font-size:15px;
+                        line-height:1.7;
+                    ">
+                        Hello <b>${displayName}</b>,
+                    </p>
+
+                    <p style="
+                        margin:0 0 18px;
+                        color:#2f2f2f;
+                        font-size:15px;
+                        line-height:1.7;
+                    ">
+                        The delivery details for your visa application
+                        <b>${applicationNumber}</b> are now available.
+                    </p>
+
+                    <div style="
+                        margin:20px 0;
+                        padding:18px;
+                        background:#f5f7fb;
+                        border-left:4px solid #305797;
+                        border-radius:6px;
+                    ">
+                        <p style="
+                            margin:0 0 10px;
+                            color:#2f2f2f;
+                            font-size:14px;
+                            line-height:1.6;
+                        ">
+                            <b>Delivery Fee:</b>
+                            PHP ${formattedFee}
+                        </p>
+
+                        <p style="
+                            margin:0 0 10px;
+                            color:#2f2f2f;
+                            font-size:14px;
+                            line-height:1.6;
+                        ">
+                            <b>Target Delivery Date:</b>
+                            ${formattedDeliveryDate}
+                        </p>
+
+                        <p style="
+                            margin:0;
+                            color:#2f2f2f;
+                            font-size:14px;
+                            line-height:1.6;
+                        ">
+                            <b>Delivery Address:</b>
+                            ${deliveryAddress}
+                        </p>
+                    </div>
+
+                    <p style="
+                        margin:0;
+                        color:#64748b;
+                        font-size:13px;
+                        line-height:1.7;
+                    ">
+                        The target date may be adjusted depending on courier
+                        availability and delivery conditions.
+                    </p>
+
+                    <a
+                        href="https://mrctravelandtours.com/home"
+                        style="
+                            display:inline-block;
+                            margin-top:26px;
+                            padding:12px 24px;
+                            background:#305797;
+                            color:#ffffff;
+                            text-decoration:none;
+                            border-radius:999px;
+                            font-size:12px;
+                            letter-spacing:1.8px;
+                            font-weight:700;
+                            text-transform:uppercase;
+                        "
+                    >
+                        Login to Your Account
+                    </a>
+                </div>
+            `
+        });
+
+        console.log('[Visa Delivery Email] Email accepted:', {
+            to: user.email,
+            applicationNumber,
+            messageId: mailResult.messageId,
+            accepted: mailResult.accepted,
+            rejected: mailResult.rejected,
+            response: mailResult.response
+        });
+
+        return {
+            sent: true,
+            messageId: mailResult.messageId
+        };
+    } catch (emailError) {
+        console.error('[Visa Delivery Email] Sending failed:', {
+            to: user.email,
+            applicationNumber,
+            message: emailError.message,
+            response: emailError.response,
+            responseCode: emailError.responseCode,
+            code: emailError.code
+        });
+
+        return {
+            sent: false,
+            reason: emailError.message
+        };
+    }
+};
+
 
 //update visa delivery details function
 const updateVisaDeliveryDetails = async (req, res) => {
@@ -1511,20 +1691,54 @@ const updateVisaDeliveryDetails = async (req, res) => {
         application.deliveryDate = deliveryDate;
         await application.save();
 
-        const user = await UserModel.findById(application.userId);
+        const user = await UserModel.findById(application.userId)
+            .select('email firstname lastname username');
+
+        let emailResult = {
+            sent: false,
+            reason: 'User not found'
+        };
+
         if (user) {
+            const formattedDeliveryDate = dayjs(deliveryDate).isValid()
+                ? dayjs(deliveryDate).format('MMMM DD, YYYY')
+                : deliveryDate;
+
             await NotificationModel.create({
                 userId: user._id,
-                title: "Visa Delivery Details Available",
-                message: `Your delivery fee is PHP ${fee.toLocaleString()} and target date is ${deliveryDate}.`,
-                type: "visa",
-                link: "/user-applications",
-                metadata: { applicationId: application._id, deliveryFee: fee, deliveryDate },
+                title: 'Visa Delivery Details Available',
+                message: `Your delivery fee is PHP ${fee.toLocaleString(
+                    'en-PH',
+                    {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }
+                )} and your target delivery date is ${formattedDeliveryDate}.`,
+                type: 'visa',
+                link: '/user-applications',
+                metadata: {
+                    applicationId: application._id,
+                    applicationNumber: application.applicationNumber,
+                    deliveryFee: fee,
+                    deliveryDate,
+                    deliveryAddress: application.deliveryAddress
+                },
                 pushStatus: 'pending'
+            });
+
+            emailResult = await sendVisaDeliveryDetailsEmail({
+                application,
+                user,
+                deliveryFee: fee,
+                deliveryDate
             });
         }
 
-        return res.status(200).json({ message: "Visa delivery details updated", application });
+        return res.status(200).json({
+            message: 'Visa delivery details updated',
+            application,
+            emailSent: emailResult.sent
+        });
     } catch (error) {
         console.error("Error updating visa delivery details:", error);
         return res.status(500).json({ message: "Internal server error" });
