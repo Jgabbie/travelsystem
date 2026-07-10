@@ -226,39 +226,124 @@ const sendReminderEmail = async ({ to, username, bookingRef, label, dueDate, amo
     });
 };
 
-const sendPenaltyEmail = async ({ to, username, bookingRef, addedAmount, totalPenalty }) => {
+const sendPenaltyEmail = async ({
+    to,
+    username,
+    bookingRef,
+    addedAmount,
+    totalPenalty,
+}) => {
     if (!to) return;
+
+    const clientUrl =
+        process.env.FRONTEND_URL || 'https://mrctravelandtours.com';
+
+    const accountUrl = `${clientUrl.replace(/\/$/, '')}/user-bookings`;
 
     await transporter.sendMail({
         from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
         to,
         subject: `Late Payment Penalty Applied: ${bookingRef}`,
-        html: `
-        <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
-            <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+        html: buildBrandedEmail({
+            title: 'Late Payment Penalty Applied',
 
-                <h2 style="color:#305797; margin-top:0; margin-bottom:12px;">Late Payment Penalty Applied</h2>
-                <p style="color:#555; font-size:16px;">Hello <b>${username || 'Customer'}</b>,</p>
-                <p style="color:#555; font-size:15px; line-height:1.6;">A late payment penalty has been added to booking <b>${bookingRef}</b>.</p>
-                <p style="color:#555; font-size:15px; line-height:1.6;">Added penalty: <b>PHP ${formatMoney(addedAmount)}</b></p>
-                <p style="color:#555; font-size:15px; line-height:1.6;">Total accumulated penalty: <b>PHP ${formatMoney(totalPenalty)}</b></p>
-                <p style="color:#555; font-size:15px; line-height:1.6;">Please settle your account as soon as possible to avoid further penalties.</p>
-                
-                <a href="https://mrctravelandtours.com/home"
-                    style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
-                    Login to Your Account
-                </a>
-                
-                <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-                <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                    <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                    <p>M&RC Travel and Tours</p>
-                    <p>info1@mrctravels.com</p>
-                    <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+            introHtml: `
+                Hello <strong>${username || 'Customer'}</strong>,
+            `,
+
+            bodyHtml: `
+                <p style="margin:0 0 14px; line-height:1.6;">
+                    A late payment penalty has been added to your booking
+                    <strong>${bookingRef}</strong> because a scheduled payment
+                    was not completed before its deadline.
+                </p>
+
+                <div style="
+                    margin:8px 0 16px;
+                    background:#f8fafc;
+                    padding:16px;
+                    border-radius:10px;
+                    border:1px dashed #cbd5e1;
+                ">
+                    <table
+                        role="presentation"
+                        width="100%"
+                        cellspacing="0"
+                        cellpadding="0"
+                        style="
+                            width:100%;
+                            border-collapse:collapse;
+                            font-size:14px;
+                            color:#334155;
+                        "
+                    >
+                        <tr>
+                            <td style="padding:6px 0; color:#64748b;">
+                                Booking Reference
+                            </td>
+
+                            <td style="
+                                padding:6px 0;
+                                text-align:right;
+                                font-weight:700;
+                                color:#992A46;
+                            ">
+                                ${bookingRef}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="padding:6px 0; color:#64748b;">
+                                Added Penalty
+                            </td>
+
+                            <td style="
+                                padding:6px 0;
+                                text-align:right;
+                                font-weight:600;
+                            ">
+                                PHP ${formatMoney(addedAmount)}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="padding:6px 0; color:#64748b;">
+                                Total Accumulated Penalty
+                            </td>
+
+                            <td style="
+                                padding:6px 0;
+                                text-align:right;
+                                font-size:17px;
+                                font-weight:700;
+                                color:#992A46;
+                            ">
+                                PHP ${formatMoney(totalPenalty)}
+                            </td>
+                        </tr>
+                    </table>
                 </div>
-            </div>
-        </div>
-        `,
+
+                <p style="margin:0 0 10px; line-height:1.6;">
+                    Please settle your outstanding balance as soon as possible
+                    to avoid additional late payment penalties.
+                </p>
+
+                <p style="
+                    margin:0;
+                    font-size:13px;
+                    color:#64748b;
+                    line-height:1.5;
+                ">
+                    This is an automated payment notice. Please disregard this
+                    message if your payment has already been completed and is
+                    still being processed.
+                </p>
+            `,
+
+            ctaText: 'View My Booking',
+            ctaUrl: accountUrl,
+        }),
     });
 };
 
