@@ -224,7 +224,6 @@ const createManualPayment = async (req, res) => {
                 to: user.email,
                 subject: `Booking ${booking.reference} Confirmed`,
                 html: `
-                        <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
 
@@ -251,17 +250,7 @@ const createManualPayment = async (req, res) => {
                                 If you did not book this trip, please ignore this email.
                             </p>
 
-                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-
-                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                                <p>M&RC Travel and Tours</p>
-                                <p>info1@mrctravels.com</p>
-                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                            </div>
-
                         </div>
-                    </div>
                     `
             });
         } catch (emailError) {
@@ -360,7 +349,7 @@ const createManualPaymentQuotation = async (req, res) => {
                 subject: `Booking Quotation ${booking.reference} Confirmed`,
                 html: `
                         <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
-                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+                        
 
                             <p style="color:#555; font-size:16px;">
                                 Hello <b>${user.username}</b>,
@@ -383,7 +372,6 @@ const createManualPaymentQuotation = async (req, res) => {
                                 If you did not book this trip, please ignore this email.
                             </p>
 
-                        </div>
                     </div>
                     `
             });

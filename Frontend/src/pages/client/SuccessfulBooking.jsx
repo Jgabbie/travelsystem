@@ -16,21 +16,27 @@ export default function SuccessfulBooking() {
 
     const [countdown, setCountdown] = useState(10);
 
+
+    // Put it here
+    useEffect(() => {
+        const handleBrowserBack = () => {
+            navigate('/user-bookings', { replace: true });
+        };
+
+        window.addEventListener('popstate', handleBrowserBack);
+
+        return () => {
+            window.removeEventListener('popstate', handleBrowserBack);
+        };
+    }, [navigate]);
+
+
     useEffect(() => {
         const token = searchParams.get('token');
         if (!token) {
             navigate('/home', { replace: true });
             return;
         }
-
-
-        window.history.pushState(null, '', window.location.href);
-
-        const handleBrowserBack = () => {
-            window.history.pushState(null, '', window.location.href);
-        };
-
-        window.addEventListener('popstate', handleBrowserBack);
 
 
         // Call backend API to verify payment using token
@@ -62,7 +68,6 @@ export default function SuccessfulBooking() {
 
         return () => {
             clearInterval(timer);
-            window.removeEventListener('popstate', handleBrowserBack);
         };
     }, [navigate, searchParams, clearBookingData, clearQuotationBookingData]);
 
