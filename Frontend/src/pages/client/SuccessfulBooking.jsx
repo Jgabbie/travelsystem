@@ -23,6 +23,16 @@ export default function SuccessfulBooking() {
             return;
         }
 
+
+        window.history.pushState(null, '', window.location.href);
+
+        const handleBrowserBack = () => {
+            window.history.pushState(null, '', window.location.href);
+        };
+
+        window.addEventListener('popstate', handleBrowserBack);
+
+
         // Call backend API to verify payment using token
         apiFetch.post(`/booking/verify-payment`, { token })
             .then(res => {
@@ -38,18 +48,22 @@ export default function SuccessfulBooking() {
         clearQuotationBookingData();
         clearBookingData();
 
+
         const timer = setInterval(() => {
             setCountdown((prev) => {
                 if (prev <= 1) {
                     clearInterval(timer);
-                    navigate('/home');
+                    navigate('/home', { replace: true });
                     return 0;
                 }
                 return prev - 1;
             });
         }, 1000);
 
-        return () => clearInterval(timer);
+        return () => {
+            clearInterval(timer);
+            window.removeEventListener('popstate', handleBrowserBack);
+        };
     }, [navigate, searchParams, clearBookingData, clearQuotationBookingData]);
 
     const token = searchParams.get('token');
@@ -80,14 +94,14 @@ export default function SuccessfulBooking() {
                         <Button
                             className="successpayment-button"
                             type="primary"
-                            onClick={() => navigate('/user-bookings')}
+                            onClick={() => navigate('/user-bookings', { replace: true })}
                         >
                             View Bookings
                         </Button>
                         <Button
                             className="successpayment-button"
                             type="primary"
-                            onClick={() => navigate('/home')}
+                            onClick={() => navigate('/home', { replace: true })}
                         >
                             Go to Home
                         </Button>

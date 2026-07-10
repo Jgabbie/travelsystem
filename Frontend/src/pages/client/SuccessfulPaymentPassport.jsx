@@ -19,6 +19,16 @@ export default function SuccessfulPaymentPassport() {
             return;
         }
 
+
+        window.history.pushState(null, '', window.location.href);
+
+        const handleBrowserBack = () => {
+            window.history.pushState(null, '', window.location.href);
+        };
+
+        window.addEventListener('popstate', handleBrowserBack);
+
+
         // Call backend API to verify payment using token
         apiFetch.post(`/passport/verify-payment`, { token })
             .then(res => {
@@ -32,11 +42,12 @@ export default function SuccessfulPaymentPassport() {
                 console.error(err);
             });
 
+
         const timer = setInterval(() => {
             setCountdown((prev) => {
                 if (prev <= 1) {
                     clearInterval(timer);
-                    navigate('/home');
+                    navigate('/home', { replace: true });
                     return 0;
                 }
                 return prev - 1;
@@ -69,14 +80,14 @@ export default function SuccessfulPaymentPassport() {
                         <Button
                             className="successpayment-button"
                             type="primary"
-                            onClick={() => navigate('/user-applications')}
+                            onClick={() => navigate('/user-applications', { replace: true })}
                         >
                             View Applications
                         </Button>
                         <Button
                             className="successpayment-button"
                             type="primary"
-                            onClick={() => navigate('/home')}
+                            onClick={() => navigate('/home', { replace: true })}
                         >
                             Go to Home
                         </Button>

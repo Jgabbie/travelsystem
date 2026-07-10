@@ -169,10 +169,13 @@
     background: none;
 }
 
+
 .destinations-results-header h3 {
     margin: 0;
     font-family: "Montserrat", sans-serif;
     color: #1f2a44;
+    font-size: 24px;
+    font-weight: 600;
 }
 
 .destinations-results-count {

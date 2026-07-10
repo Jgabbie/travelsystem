@@ -534,7 +534,7 @@ export default function DestinationsPackages() {
 
                     <section className="destinations-results">
                         <div className="destinations-results-header">
-                            <Title level={4}>Available Packages</Title>
+                            <h3 classname="destinations-results-title">Available Packages</h3>
                             <Text type="secondary" className="destinations-results-count">{filteredPackages.length} found</Text>
                         </div>
 
