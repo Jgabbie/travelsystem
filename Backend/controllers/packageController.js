@@ -2,6 +2,7 @@ import PackageModel from "../models/package.js";
 import ArchivedPackageModel from "../models/archivedpackages.js";
 import BookingModel from "../models/booking.js";
 import WishlistModel from "../models/wishlist.js";
+import UserModel from "../models/user.js";
 import NotificationModel from "../models/notification.js";
 import logAction from "../utils/logger.js";
 import dayjs from "dayjs";
@@ -29,7 +30,8 @@ const transporter = {
     },
 };
 
-const FRONTEND_URL = "http://localhost:3000";
+const FRONTEND_URL = process.env.FRONTEND_URL ||
+    "http://localhost:3000";
 
 const sumSlots = (ranges = []) => ranges.reduce((total, range) => total + Number(range?.slots || 0), 0);
 
@@ -68,19 +70,62 @@ const findArchivedPackageByCodeParam = async (packageCodeParam) => {
 
 
 //function to notify users on the wishlist when a package becomes available
-const notifyWishlistUsers = async ({ packageId, title, message, type, link, metadata, emailSubject, emailHtml }) => {
-    const wishlistEntries = await WishlistModel.find({ packageId })
-        .populate("userId", "email username");
+const notifyWishlistUsers = async ({
+    packageId,
+    title,
+    message,
+    type,
+    link,
+    metadata,
+    emailSubject,
+    emailHtml
+}) => {
+    const wishlistEntries = await WishlistModel.find({
+        $or: [
+            { packageId },
+            { packageId: String(packageId) },
+            { packageItem: packageId },
+            { packageItem: String(packageId) }
+        ]
+    }).lean();
+
+    console.log(
+        `[Wishlist Notification] Found ${wishlistEntries.length} wishlist entries`
+    );
 
     if (!wishlistEntries.length) {
-        return;
+        return {
+            recipients: 0,
+            sent: 0,
+            failed: 0
+        };
     }
 
     const notifications = [];
+    let sent = 0;
+    let failed = 0;
 
     for (const entry of wishlistEntries) {
-        const user = entry.userId;
-        if (!user?._id) {
+        const wishlistUserId =
+            entry.userId?._id ||
+            entry.userId ||
+            entry.user;
+
+        if (!wishlistUserId) {
+            console.warn(
+                `[Wishlist Email] Wishlist ${entry._id} has no user ID`
+            );
+            continue;
+        }
+
+        const user = await UserModel.findById(wishlistUserId)
+            .select("email username firstname lastname")
+            .lean();
+
+        if (!user) {
+            console.warn(
+                `[Wishlist Email] User ${wishlistUserId} was not found`
+            );
             continue;
         }
 
@@ -90,26 +135,90 @@ const notifyWishlistUsers = async ({ packageId, title, message, type, link, meta
             message,
             type,
             link,
-            metadata
+            metadata,
+            pushStatus: "pending"
         });
 
-        if (user.email) {
-            try {
-                await transporter.sendMail({
-                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
-                    to: user.email,
-                    subject: emailSubject,
-                    html: emailHtml(user)
-                });
-            } catch (emailError) {
-                console.error("Failed to send wishlist notification email:", emailError);
+        const recipientEmail = String(user.email || "")
+            .trim()
+            .toLowerCase();
+
+        if (!recipientEmail) {
+            console.warn(
+                `[Wishlist Email] User ${user._id} does not have an email`
+            );
+            failed += 1;
+            continue;
+        }
+
+        try {
+            const bodyContent =
+                typeof emailHtml === "function"
+                    ? emailHtml(user)
+                    : "";
+
+            console.log("[Wishlist Email] Attempting to send:", {
+                to: recipientEmail,
+                subject: emailSubject,
+                hasBody: Boolean(bodyContent)
+            });
+
+            const mailResult = await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: recipientEmail,
+                subject: emailSubject,
+                text: message,
+                html: bodyContent
+            });
+
+            console.log("[Wishlist Email] Email accepted:", {
+                to: recipientEmail,
+                messageId: mailResult.messageId,
+                accepted: mailResult.accepted,
+                rejected: mailResult.rejected,
+                response: mailResult.response
+            });
+
+            if (
+                Array.isArray(mailResult.rejected) &&
+                mailResult.rejected.length > 0
+            ) {
+                failed += 1;
+            } else {
+                sent += 1;
             }
+        } catch (emailError) {
+            failed += 1;
+
+            console.error("[Wishlist Email] Sending failed:", {
+                to: recipientEmail,
+                subject: emailSubject,
+                message: emailError.message,
+                response: emailError.response,
+                responseCode: emailError.responseCode,
+                command: emailError.command,
+                code: emailError.code,
+                stack: emailError.stack
+            });
         }
     }
 
     if (notifications.length) {
         await NotificationModel.insertMany(notifications);
     }
+
+    console.log("[Wishlist Email] Complete:", {
+        wishlistEntries: wishlistEntries.length,
+        notifications: notifications.length,
+        sent,
+        failed
+    });
+
+    return {
+        recipients: wishlistEntries.length,
+        sent,
+        failed
+    };
 };
 
 
@@ -493,8 +602,15 @@ const updatePackage = async (req, res) => {
             return res.status(404).json({ message: "Package not found" });
         }
 
-        const previousSlots = sumSlots(existingPackage.packageSpecificDate || []);
-        const updatedSlots = sumSlots(req.body.dateRanges || []);
+        const previousSlots = sumSlots(
+            existingPackage.packageSpecificDate || []
+        );
+
+        const incomingDateRanges = Array.isArray(req.body.dateRanges)
+            ? req.body.dateRanges
+            : Array.isArray(req.body.packageSpecificDate)
+                ? req.body.packageSpecificDate
+                : existingPackage.packageSpecificDate || [];
 
         const updatedPackage = await PackageModel.findByIdAndUpdate(
             existingPackage._id,
@@ -510,7 +626,7 @@ const updatePackage = async (req, res) => {
                 packageDuration: Number(req.body.duration),
                 packageDescription: req.body.description,
                 packageType: req.body.packageType,
-                packageSpecificDate: (req.body.dateRanges || []).map(range => ({
+                packageSpecificDate: incomingDateRanges.map(range => ({
                     startdaterange: range.startdaterange
                         ? new dayjs(range.startdaterange).format('YYYY-MM-DD')
                         : null,
@@ -539,6 +655,10 @@ const updatePackage = async (req, res) => {
             { new: true }
         );
 
+        const updatedSlots = sumSlots(
+            updatedPackage.packageSpecificDate || []
+        );
+
         if (previousSlots <= 0 && updatedSlots > 0) {
             await notifyWishlistUsers({
                 packageId: updatedPackage._id,
@@ -553,31 +673,31 @@ const updatePackage = async (req, res) => {
                         packageId: updatedPackage._id
                     }
                 },
-                emailSubject: `Now Available: ${updatedPackage.packageName}`,
+                emailSubject: `Package Available: ${updatedPackage.packageName}`,
                 emailHtml: (user) => `
-                    <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
-                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+                                        <div style="max-width:560px; margin:0 auto;">
+                                            <p style="margin:0 0 14px; color:#2f2f2f; font-size:15px; line-height:1.7;">
+                                                Hello <b>${user.firstname || user.username || "Customer"}</b>,
+                                            </p>
 
-                            <h2 style="color:#305797; margin-bottom:10px;">Package is Now Available</h2>
-                            <p style="color:#555; font-size:16px;">Hello <b>${user.username || "Customer"}</b>,</p>
-                            <p style="color:#555; font-size:15px; line-height:1.6;">
-                                <b>${updatedPackage.packageName}</b> is now available for booking.
-                            </p>
-                            <a href="${buildPackageLink(updatedPackage)}" style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
-                                View Package
-                            </a>
-                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+                                            <p style="margin:0 0 14px; color:#2f2f2f; font-size:15px; line-height:1.7;">
+                                                Great news! Your saved package
+                                                <b>${updatedPackage.packageName}</b> is now available for booking.
+                                            </p>
 
-                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                                <p>M&RC Travel and Tours</p>
-                                <p>info1@mrctravels.com</p>
-                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                            </div>
-                        </div>
-                    </div>
-                `
+                                            <p style="margin:0; color:#64748b; font-size:14px; line-height:1.7;">
+                                                New slots have been added. Reserve your preferred travel date
+                                                while slots are still available.
+                                            </p>
+
+                                            <a
+                                                href="${buildPackageLink(updatedPackage)}"
+                                                style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;"
+                                            >
+                                                View Package
+                                            </a>
+                                        </div>
+                                    `
             });
         }
 
@@ -656,7 +776,9 @@ const updateSlots = async (req, res) => {
     const packageCode = slotsPayload.packageItem || slotsPayload.packageCode || slotsPayload.packageId;
     const dateRanges = Array.isArray(slotsPayload.dateRanges)
         ? slotsPayload.dateRanges
-        : [];
+        : Array.isArray(slotsPayload.packageSpecificDate)
+            ? slotsPayload.packageSpecificDate
+            : [];
 
     try {
         const pkg = await findPackageByCodeParam(packageCode);
@@ -664,8 +786,9 @@ const updateSlots = async (req, res) => {
             return res.status(404).json({ message: "Package not found" });
         }
 
-        const previousSlots = sumSlots(pkg.packageSpecificDate || []);
-        const updatedSlots = sumSlots(dateRanges || []);
+        const previousSlots = sumSlots(
+            pkg.packageSpecificDate || []
+        );
 
         if (!pkg.packageSpecificDate || pkg.packageSpecificDate.length === 0) {
             return res.status(400).json({ message: "Package does not have specific date ranges" });
@@ -687,6 +810,11 @@ const updateSlots = async (req, res) => {
         }));
         await pkg.save();
 
+        const updatedSlots = sumSlots(
+            pkg.packageSpecificDate || []
+        );
+
+
         if (previousSlots <= 0 && updatedSlots > 0) {
             await notifyWishlistUsers({
                 packageId: pkg._id,
@@ -703,9 +831,7 @@ const updateSlots = async (req, res) => {
                 },
                 emailSubject: `Now Available: ${pkg.packageName}`,
                 emailHtml: (user) => `
-                    <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-                            <h2 style="color:#305797; margin-bottom:10px;">Package is Now Available</h2>
                             <p style="color:#555; font-size:16px;">Hello <b>${user.username || "Customer"}</b>,</p>
                             <p style="color:#555; font-size:15px; line-height:1.6;">
                                 <b>${pkg.packageName}</b> is now available for booking.
@@ -713,10 +839,7 @@ const updateSlots = async (req, res) => {
                             <a href="${buildPackageLink(pkg)}" style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
                                 View Package
                             </a>
-                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-                            <p style="color:#aaa; font-size:12px;">© ${new Date().getFullYear()} M&RC Travel and Tours</p>
                         </div>
-                    </div>
                 `
             });
         }
@@ -777,13 +900,9 @@ const updateDiscount = async (req, res) => {
                 },
                 emailSubject: `Discount Alert: ${pkg.packageName}`,
                 emailHtml: (user) => `
-                    <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; padding:0;">
-                            <div style="padding:0 0 30px 0;">
-                                <div style="width:78px; height:78px; background:#305797; color:#ffffff; font-size:34px; line-height:78px; text-align:center; font-weight:700; margin:0 0 24px 0;">M</div>
 
                                 <div style="padding:0 32px;">
-                                    <h2 style="margin:0 0 12px 0; color:#111111; font-size:42px; line-height:1.05; font-weight:700;">Great news.</h2>
                                     <p style="margin:0 0 14px 0; color:#2f2f2f; font-size:15px; line-height:1.7;">
                                         Hello <b>${user.username || "Customer"}</b>, we wanted to let you know that your saved package now has a special offer.
                                     </p>
@@ -794,18 +913,8 @@ const updateDiscount = async (req, res) => {
                                     <a href="${buildPackageLink(pkg)}" style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
                                         View Package
                                     </a>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div style="max-width:560px; margin:0 auto; text-align:center; padding:30px 16px 6px; color:#b8bcc5;">
-                            <p style="margin:0 0 14px 0; font-size:14px; font-weight:600;">Want updates through more platforms?</p>
-                            <p style="margin:0; font-size:12px; line-height:1.8; color:#8d94a3;">
-                                © ${new Date().getFullYear()} M&RC Travel and Tours<br />
-                                info1@mrctravels.com | Contact us anytime
-                            </p>
                         </div>
-                    </div>
                 `
             });
         }
