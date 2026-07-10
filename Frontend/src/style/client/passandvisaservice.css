@@ -797,9 +797,99 @@
 
 @media (max-width: 480px) {
 
+    /* Visa services mobile layout */
     .passport-assistance {
-        padding-top: 0px;
-        margin-top: 0px;
+        padding: 30px 12px 24px;
+    }
+
+    .passandvisa-header {
+        margin-bottom: 20px;
+    }
+
+    .passandvisa-header h2 {
+        font-size: 21px;
+        line-height: 1.3;
+    }
+
+    .passandvisa-header p {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .visa-section {
+        width: 100%;
+        padding: 16px 12px;
+        border-radius: 12px;
+        box-sizing: border-box;
+    }
+
+    .passandvisasection-header h3 {
+        font-size: 18px;
+    }
+
+    .passandvisasection-header p {
+        font-size: 13px;
+    }
+
+    .visa-list {
+        width: 100%;
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .passandvisa-reference-card.ant-card {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 10px;
+    }
+
+    .passandvisa-reference-cover {
+        height: 190px;
+    }
+
+    .passandvisa-reference-card .ant-card-body {
+        min-height: auto;
+        padding: 16px 14px 18px !important;
+    }
+
+    .passandvisa-reference-title {
+        min-height: auto;
+        margin-bottom: 7px;
+        font-size: 16px;
+        line-height: 1.4;
+    }
+
+    .passandvisa-reference-description {
+        min-height: auto;
+        margin-bottom: 10px;
+        font-size: 12px;
+        line-height: 1.55;
+        -webkit-line-clamp: 4;
+    }
+
+    .passandvisa-reference-price {
+        font-size: 20px;
+    }
+
+    .passandvisa-reference-details {
+        margin-bottom: 14px;
+        font-size: 10px;
+    }
+
+    .passandvisa-reference-processing {
+        left: 10px;
+        bottom: 10px;
+        max-width: calc(100% - 20px);
+        padding: 5px 10px;
+        font-size: 9px;
+    }
+
+    .passandvisa-reference-button.ant-btn {
+        width: 100%;
+        min-width: 0;
+        height: 40px;
+        margin-top: 4px;
     }
 
     .passandvisa-hero-section {
