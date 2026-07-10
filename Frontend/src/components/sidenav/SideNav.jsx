@@ -525,7 +525,7 @@ export default function SideNav() {
               { to: "/bookings", label: "Bookings", icon: <BookOutlined />, count: bookingCount, onClick: handleBookingsClick },
               { to: "/transactions", label: "Transactions", icon: <TransactionOutlined />, count: transactionCount, onClick: handleTransactionsClick },
               { to: "/package-quotation", label: "Quotation Requests", icon: <FileTextOutlined />, count: quotationCount, onClick: handleQuotationsClick },
-              { to: "/cancellation-requests", label: "Cancellation Management", icon: <SafetyCertificateOutlined />, count: cancellationCount, onClick: handleCancellationsClick },
+              { to: "/cancellation-requests", label: "Cancellation Requests", icon: <SafetyCertificateOutlined />, count: cancellationCount, onClick: handleCancellationsClick },
               { to: "/ratings", label: "Review Ratings", icon: <FundOutlined />, count: ratingCount, onClick: handleRatingsClick },
             ],
           })}

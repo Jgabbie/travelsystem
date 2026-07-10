@@ -423,7 +423,7 @@ export default function SideNavEmployee() {
                             { to: "/employee/bookings", label: "Bookings", icon: <BookOutlined />, count: bookingCount, onClick: handleBookingsClick },
                             { to: "/employee/transactions", label: "Transactions", icon: <TransactionOutlined />, count: transactionCount, onClick: handleTransactionsClick },
                             { to: "/employee/package-quotation", label: "Quotation Requests", icon: <FileTextOutlined />, count: quotationCount, onClick: handleQuotationsClick },
-                            { to: "/employee/cancellation-requests", label: "Cancellation Management", icon: <SafetyCertificateOutlined />, count: cancellationCount, onClick: handleCancellationsClick },
+                            { to: "/employee/cancellation-requests", label: "Cancellation Requests", icon: <SafetyCertificateOutlined />, count: cancellationCount, onClick: handleCancellationsClick },
                             { to: "/employee/ratings", label: "Review Ratings", icon: <FundOutlined />, count: ratingCount, onClick: handleRatingsClick },
                         ],
                     })}
