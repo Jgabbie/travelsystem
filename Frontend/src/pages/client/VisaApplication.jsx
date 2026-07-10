@@ -932,19 +932,17 @@ export default function VisaApplication() {
                                     )}
 
                                 {/* APPLICATION DENIED */}
-                                {statusValue &&
-                                    statusValue.toLowerCase() !== 'rejected' &&
-                                    isPenaltyPayment && (
-                                        <div style={{ marginBottom: 24, borderLeft: '4px solid #ff4d4f', backgroundColor: '#fff1f0', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#ff4d4f' }}>APPLICATION DENIED</h2>
-                                            <p style={{ margin: 0, fontSize: 14 }}>
-                                                Unfortunately, your application has been denied.
-                                                You may contact our support team for further assistance or clarification regarding your application.
-                                                For now, your documents will be delivered back to you.
-                                                Please check your email for the details of the document return process.
-                                            </p>
-                                        </div>
-                                    )}
+                                {(statusValue?.trim().toLowerCase() === 'rejected' || isPenaltyPayment) && (
+                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #ff4d4f', backgroundColor: '#fff1f0', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#ff4d4f' }}>APPLICATION DENIED</h2>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Unfortunately, your application has been denied.
+                                            You may contact our support team for further assistance or clarification regarding your application.
+                                            For now, your documents will be delivered back to you.
+                                            Please check your email for the details of the document return process.
+                                        </p>
+                                    </div>
+                                )}
 
                                 {/* APPLICATION SUCCESS */}
                                 {statusValue && statusValue.toLowerCase() === 'embassy approved' && (

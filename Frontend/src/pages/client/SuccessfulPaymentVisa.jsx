@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, ConfigProvider, Spin, message } from 'antd';
+import { Button, ConfigProvider, } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import apiFetch from '../../config/fetchConfig';
@@ -18,14 +18,6 @@ export default function SuccessfulPaymentVisa() {
             return;
         }
 
-
-        window.history.pushState(null, '', window.location.href);
-
-        const handleBrowserBack = () => {
-            window.history.pushState(null, '', window.location.href);
-        };
-
-        window.addEventListener('popstate', handleBrowserBack);
 
 
         // Call backend API to verify payment using token

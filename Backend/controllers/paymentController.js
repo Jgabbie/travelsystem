@@ -813,7 +813,6 @@ const createManualPaymentPassport = async (req, res) => {
                 to: user.email,
                 subject: `Passport Payment Submitted`,
                 html: `
-                        <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
 
@@ -839,7 +838,6 @@ const createManualPaymentPassport = async (req, res) => {
                             </p>
 
                         </div>
-                    </div>
                     `
             });
         } catch (emailError) {
@@ -917,7 +915,6 @@ const createManualPaymentVisa = async (req, res) => {
                 to: user.email,
                 subject: `Visa Payment Submitted`,
                 html: `
-                        <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
 
@@ -941,10 +938,7 @@ const createManualPaymentVisa = async (req, res) => {
                             <p style="color:#777; font-size:13px; margin-top:30px;">
                                 If you did not make this payment, please ignore this email.
                             </p>
-
-
                         </div>
-                    </div>
                     `
             });
         } catch (emailError) {
@@ -1021,7 +1015,6 @@ const createManualPaymentDeliveryFee = async (req, res) => {
                 to: user.email,
                 subject: `Delivery Fee Payment Submitted`,
                 html: `
-                        <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
                             <p style="color:#555; font-size:16px;">
@@ -1046,7 +1039,6 @@ const createManualPaymentDeliveryFee = async (req, res) => {
                             </p>
 
                         </div>
-                    </div>
                     `
             });
         } catch (emailError) {
