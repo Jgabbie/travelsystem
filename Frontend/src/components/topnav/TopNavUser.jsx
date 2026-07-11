@@ -284,7 +284,6 @@ export default function TopNavUser() {
 
                 <Modal
                     open={isModalOpen}
-                    className='modal-main'
                     centered
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}

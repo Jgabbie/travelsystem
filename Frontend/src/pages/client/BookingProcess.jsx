@@ -921,6 +921,7 @@ export default function BookingProcess() {
                     <Spin description="Preparing your PDF..." size="large" />
                 </div>
             )}
+
             <Modal
                 open={isVerifyModalOpen}
                 closable
@@ -954,6 +955,7 @@ export default function BookingProcess() {
                     </Button>
                 </div>
             </Modal>
+
             <div className='bookingprocess-container'>
                 <Button
                     className='booking-back-button'
@@ -1948,6 +1950,7 @@ export default function BookingProcess() {
                             </div>
                         ))}
                     </div>
+
                     <div className='upload-passport-notes'>
 
                         <div>

@@ -185,17 +185,74 @@ export default function UserTransactions() {
             );
 
             const canvas = await html2canvas(element, {
-                scale: 3, // Higher scale for crisp text
+                scale: 3,
                 useCORS: true,
                 allowTaint: true,
-                backgroundColor: "#ffffff", // Ensures background isn't transparent/black
+                backgroundColor: "#ffffff",
                 logging: false,
-                // This tells html2canvas to wait for images to load
+
+                /*
+                 * Force the cloned document to use a desktop viewport.
+                 * This prevents the 768px and 480px media queries from
+                 * changing the downloaded receipt layout.
+                 */
+                windowWidth: 1440,
+                windowHeight: 1600,
+                scrollX: 0,
+                scrollY: 0,
+
                 onclone: (clonedDoc) => {
-                    // You can manually adjust styles of the cloned element here if needed
-                    const clonedElement = clonedDoc.querySelector(".receipt-container");
-                    if (clonedElement) {
-                        clonedElement.style.padding = "20px";
+                    const clonedElement = clonedDoc.querySelector(
+                        ".receipt-download-source"
+                    );
+
+                    if (!clonedElement) return;
+
+                    /*
+                     * Restore the receipt's original desktop width only
+                     * inside the cloned document used for PDF generation.
+                     */
+                    clonedElement.style.width = "720px";
+                    clonedElement.style.maxWidth = "720px";
+                    clonedElement.style.minWidth = "720px";
+                    clonedElement.style.margin = "0";
+                    clonedElement.style.padding = "20px";
+                    clonedElement.style.boxSizing = "border-box";
+                    clonedElement.style.overflow = "visible";
+
+                    const clonedContent = clonedElement.querySelector(
+                        ".receipt-content"
+                    );
+
+                    if (clonedContent) {
+                        clonedContent.style.width = "100%";
+                        clonedContent.style.maxWidth = "none";
+                        clonedContent.style.minWidth = "0";
+                        clonedContent.style.boxSizing = "border-box";
+                    }
+
+                    /*
+                     * Remove the modal's responsive scrolling and height
+                     * restrictions from the cloned export.
+                     */
+                    const clonedModalBody = clonedDoc.querySelector(
+                        ".transaction-receipt-modal .ant-modal-body"
+                    );
+
+                    if (clonedModalBody) {
+                        clonedModalBody.style.width = "auto";
+                        clonedModalBody.style.maxHeight = "none";
+                        clonedModalBody.style.overflow = "visible";
+                    }
+
+                    const clonedModalContent = clonedDoc.querySelector(
+                        ".transaction-receipt-modal .ant-modal-content"
+                    );
+
+                    if (clonedModalContent) {
+                        clonedModalContent.style.width = "auto";
+                        clonedModalContent.style.maxHeight = "none";
+                        clonedModalContent.style.overflow = "visible";
                     }
                 }
             });
@@ -323,7 +380,10 @@ export default function UserTransactions() {
                 centered={true}
             >
                 {selectedTransaction && (
-                    <div className="receipt-container" ref={receiptRef}>
+                    <div
+                        className="receipt-container receipt-download-source"
+                        ref={receiptRef}
+                    >
                         <div className={`receipt-watermark ${receiptWatermarkClass}`}>{receiptWatermarkText}</div>
                         <div className="receipt-content">
                             <div className="receipt-header">

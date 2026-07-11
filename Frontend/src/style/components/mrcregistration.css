@@ -303,11 +303,248 @@
 
 @media (max-width: 900px) {
     .mrc-overlay-wrapper {
+        width: 100%;
+        margin-top: 20px;
         padding: 12px;
+        box-sizing: border-box;
+        overflow-x: hidden;
     }
 
     .mrc-form-page {
+        width: 100%;
+        max-width: 760px;
+        min-width: 0;
         padding: 20px;
+        box-sizing: border-box;
+    }
+
+    .mrc-table-container {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .mrc-table-container .ant-row {
+        min-width: 700px;
+    }
+
+    .booking-form-stepper-container>div:has(> .form-content-wrapper) {
+        display: flex;
+        align-items: center !important;
+        gap: 12px !important;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .booking-form-stepper-container>div:has(> .form-content-wrapper)>.form-content-wrapper {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    .booking-form-stepper-container>div:has(> .form-content-wrapper)>.user-invoice-form-button {
+        flex: 0 0 42px !important;
+        width: 42px !important;
+        min-width: 42px !important;
+        max-width: 42px !important;
+        height: 42px !important;
+        padding: 0 !important;
+    }
+
+    .booking-form-stepper-container>div:has(> .form-content-wrapper)>.booking-form-button {
+        flex: 0 0 42px !important;
+        width: 42px !important;
+        min-width: 42px !important;
+        max-width: 42px !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        padding: 0 !important;
+        flex-shrink: 0 !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .mrc-overlay-wrapper {
+        width: 100%;
+        margin-top: 15px;
+        padding: 8px;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    .mrc-form-page {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding: 16px;
+        box-sizing: border-box;
+    }
+
+    .mrc-form-header {
+        margin-bottom: 18px;
+    }
+
+    .mrc-logo {
+        width: auto;
+        max-width: 100%;
+        max-height: 70px;
+        object-fit: contain;
+    }
+
+    .mrc-header-title {
+        font-size: 14px;
+        padding: 7px 5px;
+    }
+
+    .mrc-instructions {
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    /*
+     * Stack the registration form's two-column sections.
+     */
+    .mrc-tour-details>.ant-row>.ant-col,
+    .mrc-lead-guest-section>.ant-row>.ant-col,
+    .mrc-form-footer>.ant-row>.ant-col,
+    .mrc-terms-content>.ant-row>.ant-col,
+    .mrc-waiver-content>.ant-row>.ant-col,
+    .mrc-form-page div[style*="margin-top: 30px"]>.ant-row>.ant-col,
+    .mrc-form-page div[style*="margin-top: 40px"]>.ant-form>.ant-row>.ant-col,
+    .mrc-form-page div[style*="margin-top: 50px"]>.ant-form>.ant-row>.ant-col {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .mrc-form-page .ant-row {
+        row-gap: 10px;
+    }
+
+    .mrc-form-page .ant-form-item {
+        margin-bottom: 10px;
+    }
+
+    .mrc-form-page .ant-form-item-label {
+        padding-bottom: 3px;
+        white-space: normal;
+        text-align: left;
+    }
+
+    .mrc-form-page .ant-form-item-label>label,
+    .mrc-form-page .ant-form-item-label>label>span {
+        height: auto;
+        white-space: normal;
+        line-height: 1.3;
+    }
+
+    .mrc-tour-details-input,
+    .mrc-lead-guest-section-input,
+    .mrc-form-page .ant-input,
+    .mrc-form-page textarea.ant-input,
+    .mrc-form-page .ant-picker,
+    .mrc-form-page .ant-select {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .mrc-section-block,
+    .mrc-insurance-section {
+        padding: 12px;
+        margin-bottom: 14px;
+    }
+
+    /*
+     * Keep traveler and dietary tables usable through horizontal scrolling.
+     */
+    .mrc-table-container {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .mrc-table-container .ant-row {
+        min-width: 700px;
+    }
+
+    .mrc-form-page table {
+        display: block;
+        width: 100% !important;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .mrc-form-page table>thead,
+    .mrc-form-page table>tbody {
+        display: table;
+        width: 700px;
+        min-width: 700px;
+        table-layout: fixed;
+    }
+
+    .mrc-form-page table th,
+    .mrc-form-page table td {
+        padding: 4px !important;
+        font-size: 10px !important;
+    }
+
+    .mrc-form-page table .ant-input {
+        min-width: 0;
+        font-size: 10px !important;
+    }
+
+    .mrc-terms-content .ant-col+.ant-col,
+    .mrc-waiver-content .ant-col+.ant-col,
+    .mrc-form-footer .ant-col+.ant-col {
+        margin-top: 12px;
+    }
+
+    .booking-form-stepper-container>div:has(> .form-content-wrapper) {
+        display: flex;
+        align-items: center !important;
+        gap: 8px !important;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .booking-form-stepper-container>div:has(> .form-content-wrapper)>.form-content-wrapper {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    .booking-form-stepper-container>div:has(> .form-content-wrapper)>.user-invoice-form-button {
+        flex: 0 0 40px !important;
+        width: 40px !important;
+        min-width: 40px !important;
+        max-width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+    }
+
+    .booking-form-stepper-container>div:has(> .form-content-wrapper)>.booking-form-button {
+        flex: 0 0 40px !important;
+        width: 40px !important;
+        min-width: 40px !important;
+        max-width: 40px !important;
+        height: 40px !important;
+        min-height: 40px !important;
+        padding: 0 !important;
+        flex-shrink: 0 !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
     }
 }
 
@@ -509,10 +746,7 @@
         height: 35px !important;
     }
 
-    .booking-form-stepper-container>div:has(> .form-content-wrapper) {
-        gap: 8px !important;
-        align-items: center !important;
-    }
+
 
     .booking-form-stepper-container>div:has(> .form-content-wrapper)>.user-invoice-form-button {
         flex: 0 0 36px !important;
@@ -523,7 +757,31 @@
         padding: 0 !important;
     }
 
-    .booking-form-stepper-container>div:has(> .form-content-wrapper)>.user-invoice-form-button .anticon {
+    .booking-form-stepper-container>div:has(> .form-content-wrapper) {
+        display: flex;
+        width: 100%;
+        min-width: 0;
+        gap: 8px !important;
+        align-items: center !important;
+    }
+
+    .booking-form-stepper-container>div:has(> .form-content-wrapper)>.booking-form-button {
+        flex: 0 0 36px !important;
+        width: 36px !important;
+        min-width: 36px !important;
+        max-width: 36px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        padding: 0 !important;
+        flex-shrink: 0 !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .booking-form-stepper-container>div:has(> .form-content-wrapper)>.booking-form-button .anticon {
+        flex-shrink: 0;
         font-size: 14px !important;
     }
 

@@ -203,6 +203,238 @@
     margin: 0;
 }
 
+@media (max-width: 768px) {
+    .transaction-receipt-modal.ant-modal {
+        width: calc(100% - 32px) !important;
+        max-width: 680px !important;
+        margin: 16px auto;
+        padding-bottom: 0;
+    }
+
+    .transaction-receipt-modal .ant-modal-content {
+        width: 100%;
+        max-height: calc(100vh - 32px);
+        padding: 18px 16px 16px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .transaction-receipt-modal .ant-modal-body {
+        width: 100%;
+        max-height: calc(100vh - 90px);
+        padding: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .transaction-receipt-modal .receipt-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0;
+        padding: 0 !important;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .transaction-receipt-modal .receipt-content {
+        width: 100%;
+        min-width: 0;
+        padding: 20px 16px !important;
+        box-sizing: border-box;
+    }
+
+    .transaction-receipt-modal .receipt-header {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .transaction-receipt-modal .company-info,
+    .transaction-receipt-modal .receipt-title-box,
+    .transaction-receipt-modal .address-details {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .transaction-receipt-modal .header-flex-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .transaction-receipt-modal .receipt-company-logo {
+        width: 72px !important;
+        height: 72px !important;
+        flex: 0 0 72px;
+        object-fit: contain;
+    }
+
+    .transaction-receipt-modal .brand-name {
+        margin: 0 0 5px;
+        font-size: 18px !important;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+    }
+
+    .transaction-receipt-modal .sub-info {
+        margin: 0 0 3px;
+        font-size: 10px !important;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+
+    .transaction-receipt-modal .receipt-title-box {
+        padding: 10px 14px !important;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    .transaction-receipt-modal .receipt-title {
+        margin: 0;
+        font-size: 22px !important;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+    }
+
+    .transaction-receipt-modal .receipt-meta {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 18px;
+        margin-top: 18px;
+    }
+
+    .transaction-receipt-modal .billed-to,
+    .transaction-receipt-modal .receipt-details {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .transaction-receipt-modal .customer-name {
+        font-size: 15px !important;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+
+    .transaction-receipt-modal .receipt-details {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .transaction-receipt-modal .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .transaction-receipt-modal .detail-item>span:last-child {
+        min-width: 0;
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+
+    .transaction-receipt-modal .label-blue,
+    .transaction-receipt-modal .value-blue,
+    .transaction-receipt-modal .detail-item {
+        font-size: 11px !important;
+    }
+
+    .transaction-receipt-modal .receipt-table {
+        width: 100% !important;
+        table-layout: fixed;
+        margin-top: 18px;
+    }
+
+    .transaction-receipt-modal .receipt-table th,
+    .transaction-receipt-modal .receipt-table td {
+        padding: 8px 5px !important;
+        font-size: 10px !important;
+        line-height: 1.35;
+        white-space: normal !important;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+
+    .transaction-receipt-modal .receipt-table th:first-child,
+    .transaction-receipt-modal .receipt-table td:first-child {
+        width: 10%;
+    }
+
+    .transaction-receipt-modal .receipt-table th:nth-child(2),
+    .transaction-receipt-modal .receipt-table td:nth-child(2) {
+        width: 40%;
+    }
+
+    .transaction-receipt-modal .receipt-table th:nth-child(3),
+    .transaction-receipt-modal .receipt-table td:nth-child(3),
+    .transaction-receipt-modal .receipt-table th:nth-child(4),
+    .transaction-receipt-modal .receipt-table td:nth-child(4) {
+        width: 25%;
+    }
+
+    .transaction-receipt-modal .receipt-bank-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(220px, 0.8fr);
+        gap: 18px;
+        margin-top: 18px;
+        align-items: start;
+    }
+
+    .transaction-receipt-modal .receipt-bank-info,
+    .transaction-receipt-modal .receipt-summary {
+        width: 100% !important;
+        min-width: 0;
+    }
+
+    .transaction-receipt-modal .receipt-bank-label {
+        font-size: 11px !important;
+    }
+
+    .transaction-receipt-modal .receipt-bank-details {
+        font-size: 10px !important;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+
+    .transaction-receipt-modal .receipt-summary-content {
+        width: 100%;
+        padding: 12px !important;
+        box-sizing: border-box;
+    }
+
+    .transaction-receipt-modal .summary-row {
+        gap: 12px;
+        font-size: 11px !important;
+    }
+
+    .transaction-receipt-modal .total-amount {
+        font-size: 15px !important;
+        overflow-wrap: anywhere;
+    }
+
+    .transaction-receipt-modal .receipt-watermark {
+        font-size: 70px !important;
+        white-space: nowrap;
+    }
+
+    .receipt-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    .receipt-modal-actions .user-transactions-downloadproof-button {
+        width: 170px;
+        height: 36px;
+    }
+}
+
 @media (max-width: 480px) {
     .user-transactions-container {
         margin-top: 20px;

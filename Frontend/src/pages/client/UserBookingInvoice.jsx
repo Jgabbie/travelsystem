@@ -975,6 +975,33 @@ export default function UserBookingInvoice() {
                         <Text style={styles.muted}>ACCOUNT NUMBER: 006838032692</Text>
                     </View>
                     <View style={styles.totalDueContainer}>
+                        {persistedPenalty > 0 && (
+                            <>
+                                <View style={styles.totalBreakdownRow}>
+                                    <Text style={styles.totalBreakdownLabel}>ORIGINAL PRICE</Text>
+                                    <Text style={styles.totalBreakdownValue}>
+                                        PHP {Number(totalPrice).toLocaleString("en-PH", {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}
+                                    </Text>
+                                </View>
+
+                                <View style={styles.penaltyBreakdownRow}>
+                                    <Text style={styles.penaltyBreakdownLabel}>
+                                        LATE PAYMENT PENALTY
+                                    </Text>
+
+                                    <Text style={styles.penaltyBreakdownValue}>
+                                        + PHP {Number(persistedPenalty).toLocaleString("en-PH", {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}
+                                    </Text>
+                                </View>
+                            </>
+                        )}
+
                         <View style={styles.totalDueRow}>
                             <Text style={styles.totalDueLabel}>TOTAL PRICE</Text>
                             <Text style={styles.totalDueValue}>PHP {Number(totalPriceWithPenalty).toLocaleString('en-PH', {
@@ -982,6 +1009,7 @@ export default function UserBookingInvoice() {
                                 maximumFractionDigits: 2
                             })}</Text>
                         </View>
+
                         <View style={styles.totalDueRow}>
                             <Text style={styles.totalDueLabel}>PAID TO DATE</Text>
                             <Text style={styles.totalDueValue}>PHP {Number(paidAmount).toLocaleString('en-PH', {
@@ -1007,35 +1035,207 @@ export default function UserBookingInvoice() {
 
     //invoice document styles
     const styles = StyleSheet.create({
-        page: { padding: 40, fontSize: 9, color: "#333", fontFamily: "Helvetica" },
-        logo: { width: 80, height: 80 },
-        header: { flexDirection: "row", justifyContent: "space-between", marginBottom: 40 },
-        headerCompany: { flexDirection: "row", alignItems: "center", gap: 15 },
-        brand: { fontSize: 12, fontWeight: "bold" },
-        muted: { color: "#555" },
-        invoiceTitleContainer: { justifyContent: "center" },
-        invoiceTitleText: { fontSize: 16, color: "#333" },
-        divider: { height: 3, backgroundColor: "#374151", marginVertical: 5 },
-        billRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 18, alignItems: "flex-start" },
-        billToSection: { flex: 1 },
-        label: { fontSize: 8, color: "#777", fontWeight: "bold", marginBottom: 4 },
-        customerName: { fontSize: 11, fontWeight: "bold", marginBottom: 2 },
-        summaryTable: { flexDirection: "row", border: "1pt solid #E5E7EB", flex: 1.5, marginLeft: 20 },
-        summaryCol: { flex: 1, padding: 8, alignItems: "center", justifyContent: "center" },
-        summaryValue: { fontSize: 10, fontWeight: "bold" },
-        darkBg: { backgroundColor: "#374151" },
-        paidRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
-        table: { marginTop: 10 },
-        tableHeader: { flexDirection: "row", borderBottom: "1pt solid #333", paddingBottom: 5, marginBottom: 5 },
-        tableRow: { flexDirection: "row", paddingVertical: 8, borderBottom: "0.5pt solid #E5E7EB" },
-        cell: { fontSize: 8 },
-        footerSection: { marginTop: 30, flexDirection: "row", justifyContent: "space-between" },
-        bankInfo: { flex: 2 },
-        totalDueContainer: { flex: 1, alignItems: "flex-end" },
-        totalDueRow: { flexDirection: "row", borderTop: "1pt solid #333", borderBottom: "1pt solid #333", paddingVertical: 10, width: "100%", justifyContent: "space-between", marginBottom: 10 },
-        totalDueLabel: { fontSize: 10, fontWeight: "bold" },
-        totalDueValue: { fontSize: 10, fontWeight: "bold" },
-        thankYou: { fontSize: 9, fontWeight: "bold", color: "#555" }
+        page: {
+            padding: 40,
+            fontSize: 9,
+            color: "#333",
+            fontFamily: "Helvetica"
+        },
+
+        logo: {
+            width: 80,
+            height: 80
+        },
+
+        header: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 40
+        },
+
+        headerCompany: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 15
+        },
+
+        brand: {
+            fontSize: 12,
+            fontWeight: "bold"
+        },
+        muted: {
+            color: "#555"
+        },
+
+        invoiceTitleContainer: {
+            justifyContent: "center"
+        },
+
+        invoiceTitleText: {
+            fontSize: 16,
+            color: "#333"
+        },
+
+        divider: {
+            height: 3,
+            backgroundColor: "#374151",
+            marginVertical: 5
+        },
+
+        billRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 18,
+            alignItems: "flex-start"
+        },
+
+        billToSection: {
+            flex: 1
+        },
+
+        label: {
+            fontSize: 8,
+            color: "#777",
+            fontWeight: "bold",
+            marginBottom: 4
+        },
+
+        customerName: {
+            fontSize: 11,
+            fontWeight: "bold",
+            marginBottom: 2
+        },
+
+        summaryTable: {
+            flexDirection: "row",
+            border: "1pt solid #E5E7EB",
+            flex: 1.5,
+            marginLeft: 20
+        },
+
+        summaryCol: {
+            flex: 1,
+            padding: 8,
+            alignItems: "center",
+            justifyContent: "center"
+        },
+
+        summaryValue: {
+            fontSize: 10,
+            fontWeight: "bold"
+        },
+
+        darkBg: {
+            backgroundColor: "#374151"
+        },
+
+        paidRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 12
+        },
+
+        table: {
+            marginTop: 10
+        },
+
+        tableHeader: {
+            flexDirection: "row",
+            borderBottom: "1pt solid #333",
+            paddingBottom: 5,
+            marginBottom: 5
+        },
+
+        tableRow: {
+            flexDirection: "row",
+            paddingVertical: 8,
+            borderBottom: "0.5pt solid #E5E7EB"
+        },
+
+        cell: {
+            fontSize: 8
+        },
+
+        footerSection: {
+            marginTop: 30,
+            flexDirection: "row",
+            justifyContent: "space-between"
+        },
+
+        bankInfo: {
+            flex: 2
+        },
+
+        totalDueContainer: {
+            flex: 1,
+            alignItems: "flex-end"
+        },
+
+        totalDueRow: {
+            flexDirection: "row",
+            borderTop: "1pt solid #333",
+            borderBottom: "1pt solid #333",
+            paddingVertical: 10,
+            width: "100%",
+            justifyContent: "space-between",
+            marginBottom: 10
+        },
+
+        totalDueLabel: {
+            fontSize: 10,
+            fontWeight: "bold"
+        },
+
+        totalDueValue: {
+            fontSize: 10,
+            fontWeight: "bold"
+        },
+
+        thankYou: {
+            fontSize: 9,
+            fontWeight: "bold",
+            color: "#555"
+        },
+
+        totalBreakdownRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            width: "100%",
+            paddingVertical: 5
+        },
+
+        totalBreakdownLabel: {
+            fontSize: 8,
+            color: "#555"
+        },
+
+        totalBreakdownValue: {
+            fontSize: 8,
+            color: "#555"
+        },
+
+        penaltyBreakdownRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            width: "100%",
+            paddingVertical: 6,
+            paddingHorizontal: 5,
+            marginBottom: 6,
+            backgroundColor: "#FFF7E6",
+            borderLeft: "2pt solid #D97706"
+        },
+
+        penaltyBreakdownLabel: {
+            fontSize: 8,
+            fontWeight: "bold",
+            color: "#AD4E00"
+        },
+
+        penaltyBreakdownValue: {
+            fontSize: 8,
+            fontWeight: "bold",
+            color: "#B91C1C"
+        },
     });
 
 
@@ -1108,16 +1308,56 @@ export default function UserBookingInvoice() {
 
                             <Row gutter={[16, 16]} className="user-invoice-summary">
                                 <Col xs={24} md={8}>
-                                    <Card className="user-invoice-stat" variant={false} style={{ paddingBottom: 30 }}>
+                                    <Card
+                                        className={`user-invoice-stat ${persistedPenalty > 0 ? "user-invoice-penalty-stat" : ""
+                                            }`}
+                                        variant={false}
+                                        style={{ paddingBottom: 30 }}
+                                    >
                                         <h1 className="user-invoice-label">Total Price</h1>
+
+                                        {persistedPenalty > 0 && (
+                                            <div className="user-invoice-price-breakdown">
+                                                <div className="user-invoice-price-row">
+                                                    <span>Original Price</span>
+                                                    <strong>
+                                                        {Number(totalPrice).toLocaleString("en-PH", {
+                                                            style: "currency",
+                                                            currency: "PHP",
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                    </strong>
+                                                </div>
+
+                                                <div className="user-invoice-penalty-row">
+                                                    <span>Late Payment Penalty</span>
+                                                    <strong>
+                                                        +{Number(persistedPenalty).toLocaleString("en-PH", {
+                                                            style: "currency",
+                                                            currency: "PHP",
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                    </strong>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         <div className="user-invoice-amount">
-                                            {Number(totalPriceWithPenalty).toLocaleString('en-PH', {
-                                                style: 'currency',
-                                                currency: 'PHP',
+                                            {Number(totalPriceWithPenalty).toLocaleString("en-PH", {
+                                                style: "currency",
+                                                currency: "PHP",
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 2,
                                             })}
                                         </div>
+
+                                        {persistedPenalty > 0 && (
+                                            <div className="user-invoice-penalty-added-label">
+                                                ₱200 penalty included in total
+                                            </div>
+                                        )}
                                     </Card>
                                 </Col>
                                 <Col xs={24} md={8}>
@@ -1189,7 +1429,7 @@ export default function UserBookingInvoice() {
                                 <div className="user-invoice-column" style={{ marginTop: 10 }}>
                                     <h2 className="user-invoice-heading">Transaction History</h2>
                                     <div style={{
-                                        backgroundColor: '#f0f5ff',
+                                        backgroundColor: '#f7f9ff',
                                         border: '2px solid rgba(48, 87, 151, 0.2)',
                                         padding: '8px 12px',
                                         borderRadius: '6px',
@@ -1252,7 +1492,7 @@ export default function UserBookingInvoice() {
 
                             {/* DEPOSIT PAYMENT */}
                             {remainingBalance > 0 && (
-                                <div style={{ marginTop: 24, maxWidth: 1300 }}>
+                                <div className="user-invoice-payment-methods-container" style={{ marginTop: 24, maxWidth: 1300 }}>
                                     <div className="payment-methods-wrapper">
                                         <div className="payment-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <div>

@@ -724,4 +724,13 @@
         min-height: 250px;
         padding: 16px 14px 18px !important;
     }
+
+    .footer-header {
+        font-size: 14px;
+    }
+
+    .footer-text,
+    .footer-text-link {
+        font-size: 12px;
+    }
 }

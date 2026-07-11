@@ -84,17 +84,10 @@
         padding: 16px 12px;
     }
 
-    .modal-heading {
-        font-size: 22px;
-    }
-
-    .modal-text {
-        font-size: 13px;
-    }
-
     .modal-button,
     .modal-button-cancel {
         width: 100%;
+        min-width: 140px;
         height: 36px;
         font-size: 14px;
     }

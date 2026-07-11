@@ -946,4 +946,13 @@
         width: 100%;
         align-items: flex-start;
     }
+
+    .footer-header {
+        font-size: 14px;
+    }
+
+    .footer-text,
+    .footer-text-link {
+        font-size: 12px;
+    }
 }

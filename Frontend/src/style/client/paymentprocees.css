@@ -581,6 +581,7 @@
 
 @media (max-width: 840px) {
     .payment-process-container {
+        margin-top: 60px;
         padding: 20px;
     }
 
@@ -623,7 +624,7 @@
 @media (max-width: 540px) {
 
     .payment-process-container {
-        margin-top: 40px;
+        margin-top: 60px;
     }
 
     .payment-section {

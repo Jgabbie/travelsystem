@@ -285,4 +285,13 @@
         justify-content: center;
         margin-top: 40px;
     }
+
+    .footer-header {
+        font-size: 14px;
+    }
+
+    .footer-text,
+    .footer-text-link {
+        font-size: 12px;
+    }
 }

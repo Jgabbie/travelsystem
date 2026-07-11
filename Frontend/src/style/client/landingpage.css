@@ -2279,4 +2279,13 @@
     .for-you-section .popular-reference-card.ant-card {
         max-width: 340px;
     }
+
+    .footer-header {
+        font-size: 14px;
+    }
+
+    .footer-text,
+    .footer-text-link {
+        font-size: 12px;
+    }
 }
