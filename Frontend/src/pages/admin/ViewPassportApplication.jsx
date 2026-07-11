@@ -533,7 +533,7 @@ export default function ViewPassportApplication() {
                     />
                 </div>
             ) : (
-                <div style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
+                <div className="viewpassportapplication-page-wrapper" style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
                     <Button type="primary" onClick={() => navigate(-1)} style={{ marginBottom: 16 }} className="viewpassportapplication-back-button">
                         <ArrowLeftOutlined />
                         Back

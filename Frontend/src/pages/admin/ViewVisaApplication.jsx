@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, Switch, Modal, Checkbox, DatePicker, TimePicker, Input, InputNumber, notification } from "antd";
-import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled, PictureOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled, PictureOutlined, EyeOutlined } from "@ant-design/icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../../style/admin/viewvisaapplication.css"
 import apiFetch from "../../config/fetchConfig";
@@ -535,7 +535,7 @@ export default function ViewVisaApplication() {
                     />
                 </div>) :
                 (
-                    <div style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
+                    <div className="viewvisaapplication-page-wrapper" style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
                         <Button type="primary" onClick={() => navigate(-1)} style={{ marginBottom: 16 }} className="viewvisaapplication-back-button">
                             <ArrowLeftOutlined />
                             Back
@@ -590,7 +590,7 @@ export default function ViewVisaApplication() {
                         <div className="app-detail-shell" style={{ marginTop: 24, border: '1px solid #dde4ef', borderRadius: 12, padding: 20, background: '#ffffff', boxShadow: '0 6px 20px rgba(18, 24, 38, 0.06)', display: "flex", flexDirection: "column", gap: 24 }}>
                             <div>
                                 <div style={{ display: "flex", flexDirection: "row", gap: 24, flexWrap: "wrap" }}>
-                                    <div style={{ flex: "1 1 620px", minWidth: 320 }}>
+                                    <div className="viewvisaapplication-main-column" style={{ flex: "1 1 620px", minWidth: 320 }}>
                                         <Descriptions bordered column={descriptionColumn} size="middle">
                                             <Descriptions.Item label="Application Number">{application?.applicationNumber}</Descriptions.Item>
                                             <Descriptions.Item label="Applicant Name">{applicantName || 'N/A'}</Descriptions.Item>
@@ -621,11 +621,11 @@ export default function ViewVisaApplication() {
                                         )}
 
                                         {statusText && String(statusText).toLowerCase() === "application submitted" && (
-                                            <div style={{ marginTop: 16, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
+                                            <div className="viewvisaapplication-appointment-card">
                                                 <h3 style={{ marginTop: 0 }}>Suggested Appointment Options</h3>
                                                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                                                     {alternateSlots.map((slot, idx) => (
-                                                        <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                                                        <div key={idx} className="viewvisaapplication-appointment-row" style={{ display: "flex", gap: 12, alignItems: "center" }}>
                                                             <span style={{ minWidth: 20 }}>{idx + 1}.</span>
                                                             <DatePicker
                                                                 disabledDate={disableDates}
@@ -699,7 +699,7 @@ export default function ViewVisaApplication() {
                                                                         <Button
                                                                             className="application-doc-preview-button application-doc-preview-media"
                                                                             type="primary"
-                                                                            icon={<PictureOutlined style={{ fontSize: '18px', color: '#ffffff' }} />}
+                                                                            icon={<EyeOutlined style={{ fontSize: '18px', color: '#ffffff' }} />}
                                                                             onClick={() => window.open(url, '_blank')}
                                                                             size="small"
                                                                             block
@@ -811,7 +811,7 @@ export default function ViewVisaApplication() {
 
                                     </div>
 
-                                    <div style={{ flex: "1 1 300px", minWidth: 280 }}>
+                                    <div className="viewvisaapplication-side-column" style={{ flex: "1 1 300px", minWidth: 280 }}>
                                         <div style={{ marginBottom: 16, border: "1px solid #dde4ef", borderRadius: 10, padding: 12, background: "#f9fbff" }}>
                                             <p className="app-detail-kicker" style={{ marginBottom: 6 }}>Overview</p>
                                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
@@ -830,7 +830,7 @@ export default function ViewVisaApplication() {
                                         </div>
 
 
-                                        <div style={{ border: "1px solid #dde4ef", borderRadius: 10, padding: 12, background: "#ffffff", minWidth: 280 }}>
+                                        <div className="viewvisaapplication-progress-card">
                                             <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Progress Tracker</h3>
                                             {statusSetDate && (
                                                 <div style={{ marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(48,87,151,0.06)', borderLeft: '4px solid #305797' }}>
@@ -917,7 +917,7 @@ export default function ViewVisaApplication() {
                                                             )
                                                         };
                                                     })}
-                                                    className="no-line"
+                                                    className="no-line viewvisaapplication-progress-steps"
                                                 />
                                             </div>
 

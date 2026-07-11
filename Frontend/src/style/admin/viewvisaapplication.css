@@ -284,6 +284,7 @@
 }
 
 /* Preview button style to match provided design */
+
 .application-doc-preview-button {
     font-family: "Roboto", sans-serif;
     font-size: 13px;
@@ -291,18 +292,26 @@
     background-color: #305797;
     color: #ffffff;
     border-radius: 16px;
-    width: 250px;
+
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+
     height: 36px;
     border: 1px solid rgba(48, 87, 151, 0.12);
     box-shadow: none;
     margin-top: 7px;
-    display: inline-flex;
+
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+
     line-height: 1;
     white-space: nowrap;
+    box-sizing: border-box;
 }
+
 
 .application-doc-preview-button:hover {
     background-color: #244575 !important;
@@ -488,5 +497,399 @@
         min-height: 38px;
         padding: 8px 12px;
         white-space: normal;
+    }
+}
+
+@media (max-width: 468px) {
+
+    /* Main page wrapper */
+    .viewvisaapplication-page-wrapper {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding: 12px !important;
+        margin: 0 auto;
+        overflow-x: hidden;
+    }
+
+    .viewvisaapplication-container,
+    .viewvisaapplication-page {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding-left: 0;
+        padding-right: 0;
+        overflow-x: hidden;
+    }
+
+    /* Header */
+    .app-detail-header {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .app-detail-header h2 {
+        font-size: 21px;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .app-detail-header p {
+        font-size: 13px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    /* Main application shell */
+    .app-detail-shell {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0 !important;
+        padding: 14px !important;
+        gap: 18px !important;
+        border-radius: 10px !important;
+        overflow: hidden;
+    }
+
+    .app-detail-shell>div,
+    .app-detail-shell>div>div,
+    .app-detail-shell>div>div>div {
+        max-width: 100%;
+        min-width: 0 !important;
+    }
+
+    .viewvisaapplication-main-column,
+    .viewvisaapplication-side-column {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0 !important;
+        flex-basis: 100% !important;
+    }
+
+    /* Application descriptions */
+    .ant-descriptions {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .ant-descriptions-view {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .ant-descriptions table {
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    .ant-descriptions-item {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .ant-descriptions-item-label,
+    .ant-descriptions-item-content {
+        min-width: 0 !important;
+        padding: 9px !important;
+        font-size: 12px;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .ant-descriptions-item-label {
+        width: 40%;
+    }
+
+    /* Appointment card */
+    .viewvisaapplication-appointment-card {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        margin-top: 16px;
+        padding: 14px;
+        border: 1px solid #dde4ef;
+        border-radius: 12px;
+        background: #ffffff;
+        overflow: hidden;
+    }
+
+    .viewvisaapplication-appointment-row {
+        display: grid;
+        grid-template-columns: 22px minmax(0, 1fr);
+        gap: 8px;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        align-items: center;
+    }
+
+    .viewvisaapplication-appointment-row>span {
+        grid-row: 1 / span 2;
+        align-self: center;
+    }
+
+    .viewvisaapplication-appointment-row .ant-picker {
+        grid-column: 2;
+        width: 100% !important;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .ant-picker,
+    .ant-input-number {
+        width: 100% !important;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .ant-picker-input,
+    .ant-picker-input input {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .ant-picker-input input {
+        font-size: 12px;
+    }
+
+    /* Embassy actions */
+    .viewvisaapplication-embassy-actions {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        margin-top: 16px;
+        padding: 14px;
+        border: 1px solid #dde4ef;
+        border-radius: 12px;
+        background: #ffffff;
+    }
+
+    .viewvisaapplication-embassy-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    /* Submitted documents */
+    .submitted-documents-section {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0 !important;
+        padding: 14px !important;
+        overflow: hidden;
+    }
+
+    .submitted-documents-section h3 {
+        margin-bottom: 16px;
+        font-size: 17px;
+        line-height: 1.3;
+    }
+
+    .application-documents-grid,
+    .application-documents-grid-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .application-documents-grid>div,
+    .application-documents-grid-inner>div {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .application-doc-item {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0;
+    }
+
+    .application-doc-preview-box {
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        height: auto;
+        min-height: 0;
+    }
+
+    .application-doc-preview-button,
+    .application-doc-preview-media {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0;
+        height: auto !important;
+        min-height: 38px;
+        margin: 0 !important;
+        padding: 8px 12px;
+        object-fit: contain;
+        white-space: normal;
+    }
+
+    .application-doc-item p,
+    .application-doc-item strong,
+    .application-doc-item span,
+    .application-doc-item b {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    /* Delivery details */
+    .viewvisaapplication-delivery-details-card {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0 !important;
+        padding: 14px;
+        overflow: hidden;
+    }
+
+    .viewvisaapplication-delivery-details-title {
+        font-size: 17px;
+        line-height: 1.3;
+    }
+
+    .viewvisaapplication-delivery-details-input,
+    .viewvisaapplication-delivery-details-date {
+        width: 100% !important;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    /* Buttons */
+    .viewvisaapplication-back-button,
+    .viewvisaapplication-submit-button,
+    .viewvisaapplication-download-button,
+    .viewvisaapplication-submitdocu-button,
+    .viewvisaapplication-dfa-processing-approve-button,
+    .viewvisaapplication-dfa-processing-reject-button,
+    .viewvisaapplication-delivery-details-button,
+    .application-doc-preview-button,
+    .application-doc-download {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box;
+    }
+
+    /* Overview content */
+    .app-detail-kicker {
+        font-size: 11px;
+    }
+
+    .ant-tag {
+        max-width: 100%;
+        white-space: normal;
+        text-align: center;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    /* Progress tracker */
+    .viewvisaapplication-progress-card {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0 !important;
+        padding: 12px;
+        border: 1px solid #dde4ef;
+        border-radius: 10px;
+        background: #ffffff;
+        overflow: hidden;
+    }
+
+    .steps-vertical-line {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .viewvisaapplication-progress-steps {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .viewvisaapplication-progress-steps .ant-steps-item {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .viewvisaapplication-progress-steps .ant-steps-item-container {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .viewvisaapplication-progress-steps .ant-steps-item-content {
+        width: calc(100% - 30px);
+        max-width: calc(100% - 30px);
+        min-width: 0;
+        margin-left: 8px !important;
+    }
+
+    .viewvisaapplication-progress-steps .ant-steps-item-title,
+    .viewvisaapplication-progress-steps .ant-steps-item-description {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding-right: 0;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        white-space: normal;
+    }
+
+    .viewvisaapplication-progress-steps .ant-steps-item-title>div,
+    .viewvisaapplication-progress-steps .ant-steps-item-description>div {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    /* Status notification boxes */
+    .viewvisaapplication-tag-blue-container,
+    .viewvisaapplication-tag-green-container,
+    .viewvisaapplication-tag-yellow-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 22px 14px;
+        overflow: hidden;
+    }
+
+    .viewvisaapplication-tag-blue,
+    .viewvisaapplication-tag-green,
+    .viewvisaapplication-tag-yellow {
+        font-size: 18px;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    /* Modal */
+    .ant-modal {
+        width: calc(100% - 24px) !important;
+        max-width: 420px;
+        margin: 12px auto;
+    }
+
+    .ant-modal-content {
+        padding: 18px !important;
     }
 }

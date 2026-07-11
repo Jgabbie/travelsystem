@@ -809,6 +809,76 @@ export default function PackagePage() {
                             </div>
 
                             <div className="package-right">
+                                <div className="package-price-card">
+                                    <div className="package-price-label">Price per pax</div>
+                                    <div className="package-pricepax">
+                                        <span>
+                                            ₱{discountedPackagePricePerPax.toLocaleString() || '--'}
+                                        </span>
+                                        {packageDiscountPercent > 0 && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8, }}>
+                                                <span
+                                                    style={{
+                                                        textDecoration: 'line-through',
+                                                        color: '#9aa0a6',
+                                                        fontSize: '12px',
+                                                        marginRight: 8,
+                                                        marginLeft: 8,
+                                                        display: 'inline-block'
+                                                    }}
+                                                >
+                                                    ₱{basePackagePricePerPax.toLocaleString()}
+                                                </span>
+
+                                                <span
+                                                    style={{
+                                                        marginLeft: 8,
+                                                        color: '#e72323',
+                                                        fontWeight: 600,
+                                                        fontSize: '12px'
+                                                    }}
+                                                >
+                                                    -{packageDiscountPercent}%
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="package-side-meta">
+                                        <div className="package-side-row">
+                                            <span>Slots</span>
+                                            <strong>{totalSlots > 0 ? totalSlots : 'Sold out'}</strong>
+                                        </div>
+                                        <div className="package-side-row">
+                                            <span>Deposit</span>
+                                            <strong>
+                                                {packageDiscountPercent > 0 && (
+                                                    <span
+                                                        style={{
+                                                            textDecoration: 'line-through',
+                                                            color: '#9aa0a6',
+                                                            fontSize: '0.85rem',
+                                                            marginRight: 8
+                                                        }}
+                                                    >
+                                                        ₱{basePackageDeposit.toLocaleString()}
+                                                    </span>
+                                                )}
+                                                <span>₱{discountedPackageDeposit.toLocaleString()}</span>
+                                            </strong>
+                                        </div>
+                                    </div>
+                                    <Button disabled={(() => {
+                                        if (packageLoading || !packageData) return true;
+                                        const totalSlots = (packageData.packageSpecificDate || []).reduce((sum, d) => sum + Number(d.slots || 0), 0);
+                                        return totalSlots <= 0;
+                                    })()} type='primary' className="package-availability-button" onClick={handleBookingProcess}>
+                                        Check Availability
+                                    </Button>
+
+
+                                </div>
+
+
                                 {showReviews ? (
                                     <Card className="package-reviews-card" bordered={false}>
                                         <div className="package-reviews">
@@ -993,75 +1063,6 @@ export default function PackagePage() {
                                     </Card>
                                 ) : (
                                     <>
-                                        <div className="package-price-card">
-                                            <div className="package-price-label">Price per pax</div>
-                                            <div className="package-pricepax">
-                                                <span>
-                                                    ₱{discountedPackagePricePerPax.toLocaleString() || '--'}
-                                                </span>
-                                                {packageDiscountPercent > 0 && (
-                                                    <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8, }}>
-                                                        <span
-                                                            style={{
-                                                                textDecoration: 'line-through',
-                                                                color: '#9aa0a6',
-                                                                fontSize: '12px',
-                                                                marginRight: 8,
-                                                                marginLeft: 8,
-                                                                display: 'inline-block'
-                                                            }}
-                                                        >
-                                                            ₱{basePackagePricePerPax.toLocaleString()}
-                                                        </span>
-
-                                                        <span
-                                                            style={{
-                                                                marginLeft: 8,
-                                                                color: '#e72323',
-                                                                fontWeight: 600,
-                                                                fontSize: '12px'
-                                                            }}
-                                                        >
-                                                            -{packageDiscountPercent}%
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="package-side-meta">
-                                                <div className="package-side-row">
-                                                    <span>Slots</span>
-                                                    <strong>{totalSlots > 0 ? totalSlots : 'Sold out'}</strong>
-                                                </div>
-                                                <div className="package-side-row">
-                                                    <span>Deposit</span>
-                                                    <strong>
-                                                        {packageDiscountPercent > 0 && (
-                                                            <span
-                                                                style={{
-                                                                    textDecoration: 'line-through',
-                                                                    color: '#9aa0a6',
-                                                                    fontSize: '0.85rem',
-                                                                    marginRight: 8
-                                                                }}
-                                                            >
-                                                                ₱{basePackageDeposit.toLocaleString()}
-                                                            </span>
-                                                        )}
-                                                        <span>₱{discountedPackageDeposit.toLocaleString()}</span>
-                                                    </strong>
-                                                </div>
-                                            </div>
-                                            <Button disabled={(() => {
-                                                if (packageLoading || !packageData) return true;
-                                                const totalSlots = (packageData.packageSpecificDate || []).reduce((sum, d) => sum + Number(d.slots || 0), 0);
-                                                return totalSlots <= 0;
-                                            })()} type='primary' className="package-availability-button" onClick={handleBookingProcess}>
-                                                Check Availability
-                                            </Button>
-
-
-                                        </div>
-
                                         <div
                                             style={{
                                                 marginTop: 16,
