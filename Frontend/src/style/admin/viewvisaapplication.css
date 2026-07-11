@@ -420,13 +420,73 @@
 
 @media (max-width: 480px) {
 
+    .submitted-documents-section {
+        width: 100%;
+        min-width: 0 !important;
+        padding: 14px !important;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .submitted-documents-section h3 {
+        margin-bottom: 16px;
+        font-size: 17px;
+        line-height: 1.3;
+    }
+
     .application-documents-grid,
     .application-documents-grid-inner {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+        width: 100%;
+        min-width: 0;
     }
 
     .application-doc-item,
     .application-doc-preview-box {
-        max-width: 180px;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        box-sizing: border-box;
+    }
+
+    .application-doc-item p,
+    .application-doc-item strong,
+    .application-doc-item span {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .application-doc-preview-box {
+        height: auto;
+        min-height: 180px;
+    }
+
+    .application-doc-preview-media {
+        width: 100%;
+        max-width: none;
+        height: auto;
+        min-height: 38px;
+        object-fit: contain;
+    }
+
+    .application-doc-preview-button,
+    .viewvisaapplication-download-button,
+    .viewvisaapplication-submitdocu-button,
+    .application-doc-download {
+        width: 100%;
+        max-width: none;
+        margin-left: 0;
+        margin-right: 0;
+        box-sizing: border-box;
+    }
+
+    .application-doc-preview-button {
+        height: auto;
+        min-height: 38px;
+        padding: 8px 12px;
+        white-space: normal;
     }
 }

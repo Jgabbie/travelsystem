@@ -251,6 +251,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                             <Row gutter={16}>
                                 <Col span={6}>
                                     <Form.Item
+                                        required={false}
                                         name="leadTitle"
                                         label={<span style={{ fontSize: '10px', fontWeight: 'bold' }}>TITLE:</span>}
                                         style={{ marginBottom: '4px' }}

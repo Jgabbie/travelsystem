@@ -840,11 +840,11 @@
 
   .transactionmanagement-export-button,
   .transactionmanagement-archive-button,
+  .transactionmanagement-add-button,
   .transaction-actions-buttons {
     width: 100%;
     flex: none !important;
   }
-
 
   .transaction-receipt-modal {
     width: calc(100vw - 16px) !important;
@@ -1044,61 +1044,3 @@
 
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* @media (max-width: 768px) {
-
-  .transaction-actions-row,
-  .transaction-actions-filters,
-  .transaction-actions-buttons {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .transaction-actions-field,
-  .transaction-actions-field--search,
-  .transaction-actions-buttons .ant-btn,
-  .transaction-search-input,
-  .transaction-select,
-  .transaction-date-filter {
-    width: 100% !important;
-    flex: none !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .transaction-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-input {
-    width: 100%;
-  }
-}
-
-@media (max-width: 576px) {
-  .transaction-view-grid {
-    grid-template-columns: 1fr;
-  }
-} */

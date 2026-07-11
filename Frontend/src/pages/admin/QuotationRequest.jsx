@@ -799,7 +799,6 @@ export default function QuotationRequest() {
                             title={
                                 <div className="quotationrequest-card-title">
                                     <span>Quotation Details</span>
-                                    <Tag color={isBooked ? "green" : "blue"}>{quotation.status || "N/A"}</Tag>
                                 </div>
                             }
                         >

@@ -116,6 +116,8 @@ export default function UserBookingInvoice() {
     const [downloading, setDownloading] = useState(false);
     const [submittingTravelerIndex, setSubmittingTravelerIndex] = useState(null);
 
+    const [packageDetails, setPackageDetails] = useState(null);
+
     const stepsToCapture = [0, 1, 2, 3];
     const documentsResubmissionRequired = Boolean(booking?.documentsResubmissionRequired);
     const reference = booking?.reference || booking?.ref || booking?._id || "--";
@@ -136,6 +138,32 @@ export default function UserBookingInvoice() {
 
                 setBooking(fetchedBooking);
                 setTransactions(fetchedTransactions);
+
+                // Fetch the package to determine whether a visa is required
+                const packageIdentifier =
+                    typeof fetchedBooking?.packageItem === "object"
+                        ? fetchedBooking.packageItem?._id ||
+                        fetchedBooking.packageItem?.packageItem
+                        : fetchedBooking?.packageItem ||
+                        fetchedBooking?.packageId ||
+                        fetchedBooking?.packageCode;
+
+                if (packageIdentifier) {
+                    try {
+                        const packageResponse = await apiFetch.get(
+                            `/package/get-package/${packageIdentifier}`
+                        );
+
+                        setPackageDetails(packageResponse?.data || packageResponse || null);
+                    } catch (packageError) {
+                        console.error(
+                            "Unable to fetch package visa requirement:",
+                            packageError
+                        );
+
+                        setPackageDetails(null);
+                    }
+                }
 
 
                 if (fetchedBooking) {
@@ -244,6 +272,23 @@ export default function UserBookingInvoice() {
     const paymentMode = bookingDetails?.paymentMode || (bookingDetails?.paymentDetails?.paymentType === 'deposit' ? 'Deposit' : 'Full Payment');
 
     const summaryInvoice = bookingDetails
+
+    // Check the actual visa requirement configured for the package
+    const rawVisaRequired =
+        packageDetails?.visaRequired ??
+        booking?.visaRequired ??
+        bookingDetails?.visaRequired ??
+        (
+            typeof booking?.packageItem === "object"
+                ? booking.packageItem?.visaRequired
+                : undefined
+        ) ??
+        false;
+
+    const requiresVisa =
+        rawVisaRequired === true ||
+        String(rawVisaRequired).toLowerCase() === "true" ||
+        String(rawVisaRequired).toLowerCase() === "yes";
 
 
 
@@ -408,8 +453,19 @@ export default function UserBookingInvoice() {
         const photoList = photoUploadLists[index] || [];
         const visaList = visaUploadLists[index] || [];
 
-        if (passportList.length === 0 && photoList.length === 0 && visaList.length === 0) {
-            notification.warning({ message: "Please upload passport/ID, 2x2 photo, or visa file.", placement: 'topRight' });
+        const hasDocumentToUpload =
+            passportList.length > 0 ||
+            photoList.length > 0 ||
+            (requiresVisa && visaList.length > 0);
+
+        if (!hasDocumentToUpload) {
+            notification.warning({
+                message: requiresVisa
+                    ? "Please upload passport/ID, 2x2 photo, or visa file."
+                    : "Please upload passport/ID or 2x2 photo.",
+                placement: "topRight"
+            });
+
             return;
         }
 
@@ -418,7 +474,9 @@ export default function UserBookingInvoice() {
             const [passportUrls, photoUrls, visaUrls] = await Promise.all([
                 uploadBookingDocuments(passportList),
                 uploadBookingDocuments(photoList),
-                uploadBookingDocuments(visaList)
+                requiresVisa
+                    ? uploadBookingDocuments(visaList)
+                    : Promise.resolve([])
             ]);
 
             const updatedTravelers = (travelersWithDocs || []).map((traveler, travelerIndex) => {
@@ -1778,18 +1836,23 @@ export default function UserBookingInvoice() {
                                                                             Upload 2x2 Photo
                                                                         </Button>
                                                                     </Upload>
-                                                                    <Upload
-                                                                        listType="picture"
-                                                                        fileList={visaUploadLists[index] || []}
-                                                                        beforeUpload={beforeVisaUpload}
-                                                                        onChange={(info) => handleVisaUploadChange(index, info)}
-                                                                        accept="image/jpeg,image/png,application/pdf"
-                                                                        maxCount={1}
-                                                                    >
-                                                                        <Button type="primary" className="user-invoice-form-button">
-                                                                            Upload Visa File
-                                                                        </Button>
-                                                                    </Upload>
+                                                                    {requiresVisa && (
+                                                                        <Upload
+                                                                            listType="picture"
+                                                                            fileList={visaUploadLists[index] || []}
+                                                                            beforeUpload={beforeVisaUpload}
+                                                                            onChange={(info) => handleVisaUploadChange(index, info)}
+                                                                            accept="image/jpeg,image/png,application/pdf"
+                                                                            maxCount={1}
+                                                                        >
+                                                                            <Button
+                                                                                type="primary"
+                                                                                className="user-invoice-form-button"
+                                                                            >
+                                                                                Upload Visa File
+                                                                            </Button>
+                                                                        </Upload>
+                                                                    )}
                                                                     <Button
                                                                         type="primary"
                                                                         className="user-invoice-form-button"

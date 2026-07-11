@@ -15,10 +15,18 @@ export default function AdminDashboard() {
     totalPackages: 0
   });
   const [loading, setLoading] = useState(true);
+
+  const [viewportWidth, setViewportWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+
   const [barWidth, setBarWidth] = useState(0);
   const [pieWidth, setPieWidth] = useState(0);
+  const [statusPieWidth, setStatusPieWidth] = useState(0);
+
   const barRef = useRef(null);
   const pieRef = useRef(null);
+  const statusPieRef = useRef(null);
 
   const [transactions, setTransactions] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -270,51 +278,120 @@ export default function AdminDashboard() {
   const conversionRate = totalQuotationRequests === 0 ? 0 : (completedBookingsCount / totalQuotationRequests) * 100;
 
 
+
+  const isCompactTablet = viewportWidth <= 786;
+  const isTablet = viewportWidth <= 900;
+
+  const revenueChartHeight = isCompactTablet
+    ? 280
+    : isTablet
+      ? 300
+      : 320;
+
+  const standardChartHeight = isCompactTablet ? 240 : 260;
+
+  const bookingTypeInnerRadius = isCompactTablet ? 36 : 42;
+  const bookingTypeOuterRadius = isCompactTablet ? 76 : 90;
+
+  const statusInnerRadius = isCompactTablet ? 34 : 40;
+  const statusOuterRadius = isCompactTablet ? 68 : 80;
+
+  useEffect(() => {
+    const handleViewportResize = () => {
+      setViewportWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleViewportResize);
+
+    return () => {
+      window.removeEventListener("resize", handleViewportResize);
+    };
+  }, []);
+
+
   // update chart widths on resize
   useEffect(() => {
     const updateWidth = (node, setter, fallback) => {
       if (!node) return;
-      const nextWidth = Math.max(node.clientWidth || fallback, 280);
+
+      const nextWidth = Math.max(
+        Math.floor(node.clientWidth || fallback),
+        280
+      );
+
       setter(nextWidth);
     };
 
     const fallback = Math.max(window.innerWidth - 80, 320);
+
     updateWidth(barRef.current, setBarWidth, fallback);
     updateWidth(pieRef.current, setPieWidth, fallback);
+    updateWidth(statusPieRef.current, setStatusPieWidth, fallback);
 
     if (typeof ResizeObserver === "undefined") {
       const handleResize = () => {
         const nextFallback = Math.max(window.innerWidth - 80, 320);
+
         updateWidth(barRef.current, setBarWidth, nextFallback);
         updateWidth(pieRef.current, setPieWidth, nextFallback);
+        updateWidth(
+          statusPieRef.current,
+          setStatusPieWidth,
+          nextFallback
+        );
       };
+
       window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
+
+      return () => {
+        window.removeEventListener("resize", handleResize);
+      };
     }
 
     const observer = new ResizeObserver((entries) => {
       entries.forEach((entry) => {
         const rawWidth = entry.contentRect?.width;
+
         const width = Number.isFinite(rawWidth)
           ? Math.max(Math.floor(rawWidth), 280)
           : 280;
 
-        if (entry.target === barRef.current) setBarWidth(width);
-        if (entry.target === pieRef.current) setPieWidth(width);
+        if (entry.target === barRef.current) {
+          setBarWidth(width);
+        }
+
+        if (entry.target === pieRef.current) {
+          setPieWidth(width);
+        }
+
+        if (entry.target === statusPieRef.current) {
+          setStatusPieWidth(width);
+        }
       });
     });
 
-    if (barRef.current) observer.observe(barRef.current);
-    if (pieRef.current) observer.observe(pieRef.current);
+    if (barRef.current) {
+      observer.observe(barRef.current);
+    }
 
-    return () => observer.disconnect();
+    if (pieRef.current) {
+      observer.observe(pieRef.current);
+    }
+
+    if (statusPieRef.current) {
+      observer.observe(statusPieRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
 
 
 
   return (
-    <div>
+    <div className="admin-dashboard">
       <h1 className="page-header">Dashboard</h1>
 
       <div className="dashboard-section">
@@ -375,19 +452,29 @@ export default function AdminDashboard() {
             <h2>Revenue Overview</h2>
             <p>Monthly revenue for the year</p>
           </div>
-          <div className="dashboard-chart-body is-tall" ref={barRef}>
+
+          <div
+            className="dashboard-chart-body dashboard-revenue-chart is-tall"
+            ref={barRef}
+          >
             {barWidth > 0 && (
               <BarChart
-                xAxis={[{ data: months, scaleType: "band" }]}
+                xAxis={[
+                  {
+                    data: months,
+                    scaleType: "band"
+                  }
+                ]}
                 series={[
                   {
                     data: monthlyRevenue,
                     color: themeColor,
-                    valueFormatter: (value) => `₱${value.toLocaleString()}`
+                    valueFormatter: (value) =>
+                      `₱${Number(value || 0).toLocaleString()}`
                   }
                 ]}
                 width={Math.min(1200, barWidth)}
-                height={320}
+                height={revenueChartHeight}
               />
             )}
           </div>
@@ -397,29 +484,48 @@ export default function AdminDashboard() {
           <Card className="dashboard-chart-card">
             <div className="dashboard-chart-header">
               <h2>Booking Types</h2>
-              <p>Share by booking types (Domestic or International)</p>
+              <p>
+                Share by booking types (Domestic or International)
+              </p>
             </div>
-            <div className="dashboard-chart-body" ref={pieRef}>
+
+            <div
+              className="dashboard-chart-body dashboard-pie-chart"
+              ref={pieRef}
+            >
               {pieWidth > 0 && (
                 <PieChart
                   series={[
                     {
                       data: paymentSplit,
-                      innerRadius: 42,
-                      outerRadius: 90,
+                      innerRadius: bookingTypeInnerRadius,
+                      outerRadius: bookingTypeOuterRadius,
                       paddingAngle: 2,
                       cornerRadius: 4,
-                      highlightScope: { faded: "global", highlighted: "item" },
-                      faded: { innerRadius: 40, additionalRadius: -4 }
+                      highlightScope: {
+                        faded: "global",
+                        highlighted: "item"
+                      },
+                      faded: {
+                        innerRadius: bookingTypeInnerRadius,
+                        additionalRadius: -4
+                      }
                     }
                   ]}
-                  colors={[themeColor, "#4b74b8", "#89a5d6"]}
+                  colors={[
+                    themeColor,
+                    "#4b74b8",
+                    "#89a5d6"
+                  ]}
                   width={Math.min(560, pieWidth)}
-                  height={260}
+                  height={standardChartHeight}
                   slotProps={{
                     legend: {
                       direction: "row",
-                      position: { vertical: "bottom", horizontal: "middle" }
+                      position: {
+                        vertical: "bottom",
+                        horizontal: "middle"
+                      }
                     }
                   }}
                 />
@@ -433,10 +539,7 @@ export default function AdminDashboard() {
               <p>Monthly booking volume</p>
             </div>
 
-            <div
-              className="dashboard-chart-body"
-              style={{ width: "100%", height: 260 }}
-            >
+            <div className="dashboard-chart-body dashboard-line-chart">
               <ChartContainer
                 series={[
                   {
@@ -447,7 +550,12 @@ export default function AdminDashboard() {
                     showMark: false
                   }
                 ]}
-                xAxis={[{ scaleType: "point", data: months }]}
+                xAxis={[
+                  {
+                    scaleType: "point",
+                    data: months
+                  }
+                ]}
               >
                 <AreaPlot />
                 <LinePlot />
@@ -459,6 +567,8 @@ export default function AdminDashboard() {
           </Card>
         </div>
       </div>
+
+
 
 
 

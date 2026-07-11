@@ -245,6 +245,19 @@
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.cancellations-viewproof-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 16px;
+    width: 130px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
 .cancellations-restore-button:hover {
     background-color: #009e52 !important;
     color: #fff !important;
@@ -262,7 +275,8 @@
 
 .cancellations-view-button:hover,
 .cancellations-export-button:hover,
-.cancellations-archive-button:hover {
+.cancellations-archive-button:hover,
+.cancellations-viewproof-button:hover {
     background-color: #244575 !important;
     color: #fff !important;
 }

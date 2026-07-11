@@ -664,7 +664,7 @@ export default function ViewVisaApplication() {
                                             </div>
                                         )}
 
-                                        <div style={{ marginTop: 16, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
+                                        <div className="submitted-documents-section" style={{ marginTop: 16, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
                                             <h3 style={{ marginTop: 0 }}>Submitted Documents</h3>
                                             {submittedDocuments.length > 0 ? (
                                                 <div className="application-documents-grid">

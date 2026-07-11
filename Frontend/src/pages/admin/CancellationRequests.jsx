@@ -612,7 +612,7 @@ export default function CancellationRequests() {
 
                     <Space style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
                         <Button
-                            className='user-transactions-viewproof-button'
+                            className='cancellations-viewproof-button'
                             type="primary"
                             onClick={async () => {
                                 try {

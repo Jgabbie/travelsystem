@@ -448,6 +448,11 @@ export default function UploadBookingInvoice() {
     const totalPriceWithPenalty = totalPrice + persistedPenalty;
     const remainingBalance = Math.max(totalPriceWithPenalty - paidAmount, 0);
 
+
+    const paymentStatusWithPenalty = remainingBalance <= 0
+        ? { label: "Fully Paid", color: "green" }
+        : { label: "Balance Due", color: "orange" };
+
     invoice.invoice.dueDate = lastInstallmentDate
         ? dayjs(lastInstallmentDate).format("MMMM D, YYYY")
         : null;
@@ -483,7 +488,47 @@ export default function UploadBookingInvoice() {
         totalDueRow: { flexDirection: "row", borderTop: "1pt solid #333", borderBottom: "1pt solid #333", paddingVertical: 10, width: "100%", justifyContent: "space-between", marginBottom: 10 },
         totalDueLabel: { fontSize: 10, fontWeight: "bold" },
         totalDueValue: { fontSize: 10, fontWeight: "bold" },
-        thankYou: { fontSize: 9, fontWeight: "bold", color: "#555" }
+        thankYou: { fontSize: 9, fontWeight: "bold", color: "#555" },
+
+        totalBreakdownRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            width: "100%",
+            paddingVertical: 5
+        },
+
+        totalBreakdownLabel: {
+            fontSize: 8,
+            color: "#555"
+        },
+
+        totalBreakdownValue: {
+            fontSize: 8,
+            color: "#555"
+        },
+
+        penaltyBreakdownRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            width: "100%",
+            paddingVertical: 6,
+            paddingHorizontal: 5,
+            marginBottom: 6,
+            backgroundColor: "#FFF7E6",
+            borderLeft: "2pt solid #D97706"
+        },
+
+        penaltyBreakdownLabel: {
+            fontSize: 8,
+            fontWeight: "bold",
+            color: "#AD4E00"
+        },
+
+        penaltyBreakdownValue: {
+            fontSize: 8,
+            fontWeight: "bold",
+            color: "#B91C1C"
+        }
     });
 
 
@@ -527,7 +572,7 @@ export default function UploadBookingInvoice() {
                         <View style={[styles.summaryCol, styles.darkBg]}>
                             <Text style={[styles.label, { color: "#FFF" }]}>TOTAL PRICE</Text>
                             <Text style={[styles.summaryValue, { color: "#FFF" }]}>
-                                PHP {Number(totals.subtotal + persistedPenalty).toLocaleString('en-PH', {
+                                PHP {Number(totalPriceWithPenalty).toLocaleString("en-PH", {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2
                                 })}
@@ -624,6 +669,36 @@ export default function UploadBookingInvoice() {
                         <Text style={styles.muted}>ACCOUNT NUMBER: 006838032692</Text>
                     </View>
                     <View style={styles.totalDueContainer}>
+                        {persistedPenalty > 0 && (
+                            <>
+                                <View style={styles.totalBreakdownRow}>
+                                    <Text style={styles.totalBreakdownLabel}>
+                                        ORIGINAL PRICE
+                                    </Text>
+
+                                    <Text style={styles.totalBreakdownValue}>
+                                        PHP {Number(totalPrice).toLocaleString("en-PH", {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}
+                                    </Text>
+                                </View>
+
+                                <View style={styles.penaltyBreakdownRow}>
+                                    <Text style={styles.penaltyBreakdownLabel}>
+                                        LATE PAYMENT PENALTY
+                                    </Text>
+
+                                    <Text style={styles.penaltyBreakdownValue}>
+                                        + PHP {Number(persistedPenalty).toLocaleString("en-PH", {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}
+                                    </Text>
+                                </View>
+                            </>
+                        )}
+
                         <View style={styles.totalDueRow}>
                             <Text style={styles.totalDueLabel}>TOTAL DUE</Text>
                             <Text style={styles.totalDueValue}>
@@ -713,14 +788,76 @@ export default function UploadBookingInvoice() {
                                 <Col xs={24} md={8}>
                                     <Card className="upload-invoice-stat" variant={false} style={{ paddingBottom: 30 }}>
                                         <h1 className="upload-invoice-label">Total Price</h1>
+
+                                        {persistedPenalty > 0 && (
+                                            <div
+                                                style={{
+                                                    paddingBottom: 10,
+                                                    marginBottom: 10,
+                                                    borderBottom: "1px dashed #d1d5db"
+                                                }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        display: "flex",
+                                                        justifyContent: "space-between",
+                                                        alignItems: "center",
+                                                        gap: 12,
+                                                        marginBottom: 6,
+                                                        fontSize: 12,
+                                                        color: "#4b5563"
+                                                    }}
+                                                >
+                                                    <span>Original Price</span>
+
+                                                    <strong>
+                                                        {formatCurrency.format(totalPrice)}
+                                                    </strong>
+                                                </div>
+
+                                                <div
+                                                    style={{
+                                                        display: "flex",
+                                                        justifyContent: "space-between",
+                                                        alignItems: "center",
+                                                        gap: 12,
+                                                        padding: "7px 9px",
+                                                        borderLeft: "3px solid #f59e0b",
+                                                        borderRadius: 5,
+                                                        backgroundColor: "#fff7e6",
+                                                        color: "#ad4e00",
+                                                        fontSize: 12
+                                                    }}
+                                                >
+                                                    <span>Late Payment Penalty</span>
+
+                                                    <strong style={{ color: "#b91c1c" }}>
+                                                        +{formatCurrency.format(persistedPenalty)}
+                                                    </strong>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         <div className="upload-invoice-amount">
-                                            {Number(totalPriceWithPenalty).toLocaleString('en-PH', {
-                                                style: 'currency',
-                                                currency: 'PHP',
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })}
+                                            {formatCurrency.format(totalPriceWithPenalty)}
                                         </div>
+
+                                        {persistedPenalty > 0 && (
+                                            <div
+                                                style={{
+                                                    display: "inline-block",
+                                                    marginTop: 8,
+                                                    padding: "5px 9px",
+                                                    borderRadius: 20,
+                                                    backgroundColor: "#fff1f0",
+                                                    color: "#b91c1c",
+                                                    fontSize: 11,
+                                                    fontWeight: 700
+                                                }}
+                                            >
+                                                {formatCurrency.format(persistedPenalty)} penalty included in total
+                                            </div>
+                                        )}
                                     </Card>
                                 </Col>
                                 <Col xs={24} md={8}>
@@ -773,8 +910,8 @@ export default function UploadBookingInvoice() {
                                 <Col style={{ marginTop: 10 }} xs={24} lg={8}>
                                     <h2 className="upload-invoice-heading">Transaction History</h2>
                                     <div style={{
-                                        backgroundColor: "#f0f5ff",
-                                        border: "1px solid #adc6ff",
+                                        backgroundColor: '#f7f9ff',
+                                        border: '2px solid rgba(48, 87, 151, 0.2)',
                                         padding: "8px 12px",
                                         borderRadius: "6px",
                                         marginBottom: "16px",
@@ -837,7 +974,7 @@ export default function UploadBookingInvoice() {
                             </Row>
 
                             {/* DOCUMENTS SECTION */}
-                            <div>
+                            <div className="upload-invoice-documents-section">
                                 <div style={{ marginBottom: 30 }}>
                                     <h2 className="upload-invoice-booking-form-stepper-title" >Travelers Information</h2>
                                     <p className="upload-invoice-booking-form-stepper-text" >
@@ -1050,77 +1187,66 @@ export default function UploadBookingInvoice() {
                                         style={{ marginBottom: '30px' }}
                                     />
 
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-                                        <div style={{ width: 48, display: 'flex', justifyContent: 'center' }}>
+                                    <div className="upload-invoice-registration-navigation">
+                                        <div className="upload-invoice-arrow-slot">
                                             {currentStep > 0 && (
                                                 <Button
                                                     type="primary"
-                                                    className="user-invoice-form-button"
+                                                    className="upload-invoice-registration-arrow"
                                                     onClick={prev}
-                                                    style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                                                    aria-label="Previous booking registration page"
                                                 >
                                                     <ArrowLeftOutlined />
                                                 </Button>
                                             )}
                                         </div>
 
-                                        <div style={{ flex: 1 }} />
+                                        {/* PAGE CONTENT */}
+                                        <div
+                                            className="form-content-wrapper pdf-capture upload-invoice-registration-page"
+                                        >
+                                            {currentStep === 0 && (
+                                                <BookingRegistrationTravelersInvoice
+                                                    form={form}
+                                                    summaryInvoice={summaryInvoice}
+                                                    totalCount={bookingDetails?.travelerCounts?.total || 1}
+                                                />
+                                            )}
 
-                                        <div style={{ width: 48, display: 'flex', justifyContent: 'center' }}>
+                                            {currentStep === 1 && (
+                                                <BookingRegistrationDietInvoice
+                                                    form={form}
+                                                    summaryInvoice={summaryInvoice}
+                                                />
+                                            )}
+
+                                            {currentStep === 2 && (
+                                                <BookingRegistrationTermsInvoicePart1
+                                                    form={form}
+                                                    summaryInvoice={summaryInvoice}
+                                                />
+                                            )}
+
+                                            {currentStep === 3 && (
+                                                <BookingRegistrationTermsInvoicePart2
+                                                    form={form}
+                                                    summaryInvoice={summaryInvoice}
+                                                />
+                                            )}
+                                        </div>
+
+                                        <div className="upload-invoice-arrow-slot">
                                             {currentStep < 3 && (
                                                 <Button
                                                     type="primary"
-                                                    className="user-invoice-form-button"
+                                                    className="upload-invoice-registration-arrow"
                                                     onClick={next}
-                                                    style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                                                    aria-label="Next booking registration page"
                                                 >
                                                     <ArrowRightOutlined />
                                                 </Button>
                                             )}
                                         </div>
-                                    </div>
-
-                                    {/* PAGES FOR PDF GENERATION */}
-                                    <div
-                                        className="form-content-wrapper pdf-capture"
-                                        style={{
-                                            width: '100%',
-                                            minWidth: 0,
-                                            position: "relative",
-                                            overflow: "visible",
-                                            backgroundColor: "#ffffff",
-                                            padding: "20px",
-                                            borderRadius: "8px"
-                                        }}
-                                    >
-                                        {currentStep === 0 && (
-                                            <BookingRegistrationTravelersInvoice
-                                                form={form}
-                                                summaryInvoice={summaryInvoice}
-                                                totalCount={bookingDetails?.travelerCounts?.total || 1}
-                                            />
-                                        )}
-
-                                        {currentStep === 1 && (
-                                            <BookingRegistrationDietInvoice
-                                                form={form}
-                                                summaryInvoice={summaryInvoice}
-                                            />
-                                        )}
-
-                                        {currentStep === 2 && (
-                                            <BookingRegistrationTermsInvoicePart1
-                                                form={form}
-                                                summaryInvoice={summaryInvoice}
-                                            />
-                                        )}
-
-                                        {currentStep === 3 && (
-                                            <BookingRegistrationTermsInvoicePart2
-                                                form={form}
-                                                summaryInvoice={summaryInvoice}
-                                            />
-                                        )}
                                     </div>
 
 

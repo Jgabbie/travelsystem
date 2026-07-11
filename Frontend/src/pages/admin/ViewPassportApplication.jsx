@@ -662,7 +662,7 @@ export default function ViewPassportApplication() {
 
 
                                     {/* VIEW SUBMITTED DOCUMENTS */}
-                                    <div style={{ minWidth: 280, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, marginTop: 16, background: '#ffffff' }}>
+                                    <div className="submitted-documents-section" style={{ minWidth: 280, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, marginTop: 16, background: '#ffffff' }}>
                                         <h3 style={{ marginTop: 0 }}>Submitted Documents</h3>
                                         {submittedDocuments.length > 0 ? (
                                             <div className="application-documents-grid">

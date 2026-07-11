@@ -67,7 +67,7 @@
 .upload-invoice-stat {
     background: #ffffff;
     border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    border: 2px solid #e5e7eb;
     box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
 }
 
@@ -113,7 +113,7 @@
 }
 
 .upload-invoice-highlight {
-    background: linear-gradient(135deg, rgba(48, 87, 151, 0.12) 0%, #eff6ff 100%);
+    background: #f7f9ff;
     border-color: rgba(48, 87, 151, 0.2);
 }
 
@@ -161,6 +161,16 @@
     background: #f9fafb;
 }
 
+.upload-invoice-documents-section {
+    border-radius: 12px;
+    border: 2px solid #e5e7eb;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    background: #f7f9ff;
+    border-color: rgba(48, 87, 151, 0.2);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
 /* BUTTONS CSS */
 .upload-invoice-back-button {
     font-family: "Roboto", sans-serif;
@@ -178,13 +188,13 @@
 
 .upload-invoice-form-button {
     font-family: "Roboto", sans-serif;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     background-color: #305797;
     color: #fff;
     border-radius: 10px;
-    width: 180px;
-    height: 40px;
+    width: 150px;
+    height: 35px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
 }
@@ -193,6 +203,53 @@
 .upload-invoice-form-button:hover {
     background-color: #244575 !important;
     color: #fff !important;
+}
+
+/* BOOKING REGISTRATION SIDE NAVIGATION */
+.upload-invoice-registration-navigation {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+.upload-invoice-arrow-slot {
+    width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-invoice-registration-arrow {
+    width: 48px !important;
+    min-width: 48px !important;
+    height: 48px !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 16px !important;
+    background-color: #305797 !important;
+    color: #ffffff !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
+.upload-invoice-registration-arrow:not(:disabled):hover {
+    background-color: #244575 !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+}
+
+.upload-invoice-registration-page {
+    width: 100%;
+    min-width: 0;
+    position: relative;
+    overflow: visible;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
 }
 
 @media (max-width: 900px) {
@@ -218,5 +275,24 @@
     .upload-invoice-back-button,
     .upload-invoice-form-button {
         width: 100%;
+    }
+
+    .upload-invoice-registration-navigation {
+        grid-template-columns: 40px minmax(0, 1fr) 40px;
+        gap: 8px;
+    }
+
+    .upload-invoice-arrow-slot {
+        width: 40px;
+    }
+
+    .upload-invoice-registration-arrow {
+        width: 40px !important;
+        min-width: 40px !important;
+        height: 40px !important;
+    }
+
+    .upload-invoice-registration-page {
+        padding: 12px;
     }
 }
