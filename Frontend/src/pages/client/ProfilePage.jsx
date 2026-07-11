@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Input, Button, notification, Card, Space, Rate, DatePicker, Select, ConfigProvider, Tag, Modal, Spin } from 'antd';
-import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined, CheckCircleFilled, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined, CheckCircleFilled, DeleteOutlined, StarFilled } from '@ant-design/icons';
 import dayjs from 'dayjs'
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/profilepage.css'
@@ -197,31 +197,66 @@ export default function ProfilePage() {
     });
     const [editingPreferences, setEditingPreferences] = useState(false);
 
+    // Removes invalid, duplicated, or outdated saved selections
+    const cleanSavedSelections = (selections, availableOptions, limit) => {
+        const optionMap = new Map(
+            availableOptions.map((option) => [
+                String(option).trim().toLowerCase(),
+                String(option).trim()
+            ])
+        );
+
+        const cleaned = (Array.isArray(selections) ? selections : [])
+            .map((selection) =>
+                optionMap.get(String(selection).trim().toLowerCase())
+            )
+            .filter(Boolean);
+
+        return [...new Set(cleaned)].slice(0, limit);
+    };
 
     //toggle preferences
     const togglePreference = (key, value, limit) => {
-        setPreferences(prev => {
-            const current = prev[key] || [];
-            const exists = current.includes(value);
+        setPreferences((prev) => {
+            const current = Array.isArray(prev[key]) ? prev[key] : [];
+            const normalizedValue = String(value).trim();
+            const normalizedKey = normalizedValue.toLowerCase();
+
+            const exists = current.some(
+                (item) => String(item).trim().toLowerCase() === normalizedKey
+            );
 
             if (!exists && limit && current.length >= limit) {
+                notification.warning({
+                    message: `You can only select up to ${limit} options.`,
+                    placement: 'topRight'
+                });
+
                 return prev;
             }
 
-            // toggle selection
             const next = exists
-                ? current.filter(item => item !== value)
-                : [...current, value];
+                ? current.filter(
+                    (item) =>
+                        String(item).trim().toLowerCase() !== normalizedKey
+                )
+                : [...current, normalizedValue];
 
-            return { ...prev, [key]: next };
+            return {
+                ...prev,
+                [key]: next
+            };
         });
     };
 
 
     //save preferences
     const savePreferences = async () => {
-        if ((preferences.moods || []).length <= 0 && (preferences.moods || []).length > 3) {
-            notification.error({ message: 'Please select up to 3 mood preferences.', placement: 'topRight' });
+        if ((preferences.moods || []).length !== 3) {
+            notification.error({
+                message: 'Please select exactly 3 mood preferences.',
+                placement: 'topRight'
+            });
             return;
         }
 
@@ -337,14 +372,35 @@ export default function ProfilePage() {
     //get package tags for mood options
     const fetchPackageTags = async () => {
         try {
-            const response = await apiFetch.get('/package/get-packages-for-users');
-            const unique = new Set();
-            (response || []).forEach((pkg) => {
-                pkg.packageTags?.forEach((tag) => unique.add(tag));
+            const response = await apiFetch.get(
+                '/package/get-packages-for-users'
+            );
+
+            const uniqueTags = new Map();
+
+            (Array.isArray(response) ? response : []).forEach((pkg) => {
+                (pkg.packageTags || []).forEach((tag) => {
+                    const cleanedTag = String(tag || '').trim();
+
+                    if (!cleanedTag) return;
+
+                    const normalizedTag = cleanedTag.toLowerCase();
+
+                    if (!uniqueTags.has(normalizedTag)) {
+                        uniqueTags.set(normalizedTag, cleanedTag);
+                    }
+                });
             });
-            setMoodOptions(Array.from(unique));
+
+            const options = Array.from(uniqueTags.values());
+
+            setMoodOptions(options);
+
+            return options;
         } catch (error) {
+            console.error('Error fetching mood options:', error);
             setMoodOptions([]);
+            return [];
         }
     };
 
@@ -352,18 +408,24 @@ export default function ProfilePage() {
     //get user preferences
     const fetchPreferences = async () => {
         try {
-            const response = await apiFetch.get("/preferences/me", { withCredentials: true });
-            if (response?.preferrences) {
-                const data = response.preferrences;
-                setPreferences({
-                    moods: data.moods || [],
-                    tours: data.tours || []
-                });
+            const response = await apiFetch.get(
+                '/preferences/me',
+                { withCredentials: true }
+            );
 
-            }
+            const data = response?.preferrences;
+
+            return {
+                moods: Array.isArray(data?.moods) ? data.moods : [],
+                tours: Array.isArray(data?.tours) ? data.tours : []
+            };
         } catch (error) {
             console.error('Error fetching preferences:', error);
-            setPreferences({ moods: [], tours: [] });
+
+            return {
+                moods: [],
+                tours: []
+            };
         }
     };
 
@@ -495,7 +557,7 @@ export default function ProfilePage() {
             try {
                 setIsLoading(true);
 
-                await Promise.all([
+                const results = await Promise.all([
                     fetchPackageTags(),
                     fetchUserData(),
                     fetchRecentBookings(),
@@ -503,8 +565,26 @@ export default function ProfilePage() {
                     fetchPreferences()
                 ]);
 
+                const availableMoods = results[0] || [];
+                const savedPreferences = results[4] || {
+                    moods: [],
+                    tours: []
+                };
+
+                setPreferences({
+                    moods: cleanSavedSelections(
+                        savedPreferences.moods,
+                        availableMoods,
+                        3
+                    ),
+                    tours: cleanSavedSelections(
+                        savedPreferences.tours,
+                        tourOptions,
+                        2
+                    )
+                });
             } catch (error) {
-                console.error(error);
+                console.error('Error loading profile:', error);
             } finally {
                 setIsLoading(false);
             }
@@ -676,36 +756,68 @@ export default function ProfilePage() {
                         <header className="profile-header">
                             <h2>Profile Page</h2>
                             <p>
-                                View and edit your personal information, manage your preferences, and see your recent activity.
+                                Manage your personal information, travel preferences, reviews, and recent bookings.
                             </p>
                         </header>
                         <div className="profile-container" style={{ marginBottom: 40 }}>
                             <div className="profile-content">
                                 <Card className="profile-summary-card">
                                     <div className="profile-summary-body">
-                                        <div className="profile-summary-avatar">
-                                            {profileImage ? (
-                                                <img src={profileImage} alt="Profile" />
-                                            ) : (
-                                                <div className="profile-summary-initials">{getInitials()}</div>
-                                            )}
+                                        <div className="profile-summary-main">
+                                            <div className="profile-summary-avatar">
+                                                {profileImage ? (
+                                                    <img src={profileImage} alt="Profile" />
+                                                ) : (
+                                                    <div className="profile-summary-initials">
+                                                        {getInitials()}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="profile-summary-text">
+                                                <div className="profile-summary-name-row">
+                                                    <h3 className="profile-summary-name">
+                                                        {values.firstname || values.lastname
+                                                            ? `${values.firstname} ${values.lastname}`.trim()
+                                                            : values.username || 'User'}
+                                                    </h3>
+
+                                                    {userData?.isAccountVerified && (
+                                                        <span className="profile-verified-badge">
+                                                            <CheckCircleFilled />
+                                                            Verified
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <div className="profile-summary-badges">
+                                                    <span className="profile-role-badge">
+                                                        {userData?.role || 'Traveler'}
+                                                    </span>
+                                                </div>
+
+                                                <p className="profile-summary-location">
+                                                    {values.homeAddress ||
+                                                        values.nationality ||
+                                                        'Location not set'}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="profile-summary-text">
-                                            <h3 className="profile-summary-name">
-                                                {values.firstname || values.lastname
-                                                    ? `${values.firstname} ${values.lastname}`.trim()
-                                                    : values.username || 'User'}
-                                            </h3>
-                                            <p className="profile-summary-meta">
-                                                <span>{userData?.role || 'Traveler'}</span>
-                                            </p>
-                                            <p className="profile-summary-meta">
-                                                {values.homeAddress || values.nationality || 'Location not set'}
-                                            </p>
-                                        </div>
+
+                                        {!editing && (
+                                            <Button
+                                                type="primary"
+                                                className="profile-action-button profile-summary-edit-button"
+                                                icon={<EditOutlined />}
+                                                onClick={handleEdit}
+                                            >
+                                                Edit Profile
+                                            </Button>
+                                        )}
                                     </div>
+
                                     {editing && (
-                                        <div style={{ marginTop: 16 }}>
+                                        <div className="profile-photo-actions">
                                             <input
                                                 ref={fileInputRef}
                                                 className="profile-avatar-input"
@@ -713,6 +825,7 @@ export default function ProfilePage() {
                                                 accept="image/*"
                                                 onChange={handleImageChange}
                                             />
+
                                             <Button
                                                 type="primary"
                                                 icon={<FileImageOutlined />}
@@ -721,7 +834,10 @@ export default function ProfilePage() {
                                             >
                                                 Change Photo
                                             </Button>
-                                            <p className="profile-avatar-help">PNG/JPG up to 2MB.</p>
+
+                                            <p className="profile-avatar-help">
+                                                PNG or JPG, maximum file size of 2MB.
+                                            </p>
                                         </div>
                                     )}
                                 </Card>
@@ -729,16 +845,6 @@ export default function ProfilePage() {
                                 <Card className="profile-section-card">
                                     <div className="profile-section-header">
                                         <h3 className="profile-section-title">Personal Information</h3>
-                                        {!editing && (
-                                            <Button
-                                                type="primary"
-                                                className="profile-action-button"
-                                                icon={<EditOutlined />}
-                                                onClick={handleEdit}
-                                            >
-                                                Edit
-                                            </Button>
-                                        )}
                                     </div>
                                     <div className="profile-section-grid">
                                         <div className="profile-section-item">
@@ -768,7 +874,11 @@ export default function ProfilePage() {
                                             ) : (
                                                 <p className="profile-section-value">{values.firstname || 'Not set'}</p>
                                             )}
-                                            <p className="profile-error-message">{error.firstname}</p>
+                                            {editing && error.firstname && (
+                                                <p className="profile-error-message">
+                                                    {error.firstname}
+                                                </p>
+                                            )}
                                         </div>
 
                                         <div className="profile-section-item">
@@ -800,7 +910,11 @@ export default function ProfilePage() {
                                             ) : (
                                                 <p className="profile-section-value">{values.lastname || 'Not set'}</p>
                                             )}
-                                            <p className="profile-error-message">{error.lastname}</p>
+                                            {editing && error.lastname && (
+                                                <p className="profile-error-message">
+                                                    {error.lastname}
+                                                </p>
+                                            )}
                                         </div>
 
                                         <div className="profile-section-item">
@@ -824,7 +938,11 @@ export default function ProfilePage() {
                                                     style={{ width: '100%' }}
                                                 />
                                             ) : (
-                                                <p className="profile-section-value">{values.birthdate || 'Not set'}</p>
+                                                <p className="profile-section-value">
+                                                    {values.birthdate
+                                                        ? dayjs(values.birthdate).format('MMMM D, YYYY')
+                                                        : 'Not set'}
+                                                </p>
                                             )}
                                         </div>
 
@@ -847,7 +965,11 @@ export default function ProfilePage() {
                                             ) : (
                                                 <p className="profile-section-value">{values.email || 'Not set'}</p>
                                             )}
-                                            <p className="profile-error-message">{error.email}</p>
+                                            {editing && error.email && (
+                                                <p className="profile-error-message">
+                                                    {error.email}
+                                                </p>
+                                            )}
                                         </div>
 
                                         <div className="profile-section-item">
@@ -872,16 +994,14 @@ export default function ProfilePage() {
                                             ) : (
                                                 <p className="profile-section-value">{values.phone || 'Not set'}</p>
                                             )}
-                                            <p className="profile-error-message">{error.phone}</p>
+                                            {editing && error.phone && (
+                                                <p className="profile-error-message">
+                                                    {error.phone}
+                                                </p>
+                                            )}
                                         </div>
 
                                     </div>
-
-                                    {userData?.isAccountVerified && (
-                                        <div className="verification-status">
-                                            <p>✓ Account Verified</p>
-                                        </div>
-                                    )}
                                 </Card>
 
                                 <Card className="profile-section-card">
@@ -989,24 +1109,39 @@ export default function ProfilePage() {
                                         {/* MOODS */}
                                         <div className="preference-block">
                                             <h3>What are you in the mood for?</h3>
-                                            <p>Choose exactly 3</p>
+                                            <p>Choose exactly 3 ({preferences.moods.length}/3 selected)</p>
 
                                             <div className="preference-chip-grid">
-                                                {moodOptions.map((option) => (
-                                                    <button
-                                                        key={option}
-                                                        type="button"
-                                                        disabled={!editingPreferences}
-                                                        className={
-                                                            preferences.moods.includes(option)
-                                                                ? 'preference-chip is-selected'
-                                                                : 'preference-chip'
-                                                        }
-                                                        onClick={() => togglePreference('moods', option, 3)}
-                                                    >
-                                                        {option}
-                                                    </button>
-                                                ))}
+                                                {moodOptions.map((option) => {
+                                                    const isSelected = preferences.moods.some(
+                                                        (mood) =>
+                                                            String(mood).trim().toLowerCase() ===
+                                                            String(option).trim().toLowerCase()
+                                                    );
+
+                                                    const limitReached = preferences.moods.length >= 3;
+
+                                                    return (
+                                                        <button
+                                                            key={option}
+                                                            type="button"
+                                                            disabled={
+                                                                !editingPreferences ||
+                                                                (!isSelected && limitReached)
+                                                            }
+                                                            className={
+                                                                isSelected
+                                                                    ? 'preference-chip is-selected'
+                                                                    : 'preference-chip'
+                                                            }
+                                                            onClick={() =>
+                                                                togglePreference('moods', option, 3)
+                                                            }
+                                                        >
+                                                            {option}
+                                                        </button>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
 
@@ -1074,16 +1209,39 @@ export default function ProfilePage() {
                                     ) : (
                                         <div className="profile-review-list">
                                             {recentReviews.slice(0, 3).map((review, index) => (
-                                                <div className="profile-review-item" key={review?._id || index}>
-                                                    <div>
-                                                        <p className="profile-review-title">{review?.packageName || 'Untitled Review'}</p>
-                                                        <p className="profile-review-meta">{review?.date || 'Recently'}</p>
-                                                        <Rate className="profile-review-rating" disabled value={review?.rating || 0} />
+                                                <div className="profile-review-item" key={review?.id || index}>
+                                                    <div className="profile-review-header">
+                                                        <div className="profile-review-heading">
+                                                            <p className="profile-review-title">
+                                                                {review?.packageName || 'Untitled Review'}
+                                                            </p>
+
+                                                            <p className="profile-review-meta">
+                                                                {review?.date || 'Recently'}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="profile-review-score">
+                                                            <span>
+                                                                <StarFilled style={{ color: '#fadb14', marginRight: '4px' }} />
+                                                                {Number(review?.rating || 0).toFixed(1)}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="profile-review-snippet">{review?.review || 'View review details.'}</p>
+
+                                                    <Rate
+                                                        className="profile-review-rating"
+                                                        disabled
+                                                        value={review?.rating || 0}
+                                                    />
+
+                                                    <p className="profile-review-snippet">
+                                                        {review?.review || 'No written review provided.'}
+                                                    </p>
+
+                                                    <div className="profile-review-actions">
                                                         <Button
-                                                            type="primary"
+                                                            danger
                                                             className="profile-delete-button"
                                                             icon={<DeleteOutlined />}
                                                             onClick={() => handleOpenDeleteModal(review)}

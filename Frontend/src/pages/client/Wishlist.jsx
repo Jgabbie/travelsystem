@@ -260,7 +260,7 @@ export default function Wishlist() {
 
                     <section className="wishlist-results">
                         <div className="wishlist-results-header">
-                            <Title level={4}>Wishlisted Packages</Title>
+                            <h3 >Wishlisted Packages</h3>
                             <Text className="wishlist-results-count" type="secondary">{filteredPackages.length} found</Text>
                         </div>
 

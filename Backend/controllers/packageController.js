@@ -665,12 +665,11 @@ const updatePackage = async (req, res) => {
                 title: "Package is Now Available",
                 message: `${updatedPackage.packageName} is now available for booking.`,
                 type: "wishlist",
-                link: buildPackageLink(updatedPackage),
                 metadata: {
                     availability: "available",
                     routeState: {
-                        packageCode: updatedPackage.packageCode,
-                        packageId: updatedPackage._id
+                        packageItem: updatedPackage._id,
+                        packageCode: updatedPackage.packageCode
                     }
                 },
                 emailSubject: `Package Available: ${updatedPackage.packageName}`,
@@ -821,12 +820,12 @@ const updateSlots = async (req, res) => {
                 title: "Package is Now Available",
                 message: `${pkg.packageName} is now available for booking.`,
                 type: "wishlist",
-                link: buildPackageLink(pkg),
+                link: "/package",
                 metadata: {
                     availability: "available",
                     routeState: {
-                        packageCode: pkg.packageCode,
-                        packageId: pkg._id
+                        packageItem: pkg._id,
+                        packageCode: pkg.packageCode
                     }
                 },
                 emailSubject: `Now Available: ${pkg.packageName}`,

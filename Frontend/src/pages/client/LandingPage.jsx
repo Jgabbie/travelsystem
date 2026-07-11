@@ -1041,7 +1041,7 @@ export default function LandingPage() {
                         <div className="hero-content-aboutus">
                             <h1>M&RC Travel and Tours</h1>
                             <p>
-                                M&RC Travel and tours is a travel agency that provides a wide range of travel services, including tour packages, flight bookings, hotel reservations, and travel insurance. With a commitment to customer satisfaction and a passion for travel, M&RC Travel and Tours aims to create unforgettable travel experiences for its clients.
+                                M&RC Travel and tours is a travel agency that provides a wide range of travel services, including tour packages, flight bookings, hotel reservations, and travel insurance. With a commitment to customer satisfaction and a passion for travel.
                             </p>
                         </div>
                     </div>

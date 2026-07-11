@@ -5,63 +5,62 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #e9f0f7;
+    background: #eef4f9;
+    padding-bottom: 50px;
 }
 
+
 .profile-container {
+    width: 100%;
+    max-width: 1368px;
+    margin: 0 auto;
     display: flex;
     flex-direction: row;
-    padding-top: 20px;
+    align-items: flex-start;
+    padding: 20px 24px 0;
     gap: 24px;
-    justify-content: center;
-    padding-left: 24px;
-    padding-right: 24px;
+    box-sizing: border-box;
 }
 
 .profile-content {
-    width: 100%;
-    max-width: 900px;
-    margin-left: 0;
+    flex: 1;
+    min-width: 0;
+    max-width: none;
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
 .profile-side-column {
+    width: 410px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    width: 100%;
-    max-width: 420px;
     gap: 20px;
 }
 
-.profile-card {
+.profile-card,
+.profile-side-card,
+.profile-summary-card,
+.profile-section-card {
     width: 100%;
-    max-width: 900px;
-    border-radius: 16px;
-    background: #fff;
-    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
-    border: 2px solid #d7d7d7;
-}
-
-.profile-side-card {
-    width: 100%;
-    border-radius: 16px;
-    background: #fff;
-    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
-    border: 2px solid #d7d7d7;
-}
-
-.profile-summary-card {
-    width: 100%;
-    border-radius: 16px;
-    background: #fff;
-    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
-    border: 2px solid #d7d7d7;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #dce3ea;
+    box-shadow: 0 6px 18px rgba(31, 42, 68, 0.06);
+    overflow: hidden;
 }
 
 .profile-summary-card .ant-card-body {
-    padding: 20px 24px;
+    padding: 22px 26px;
+}
+
+.profile-section-card .ant-card-body {
+    padding: 22px 26px;
+}
+
+.profile-side-card .ant-card-body {
+    padding: 20px 22px;
 }
 
 .profile-summary-body {
@@ -122,31 +121,22 @@
     font-weight: 600;
 }
 
-.profile-section-card {
-    width: 100%;
-    border-radius: 16px;
-    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
-    background: #fff;
-    border: 2px solid #d7d7d7;
-}
-
-.profile-section-card .ant-card-body {
-    padding: 18px 24px 24px;
-}
 
 .profile-header {
-    max-width: 1280px;
-    margin-left: 90px;
-    margin-top: 40px;
+    width: 100%;
+    max-width: 1368px;
+    margin: 40px auto 0;
+    padding: 0 24px;
     display: flex;
     flex-direction: column;
     gap: 6px;
+    box-sizing: border-box;
 }
 
 .profile-header h2 {
     font-family: "Montserrat", sans-serif;
     font-size: 28px;
-    font-weight: 600;
+    font-weight: 650;
     color: #1f2a44;
     margin: 0;
 }
@@ -154,9 +144,11 @@
 .profile-header p {
     font-family: "Montserrat", sans-serif;
     margin: 0;
-    color: #3c424f;
+    color: #596273;
     font-size: 14px;
+    line-height: 1.6;
 }
+
 
 .profile-section-header {
     display: flex;
@@ -176,30 +168,33 @@
 .profile-section-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px 24px;
-
+    column-gap: 28px;
+    row-gap: 20px;
 }
 
 .profile-section-item {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 7px;
+    min-width: 0;
 }
 
 .profile-section-label {
     font-family: "Roboto", sans-serif;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #9ca3af;
+    letter-spacing: 0.09em;
+    color: #7c8798;
 }
 
 .profile-section-value {
     font-family: "Montserrat", sans-serif;
     font-size: 13px;
+    line-height: 1.5;
     color: #1f2937;
     margin: 0;
+    overflow-wrap: anywhere;
 }
 
 .profile-side-card .ant-card-head-title {
@@ -221,39 +216,88 @@
 }
 
 .profile-review-item {
-    padding: 12px;
-    border-radius: 10px;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
+    padding: 15px;
+    border-radius: 12px;
+    background: #fbfcfd;
+    border: 1px solid #e3e8ee;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.profile-review-item:hover {
+    border-color: #c8d5e6;
+    box-shadow: 0 5px 14px rgba(48, 87, 151, 0.07);
+    transform: translateY(-1px);
+}
+
+.profile-review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.profile-review-heading {
+    min-width: 0;
 }
 
 .profile-review-title {
     margin: 0;
     font-family: "Montserrat", sans-serif;
-    font-weight: 600;
+    font-size: 13px;
+    line-height: 1.45;
+    font-weight: 650;
     color: #305797;
 }
 
 .profile-review-meta {
-    margin: 0;
-    font-size: 12px;
-    color: #6b7280;
+    margin: 4px 0 0;
+    font-size: 11px;
+    color: #7b8492;
     font-family: "Roboto", sans-serif;
 }
 
+.profile-review-score {
+    min-width: 35px;
+    height: 27px;
+    padding: 0 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff8dd;
+    color: #ca9700;
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+}
+
 .profile-review-rating {
-    margin-top: 4px;
+    margin: 0;
     font-size: 14px;
 }
 
 .profile-review-snippet {
     margin: 0;
     font-size: 13px;
+    line-height: 1.55;
     color: #374151;
     font-family: "Roboto", sans-serif;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.profile-review-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2px;
 }
 
 .profile-booking-list {
@@ -418,10 +462,11 @@
 }
 
 .profile-error-message {
-    height: 10px;
+    margin: 0;
+    font-family: "Roboto", sans-serif;
     font-size: 10px;
-    color: #ff0000 !important;
-    text-align: left;
+    line-height: 1.4;
+    color: #ff4d4f !important;
 }
 
 .profile-action-button {
@@ -447,7 +492,7 @@
     font-weight: 600;
     background-color: #992A46;
     color: #fff !important;
-    border-radius: 8px;
+    border-radius: 16px;
     border: none !important;
     height: 30px;
     padding: 0 18px;
@@ -455,15 +500,14 @@
 
 .profile-delete-button {
     font-family: "Roboto", sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    background-color: #992A46;
-    color: #fff !important;
-    border-radius: 16px;
-    border: none !important;
-    height: 30px;
-    padding: 0 18px;
-    margin-top: 12px;
+    background: #992a46 !important;
+    color: #ffffff !important;
+    border-radius: 14px;
+    height: 28px;
+    padding: 0 13px;
+    margin: 0;
 }
 
 .profile-cancel-button:hover,
@@ -472,118 +516,204 @@
     color: #fff !important;
 }
 
-.verification-status {
-    padding: 12px;
-    background-color: #f6ffed;
-    border: 1px solid #b7eb8f;
-    border-radius: 4px;
-    margin: 20px 0;
-    color: #00bf63;
-    font-weight: 500;
-    font-family: "Montserrat", sans-serif;
+
+.profile-summary-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
 }
 
-.verification-status p {
+.profile-summary-main {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-width: 0;
+}
+
+.profile-summary-avatar {
+    width: 76px;
+    height: 76px;
+    min-width: 76px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #edf2f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #ffffff;
+    box-shadow: 0 5px 16px rgba(31, 42, 68, 0.14);
+}
+
+.profile-summary-text {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.profile-summary-name-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.profile-summary-name {
     margin: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.profile-verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #effcf5;
+    border: 1px solid #a7e8c3;
+    color: #008f4c;
+    font-family: "Roboto", sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.profile-summary-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-role-badge {
+    display: inline-flex;
+    width: fit-content;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: #edf3fc;
+    color: #305797;
+    font-family: "Roboto", sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.profile-summary-location {
+    margin: 0;
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    color: #6b7280;
+    overflow-wrap: anywhere;
+}
+
+.profile-photo-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 18px;
+    margin-top: 18px;
+    border-top: 1px solid #edf0f3;
+}
+
+.profile-summary-edit-button {
+    flex-shrink: 0;
 }
 
 @media (max-width: 1200px) {
     .profile-container {
         flex-direction: column;
-        align-items: center;
-        padding-top: 50px;
     }
 
     .profile-content,
     .profile-side-column {
-        max-width: 960px;
+        width: 100%;
+        max-width: none;
     }
 }
 
 @media (max-width: 768px) {
+    .profile-header {
+        margin-top: 28px;
+        padding: 0 16px;
+    }
+
+    .profile-header h2 {
+        font-size: 24px;
+    }
+
     .profile-container {
-        padding: 16px;
-        padding-top: 96px;
+        padding: 18px 16px 0;
     }
 
     .profile-summary-body {
-        flex-direction: column;
         align-items: flex-start;
     }
 
-    .profile-card .ant-card-body,
-    .profile-side-card .ant-card-body {
-        padding: 18px;
+    .profile-summary-main {
+        align-items: flex-start;
     }
 
-    .profile-card-header h2 {
-        font-size: 20px;
+    .profile-section-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 580px) {
+    .profile-summary-body {
+        flex-direction: column;
     }
 
-    .profile-avatar {
-        width: 96px;
-        height: 96px;
-    }
-
-    .profile-avatar-placeholder {
-        font-size: 28px;
-    }
-
-    .profile-fields {
-        grid-template-columns: 1fr;
+    .profile-summary-edit-button {
+        width: 100%;
     }
 
     .profile-section-grid {
         grid-template-columns: 1fr;
     }
 
-    .profile-card-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .profile-content {
-        grid-template-columns: 1fr;
-    }
-
-    .profile-card {
-        max-width: 100%;
-    }
-
-    .profile-card-header {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-    }
-
-    .profile-card-header h2 {
-        width: 100%;
-    }
-
-    .profile-card-header button {
-        width: 100%;
-    }
-
-    .profile-fields {
-        grid-template-columns: 1fr;
+    .profile-summary-card .ant-card-body,
+    .profile-section-card .ant-card-body,
+    .profile-side-card .ant-card-body,
+    .profile-card .ant-card-body {
+        padding: 18px;
     }
 }
 
 @media (max-width: 480px) {
-
     .profile-header {
-        padding-top: 50px;
-        margin-left: 20px;
+        margin-top: 22px;
+        padding: 0 12px;
     }
 
     .profile-container {
-        padding: 12px;
-        padding-top: 20px;
+        padding: 14px 12px 0;
+        gap: 16px;
     }
 
-    .profile-avatar {
-        width: 84px;
-        height: 84px;
+    .profile-summary-main {
+        flex-direction: column;
+    }
+
+    .profile-summary-avatar {
+        width: 72px;
+        height: 72px;
+        min-width: 72px;
+    }
+
+    .profile-summary-name-row {
+        align-items: flex-start;
+    }
+
+    .profile-photo-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .profile-photo-actions .profile-action-button {
+        width: 100%;
     }
 }
