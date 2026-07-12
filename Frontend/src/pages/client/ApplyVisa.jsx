@@ -358,7 +358,7 @@ export default function ApplyVisa() {
                                         <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
                                             <div className="form-group-section">
                                                 <div className="form-group">
-                                                    <label className="passport-label">Preferred appointment date</label>
+                                                    <label className="passport-label">Preferred appointment date <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <DatePicker
                                                         value={preferredDate ? dayjs(preferredDate, 'YYYY-MM-DD') : null}
                                                         disabledDate={disableDates}
@@ -369,7 +369,7 @@ export default function ApplyVisa() {
                                                 </div>
 
                                                 <div className="form-group">
-                                                    <label className="passport-label">Preferred appointment time</label>
+                                                    <label className="passport-label">Preferred appointment time <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <TimePicker
                                                         value={preferredTime ? dayjs(preferredTime, 'h:mm A') : null}
                                                         format="h:mm A"
@@ -386,7 +386,7 @@ export default function ApplyVisa() {
                                                 </div>
 
                                                 <div className="form-group">
-                                                    <label className="passport-label">Purpose of travel</label>
+                                                    <label className="passport-label">Purpose of travel <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <Input.TextArea
                                                         className={`passport-input ${error.purpose ? 'input-error' : ''}`}
                                                         rows={3}

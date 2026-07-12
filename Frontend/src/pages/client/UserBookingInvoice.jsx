@@ -1305,22 +1305,43 @@ export default function UserBookingInvoice() {
         >
 
             {loading ? (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "80vh" }}>
-                    <Spin description="Loading Booking Details..." size="large" />
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: "75vh"
+                    }}
+                >
+                    <Spin
+                        description="Loading Booking Details..."
+                        size="large"
+                    />
                 </div>
             ) : (
-                <div className="user-invoice-container" style={{ position: "relative" }}>
+                <div
+                    className="user-invoice-container"
+                    style={{ position: "relative" }}
+                >
                     {downloading && (
-                        <div style={{
-                            position: "absolute",
-                            inset: 0,
-                            zIndex: 50,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            background: "rgba(255, 255, 255, 0.75)"
-                        }}>
-                            <Spin description="Downloading Registration Form..." size="large" />
+                        <div
+                            style={{
+                                position: "fixed",
+                                inset: 0,
+                                zIndex: 9999,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                background: "rgba(255, 255, 255, 0.82)",
+                                width: "100vw",
+                                height: "100vh"
+                            }}
+                        >
+                            <Spin
+                                description="Downloading Registration Form..."
+                                size="large"
+                            />
                         </div>
                     )}
                     <div className="user-invoice-page">

@@ -1456,7 +1456,7 @@ export default function BookingProcess() {
                                     <div className="upload-passport-traveler-fields">
                                         <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '90px 1fr 1fr' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label className='upload-passport-label'>TITLE</label>
+                                                <label className='upload-passport-label'>TITLE <span style={{ color: "#ff0000" }}>*</span></label>
                                                 <Select
                                                     style={{ height: 40 }}
                                                     size="small"
@@ -1471,7 +1471,7 @@ export default function BookingProcess() {
                                             </div>
 
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label className='upload-passport-label'>FIRST NAME</label>
+                                                <label className='upload-passport-label'>FIRST NAME <span style={{ color: "#ff0000" }}>*</span></label>
                                                 <Input
                                                     style={{ height: 40 }}
                                                     maxLength={50}
@@ -1498,7 +1498,7 @@ export default function BookingProcess() {
                                                 />
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label className='upload-passport-label'>LAST NAME</label>
+                                                <label className='upload-passport-label'>LAST NAME <span style={{ color: "#ff0000" }}>*</span></label>
                                                 <Input
                                                     style={{ height: 40 }}
                                                     maxLength={50}
@@ -1527,7 +1527,7 @@ export default function BookingProcess() {
                                         </div>
                                         <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label className='upload-passport-label'>ROOM TYPE</label>
+                                                <label className='upload-passport-label'>ROOM TYPE <span style={{ color: "#ff0000" }}>*</span></label>
                                                 {(() => {
                                                     const travelerType = travelerTypeLabels[index] || 'Adult'
                                                     const isMinorTraveler = isMinorTravelerType(travelerType)
@@ -1545,7 +1545,7 @@ export default function BookingProcess() {
                                                 })()}
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label className='upload-passport-label'>BIRTHDATE</label>
+                                                <label className='upload-passport-label'>BIRTHDATE <span style={{ color: "#ff0000" }}>*</span></label>
                                                 <DatePicker
                                                     showToday={false}
                                                     style={{ height: 40 }}

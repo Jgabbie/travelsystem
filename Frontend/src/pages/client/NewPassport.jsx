@@ -369,7 +369,7 @@ export default function NewPassport() {
                                     <div className="form-group-section">
                                         <div className="form-group">
                                             <label className="passport-label">
-                                                Select DFA location
+                                                Select DFA location <span style={{ color: "#ff0000" }}>*</span>
                                             </label>
 
                                             <Select
@@ -390,7 +390,7 @@ export default function NewPassport() {
 
                                         <div className="form-group">
                                             <label className="passport-label">
-                                                Preferred date
+                                                Preferred date <span style={{ color: "#ff0000" }}>*</span>
                                             </label>
 
                                             <DatePicker
@@ -412,7 +412,7 @@ export default function NewPassport() {
 
                                         <div className="form-group">
                                             <label className="passport-label">
-                                                Preferred time
+                                                Preferred time <span style={{ color: "#ff0000" }}>*</span>
                                             </label>
 
                                             <TimePicker

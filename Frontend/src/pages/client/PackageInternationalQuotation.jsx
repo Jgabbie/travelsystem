@@ -499,7 +499,7 @@ export default function PackageInternationalQuotation() {
 
                                             {packageCategory === 'All in Package' && (
                                                 <div className="quotation-field">
-                                                    <label htmlFor="quotation-airlines">Preferred Airlines <span style={{ color: '#e72323' }}>*</span></label>
+                                                    <label htmlFor="quotation-airlines">Preferred Airlines <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <Select
                                                         id="quotation-airlines"
                                                         disabled={packageType === 'Land Arrangement'}
@@ -529,7 +529,7 @@ export default function PackageInternationalQuotation() {
 
 
                                             <div className="quotation-field">
-                                                <label htmlFor="quotation-hotels">Preferred Hotels <span style={{ color: '#e72323' }}>*</span></label>
+                                                <label htmlFor="quotation-hotels">Preferred Hotels <span style={{ color: "#ff0000" }}>*</span></label>
                                                 <Select
                                                     id="quotation-hotels"
                                                     placeholder="Select preferred hotel"
@@ -566,7 +566,7 @@ export default function PackageInternationalQuotation() {
                                             </div>
 
                                             <div className="quotation-field">
-                                                <label htmlFor="quotation-dates">Preferred Travel Dates <span style={{ color: '#e72323' }}>*</span></label>
+                                                <label htmlFor="quotation-dates">Preferred Travel Dates <span style={{ color: "#ff0000" }}>*</span></label>
                                                 <Select
                                                     id="quotation-dates"
                                                     placeholder="Select preferred dates"
@@ -596,7 +596,7 @@ export default function PackageInternationalQuotation() {
                                             </div>
 
                                             <div className="quotation-field quotation-budget">
-                                                <label>Budget Range (per pax) <span style={{ color: '#e72323' }}>*</span></label>
+                                                <label>Budget Range (per pax) <span style={{ color: "#ff0000" }}>*</span></label>
                                                 <div className="quotation-budget-values">
                                                     <span>₱ {budgetRange[0].toLocaleString()}</span>
                                                     <span>₱ {budgetRange[1].toLocaleString()}</span>
@@ -620,7 +620,7 @@ export default function PackageInternationalQuotation() {
                                             <div className="quotation-flight-details">
                                                 <h3>Flight Details</h3>
                                                 <div className="quotation-field">
-                                                    <label htmlFor="flight-airline">Airline <span style={{ color: '#e72323' }}>*</span></label>
+                                                    <label htmlFor="flight-airline">Airline <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <Input
                                                         id="flight-airline"
                                                         placeholder="Enter airline name"
@@ -632,7 +632,7 @@ export default function PackageInternationalQuotation() {
                                                 </div>
 
                                                 <div className="quotation-field">
-                                                    <label htmlFor="flight-date">Flight Date <span style={{ color: '#e72323' }}>*</span></label>
+                                                    <label htmlFor="flight-date">Flight Date <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <DatePicker
                                                         id="flight-date"
                                                         placeholder="Select flight date"
@@ -649,7 +649,7 @@ export default function PackageInternationalQuotation() {
                                                 </div>
 
                                                 <div className="quotation-field">
-                                                    <label htmlFor="flight-time">Flight Time <span style={{ color: '#e72323' }}>*</span></label>
+                                                    <label htmlFor="flight-time">Flight Time <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <TimePicker
                                                         id="flight-time"
                                                         placeholder="Select flight time"
