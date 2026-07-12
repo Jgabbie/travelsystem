@@ -5,7 +5,7 @@ import { upload } from '../middleware/uploadFile.js';
 const router = express.Router();
 
 router.post('/upload-receipt', upload.single('file'), uploadController.uploadReceiptProof);
-router.post('/upload-booking-documents', upload.array('files', 20), uploadController.uploadBookingDocuments);
+router.post('/upload-booking-documents', upload.array('files', 40), uploadController.uploadBookingDocuments);
 router.post('/upload-package-images', upload.array('files', 3), uploadController.uploadPackageImage);
 router.post('/upload-package-video', upload.single('file'), uploadController.uploadPackageVideo);
 router.post('/upload-profile-picture', upload.single('file'), uploadController.uploadProfilePicture);

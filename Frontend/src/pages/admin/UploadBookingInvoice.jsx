@@ -206,7 +206,7 @@ export default function UploadBookingInvoice() {
             const url = URL.createObjectURL(pdfBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `Booking_${reference}_${date}.pdf`;
+            link.download = `Booking_Registration_${reference}_${date}.pdf`;
             link.click();
             URL.revokeObjectURL(url);
 
@@ -1131,13 +1131,15 @@ export default function UploadBookingInvoice() {
                                 <div className="booking-form-stepper-container">
                                     <div
                                         ref={pdfContainerRef}
+                                        className="pdf-capture pdf-generating"
                                         aria-hidden="true"
                                         style={{
-                                            position: 'absolute',
+                                            position: 'fixed',
                                             left: '-10000px',
                                             top: 0,
                                             width: '850px',
-                                            pointerEvents: 'none'
+                                            pointerEvents: 'none',
+                                            zIndex: -9999
                                         }}
                                     >
                                         <div data-booking-page>

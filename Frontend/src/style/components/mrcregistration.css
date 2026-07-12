@@ -294,7 +294,47 @@
 }
 
 
+.mrc-form-page.mrc-booking-invoice-page {
+    min-height: 0;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
 
+.mrc-booking-invoice-footer {
+    width: 100%;
+    margin-top: 24px;
+    padding-top: 8px;
+    border-top: 1px solid #bfbfbf;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    color: #555;
+    font-size: 10px;
+    font-weight: 500;
+    box-sizing: border-box;
+}
+
+.mrc-booking-invoice-footer span:last-child {
+    margin-left: auto;
+    text-align: right;
+}
+
+/* Remove the blue wave decorations while generating the registration PDF */
+.pdf-capture.pdf-generating .mrc-form-page::before,
+.pdf-capture.pdf-generating .mrc-form-page::after {
+    content: none !important;
+    display: none !important;
+    background: transparent !important;
+}
+
+/* Remove screen-only effects from the downloaded registration form */
+.pdf-capture.pdf-generating .mrc-form-page {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
 
 
 
@@ -789,5 +829,779 @@
         flex: 1 1 auto !important;
         width: auto !important;
         min-width: 0 !important;
+    }
+}
+
+
+.mrc-form-page.mrc-registration-page {
+    width: 794px;
+    max-width: 100%;
+    min-height: 0;
+    height: auto;
+    margin: 0 auto;
+    padding: 45px 53px 36px;
+    border-radius: 0;
+    background: #fff;
+    color: #000;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    line-height: 1.15;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.mrc-form-page.mrc-registration-page::before,
+.mrc-form-page.mrc-registration-page::after {
+    content: none;
+    display: none;
+}
+
+.mrc-registration-page *,
+.mrc-registration-page *::before,
+.mrc-registration-page *::after {
+    box-sizing: border-box;
+}
+
+.mrc-registration-logo-container {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.mrc-registration-logo {
+    display: inline-block;
+    width: 80px;
+    max-width: 80px;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+}
+
+.mrc-registration-header {
+    width: 100%;
+    border: 1px solid #000;
+    color: #000;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.mrc-registration-header--gold {
+    margin-bottom: 12px;
+    padding: 5px;
+    background: #ffd700;
+    text-align: center;
+}
+
+.mrc-registration-header--blue {
+    margin-top: 12px;
+    margin-bottom: 8px;
+    padding: 4px 5px;
+    background: #add8e6;
+    text-align: left;
+}
+
+.mrc-registration-header--flush-top {
+    margin-top: 0;
+}
+
+.mrc-registration-form {
+    width: 100%;
+}
+
+.mrc-registration-form .ant-form-item {
+    margin: 0;
+}
+
+.mrc-registration-info-grid {
+    display: grid;
+    width: 100%;
+    column-gap: 10px;
+    row-gap: 0;
+    margin-bottom: 12px;
+}
+
+.mrc-registration-package-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mrc-registration-lead-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.mrc-registration-lead-grid>.mrc-registration-info-field {
+    grid-column: span 6;
+}
+
+.mrc-registration-lead-grid>.mrc-registration-title-field {
+    grid-column: span 3;
+}
+
+.mrc-registration-lead-grid>.mrc-registration-name-field {
+    grid-column: span 9;
+}
+
+.mrc-registration-lead-grid>.mrc-registration-full-row {
+    grid-column: 1 / -1;
+}
+
+.mrc-registration-info-field {
+    min-width: 0;
+    padding-bottom: 6px;
+}
+
+.mrc-registration-label {
+    display: block;
+    margin-bottom: 2px;
+    color: #000;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.15;
+    text-transform: uppercase;
+}
+
+.mrc-registration-page .mrc-registration-value-input.ant-input,
+.mrc-registration-page .mrc-registration-value-input.ant-input:hover,
+.mrc-registration-page .mrc-registration-value-input.ant-input:focus {
+    width: 100%;
+    min-height: 20px;
+    height: 20px;
+    padding: 0 0 2px;
+    border: 0;
+    border-bottom: 1px solid #000;
+    border-radius: 0;
+    background: transparent;
+    color: #000;
+    font-size: 12px;
+    line-height: 17px;
+    box-shadow: none;
+    outline: none;
+}
+
+.mrc-registration-page .ant-input[readonly] {
+    cursor: default;
+}
+
+.mrc-registration-inline-error {
+    margin: -5px 0 7px;
+    color: #cf1322;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.mrc-registration-passenger-title {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.mrc-registration-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.mrc-registration-passenger-table,
+.mrc-registration-emergency-table,
+.mrc-registration-insurance-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.mrc-registration-passenger-table {
+    margin-top: 0;
+}
+
+.mrc-registration-passenger-table th,
+.mrc-registration-passenger-table td {
+    border: 1px solid #000;
+    padding: 3px 2px;
+    color: #000;
+    font-size: 10px;
+    line-height: 1.1;
+    vertical-align: middle;
+}
+
+.mrc-registration-passenger-table th {
+    height: 25px;
+    background: #add8e6;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.mrc-registration-passenger-table td {
+    height: 25px;
+    text-align: center;
+}
+
+.mrc-registration-passenger-table .mrc-col-no {
+    width: 5%;
+}
+
+.mrc-registration-passenger-table .mrc-col-title {
+    width: 8%;
+}
+
+.mrc-registration-passenger-table .mrc-col-first-name,
+.mrc-registration-passenger-table .mrc-col-last-name {
+    width: 15%;
+}
+
+.mrc-registration-passenger-table .mrc-col-room {
+    width: 10%;
+}
+
+.mrc-registration-passenger-table .mrc-col-birthday {
+    width: 14%;
+}
+
+.mrc-registration-passenger-table .mrc-col-age {
+    width: 6%;
+}
+
+.mrc-registration-passenger-table .mrc-col-passport {
+    width: 14%;
+}
+
+.mrc-registration-passenger-table .mrc-col-expiry {
+    width: 13%;
+}
+
+.mrc-registration-passenger-cell {
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.mrc-registration-row-number {
+    background: #fff;
+    font-weight: 400;
+}
+
+.mrc-registration-page .mrc-registration-passenger-input.ant-input,
+.mrc-registration-page .mrc-registration-passenger-input.ant-input:hover,
+.mrc-registration-page .mrc-registration-passenger-input.ant-input:focus {
+    width: 100%;
+    height: 23px;
+    min-height: 23px;
+    padding: 0 2px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #000;
+    font-size: 10px;
+    line-height: 23px;
+    text-align: center;
+    box-shadow: none;
+}
+
+.mrc-registration-page .mrc-registration-passenger-input--left.ant-input {
+    text-align: left;
+}
+
+.mrc-registration-two-column {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    gap: 25px;
+    align-items: start;
+}
+
+.mrc-registration-room-guide-section {
+    margin-top: 20px;
+    font-size: 10px;
+}
+
+.mrc-registration-room-guide,
+.mrc-registration-declaration {
+    min-width: 0;
+}
+
+.mrc-registration-room-guide-title {
+    color: #d32f2f;
+}
+
+.mrc-registration-room-guide p,
+.mrc-registration-declaration p {
+    margin: 0 0 3px;
+    color: #000;
+    font-size: 10px;
+    line-height: 1.15;
+    text-align: left;
+}
+
+.mrc-registration-declaration p {
+    margin-bottom: 10px;
+    text-align: justify;
+}
+
+.mrc-registration-room-note {
+    margin-top: 2px !important;
+    margin-bottom: 10px !important;
+    font-style: italic;
+}
+
+.mrc-registration-signature-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 40px;
+    width: 100%;
+    margin-top: 40px;
+}
+
+.mrc-registration-signature-row--terms {
+    margin-top: 50px;
+}
+
+.mrc-registration-signature-box {
+    width: 45%;
+    min-width: 0;
+    text-align: center;
+}
+
+.mrc-registration-page .mrc-registration-signature-input.ant-input,
+.mrc-registration-page .mrc-registration-signature-input.ant-input:hover,
+.mrc-registration-page .mrc-registration-signature-input.ant-input:focus {
+    width: 100%;
+    height: 23px;
+    min-height: 23px;
+    padding: 0 4px 4px;
+    border: 0;
+    border-bottom: 1px solid #000;
+    border-radius: 0;
+    background: transparent;
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    box-shadow: none;
+}
+
+.mrc-registration-signature-label {
+    margin-top: 4px;
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.mrc-registration-instructions {
+    margin: -4px 0 12px;
+    color: #000;
+    font-size: 10px;
+    font-style: italic;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.mrc-registration-package-summary {
+    margin-bottom: 20px;
+    color: #000;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.mrc-registration-package-summary>div {
+    margin-bottom: 6px;
+}
+
+.mrc-registration-question-block {
+    margin-bottom: 14px;
+}
+
+.mrc-registration-question-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.mrc-registration-question-copy {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+    color: #000;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.mrc-registration-note-text {
+    display: block;
+    color: #555;
+    font-size: 10px;
+    font-style: italic;
+    line-height: 1.25;
+}
+
+.mrc-registration-page .mrc-registration-yes-no-input.ant-input,
+.mrc-registration-page .mrc-registration-yes-no-input.ant-input:hover,
+.mrc-registration-page .mrc-registration-yes-no-input.ant-input:focus {
+    flex: 0 0 38px;
+    width: 38px;
+    min-width: 38px;
+    height: 27px;
+    padding: 3px;
+    border: 1px solid #000;
+    border-radius: 0;
+    background: #fff;
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 19px;
+    text-align: center;
+    box-shadow: none;
+}
+
+.mrc-registration-detail-row {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.mrc-registration-detail-row>span {
+    color: #000;
+    font-size: 10px;
+}
+
+.mrc-registration-page .mrc-registration-detail-box.ant-input,
+.mrc-registration-page .mrc-registration-detail-box.ant-input:hover,
+.mrc-registration-page .mrc-registration-detail-box.ant-input:focus {
+    width: 100%;
+    min-height: 42px !important;
+    padding: 4px;
+    resize: none;
+    border: 1px solid #000;
+    border-radius: 0;
+    background: #fff;
+    color: #000;
+    font-size: 10px;
+    line-height: 1.25;
+    box-shadow: none;
+}
+
+.mrc-registration-insurance-card {
+    margin-top: 16px;
+    padding: 12px;
+    border: 1px solid #000;
+    border-radius: 5px;
+}
+
+.mrc-registration-insurance-card h4 {
+    margin: 0 0 8px;
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.mrc-registration-insurance-card p {
+    margin: 0 0 12px;
+    color: #000;
+    font-size: 10px;
+    line-height: 1.2;
+    text-align: justify;
+}
+
+.mrc-registration-insurance-card p.mrc-registration-note-text {
+    color: #555;
+}
+
+.mrc-registration-insurance-answer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 10px;
+    color: #000;
+    font-size: 10px;
+}
+
+.mrc-registration-insurance-table {
+    margin: 0;
+}
+
+.mrc-registration-insurance-table th,
+.mrc-registration-insurance-table td {
+    border: 1px solid #000;
+    padding: 5px;
+    color: #000;
+    font-size: 10px;
+    line-height: 1.2;
+    vertical-align: middle;
+}
+
+.mrc-registration-insurance-table th {
+    width: 40%;
+    background: #fff;
+    font-weight: 700;
+    text-align: right;
+}
+
+.mrc-registration-insurance-table td {
+    font-style: italic;
+    text-align: left;
+}
+
+.mrc-registration-emergency-title {
+    margin-top: 20px;
+    margin-bottom: 0;
+}
+
+.mrc-registration-emergency-title span {
+    font-size: 10px;
+    font-style: italic;
+    font-weight: 400;
+    text-transform: none;
+}
+
+.mrc-registration-emergency-table {
+    margin-top: 0;
+}
+
+.mrc-registration-emergency-table th,
+.mrc-registration-emergency-table td {
+    border: 1px solid #000;
+    padding: 4px;
+    color: #000;
+    font-size: 10px;
+    line-height: 1.15;
+    vertical-align: middle;
+}
+
+.mrc-registration-emergency-table th {
+    width: 14%;
+    background: #fff;
+    font-weight: 700;
+    text-align: left;
+}
+
+.mrc-registration-emergency-table td {
+    width: auto;
+}
+
+.mrc-registration-emergency-table .ant-input,
+.mrc-registration-emergency-table .ant-input:hover,
+.mrc-registration-emergency-table .ant-input:focus {
+    height: 20px;
+    min-height: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #000;
+    font-size: 10px;
+    line-height: 20px;
+    box-shadow: none;
+}
+
+.mrc-registration-terms-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    align-items: start;
+    width: 100%;
+}
+
+.mrc-registration-waiver-grid {
+    margin-top: 0;
+}
+
+.mrc-registration-terms-column {
+    min-width: 0;
+}
+
+.mrc-registration-terms-column--divided {
+    padding-left: 15px;
+    border-left: 1px solid #ccc;
+}
+
+.mrc-registration-terms-text,
+.mrc-registration-red-text {
+    margin: 0 0 8px;
+    color: #000;
+    font-size: 11px;
+    line-height: 1.2;
+    text-align: justify;
+}
+
+.mrc-registration-red-text {
+    color: #d32f2f;
+    font-weight: 700;
+    font-style: italic;
+}
+
+.mrc-registration-acknowledgment {
+    margin-top: 20px;
+}
+
+.mrc-registration-page .mrc-booking-invoice-footer {
+    margin-top: 24px;
+    padding-top: 8px;
+    border-top: 1px solid #bfbfbf;
+    color: #555;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+/* Preserve the desktop registration layout during PDF capture. */
+.pdf-capture.pdf-generating .mrc-registration-page {
+    width: 794px !important;
+    max-width: 794px !important;
+    min-width: 794px !important;
+    min-height: 1123px !important;
+    padding: 45px 53px 36px !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+}
+
+.pdf-capture.pdf-generating .mrc-registration-info-grid,
+.pdf-capture.pdf-generating .mrc-registration-terms-grid,
+.pdf-capture.pdf-generating .mrc-registration-two-column {
+    display: grid !important;
+}
+
+.pdf-capture.pdf-generating .mrc-registration-package-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.pdf-capture.pdf-generating .mrc-registration-lead-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+}
+
+.pdf-capture.pdf-generating .mrc-registration-terms-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.pdf-capture.pdf-generating .mrc-registration-two-column {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr) !important;
+}
+
+.pdf-capture.pdf-generating .mrc-registration-signature-row {
+    display: flex !important;
+    flex-direction: row !important;
+}
+
+.pdf-capture.pdf-generating .mrc-registration-signature-box {
+    width: 45% !important;
+}
+
+.pdf-capture.pdf-generating .mrc-registration-table-wrap {
+    overflow: hidden !important;
+}
+
+.pdf-capture.pdf-generating .mrc-registration-passenger-table,
+.pdf-capture.pdf-generating .mrc-registration-emergency-table,
+.pdf-capture.pdf-generating .mrc-registration-insurance-table {
+    display: table !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed !important;
+}
+
+.pdf-capture.pdf-generating .mrc-registration-passenger-table thead,
+.pdf-capture.pdf-generating .mrc-registration-passenger-table tbody,
+.pdf-capture.pdf-generating .mrc-registration-emergency-table tbody,
+.pdf-capture.pdf-generating .mrc-registration-insurance-table tbody {
+    display: table-row-group !important;
+    width: auto !important;
+    min-width: 0 !important;
+}
+
+.pdf-capture.pdf-generating .mrc-registration-passenger-table thead {
+    display: table-header-group !important;
+}
+
+@media (max-width: 768px) {
+    .mrc-form-page.mrc-registration-page {
+        width: 100%;
+        max-width: 100%;
+        min-height: auto;
+        padding: 24px 20px !important;
+        overflow: visible;
+    }
+
+    .mrc-registration-package-grid,
+    .mrc-registration-terms-grid,
+    .mrc-registration-two-column {
+        grid-template-columns: 1fr;
+    }
+
+    .mrc-registration-lead-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mrc-registration-lead-grid>.mrc-registration-info-field,
+    .mrc-registration-lead-grid>.mrc-registration-title-field,
+    .mrc-registration-lead-grid>.mrc-registration-name-field,
+    .mrc-registration-lead-grid>.mrc-registration-full-row {
+        grid-column: 1;
+    }
+
+    .mrc-registration-terms-column--divided {
+        padding-top: 12px;
+        padding-left: 0;
+        border-top: 1px solid #ccc;
+        border-left: 0;
+    }
+
+    .mrc-registration-table-wrap {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .mrc-registration-passenger-table {
+        min-width: 700px;
+    }
+
+    .mrc-registration-emergency-table {
+        min-width: 620px;
+    }
+
+    .mrc-registration-detail-row {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+
+    .mrc-registration-signature-row {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .mrc-registration-signature-box {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .mrc-form-page.mrc-registration-page {
+        padding: 18px 12px !important;
+    }
+
+    .mrc-registration-logo {
+        width: 70px;
+        max-width: 70px;
+        height: auto !important;
+        max-height: none;
+    }
+
+    .mrc-registration-header {
+        font-size: 11px;
+    }
+
+    .mrc-registration-label,
+    .mrc-registration-package-summary,
+    .mrc-registration-question-copy {
+        font-size: 11px;
+    }
+
+    .mrc-registration-question-row,
+    .mrc-registration-insurance-answer-row {
+        align-items: flex-start;
     }
 }

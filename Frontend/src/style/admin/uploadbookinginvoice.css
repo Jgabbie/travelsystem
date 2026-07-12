@@ -252,6 +252,28 @@
     border-radius: 8px;
 }
 
+/* Remove the forced A4 height from visible registration pages */
+.upload-invoice-registration-page .mrc-form-page.mrc-booking-invoice-page,
+.upload-invoice-registration-page .mrc-form-page.mrc-registration-page {
+    min-height: 0 !important;
+    height: auto !important;
+}
+
+/* Do not push the footer to the bottom of an A4-height container */
+.upload-invoice-registration-page .mrc-booking-invoice-footer,
+.upload-invoice-registration-page .mrc-registration-page .mrc-booking-invoice-footer {
+    margin-top: 20px !important;
+}
+
+/* Ensure the navigation and visible page use natural height */
+.upload-invoice-registration-navigation,
+.upload-invoice-registration-page {
+    min-height: 0 !important;
+    height: auto !important;
+    align-self: start;
+}
+
+
 @media (max-width: 900px) {
     .upload-invoice-meta {
         grid-template-columns: repeat(2, minmax(0, 1fr));

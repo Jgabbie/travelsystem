@@ -118,8 +118,9 @@ export default function UserBookingInvoice() {
 
     const [packageDetails, setPackageDetails] = useState(null);
 
-    const stepsToCapture = [0, 1, 2, 3];
-    const documentsResubmissionRequired = Boolean(booking?.documentsResubmissionRequired);
+    const documentsResubmissionRequired = Boolean(
+        booking?.documentsResubmissionRequired
+    );
     const reference = booking?.reference || booking?.ref || booking?._id || "--";
     const bookingId = booking?.bookingItem ?? booking?._id ?? booking?.id ?? booking?.bookingId ?? booking?.reference ?? booking?.ref ?? null;
 
@@ -342,7 +343,8 @@ export default function UserBookingInvoice() {
 
     //register form
     const [form] = Form.useForm();
-    const pdfStepRef = useRef(null);
+    const [captureForm] = Form.useForm();
+    const pdfContainerRef = useRef(null);
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
@@ -553,85 +555,80 @@ export default function UserBookingInvoice() {
 
 
     //download booking registration pdf
+    //download booking registration pdf
     const handleFinalSubmit = async () => {
         try {
             setDownloading(true);
             setIsGeneratingPdf(true);
-            setCurrentStep(0);
 
-            const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+            if (!pdfContainerRef.current) {
+                throw new Error("PDF container not found");
+            }
 
-            const waitForRender = (ms = 2000) => new Promise((resolve) => {
-                setTimeout(resolve, ms);
+            const element = pdfContainerRef.current;
+            const pages = element.querySelectorAll("[data-booking-page]");
+
+            if (!pages.length) {
+                throw new Error("No pages were captured in the PDF");
+            }
+
+            const pdf = new jsPDF("p", "pt", "a4");
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+
+            for (let i = 0; i < pages.length; i += 1) {
+                const pageEl = pages[i];
+
+                const canvas = await html2canvas(pageEl, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: "#ffffff"
+                });
+
+                const imgData = canvas.toDataURL("image/jpeg", 1.0);
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                if (i > 0) {
+                    pdf.addPage();
+                }
+
+                pdf.addImage(
+                    imgData,
+                    "JPEG",
+                    0,
+                    0,
+                    pdfWidth,
+                    imgHeight
+                );
+            }
+
+            const date = dayjs().format("YYYY-MM-DD");
+
+            const pdfBlob = pdf.output("blob");
+            const url = URL.createObjectURL(pdfBlob);
+            const link = document.createElement("a");
+
+            link.href = url;
+            link.download = `Booking_Registration_${reference}_${date}.pdf`;
+            link.click();
+
+            URL.revokeObjectURL(url);
+
+            notification.success({
+                message: "Booking Registration PDF downloaded successfully.",
+                placement: "topRight"
             });
-
-            for (let i = 0; i < stepsToCapture.length; i += 1) {
-                const step = stepsToCapture[i];
-                setCurrentStep(step);
-                await waitForRender();
-
-                let element = pdfStepRef.current;
-
-                if (!element) {
-                    element = document.querySelector('.pdf-capture');
-                    console.warn(`Ref was null, using querySelector. Found element:`, element);
-                }
-
-                if (!element) {
-                    console.error(`PDF element not found for step ${step}`);
-                    continue;
-                }
-
-                try {
-                    const canvas = await html2canvas(element, {
-                        scale: 1.5,
-                        useCORS: true,
-                        backgroundColor: '#ffffff',
-                        allowTaint: true,
-                        logging: false,
-                        windowWidth: 900,
-                        windowHeight: 1200
-                    });
-
-                    if (canvas.width === 0 || canvas.height === 0) {
-                        console.error(`Invalid canvas dimensions for step ${step}`);
-                        continue;
-                    }
-
-                    const imgData = canvas.toDataURL('image/png');
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = pdf.internal.pageSize.getHeight();
-                    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-                    const renderHeight = Math.min(imgHeight, pdfHeight);
-
-                    pdf.setFillColor(255, 255, 255);
-                    pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
-                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, renderHeight);
-
-                    if (i < stepsToCapture.length - 1) {
-                        pdf.addPage();
-                    }
-                } catch (canvasError) {
-                    console.error(`Canvas capture error for step ${step}:`, canvasError);
-                }
-            }
-
-            const pageCount = pdf.getNumberOfPages();
-
-            if (pageCount === 0) {
-                throw new Error('No pages were captured in the PDF');
-            }
-
-            pdf.save(`Booking_${reference}.pdf`);
-            notification.success({ message: "Booking Registration PDF downloaded successfully.", placement: 'topRight' });
-
         } catch (err) {
             console.error("PDF generation error:", err);
-            notification.error({ message: "Failed to download PDF: " + (err?.message || "Unknown error"), placement: 'topRight' });
+
+            notification.error({
+                message:
+                    "Failed to download PDF: " +
+                    (err?.message || "Unknown error"),
+                placement: "topRight"
+            });
         } finally {
             setDownloading(false);
             setIsGeneratingPdf(false);
-            setCurrentStep(0);
         }
     };
 
@@ -1932,6 +1929,52 @@ export default function UserBookingInvoice() {
                             <div>
 
                                 <div className="booking-form-stepper-container">
+                                    <div
+                                        ref={pdfContainerRef}
+                                        className="pdf-capture pdf-generating"
+                                        aria-hidden="true"
+                                        style={{
+                                            position: "fixed",
+                                            left: "-10000px",
+                                            top: 0,
+                                            width: "850px",
+                                            pointerEvents: "none",
+                                            zIndex: -9999
+                                        }}
+                                    >
+                                        <div data-booking-page>
+                                            <BookingRegistrationTravelersInvoice
+                                                form={captureForm}
+                                                summaryInvoice={summaryInvoice}
+                                                totalCount={
+                                                    bookingDetails?.travelerCounts?.total || 1
+                                                }
+                                            />
+                                        </div>
+
+                                        <div data-booking-page>
+                                            <BookingRegistrationDietInvoice
+                                                form={captureForm}
+                                                summaryInvoice={summaryInvoice}
+                                            />
+                                        </div>
+
+                                        <div data-booking-page>
+                                            <BookingRegistrationTermsInvoicePart1
+                                                form={captureForm}
+                                                summaryInvoice={summaryInvoice}
+                                            />
+                                        </div>
+
+                                        <div data-booking-page>
+                                            <BookingRegistrationTermsInvoicePart2
+                                                form={captureForm}
+                                                summaryInvoice={summaryInvoice}
+                                            />
+                                        </div>
+                                    </div>
+
+
                                     <div style={{ marginBottom: 30 }}>
                                         <h2 className="user-invoice-booking-form-stepper-title">Booking Registration</h2>
                                         <p className="user-invoice-booking-form-stepper-text" >
@@ -1966,7 +2009,6 @@ export default function UserBookingInvoice() {
                                         {/* PAGES FOR PDF GENERATION */}
                                         <div
                                             className="form-content-wrapper pdf-capture"
-                                            ref={pdfStepRef}
                                             style={{
                                                 flex: 1,
                                                 position: "relative",
