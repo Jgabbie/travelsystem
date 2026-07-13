@@ -275,8 +275,6 @@ export default function AddService() {
                     imageFormData
                 );
 
-                console.log("SERVICE IMAGE UPLOAD RESULT:", uploadResult);
-
                 uploadedImageUrl = uploadResult?.urls?.[0] || "";
 
                 if (!uploadedImageUrl) {
@@ -363,7 +361,6 @@ export default function AddService() {
                 .filter(Boolean)
         };
 
-        console.log("SERVICE PAYLOAD:", payload);
 
         try {
             if (isEdit) {
@@ -371,8 +368,6 @@ export default function AddService() {
                     `/services/update-service/${serviceId}`,
                     payload
                 );
-
-                console.log("UPDATE SERVICE RESULT:", result);
 
                 notification.success({
                     message: "Visa service updated successfully.",
@@ -385,7 +380,6 @@ export default function AddService() {
                     payload
                 );
 
-                console.log("CREATE SERVICE RESULT:", result);
 
                 notification.success({
                     message: "Visa service created successfully.",

@@ -220,7 +220,7 @@ const sendReminderEmail = async ({ to, username, bookingRef, label, dueDate, amo
                 </p>
             `,
 
-            ctaText: 'View My Booking',
+            ctaText: 'Login to Account',
             ctaUrl: accountUrl,
         }),
     });
@@ -341,7 +341,7 @@ const sendPenaltyEmail = async ({
                 </p>
             `,
 
-            ctaText: 'View My Booking',
+            ctaText: 'Login to Account',
             ctaUrl: accountUrl,
         }),
     });

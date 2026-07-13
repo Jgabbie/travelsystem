@@ -610,7 +610,7 @@ const deleteBooking = async (req, res) => {
         logAction('BOOKING_ARCHIVED', req.userId, { "Booking Archived": `Booking Reference: ${booking.reference}` })
         res.status(200).json({ message: 'Booking archived' })
     } catch (error) {
-        console.log("Error archiving booking:", error)
+        console.error("Error archiving booking:", error)
         res.status(500).json({ message: 'Error archiving booking', error })
     }
 }

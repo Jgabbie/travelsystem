@@ -382,17 +382,8 @@ const uploadQuotationPDF = async (req, res) => {
                     })
                 }
 
-                // Retry once when the first SMTP request fails
                 for (let attempt = 1; attempt <= 2; attempt += 1) {
                     try {
-                        console.log(
-                            `Sending quotation email attempt ${attempt}:`,
-                            {
-                                quotationReference: quotation.reference,
-                                recipient: quotationUser.email,
-                                sender: senderEmail
-                            }
-                        )
 
                         const emailResult =
                             await transporter.sendMail(mailOptions)
@@ -418,18 +409,6 @@ const uploadQuotationPDF = async (req, res) => {
 
                         emailSent = true
                         emailErrorMessage = null
-
-                        console.log(
-                            'Quotation email sent successfully:',
-                            {
-                                quotationReference: quotation.reference,
-                                recipient: quotationUser.email,
-                                accepted: acceptedRecipients,
-                                rejected: rejectedRecipients,
-                                messageId: emailResult?.messageId,
-                                response: emailResult?.response
-                            }
-                        )
 
                         break
                     } catch (emailError) {

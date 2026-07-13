@@ -174,8 +174,6 @@ export default function QuotationBookingProcess() {
         return { adult: 1, child: 0, infant: 0 };
     })();
 
-    console.log("summary", summary)
-
     const travelersTotal = travelersCount.adult + travelersCount.child + travelersCount.infant
     const uploadTravelerCount = travelersTotal || 1
 
@@ -235,8 +233,6 @@ export default function QuotationBookingProcess() {
     const exclusions = data.exclusions || []
     const itinerary = data.itinerary || {}
     const itineraryImagesByDay = data.packageItineraryImages || {}
-
-    console.log(itineraryImagesByDay)
 
 
     //format itinerary entries

@@ -173,8 +173,6 @@ export default function AdminProfile() {
                 .map((booking) => { //get necessary details for display
                     const details = booking.bookingDetails || {}
 
-                    console.log('Booking details:', details) // Log the booking details to see what is available
-
                     const travelDate = dayjs(details.travelDate.startDate).format('MMMM D, YYYY')
                     const packageType = details.bookingType || ''
                     const date = travelDate

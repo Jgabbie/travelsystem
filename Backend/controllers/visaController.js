@@ -1632,15 +1632,6 @@ const sendVisaDeliveryDetailsEmail = async ({
             `
         });
 
-        console.log('[Visa Delivery Email] Email accepted:', {
-            to: user.email,
-            applicationNumber,
-            messageId: mailResult.messageId,
-            accepted: mailResult.accepted,
-            rejected: mailResult.rejected,
-            response: mailResult.response
-        });
-
         return {
             sent: true,
             messageId: mailResult.messageId

@@ -22,11 +22,11 @@ const getRecommendations = async (req, res) => {
             return res.status(401).json({ message: "User not authenticated" });
         }
 
-        console.log(`[Recommendations] Fetching recommendations for user: ${userId}`);
+        //console.log(`[Recommendations] Fetching recommendations for user: ${userId}`);
 
         // Call the Python AI service
         const response = await aiService.get(`/recommend/${userId}`);
-        console.log(`[Recommendations] AI response status: ${response.status}, method: ${response.data?.method || 'n/a'}, count: ${response.data?.recommendations?.length || 0}`)
+        //console.log(`[Recommendations] AI response status: ${response.status}, method: ${response.data?.method || 'n/a'}, count: ${response.data?.recommendations?.length || 0}`)
 
         // Check if there was an error from the AI service
         if (response.data.error) {
@@ -46,7 +46,7 @@ const getRecommendations = async (req, res) => {
             return res.json({ packages: [], tours: [], method: response.data.method || "none" });
         }
 
-        console.log(`[Recommendations] Retrieved ${recommendations.length} recommendations using ${response.data.method}`);
+        //console.log(`[Recommendations] Retrieved ${recommendations.length} recommendations using ${response.data.method}`);
 
         // Convert recommended id strings to ObjectId where valid
         const objectIds = recommendedIds
