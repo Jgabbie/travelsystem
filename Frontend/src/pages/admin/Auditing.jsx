@@ -76,7 +76,14 @@ export default function Auditing() {
             key: 'action',
             width: 220,
             onFilter: (value, record) => record.action?.includes(value),
-            render: (text) => <Tag color="purple">{text}</Tag>
+            render: (text) => (
+                <Tag
+                    color="purple"
+                    className="auditing-table-tag"
+                >
+                    {text}
+                </Tag>
+            )
         },
         {
             title: 'Performed By',
@@ -93,12 +100,20 @@ export default function Auditing() {
         {
             title: 'Role',
             key: 'role',
-            width: 100,
+            width: 110,
             onFilter: (value, record) => record.performedBy?.role === value,
             render: (_, record) => {
                 const role = record.performedBy?.role || "N/A";
                 const color = role === 'Admin' ? 'gold' : 'blue';
-                return <Tag color={color}>{role.toUpperCase()}</Tag>;
+
+                return (
+                    <Tag
+                        color={color}
+                        className="auditing-table-tag"
+                    >
+                        {role.toUpperCase()}
+                    </Tag>
+                );
             }
         },
         {
@@ -193,8 +208,11 @@ export default function Auditing() {
                         dataSource={filteredLogs}
                         rowKey="_id"
                         loading={loading}
-                        tableLayout="fixed"
-                        pagination={{ pageSize: 10, showSizeChanger: false }}
+                        scroll={{ x: "max-content" }}
+                        pagination={{
+                            pageSize: 10,
+                            showSizeChanger: false
+                        }}
                     />
                 </Card>
 

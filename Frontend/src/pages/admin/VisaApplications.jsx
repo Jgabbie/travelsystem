@@ -286,7 +286,15 @@ export default function VisaApplications() {
             title: "Visa Type",
             dataIndex: "serviceName",
             key: "serviceName",
-            render: (type) => <Tag color="blue">{type || "N/A"}</Tag>,
+            width: 160,
+            render: (type) => (
+                <Tag
+                    color="blue"
+                    className="visaapplications-table-tag"
+                >
+                    {type || "N/A"}
+                </Tag>
+            ),
         },
         {
             title: "Preferred Date",
@@ -315,7 +323,7 @@ export default function VisaApplications() {
                     'Documents Approved': 'green',
                     'Documents Received': 'cyan',
                     'Documents Submitted': 'purple',
-                    'Processing by Emabasyy': 'geekblue',
+                    'Processing by Emabassy': 'geekblue',
                     'Embassy Approved': 'green',
                     'Passport Released': 'green',
                 };
@@ -332,7 +340,10 @@ export default function VisaApplications() {
                 };
 
                 return (
-                    <Tag color={getStatusColor(String(currentStatus || ''))}>
+                    <Tag
+                        color={getStatusColor(String(currentStatus || ''))}
+                        className="visaapplications-table-tag visaapplications-status-tag"
+                    >
                         {currentStatus || "Unknown"}
                     </Tag>
                 );
@@ -544,13 +555,16 @@ export default function VisaApplications() {
                         dataSource={filteredData}
                         rowKey="key"
                         loading={isFetchingApplications}
-                        pagination={{ pageSize: 10, showSizeChanger: false }}
+                        scroll={{ x: "max-content" }}
+                        pagination={{
+                            pageSize: 10,
+                            showSizeChanger: false
+                        }}
                         locale={{
                             emptyText: (
                                 <Empty description="No data" />
                             ),
                         }}
-
                     />
                 </Card>
             </div>

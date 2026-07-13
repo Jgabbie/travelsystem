@@ -690,6 +690,10 @@
 }
 
 @media (max-width: 480px) {
+    .profile-page {
+        padding-top: 70px;
+    }
+
     .profile-header {
         margin-top: 22px;
         padding: 0 12px;

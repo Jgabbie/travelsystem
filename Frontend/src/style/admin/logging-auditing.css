@@ -103,6 +103,29 @@
     font-size: 12px;
 }
 
+.logging-table-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: max-content;
+    white-space: nowrap;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    flex-shrink: 0;
+}
+
+.auditing-table-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: max-content;
+    white-space: nowrap;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    flex-shrink: 0;
+}
+
+
 @media (max-width: 576px) {
 
     .logging-actions-field,
@@ -110,4 +133,36 @@
         width: 100%;
     }
 
+}
+
+@media screen and (max-width: 480px) {
+    .logging-table-tag {
+        min-width: max-content;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        overflow-wrap: normal !important;
+    }
+
+    .logging-table-card .ant-table-cell {
+        overflow-wrap: normal;
+    }
+
+    .logging-table-card .ant-table-content {
+        overflow-x: auto;
+    }
+
+    .auditing-table-tag {
+        min-width: max-content;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        overflow-wrap: normal !important;
+    }
+
+    .auditing-table-card .ant-table-cell {
+        overflow-wrap: normal;
+    }
+
+    .auditing-table-card .ant-table-content {
+        overflow-x: auto;
+    }
 }

@@ -209,6 +209,20 @@
     color: #fff !important;
 }
 
+.passportapplications-table-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    flex-shrink: 0;
+}
+
+.passportapplications-status-tag {
+    min-width: max-content;
+}
+
 @media (max-width: 576px) {
     .passportapplications-statistics {
         gap: 12px;
@@ -227,5 +241,20 @@
     .passportapplications-actions-buttons {
         width: 100%;
         flex: none !important;
+    }
+
+    .passportapplications-table-tag {
+        min-width: max-content;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        overflow-wrap: normal !important;
+    }
+
+    .passportapplications-table-card .ant-table-cell {
+        overflow-wrap: normal;
+    }
+
+    .passportapplications-table-card .ant-table-content {
+        overflow-x: auto;
     }
 }

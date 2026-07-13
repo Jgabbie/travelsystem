@@ -821,6 +821,16 @@
   margin-top: 8px;
 }
 
+.transactionmanagement-status-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+  flex-shrink: 0;
+}
+
 
 
 @media (max-width: 576px) {
@@ -845,6 +855,22 @@
     width: 100%;
     flex: none !important;
   }
+
+  .transactionmanagement-status-tag {
+    min-width: max-content;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+  }
+
+  .transaction-table-card .ant-table-cell {
+    overflow-wrap: normal;
+  }
+
+  .transaction-table-card .ant-table-content {
+    overflow-x: auto;
+  }
+
 
   .transaction-receipt-modal {
     width: calc(100vw - 16px) !important;

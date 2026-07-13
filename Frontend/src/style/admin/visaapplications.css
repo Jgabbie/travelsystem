@@ -208,6 +208,22 @@
     color: #fff !important;
 }
 
+.visaapplications-table-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    flex-shrink: 0;
+}
+
+.visaapplications-status-tag {
+    min-width: max-content;
+}
+
+
+
 @media (max-width: 576px) {
     .visa-applications-statistics {
         gap: 12px;
@@ -228,4 +244,20 @@
         width: 100%;
         flex: none !important;
     }
+
+    .visaapplications-table-tag {
+        min-width: max-content;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        overflow-wrap: normal !important;
+    }
+
+    .visaapps-table-card .ant-table-cell {
+        overflow-wrap: normal;
+    }
+
+    .visaapps-table-card .ant-table-content {
+        overflow-x: auto;
+    }
+
 }

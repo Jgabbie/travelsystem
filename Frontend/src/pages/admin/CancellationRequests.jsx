@@ -381,15 +381,24 @@ export default function CancellationRequests() {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
+            width: 120,
             render: (status) => {
-                let color = 'orange'
-                if (status === 'Approved') color = 'green'
-                else if (status === 'Disapproved') color = 'red'
+                let color = 'orange';
+
+                if (status === 'Approved') {
+                    color = 'green';
+                } else if (status === 'Disapproved') {
+                    color = 'red';
+                }
+
                 return (
-                    <Tag color={color}>
+                    <Tag
+                        color={color}
+                        className="cancellationrequests-status-tag"
+                    >
                         {status}
                     </Tag>
-                )
+                );
             }
         },
         {
@@ -578,7 +587,11 @@ export default function CancellationRequests() {
                         columns={showArchived ? archivedColumns : columns}
                         loading={loading || isFetchingRequests}
                         dataSource={filteredData}
-                        pagination={{ pageSize: 10, showSizeChanger: false }}
+                        scroll={{ x: "max-content" }}
+                        pagination={{
+                            pageSize: 10,
+                            showSizeChanger: false
+                        }}
                     />
                 </Card>
 

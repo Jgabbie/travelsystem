@@ -77,10 +77,19 @@ export default function Logging() {
             onFilter: (value, record) => record.action.includes(value),
             render: (text) => {
                 let color = 'default';
+
                 if (text.includes('LOGIN')) color = 'green';
                 if (text.includes('LOGOUT')) color = 'orange';
                 if (text.includes('FAILED')) color = 'red';
-                return <Tag color={color}>{text}</Tag>;
+
+                return (
+                    <Tag
+                        color={color}
+                        className="logging-table-tag"
+                    >
+                        {text}
+                    </Tag>
+                );
             }
         },
         {
@@ -103,7 +112,14 @@ export default function Logging() {
             render: (_, record) => {
                 const role = record.performedBy?.role || "N/A";
                 const color = role === 'Admin' ? 'gold' : 'blue';
-                return <Tag color={color}>{role.toUpperCase()}</Tag>;
+                return (
+                    <Tag
+                        color={color}
+                        className="logging-table-tag"
+                    >
+                        {role.toUpperCase()}
+                    </Tag>
+                );
             }
         },
         {
@@ -197,8 +213,11 @@ export default function Logging() {
                         dataSource={filteredLogs}
                         rowKey="_id"
                         loading={loading}
-                        tableLayout="fixed"
-                        pagination={{ pageSize: 10, showSizeChanger: false }}
+                        scroll={{ x: "max-content" }}
+                        pagination={{
+                            pageSize: 10,
+                            showSizeChanger: false
+                        }}
                     />
                 </Card>
 

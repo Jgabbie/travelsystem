@@ -449,9 +449,16 @@
     }
 }
 
+@media (max-width: 840px) {
+    .user-invoice-page {
+        padding-top: 90px;
+    }
+}
+
 @media (max-width: 768px) {
     .user-invoice-page {
         padding: 20px;
+        padding-top: 70px;
     }
 
     .user-invoice-header {
@@ -466,6 +473,7 @@
 @media (max-width: 640px) {
     .user-invoice-page {
         padding: 16px;
+        padding-top: 90px;
     }
 
     .user-invoice-meta {
@@ -484,7 +492,7 @@
 @media (max-width: 480px) {
     .user-invoice-page {
         padding: 12px;
-        padding-top: 60px;
+        padding-top: 70px;
     }
 
     .user-invoice-amount {

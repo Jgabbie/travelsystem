@@ -281,6 +281,16 @@
     color: #fff !important;
 }
 
+.cancellationrequests-status-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    flex-shrink: 0;
+}
+
 
 @media (max-width: 576px) {
     .cancellation-statistics {
@@ -300,6 +310,21 @@
     .cancel-actions-buttons {
         width: 100%;
         flex: none !important;
+    }
+
+    .cancellationrequests-status-tag {
+        min-width: max-content;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        overflow-wrap: normal !important;
+    }
+
+    .cancel-table-card .ant-table-cell {
+        overflow-wrap: normal;
+    }
+
+    .cancel-table-card .ant-table-content {
+        overflow-x: auto;
     }
 }
 

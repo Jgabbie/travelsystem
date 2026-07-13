@@ -266,7 +266,14 @@
 }
 
 
-
+.bookingmanagement-status-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  word-break: keep-all;
+  flex-shrink: 0;
+}
 
 
 
@@ -292,6 +299,16 @@
   .bookingmanagement-actions-buttons {
     width: 100%;
     flex: none !important;
+  }
+
+  .bookingmanagement-status-tag {
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    min-width: max-content;
+  }
+
+  .bookingmanagement-table-card .ant-table-cell {
+    overflow-wrap: normal;
   }
 
 }

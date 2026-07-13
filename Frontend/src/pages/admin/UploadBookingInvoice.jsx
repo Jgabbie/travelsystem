@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Col, ConfigProvider, Divider, Row, Space, Spin, Form, Tag, Typography, Steps, notification } from "antd";
-import { ArrowLeftOutlined, ArrowRightOutlined } from "@ant-design/icons";
-import { Document, Image, Page, PDFViewer, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { ArrowLeftOutlined, ArrowRightOutlined, DownloadOutlined } from "@ant-design/icons";
+import { Document, Image, Page, PDFViewer, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -91,6 +91,8 @@ export default function UploadBookingInvoice() {
     const [booking, setBooking] = useState(location.state?.booking || null);
     const [loading, setLoading] = useState(false);
     const [downloading, setDownloading] = useState(false);
+    const [isDownloadingInvoice, setIsDownloadingInvoice] = useState(false);
+
     const bookingDetails = booking?.bookingDetails || {};
     const [invoiceNumber, setInvoiceNumber] = useState("");
     const [transactions, setTransactions] = useState([]);
@@ -715,6 +717,48 @@ export default function UploadBookingInvoice() {
         </Document>
     );
 
+    const handleDownloadInvoice = async () => {
+        try {
+            setIsDownloadingInvoice(true);
+
+            const invoiceBlob = await pdf(<MyDocument />).toBlob();
+            const invoiceUrl = URL.createObjectURL(invoiceBlob);
+
+            const downloadLink = document.createElement("a");
+
+            const safeReference = String(
+                reference || invoiceNumber || "booking"
+            ).replace(/[^a-zA-Z0-9_-]/g, "-");
+
+            downloadLink.href = invoiceUrl;
+            downloadLink.download =
+                `Booking_Invoice_${safeReference}_${dayjs().format("YYYY-MM-DD")}.pdf`;
+
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            window.setTimeout(() => {
+                URL.revokeObjectURL(invoiceUrl);
+            }, 1000);
+
+            notification.success({
+                message: "Booking invoice downloaded successfully.",
+                placement: "topRight"
+            });
+        } catch (error) {
+            console.error("Invoice download error:", error);
+
+            notification.error({
+                message: "Failed to download booking invoice.",
+                description: error?.message || "Please try again.",
+                placement: "topRight"
+            });
+        } finally {
+            setIsDownloadingInvoice(false);
+        }
+    };
+
     const travelersWithDocs = bookingDetails?.travelers?.length
         ? bookingDetails.travelers
         : booking?.travelers || []
@@ -897,6 +941,25 @@ export default function UploadBookingInvoice() {
                             <Row gutter={[24, 24]} style={{ marginTop: 24, marginBottom: 24 }}>
                                 <Col xs={24} lg={16}>
                                     <div className="display-invoice-wrapper" style={{ marginBottom: 0 }}>
+
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                justifyContent: "flex-end",
+                                                marginBottom: 12
+                                            }}
+                                        >
+                                            <Button
+                                                type="primary"
+                                                icon={<DownloadOutlined />}
+                                                className="upload-invoice-form-button"
+                                                onClick={handleDownloadInvoice}
+                                                loading={isDownloadingInvoice}
+                                                disabled={isDownloadingInvoice}
+                                            >
+                                                Download Invoice
+                                            </Button>
+                                        </div>
 
                                         <div className="pdf-viewer-wrapper">
                                             <PDFViewer style={{ width: "100%", height: 727 }}>

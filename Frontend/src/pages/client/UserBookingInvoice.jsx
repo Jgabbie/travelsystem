@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Col, ConfigProvider, Radio, Row, Space, Tag, Typography, notification, Steps, Form, Upload, Spin, Modal } from "antd";
-import { ArrowLeftOutlined, ArrowRightOutlined, UploadOutlined, CheckCircleOutlined } from "@ant-design/icons";
-import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from "@react-pdf/renderer";
+import { ArrowLeftOutlined, ArrowRightOutlined, UploadOutlined, CheckCircleOutlined, DownloadOutlined } from "@ant-design/icons";
+import { Page, Text, View, Document, StyleSheet, PDFViewer, Image, pdf } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -114,6 +114,7 @@ export default function UserBookingInvoice() {
 
     const [loading, setLoading] = useState(true);
     const [downloading, setDownloading] = useState(false);
+    const [invoiceDownloading, setInvoiceDownloading] = useState(false);
     const [submittingTravelerIndex, setSubmittingTravelerIndex] = useState(null);
 
     const [packageDetails, setPackageDetails] = useState(null);
@@ -1294,6 +1295,41 @@ export default function UserBookingInvoice() {
     });
 
 
+    const handleDownloadBookingInvoice = async () => {
+        try {
+            setInvoiceDownloading(true);
+
+            const invoiceBlob = await pdf(<MyDocument />).toBlob();
+            const invoiceUrl = URL.createObjectURL(invoiceBlob);
+            const link = document.createElement("a");
+            const date = dayjs().format("YYYY-MM-DD");
+
+            link.href = invoiceUrl;
+            link.download = `Booking_Invoice_${reference}_${date}.pdf`;
+
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            URL.revokeObjectURL(invoiceUrl);
+
+            notification.success({
+                message: "Booking invoice downloaded successfully.",
+                placement: "topRight"
+            });
+        } catch (error) {
+            console.error("Booking invoice download error:", error);
+
+            notification.error({
+                message: "Failed to download the booking invoice.",
+                placement: "topRight"
+            });
+        } finally {
+            setInvoiceDownloading(false);
+        }
+    };
+
+
 
     return (
         <ConfigProvider
@@ -1493,7 +1529,24 @@ export default function UserBookingInvoice() {
                                     <div className="display-invoice-wrapper">
 
                                         <div className="pdf-viewer-wrapper">
-                                            <div></div>
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    justifyContent: "flex-end",
+                                                    marginBottom: 12
+                                                }}
+                                            >
+                                                <Button
+                                                    type="primary"
+                                                    className="user-invoice-form-button"
+                                                    icon={<DownloadOutlined />}
+                                                    onClick={handleDownloadBookingInvoice}
+                                                    loading={invoiceDownloading}
+                                                >
+                                                    Download Invoice
+                                                </Button>
+                                            </div>
+
                                             <PDFViewer style={{ width: "100%", height: 727 }}>
                                                 <MyDocument />
                                             </PDFViewer>

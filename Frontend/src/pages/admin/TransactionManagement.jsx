@@ -507,12 +507,16 @@ export default function TransactionManagement() {
     {
       title: "Status",
       dataIndex: "status",
+      width: 110,
       render: s => (
         <Tag
+          className="transactionmanagement-status-tag"
           color={
-            s === "Successful" ? "green" :
-              s === "Pending" ? "orange" :
-                "red"
+            s === "Successful"
+              ? "green"
+              : s === "Pending"
+                ? "orange"
+                : "red"
           }
         >
           {s}
@@ -796,7 +800,11 @@ export default function TransactionManagement() {
                 columns={showArchived ? archivedColumns : columns}
                 dataSource={filteredData}
                 loading={loading}
-                pagination={{ pageSize: 10, showSizeChanger: false }}
+                scroll={{ x: "max-content" }}
+                pagination={{
+                  pageSize: 10,
+                  showSizeChanger: false
+                }}
               />
             </Form>
           </Card>

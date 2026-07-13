@@ -431,7 +431,14 @@ export default function BookingManagement() {
             displayStatus === "Cancelled" ? "red" :
               displayStatus === "Not Paid" ? "pink" :
                 "purple";
-        return <Tag color={color}>{displayStatus}</Tag>;
+        return (
+          <Tag
+            color={color}
+            className="bookingmanagement-status-tag"
+          >
+            {displayStatus}
+          </Tag>
+        );;
       }
     },
     {
@@ -648,6 +655,7 @@ export default function BookingManagement() {
             columns={showArchived ? archivedColumns : columns}
             dataSource={filteredData}
             loading={loading}
+            scroll={{ x: "max-content" }}
             pagination={{ pageSize: 10, showSizeChanger: false }}
           />
         </Card>

@@ -291,8 +291,14 @@ export default function PassportApplications() {
             title: "Passport Type",
             dataIndex: "applicationType",
             key: "applicationType",
+            width: 130,
             render: (type) => (
-                <Tag color="blue">{type || "N/A"}</Tag>
+                <Tag
+                    color="blue"
+                    className="passportapplications-table-tag"
+                >
+                    {type || "N/A"}
+                </Tag>
             ),
         },
         {
@@ -343,7 +349,10 @@ export default function PassportApplications() {
                 };
 
                 return (
-                    <Tag color={getStatusColor(String(status || ''))}>
+                    <Tag
+                        color={getStatusColor(String(status || ''))}
+                        className="passportapplications-table-tag passportapplications-status-tag"
+                    >
                         {status || "Unknown"}
                     </Tag>
                 );
@@ -530,7 +539,11 @@ export default function PassportApplications() {
                         dataSource={filteredData}
                         rowKey="key"
                         loading={isFetchingApplications}
-                        pagination={{ pageSize: 10, showSizeChanger: false }}
+                        scroll={{ x: "max-content" }}
+                        pagination={{
+                            pageSize: 10,
+                            showSizeChanger: false
+                        }}
                         locale={{
                             emptyText: (
                                 <Empty description="No data" />

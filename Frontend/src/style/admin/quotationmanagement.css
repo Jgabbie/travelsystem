@@ -215,6 +215,16 @@
     color: #fff !important;
 }
 
+.quotationmanagement-status-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    flex-shrink: 0;
+}
+
 @media (max-width: 576px) {
     .quotation-statistics {
         gap: 12px;
@@ -233,5 +243,21 @@
     .quotation-management-actions-buttons {
         width: 100%;
         flex: none !important;
+    }
+
+
+    .quotationmanagement-status-tag {
+        min-width: max-content;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        overflow-wrap: normal !important;
+    }
+
+    .quotation-management-table-card .ant-table-cell {
+        overflow-wrap: normal;
+    }
+
+    .quotation-management-table-card .ant-table-content {
+        overflow-x: auto;
     }
 }

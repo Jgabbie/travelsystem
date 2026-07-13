@@ -346,15 +346,27 @@ export default function QuotationManagement() {
         {
             title: "Status",
             dataIndex: "status",
+            width: 150,
             render: (status) => {
                 const color =
-                    status === "Booked" ? "green" :
-                        status === "Pending" ? "orange" :
-                            status === "Under Review" ? "blue" :
-                                status === "Revision Requested" ? "purple" :
-                                    "red";
+                    status === "Booked"
+                        ? "green"
+                        : status === "Pending"
+                            ? "orange"
+                            : status === "Under Review"
+                                ? "blue"
+                                : status === "Revision Requested"
+                                    ? "purple"
+                                    : "red";
 
-                return <Tag color={color}>{status}</Tag>;
+                return (
+                    <Tag
+                        color={color}
+                        className="quotationmanagement-status-tag"
+                    >
+                        {status}
+                    </Tag>
+                );
             }
         },
         {
@@ -586,8 +598,12 @@ export default function QuotationManagement() {
                             columns={showArchived ? archivedColumns : columns}
                             dataSource={filteredData}
                             loading={loading}
-                            pagination={{ pageSize: 10, showSizeChanger: false }}
-                            rowClassName={"editable-row"}
+                            scroll={{ x: "max-content" }}
+                            pagination={{
+                                pageSize: 10,
+                                showSizeChanger: false
+                            }}
+                            rowClassName="editable-row"
                         />
                     </Form>
                 </Card>

@@ -278,13 +278,34 @@ export default function UserManagement() {
     {
       title: "Role",
       dataIndex: "role",
-      editable: true,
-      render: role => <Tag color={role === "Admin" ? "purple" : role === "Employee" ? "blue" : "volcano"}>{role}</Tag>
+      width: 110,
+      render: role => (
+        <Tag
+          className="usermanagement-table-tag"
+          color={
+            role === "Admin"
+              ? "purple"
+              : role === "Employee"
+                ? "blue"
+                : "volcano"
+          }
+        >
+          {role}
+        </Tag>
+      )
     },
     {
       title: "Status",
       dataIndex: "status",
-      render: status => <Tag color={status === "Verified" ? "green" : "orange"}>{status}</Tag>
+      width: 110,
+      render: status => (
+        <Tag
+          className="usermanagement-table-tag"
+          color={status === "Verified" ? "green" : "orange"}
+        >
+          {status}
+        </Tag>
+      )
     },
     {
       title: "Actions",
@@ -477,11 +498,15 @@ export default function UserManagement() {
             <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)}>
               <Tabs.TabPane tab="Customers" key="customers">
                 <Table
-                  className='usermanagement-table'
+                  className="usermanagement-table"
                   loading={loading}
                   columns={showArchived ? archivedColumns : columns}
-                  dataSource={customers}
-                  pagination={{ pageSize: 10, showSizeChanger: false }}
+                  dataSource={staff}
+                  scroll={{ x: "max-content" }}
+                  pagination={{
+                    pageSize: 10,
+                    showSizeChanger: false
+                  }}
                 />
               </Tabs.TabPane>
 
