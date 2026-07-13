@@ -377,7 +377,7 @@ const uploadQuotationPDF = async (req, res) => {
                         request through your account.
                     </p>
                 `,
-                        ctaText: 'View Quotation',
+                        ctaText: 'Login to Account',
                         ctaUrl: quotationPageUrl
                     })
                 }

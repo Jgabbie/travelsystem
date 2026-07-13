@@ -161,6 +161,16 @@ export default function QuotationFormIntineraries({
                 <div className="mrc-quotation-note">
                     NOTE: ALL RATES &amp; AVAILABILITY ARE STILL SUBJECT TO CHANGE WITHOUT PRIOR NOTICE.
                 </div>
+
+                <div className="mrc-quotation-footer">
+                    <span className="mrc-quotation-footer-company">
+                        M&amp;RC Travel and Tours
+                    </span>
+
+                    <span className="mrc-quotation-footer-page">
+                        Page 3 of 4
+                    </span>
+                </div>
             </div>
 
         </div>

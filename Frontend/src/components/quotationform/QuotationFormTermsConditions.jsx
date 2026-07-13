@@ -32,6 +32,16 @@ export default function QuotationFormTermsConditions({ quotationData }) {
                         <p>Travel coordinator.</p>
                     </div>
                 </div>
+
+                <div className="mrc-quotation-footer">
+                    <span className="mrc-quotation-footer-company">
+                        M&amp;RC Travel and Tours
+                    </span>
+
+                    <span className="mrc-quotation-footer-page">
+                        Page 4 of 4
+                    </span>
+                </div>
             </div>
         </div>
     );

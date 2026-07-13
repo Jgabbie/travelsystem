@@ -179,6 +179,16 @@ export default function QuotationFormInEx({
                         <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.exclusions}</div>
                     ) : null}
                 </div>
+
+                <div className="mrc-quotation-footer">
+                    <span className="mrc-quotation-footer-company">
+                        M&amp;RC Travel and Tours
+                    </span>
+
+                    <span className="mrc-quotation-footer-page">
+                        Page 2 of 4
+                    </span>
+                </div>
             </div>
 
         </div >

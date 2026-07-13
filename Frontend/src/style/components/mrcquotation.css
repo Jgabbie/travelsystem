@@ -1,18 +1,78 @@
 .pdf-content {
     width: 794px;
-    background: white;
+    background: #ffffff;
 }
 
 .pdf-content .mrc-overlay-wrapper {
-    margin-top: 0;
+    width: 794px;
+    margin: 0;
     padding: 0;
 }
 
-.pdf-content .mrc-form-page {
+/* Keep every generated quotation page at A4 height */
+.pdf-content .mrc-form-page.mrc-quotation-page {
+    position: relative;
+    width: 794px;
+    height: 1123px;
+    min-height: 1123px;
+    max-height: 1123px;
+    padding: 12px 18px 65px;
+    margin: 0;
+    box-sizing: border-box;
+    overflow: hidden;
     box-shadow: none;
     border-radius: 0;
-    min-height: auto;
-    padding: 12px 18px 24px;
+}
+
+/* Normal quotation preview */
+.mrc-form-page.mrc-quotation-page {
+    position: relative;
+    box-sizing: border-box;
+    padding-bottom: 65px !important;
+}
+
+/* Footer */
+.mrc-quotation-footer {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: 18px;
+    height: 28px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-top: 7px;
+    margin: 0;
+    border-top: 1px solid #d9d9d9;
+    box-sizing: border-box;
+    font-family: "Roboto", sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+    color: #666666;
+    background: #ffffff;
+    z-index: 10;
+}
+
+.mrc-quotation-footer-company {
+    display: block;
+    text-align: left;
+}
+
+.mrc-quotation-footer-page {
+    display: block;
+    margin-left: auto;
+    text-align: right;
+}
+
+/* Specific positioning during PDF capture */
+.pdf-content .mrc-quotation-footer {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: 18px;
+    width: auto;
+    transform: none;
 }
 
 .pdf-content .mrc-quotation-section:first-child {
@@ -259,15 +319,6 @@
     color: #444;
 }
 
-.mrc-quotation-footer {
-    margin-top: 18px;
-    display: grid;
-    gap: 4px;
-    font-size: 10px;
-    color: #4a4a4a;
-    text-align: center;
-}
-
 .mrc-quotation-section {
     margin-bottom: 14px;
     color: #222;
@@ -399,6 +450,168 @@
 .quotationformdetails-button:hover {
     background-color: #244575 !important;
     color: #fff !important;
+}
+
+/* Quotation page footer */
+.mrc-quotation-page {
+    position: relative;
+    padding-bottom: 55px !important;
+    box-sizing: border-box;
+}
+
+.mrc-quotation-footer {
+    position: absolute;
+    left: 35px;
+    right: 35px;
+    bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px solid #d9d9d9;
+    font-family: "Roboto", sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: #666666;
+}
+
+.mrc-quotation-footer-company {
+    text-align: left;
+}
+
+.mrc-quotation-footer-page {
+    text-align: right;
+}
+
+
+/* =====================================================
+   QUOTATION PDF PAGE AND FOOTER — KEEP AT END OF FILE
+   ===================================================== */
+
+/* Normal preview page */
+.mrc-form-page.mrc-quotation-page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 794px;
+    min-height: 1123px;
+    box-sizing: border-box;
+    padding-bottom: 18px !important;
+    background: #ffffff;
+}
+
+/* PDF-generated page */
+.pdf-content {
+    width: 794px !important;
+    min-width: 794px !important;
+    max-width: 794px !important;
+    background: #ffffff;
+}
+
+.pdf-content .mrc-overlay-wrapper {
+    width: 794px !important;
+    min-width: 794px !important;
+    max-width: 794px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.pdf-content .mrc-form-page.mrc-quotation-page {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+
+    width: 794px !important;
+    min-width: 794px !important;
+    max-width: 794px !important;
+
+    height: 1123px !important;
+    min-height: 1123px !important;
+    max-height: 1123px !important;
+
+    margin: 0 !important;
+    padding: 12px 18px 18px !important;
+
+    box-sizing: border-box !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+
+    /*
+     * Do not use overflow: hidden here.
+     * It can clip the footer during html2canvas capture.
+     */
+    overflow: visible !important;
+}
+
+/* Footer uses normal flex flow instead of absolute positioning */
+.mrc-quotation-footer {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+
+    width: 100% !important;
+    min-height: 28px;
+    flex: 0 0 auto;
+
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: auto !important;
+    padding-top: 8px;
+
+    border-top: 1px solid #d9d9d9;
+    box-sizing: border-box;
+
+    font-family: "Roboto", sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: #666666;
+    background: #ffffff;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 10;
+}
+
+.mrc-quotation-footer-company {
+    display: block;
+    flex: 1;
+    text-align: left;
+    color: #666666;
+}
+
+.mrc-quotation-footer-page {
+    display: block;
+    flex: 1;
+    text-align: right;
+    color: #666666;
+}
+
+
+/* Mobile preview only — does not affect PDF capture */
+@media (max-width: 480px) {
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-form-page.mrc-quotation-page {
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 700px !important;
+        padding-bottom: 14px !important;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-footer {
+        width: 100% !important;
+        margin-top: 24px !important;
+        padding-top: 8px;
+    }
+}
+
+@media print {
+    .mrc-quotation-footer {
+        position: absolute;
+        bottom: 15px;
+    }
 }
 
 @media (max-width: 1200px) {
