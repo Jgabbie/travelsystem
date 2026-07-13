@@ -1104,6 +1104,12 @@
 }
 
 @media (max-width: 840px) {
+    .bookingprocess-container {
+        margin-top: 80px;
+        padding: 24px;
+    }
+
+
     .pdf-capture {
         width: 100%;
         min-height: 0;
@@ -1155,6 +1161,7 @@
 
 @media (max-width: 768px) {
     .bookingprocess-container {
+        margin-top: 80px;
         padding: 24px;
     }
 
@@ -1245,6 +1252,7 @@
 
 @media (max-width: 640px) {
     .bookingprocess-container {
+        margin-top: 80px;
         padding: 16px;
     }
 
@@ -1273,6 +1281,10 @@
 }
 
 @media (max-width: 540px) {
+    .bookingprocess-container {
+        margin-top: 80px;
+    }
+
     .booking-section .booking-summary-image {
         max-height: 180px;
     }
@@ -1290,7 +1302,7 @@
 
 @media (max-width: 480px) {
     .bookingprocess-container {
-        margin-top: 60px;
+        margin-top: 80px;
         padding: 10px;
     }
 

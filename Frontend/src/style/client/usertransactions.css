@@ -437,7 +437,7 @@
 
 @media (max-width: 480px) {
     .user-transactions-container {
-        margin-top: 20px;
+        margin-top: 40px;
     }
 
     .user-transactions-actions-field,

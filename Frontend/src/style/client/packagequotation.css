@@ -688,7 +688,167 @@
 
 /* Responsive Media Queries */
 @media (max-width: 900px) {
+    .quotation-container {
+        padding: 30px 24px;
+    }
+
+    .quotation-section {
+        width: 100%;
+        padding: 24px;
+        box-sizing: border-box;
+    }
+
+    /*
+     * Stack the booking selection and required-details
+     * sections so neither side becomes compressed.
+     */
+    .quotation-top-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 32px;
+        margin-top: 32px;
+    }
+
+    .quotation-left,
+    .quotation-right,
+    .package-type-selector {
+        width: 100%;
+        min-width: 0;
+    }
+
+    /*
+     * Arrangement and booking type cards
+     */
+    .selection-cards {
+        width: 100%;
+        height: auto;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .selection-card {
+        width: 100%;
+        min-width: 0;
+        min-height: 145px;
+        box-sizing: border-box;
+    }
+
+    /*
+     * Passenger counters
+     */
+    .traveler-counters {
+        width: 100%;
+        padding: 14px;
+        box-sizing: border-box;
+    }
+
+    .traveler-counter-row {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .traveler-counter-controls {
+        flex-shrink: 0;
+    }
+
+    .traveler-counter-btn {
+        width: 32px !important;
+        min-width: 32px !important;
+        height: 32px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /*
+     * Required quotation fields
+     */
+    .quotation-grid {
+        width: 100%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .quotation-field {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .quotation-input,
+    .quotation-field .ant-input,
+    .quotation-field .ant-select,
+    .quotation-field .ant-picker,
+    .quotation-field .ant-input-number {
+        width: 100% !important;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    /*
+     * Flight Details
+     */
+    .quotation-flight-details {
+        width: 100%;
+        min-width: 0;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 18px;
+        row-gap: 14px;
+        margin-top: 24px;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+    }
+
+    .quotation-flight-details h3 {
+        grid-column: 1 / -1;
+        width: 100%;
+        margin: 0 0 4px;
+    }
+
+    .quotation-flight-details .quotation-field {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .quotation-flight-details .quotation-field:nth-of-type(3) {
+        grid-column: 1 / -1;
+    }
+
+    .quotation-flight-details .ant-input,
+    .quotation-flight-details .ant-picker {
+        width: 100% !important;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .flightdetails-right {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-width: 0;
+        flex: none;
+    }
+
+    .quotation-flight-note {
+        width: 100%;
+        margin: 0;
+        padding: 12px;
+        font-size: 11px;
+        line-height: 1.5;
+        text-align: left;
+        overflow-wrap: anywhere;
+        box-sizing: border-box;
+    }
+
+    /*
+     * Fixed itinerary
+     */
     .quotation-fixed-list {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .quotation-itinerary-grid {
         grid-template-columns: minmax(0, 1fr);
     }
 }
@@ -696,6 +856,10 @@
 
 
 @media (max-width: 840px) {
+    .quotation-container {
+        padding-top: 90px;
+    }
+
     .quotation-section {
         padding: 20px;
     }
@@ -703,12 +867,14 @@
 
 @media (max-width: 768px) {
 
+
+
     .quotation-fixed-day {
         width: 100%;
     }
 
     .quotation-container {
-        padding-top: 40px;
+        padding-top: 80px;
         padding-left: 20px;
         padding-right: 20px;
     }
@@ -741,6 +907,10 @@
 }
 
 @media (max-width: 600px) {
+
+    .quotation-container {
+        padding-top: 80px;
+    }
 
     .quotation-header {
         max-width: 600px;
@@ -784,18 +954,178 @@
 
     .quotation-container {
         margin-top: 40px;
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .quotation-section {
+        width: 100%;
+        padding: 14px;
+        box-sizing: border-box;
     }
 
     .quotation-header {
-        max-width: 400px;
-        margin-bottom: 20px;
+        max-width: 100%;
         width: 100%;
+        margin-bottom: 20px;
+    }
+
+    /*
+     * Prevent the left and right quotation sections
+     * from being compressed beside each other.
+     */
+    .quotation-top-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 28px;
+        margin-top: 28px;
+    }
+
+    .quotation-left,
+    .quotation-right,
+    .package-type-selector {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .selection-cards {
+        width: 100%;
+        height: auto;
+        gap: 10px;
+    }
+
+    .selection-card {
+        width: 100%;
+        min-width: 0;
+        padding: 14px;
+        box-sizing: border-box;
+    }
+
+    /* Required details fields */
+    .quotation-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .quotation-budget {
+        grid-column: 1;
     }
 
     .quotation-field {
         width: 100%;
+        min-width: 0;
     }
 
+    .quotation-input,
+    .quotation-field .ant-input,
+    .quotation-field .ant-select,
+    .quotation-field .ant-picker,
+    .quotation-field .ant-input-number {
+        width: 100% !important;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    /*
+     * Passenger counters
+     */
+    .traveler-counters {
+        width: 100%;
+        margin-top: 12px;
+        padding: 10px;
+        gap: 8px;
+        box-sizing: border-box;
+    }
+
+    .traveler-counter-row {
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 10px;
+        box-sizing: border-box;
+    }
+
+    .traveler-counter-label {
+        min-width: 0;
+        font-size: 13px;
+    }
+
+    .traveler-counter-controls {
+        margin-left: 0;
+        gap: 7px;
+        flex-shrink: 0;
+    }
+
+    .traveler-counter-btn {
+        width: 30px !important;
+        min-width: 30px !important;
+        height: 30px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .traveler-counter-value {
+        min-width: 22px;
+        font-size: 13px;
+    }
+
+    /*
+     * Flight Details
+     */
+    .quotation-flight-details {
+        width: 100%;
+        min-width: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        column-gap: 0;
+        row-gap: 12px;
+        margin-top: 22px;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+    }
+
+    .quotation-flight-details h3 {
+        grid-column: 1 / -1;
+        width: 100%;
+        margin: 0 0 4px;
+        font-size: 20px;
+    }
+
+    .quotation-flight-details .quotation-field {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .quotation-flight-details .ant-input,
+    .quotation-flight-details .ant-picker {
+        width: 100% !important;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .flightdetails-right {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-width: 0;
+        flex: none;
+    }
+
+    .quotation-flight-note {
+        width: 100%;
+        margin: 0;
+        padding: 10px;
+        font-size: 11px;
+        line-height: 1.5;
+        text-align: left;
+        overflow-wrap: anywhere;
+        box-sizing: border-box;
+    }
+
+    /* Fixed itinerary */
     .quotation-fixed-list {
         gap: 12px;
     }

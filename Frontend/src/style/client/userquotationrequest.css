@@ -473,8 +473,114 @@
         margin-top: 10px;
     }
 
+    .userquotationrequest-page {
+        width: 100%;
+        padding: 16px 12px;
+        box-sizing: border-box;
+    }
+
+    .quotation-card {
+        width: 100%;
+        padding: 16px 12px;
+        margin-bottom: 24px;
+        box-sizing: border-box;
+    }
+
     .quotation-title {
         font-size: 24px;
+    }
+
+    /* Quotation Revision History */
+    .history-grid-container {
+        width: 100%;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+        padding: 12px;
+        margin-top: 20px;
+        margin-bottom: 24px;
+        box-sizing: border-box;
+    }
+
+    .custom-history-card {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .custom-history-card-heading {
+        font-size: 18px;
+        line-height: 1.35;
+        margin-top: 0;
+        margin-bottom: 14px;
+        overflow-wrap: anywhere;
+    }
+
+    .history-list {
+        width: 100%;
+        gap: 12px;
+    }
+
+    .history-item {
+        width: 100%;
+        min-width: 0;
+        padding: 12px;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    /*
+     * Put the version and uploaded date on separate lines
+     * to prevent them from being compressed.
+     */
+    .history-header {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 5px;
+        margin-bottom: 8px;
+    }
+
+    .history-header strong {
+        display: block;
+        width: 100%;
+        font-size: 14px;
+        color: #305797;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .history-date {
+        display: block;
+        width: 100%;
+        font-size: 11px;
+        line-height: 1.4;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .history-role {
+        max-width: 100%;
+        font-size: 11px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .history-uploader,
+    .history-comment {
+        width: 100%;
+        font-size: 13px;
+        line-height: 1.5;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .history-link {
+        display: block;
+        width: 100%;
+        font-size: 13px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
     }
 
     .buttons-container-userquotationrequest {

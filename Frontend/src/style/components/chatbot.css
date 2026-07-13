@@ -89,7 +89,7 @@
 
     @media (max-width: 480px) {
         .ant-modal.chatbot-modal {
-            margin-top: 280px !important;
+            margin-top: 80px !important;
             padding-left: 25px !important;
         }
 
