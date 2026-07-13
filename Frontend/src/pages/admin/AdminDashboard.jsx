@@ -1,4 +1,5 @@
 import { Card, Row, Col, notification } from "antd";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { DollarCircleOutlined, ShoppingCartOutlined, UserOutlined, AppstoreOutlined } from "@ant-design/icons";
 import { BarChart } from '@mui/x-charts/BarChart';
@@ -8,6 +9,44 @@ import apiFetch from "../../config/fetchConfig";
 import '../../style/admin/admindashboard.css';
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isEmployeeDashboard = location.pathname.startsWith("/employee");
+
+  const navigateToManagementPage = (route) => {
+    const routePrefix = isEmployeeDashboard ? "/employee" : "";
+
+    navigate(`${routePrefix}/${route}`);
+  };
+
+  const getStatCardNavigationProps = (route, isAvailable = true) => {
+    if (!isAvailable) {
+      return {};
+    }
+
+    const openPage = () => {
+      navigateToManagementPage(route);
+    };
+
+    return {
+      hoverable: true,
+      role: "button",
+      tabIndex: 0,
+      onClick: openPage,
+      onKeyDown: (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openPage();
+        }
+      },
+      style: {
+        cursor: "pointer"
+      }
+    };
+  };
+
+
   const [stats, setStats] = useState({
     totalTransactions: 0,
     totalBookings: 0,
@@ -397,7 +436,8 @@ export default function AdminDashboard() {
       <div className="dashboard-section">
         <Row className="dashboard-stats-row" gutter={[16, 16]}>
           <Col xs={24} sm={12} md={12} lg={6}>
-            <Card className="dash-card">
+            <Card
+              className="dash-card" {...getStatCardNavigationProps("transactions")}>
               <div className="dash-card-content-vertical">
                 <p>Total Transactions</p>
                 <div className="dash-text">
@@ -409,7 +449,7 @@ export default function AdminDashboard() {
           </Col>
 
           <Col xs={24} sm={12} md={12} lg={6}>
-            <Card className="dash-card">
+            <Card className="dash-card" {...getStatCardNavigationProps("bookings")}>
               <div className="dash-card-content-vertical">
                 <p>Total Bookings</p>
                 <div className="dash-text">
@@ -421,7 +461,7 @@ export default function AdminDashboard() {
           </Col>
 
           <Col xs={24} sm={12} md={12} lg={6}>
-            <Card className="dash-card">
+            <Card className="dash-card" {...getStatCardNavigationProps("users", !isEmployeeDashboard)}>
               <div className="dash-card-content-vertical">
                 <p>Total Users</p>
                 <div className="dash-text">
@@ -433,7 +473,7 @@ export default function AdminDashboard() {
           </Col>
 
           <Col xs={24} sm={12} md={12} lg={6}>
-            <Card className="dash-card">
+            <Card className="dash-card" {...getStatCardNavigationProps("packages")}>
               <div className="dash-card-content-vertical">
                 <p>Total Packages</p>
                 <div className="dash-text">

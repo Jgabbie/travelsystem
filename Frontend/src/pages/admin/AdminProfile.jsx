@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Input, Button, notification, Spin, Card, Space, ConfigProvider } from 'antd';
-import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined } from '@ant-design/icons';
+import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined, CheckCircleFilled } from '@ant-design/icons';
 import '../../style/client/profilepage.css'
 import apiFetch from '../../config/fetchConfig';
 import dayjs from 'dayjs';
@@ -319,22 +319,39 @@ export default function AdminProfile() {
                         <div className="profile-content">
                             <Card className="profile-summary-card">
                                 <div className="profile-summary-body">
-                                    <div className="profile-summary-avatar">
-                                        {profileImage ? (
-                                            <img src={profileImage} alt="Profile" />
-                                        ) : (
-                                            <div className="profile-summary-initials">{getInitials()}</div>
-                                        )}
-                                    </div>
-                                    <div className="profile-summary-text">
-                                        <h3 className="profile-summary-name">
-                                            {values.firstname || values.lastname
-                                                ? `${values.firstname} ${values.lastname}`.trim()
-                                                : values.username || 'User'}
-                                        </h3>
-                                        <p className="profile-summary-meta">
-                                            <span>{userData?.role || 'Admin'}</span>
-                                        </p>
+                                    <div className="profile-summary-main">
+                                        <div className="profile-summary-avatar">
+                                            {profileImage ? (
+                                                <img src={profileImage} alt="Profile" />
+                                            ) : (
+                                                <div className="profile-summary-initials">{getInitials()}</div>
+                                            )}
+                                        </div>
+                                        <div className="profile-summary-text">
+                                            <div className="profile-summary-name-row">
+
+                                                <div className="profile-summary-name-column">
+                                                    <h3 className="profile-summary-name">
+                                                        {values.firstname || values.lastname
+                                                            ? `${values.firstname} ${values.lastname}`.trim()
+                                                            : values.username || 'User'}
+                                                    </h3>
+                                                    <p className="profile-summary-meta">
+                                                        <span>{userData?.role || 'Admin'}</span>
+                                                    </p>
+                                                </div>
+
+
+                                                {userData?.isAccountVerified && (
+                                                    <span className="profile-verified-badge">
+                                                        <CheckCircleFilled />
+                                                        Verified
+                                                    </span>
+                                                )}
+
+
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 {editing && (
@@ -346,6 +363,7 @@ export default function AdminProfile() {
                                             accept="image/*"
                                             onChange={handleImageChange}
                                         />
+
                                         <Button
                                             type='primary'
                                             icon={<FileImageOutlined />}
@@ -355,6 +373,7 @@ export default function AdminProfile() {
                                             Change Photo
                                         </Button>
                                         <p className="profile-avatar-help">PNG/JPG up to 2MB.</p>
+
                                     </div>
                                 )}
                             </Card>
@@ -508,11 +527,7 @@ export default function AdminProfile() {
                                     </div>
                                 </div>
 
-                                {userData?.isAccountVerified && (
-                                    <div className="verification-status">
-                                        <p>Account Verified</p>
-                                    </div>
-                                )}
+
 
                                 {editing && (
                                     <Space style={{ marginTop: 16 }}>

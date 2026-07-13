@@ -49,9 +49,6 @@
   }
 }
 
-/* Shared admin stat-card normalization
-   Matches any element whose class contains 'management-card' to
-   ensure uniform height, centered content and consistent body layout. */
 [class*="management-card"],
 [class*="management-card"] .ant-card {
   min-height: 120px;

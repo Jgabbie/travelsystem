@@ -432,7 +432,8 @@
 
 .profile-avatar-help {
     margin: 0;
-    font-size: 12px;
+    margin-left: 14px;
+    font-size: 11px;
     color: #6b7280;
     font-family: "Roboto", sans-serif;
 }
@@ -557,6 +558,11 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 10px;
+}
+
+.profile-summary-name-column {
+    flex-direction: column;
+    margin-right: 6px;
 }
 
 .profile-summary-name {
