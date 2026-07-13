@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Tabs, Modal, Rate, Input, notification, Card, ConfigProvider, Spin, Alert, Carousel } from 'antd';
 import { CheckCircleFilled, HeartFilled, HeartOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -67,6 +67,7 @@ export default function PackagePage() {
     });
     const [hasValidBooking, setHasValidBooking] = useState(false);
     const [bookingCheckLoading, setBookingCheckLoading] = useState(false);
+    const reviewFormRef = useRef(null);
 
 
     //package data states
@@ -485,49 +486,73 @@ export default function PackagePage() {
         }
 
         if (!hasValidBooking && !isEditingReview) {
-            notification.error({ message: 'You can only rate packages you have booked and fully paid for.', placement: 'topRight' })
+            notification.error({
+                message: 'You can only rate packages you have booked and fully paid for.',
+                placement: 'topRight'
+            })
             return
         }
 
         if (!reviewForm.rating || !reviewForm.comment.trim()) {
-            notification.warning({ message: 'Please provide a rating and comment.', placement: 'topRight' });
-            return;
+            notification.warning({
+                message: 'Please provide a rating and comment.',
+                placement: 'topRight'
+            })
+            return
         }
 
-        setIsSubmittingReview(true);
+        const reviewId = userReview?.id
 
+        if (isEditingReview && !reviewId) {
+            notification.error({
+                message: 'Unable to find the review to update. Please refresh the page.',
+                placement: 'topRight'
+            })
+            return
+        }
+
+        setIsSubmittingReview(true)
 
         try {
             if (isEditingReview) {
-                // UPDATE review
-                await apiFetch.put(`/rating/${userReview.id}`, {
+                await apiFetch.put(`/rating/${reviewId}`, {
                     rating: reviewForm.rating,
                     review: reviewForm.comment.trim()
-                });
+                })
+
                 setIsRatingEditedModalOpen(true)
             } else {
-                // CREATE review
                 await apiFetch.post('/rating/submit-rating', {
                     packageId: packageItem,
                     rating: reviewForm.rating,
                     review: reviewForm.comment.trim()
-                });
+                })
+
                 setIsRatingSubmittedModalOpen(true)
             }
 
-            await fetchRatings();
+            await fetchRatings()
 
             setReviewForm({
                 rating: 0,
                 comment: ''
-            });
-            setIsEditingReview(false);
+            })
+
+            setIsEditingReview(false)
         } catch (error) {
-            notification.error({ message: 'Unable to submit review', placement: 'topRight' });
+            console.error('Unable to save review:', error)
+
+            notification.error({
+                message:
+                    error?.data?.message ||
+                    error?.response?.data?.message ||
+                    'Unable to save review',
+                placement: 'topRight'
+            })
         } finally {
-            setIsSubmittingReview(false);
+            setIsSubmittingReview(false)
         }
-    };
+    }
 
 
     //delete review funtion
@@ -537,26 +562,40 @@ export default function PackagePage() {
             return
         }
 
-        if (!userReview?.id) {
-            notification.error({ message: 'No review to delete.', placement: 'topRight' })
+        const reviewId = userReview?.id
+
+        if (!reviewId) {
+            notification.error({
+                message: 'No review to delete.',
+                placement: 'topRight'
+            })
             return
         }
+
         setIsSubmittingReview(true)
 
         try {
-            await apiFetch.delete(`/rating/${userReview.id}`)
-
+            await apiFetch.delete(`/rating/${reviewId}`)
             await fetchRatings()
 
             setReviewForm({
                 rating: 0,
                 comment: ''
             })
+
             setIsEditingReview(false)
             setIsDeleteModalOpen(false)
             setIsRatingDeletedModalOpen(true)
         } catch (error) {
-            notification.error({ message: 'Unable to delete review', placement: 'topRight' })
+            console.error('Unable to delete review:', error)
+
+            notification.error({
+                message:
+                    error?.data?.message ||
+                    error?.response?.data?.message ||
+                    'Unable to delete review',
+                placement: 'topRight'
+            })
         } finally {
             setIsSubmittingReview(false)
         }
@@ -968,12 +1007,17 @@ export default function PackagePage() {
                                                                             onClick={() => {
                                                                                 setReviewForm({
                                                                                     rating: review.rating,
-                                                                                    comment: review.comment,
-                                                                                    fullName: review.name,
-                                                                                    email: review.email || ''
-                                                                                });
-                                                                                setIsEditingReview(true); // <-- mark as editing
-                                                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                                                    comment: review.comment
+                                                                                })
+
+                                                                                setIsEditingReview(true)
+
+                                                                                requestAnimationFrame(() => {
+                                                                                    reviewFormRef.current?.scrollIntoView({
+                                                                                        behavior: 'smooth',
+                                                                                        block: 'center'
+                                                                                    })
+                                                                                })
                                                                             }}
                                                                         >
                                                                             Edit
@@ -998,8 +1042,8 @@ export default function PackagePage() {
                                                 )}
                                             </div>
 
-                                            <div className="package-review-form">
-                                                <h3>Leave a review</h3>
+                                            <div ref={reviewFormRef} className="package-review-form">
+                                                <h3>{isEditingReview ? 'Update your review' : 'Leave a review'}</h3>
 
                                                 {!isEditingReview && !hasValidBooking && (
                                                     <Alert
@@ -1326,11 +1370,11 @@ export default function PackagePage() {
 
                                 <Button
                                     type='primary'
+                                    danger
+                                    loading={isSubmittingReview}
+                                    disabled={isSubmittingReview}
                                     className='logout-confirm-btn'
-                                    onClick={() => {
-                                        handleDeleteReview();
-                                        setIsDeleteModalOpen(false);
-                                    }}
+                                    onClick={handleDeleteReview}
                                 >
                                     Delete
                                 </Button>

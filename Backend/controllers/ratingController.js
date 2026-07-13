@@ -6,6 +6,23 @@ import logAction from '../utils/logger.js';
 import { scheduleRetrain } from '../utils/recommendationRetrainQueue.js';
 
 
+const queueRetrainSafely = (reason) => {
+    try {
+        Promise.resolve(scheduleRetrain(reason)).catch((error) => {
+            console.error(
+                'Unable to schedule recommendation retraining:',
+                error
+            )
+        })
+    } catch (error) {
+        console.error(
+            'Unable to schedule recommendation retraining:',
+            error
+        )
+    }
+}
+
+
 //submit rating function
 const submitRating = async (req, res) => {
     const { packageId, rating, review } = req.body;
@@ -52,11 +69,8 @@ const submitRating = async (req, res) => {
         const userName = ratingDoc?.userId?.username || 'Unknown'
 
         logAction('RATING_SUBMITTED', userId, { "Rating Submitted": `Customer Name: ${userName} | Package Name: ${packageName} | Rating: ${rating} | Review: ${review}` })
-        const savedRating = await rating.save();
 
-        scheduleRetrain(
-            `rating-created:${savedRating._id}`
-        );
+        queueRetrainSafely(`rating-created:${newRating._id}`)
 
         return res.status(201).json({
             message: "Rating submitted successfully",
@@ -109,30 +123,75 @@ const deleteRating = async (req, res) => {
     const userId = req.userId
 
     try {
+        if (!userId) {
+            return res.status(401).json({
+                message: "Login required to delete a rating"
+            })
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                message: "Invalid rating ID"
+            })
+        }
+
         const rating = await Rating.findById(id)
+
         if (!rating) {
-            return res.status(404).json({ message: "Rating not found" })
-        }
-        if (!rating.userId || rating.userId.toString() !== userId) {
-            return res.status(403).json({ message: "Forbidden" });
+            return res.status(404).json({
+                message: "Rating not found"
+            })
         }
 
-        await rating.populate('packageId', 'packageName');
-        await rating.populate('userId', 'username');
+        if (
+            !rating.userId ||
+            String(rating.userId) !== String(userId)
+        ) {
+            return res.status(403).json({
+                message: "You can only delete your own review"
+            })
+        }
 
-        const packageName = rating?.packageId?.packageName || 'Unknown'
-        const userName = rating?.userId?.username || 'Unknown'
+        const deletedRatingId = rating._id
+
+        await rating.populate('packageId', 'packageName')
+        await rating.populate('userId', 'username')
+
+        const packageName =
+            rating?.packageId?.packageName || 'Unknown'
+
+        const userName =
+            rating?.userId?.username || 'Unknown'
 
         await rating.deleteOne()
 
-        logAction('RATING_DELETED', userId, { "Rating Deleted": `Customer Name: ${userName} | Package Name: ${packageName}` })
-        scheduleRetrain(
-            `rating-updated:${updatedRating._id}`
-        );
+        logAction('RATING_DELETED', userId, {
+            "Rating Deleted":
+                `Customer Name: ${userName} | Package Name: ${packageName}`
+        })
 
-        res.status(200).json({ message: "Rating deleted" })
+        queueRetrainSafely(
+            `rating-deleted:${deletedRatingId}`
+        )
+
+        const io = req.app.get('io')
+
+        if (io) {
+            io.emit('rating:deleted', {
+                id: deletedRatingId
+            })
+        }
+
+        return res.status(200).json({
+            message: "Rating deleted successfully"
+        })
     } catch (error) {
-        res.status(500).json({ message: "Error deleting rating", error })
+        console.error('Error deleting rating:', error)
+
+        return res.status(500).json({
+            message: "Error deleting rating",
+            error: error.message
+        })
     }
 }
 
@@ -154,7 +213,7 @@ const adminDeleteRating = async (req, res) => {
         const packageId = rating?.packageId?._id || rating?.packageId
         const userId = rating?.userId?._id || rating?.userId || null
 
-        await ArchivedRatingModel.create({
+        const archivedRating = await ArchivedRatingModel.create({
             originalRatingId: rating._id,
             packageId,
             userId,
@@ -168,9 +227,8 @@ const adminDeleteRating = async (req, res) => {
         await rating.deleteOne()
 
         logAction('RATING_ARCHIVED_BY_ADMIN', req.userId, { "Rating Archived by Admin": `Customer Name: ${userName} | Package Name: ${packageName}` })
-        scheduleRetrain(
-            `rating-archived:${ArchivedRatingModel._id}`
-        );
+        queueRetrainSafely(`rating-archived:${archivedRating._id}`)
+
 
         res.status(200).json({ message: "Rating archived" })
     } catch (error) {
@@ -184,35 +242,104 @@ const updateRating = async (req, res) => {
     const { id } = req.params
     const { rating, review } = req.body
     const userId = req.userId
-    try {
-        const existingRating = await Rating.findById(id)
-        if (!existingRating) {
-            return res.status(404).json({ message: "Rating not found" })
-        }
-        if (!existingRating.userId || existingRating.userId.toString() !== userId) {
-            return res.status(403).json({ message: "Forbidden" });
-        }
-        existingRating.rating = rating
-        existingRating.review = review
-        await existingRating.save()
 
+    try {
+        if (!userId) {
+            return res.status(401).json({
+                message: "Login required to update a rating"
+            })
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                message: "Invalid rating ID"
+            })
+        }
+
+        const numericRating = Number(rating)
+        const trimmedReview = String(review || '').trim()
+
+        if (
+            !Number.isFinite(numericRating) ||
+            numericRating < 1 ||
+            numericRating > 5
+        ) {
+            return res.status(400).json({
+                message: "Rating must be between 1 and 5"
+            })
+        }
+
+        if (!trimmedReview) {
+            return res.status(400).json({
+                message: "Review comment is required"
+            })
+        }
+
+        const existingRating = await Rating.findById(id)
+
+        if (!existingRating) {
+            return res.status(404).json({
+                message: "Rating not found"
+            })
+        }
+
+        if (
+            !existingRating.userId ||
+            String(existingRating.userId) !== String(userId)
+        ) {
+            return res.status(403).json({
+                message: "You can only update your own review"
+            })
+        }
+
+        existingRating.rating = numericRating
+        existingRating.review = trimmedReview
+
+        const updatedRating = await existingRating.save()
 
         const ratingDoc = await Rating.findById(id)
             .populate('packageId', 'packageName')
             .populate('userId', 'username')
             .select('packageId userId')
 
-        const packageName = ratingDoc?.packageId?.packageName || 'Unknown'
-        const userName = ratingDoc?.userId?.username || 'Unknown'
+        const packageName =
+            ratingDoc?.packageId?.packageName || 'Unknown'
 
-        logAction('RATING_UPDATED', userId, { "Rating Updated": `Customer Name: ${userName} | Package Name: ${packageName} | New Rating: ${rating} | New Review: ${review}` })
-        scheduleRetrain(
-            `rating-updated:${existingRating._id}`
-        );
+        const userName =
+            ratingDoc?.userId?.username || 'Unknown'
 
-        res.status(200).json({ message: "Rating updated successfully", rating: existingRating })
+        logAction('RATING_UPDATED', userId, {
+            "Rating Updated":
+                `Customer Name: ${userName} | ` +
+                `Package Name: ${packageName} | ` +
+                `New Rating: ${numericRating} | ` +
+                `New Review: ${trimmedReview}`
+        })
+
+        queueRetrainSafely(
+            `rating-updated:${updatedRating._id}`
+        )
+
+        const io = req.app.get('io')
+
+        if (io) {
+            io.emit('rating:updated', {
+                id: updatedRating._id,
+                updatedAt: updatedRating.updatedAt
+            })
+        }
+
+        return res.status(200).json({
+            message: "Rating updated successfully",
+            rating: updatedRating
+        })
     } catch (error) {
-        res.status(500).json({ message: "Error updating rating", error })
+        console.error('Error updating rating:', error)
+
+        return res.status(500).json({
+            message: "Error updating rating",
+            error: error.message
+        })
     }
 }
 
@@ -358,9 +485,7 @@ const restoreArchivedRating = async (req, res) => {
         await archivedRating.deleteOne()
 
         logAction('RATING_RESTORED_BY_ADMIN', req.userId, { "Rating Restored by Admin": `Customer Name: ${userName} | Package Name: ${packageName}` })
-        scheduleRetrain(
-            `rating-restored:${archivedRating._id}`
-        );
+        queueRetrainSafely(`rating-restored:${archivedRating._id}`)
 
         res.status(200).json({ message: "Rating restored" })
     } catch (error) {
