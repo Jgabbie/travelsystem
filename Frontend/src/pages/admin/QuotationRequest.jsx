@@ -965,7 +965,7 @@ export default function QuotationRequest() {
                         <Card title="Upload Quotation PDF">
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 16 }}>
                                 <div>
-                                    <label className="quotationrequest-label">Travel Dates</label>
+                                    <label className="quotationrequest-label">Travel Dates <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
                                         placeholder="Travel dates"
                                         value={formData.travelDates}
@@ -975,7 +975,7 @@ export default function QuotationRequest() {
                                     {formErrors.travelDates && <div className="quotationrequest-error">{formErrors.travelDates}</div>}
                                 </div>
                                 <div>
-                                    <label className="quotationrequest-label">Hotel</label>
+                                    <label className="quotationrequest-label">Hotel <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
                                         placeholder="Hotel"
                                         value={formData.hotel}
@@ -984,7 +984,7 @@ export default function QuotationRequest() {
                                     {formErrors.hotel && <div className="quotationrequest-error">{formErrors.hotel}</div>}
                                 </div>
                                 <div>
-                                    <label className="quotationrequest-label">Room/Type</label>
+                                    <label className="quotationrequest-label">Room/Type <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
                                         placeholder="Room/Type"
                                         value={formData.roomType}
@@ -993,7 +993,7 @@ export default function QuotationRequest() {
                                     {formErrors.roomType && <div className="quotationrequest-error">{formErrors.roomType}</div>}
                                 </div>
                                 <div>
-                                    <label className="quotationrequest-label">Airline</label>
+                                    <label className="quotationrequest-label">Airline <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
                                         placeholder="Airline"
                                         value={formData.airline}
@@ -1002,7 +1002,7 @@ export default function QuotationRequest() {
                                     {formErrors.airline && <div className="quotationrequest-error">{formErrors.airline}</div>}
                                 </div>
                                 <div>
-                                    <label className="quotationrequest-label">Baggage Allowance</label>
+                                    <label className="quotationrequest-label">Baggage Allowance <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
                                         placeholder="Baggage allowance"
                                         value={formData.baggageAllowance}
@@ -1010,7 +1010,7 @@ export default function QuotationRequest() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="quotationrequest-label">Travelers</label>
+                                    <label className="quotationrequest-label">Travelers <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
                                         placeholder="Travelers"
                                         value={formData.travelers}
@@ -1020,7 +1020,7 @@ export default function QuotationRequest() {
                                     {formErrors.travelers && <div className="quotationrequest-error">{formErrors.travelers}</div>}
                                 </div>
                                 <div>
-                                    <label className="quotationrequest-label">Total Rate per Adult</label>
+                                    <label className="quotationrequest-label">Total Rate per Adult <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
                                         placeholder="Total rate per adult"
                                         value={formData.totalRate}
@@ -1030,7 +1030,7 @@ export default function QuotationRequest() {
                                 </div>
                                 {parseTravelerCounts(formData.travelers).child > 0 && (
                                     <div>
-                                        <label className="quotationrequest-label">Total Rate per Child</label>
+                                        <label className="quotationrequest-label">Total Rate per Child <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input
                                             placeholder="Total rate per child"
                                             value={formData.totalChildRate}
@@ -1041,7 +1041,7 @@ export default function QuotationRequest() {
                                 )}
                                 {parseTravelerCounts(formData.travelers).infant > 0 && (
                                     <div>
-                                        <label className="quotationrequest-label">Total Rate per Infant</label>
+                                        <label className="quotationrequest-label">Total Rate per Infant <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input
                                             placeholder="Total rate per infant"
                                             value={formData.totalInfantRate}
@@ -1051,7 +1051,7 @@ export default function QuotationRequest() {
                                     </div>
                                 )}
                                 <div>
-                                    <label className="quotationrequest-label">Total Price</label>
+                                    <label className="quotationrequest-label">Total Price <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
                                         placeholder="Total price"
                                         value={formData.totalPrice}
@@ -1060,7 +1060,7 @@ export default function QuotationRequest() {
                                     {formErrors.totalPrice && <div className="quotationrequest-error">{formErrors.totalPrice}</div>}
                                 </div>
                                 <div>
-                                    <label className="quotationrequest-label">Deposit Per PAX</label>
+                                    <label className="quotationrequest-label">Deposit Per PAX <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
                                         placeholder="Deposit"
                                         value={formData.totalDeposit}
@@ -1072,7 +1072,7 @@ export default function QuotationRequest() {
 
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
                                 <div>
-                                    <label className="quotationrequest-label">Inclusions</label>
+                                    <label className="quotationrequest-label">Inclusions <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input.TextArea
                                         autoSize={{ minRows: 6, maxRows: 12 }}
                                         placeholder="Inclusions (one per line)"
@@ -1089,7 +1089,7 @@ export default function QuotationRequest() {
                                     {formErrors.inclusionsText && <div className="quotationrequest-error">{formErrors.inclusionsText}</div>}
                                 </div>
                                 <div>
-                                    <label className="quotationrequest-label">Exclusions</label>
+                                    <label className="quotationrequest-label">Exclusions <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input.TextArea
                                         autoSize={{ minRows: 6, maxRows: 12 }}
                                         placeholder="Exclusions (one per line)"
@@ -1110,7 +1110,7 @@ export default function QuotationRequest() {
                             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 16 }}>
                                 {(formData.itineraryRows || []).map((row, index) => (
                                     <div key={`itinerary-${index}`}>
-                                        <label className="quotationrequest-label">Day {index + 1} Itinerary</label>
+                                        <label className="quotationrequest-label">Day {index + 1} Itinerary <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input.TextArea
                                             autoSize={{ minRows: 6, maxRows: 12 }}
                                             placeholder={`Day ${index + 1} itinerary (one per line)`}

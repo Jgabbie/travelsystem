@@ -692,4 +692,36 @@
     flex: none !important;
   }
 
+  .package-details-actions {
+    width: 100%;
+    padding: 16px;
+  }
+
+  .package-actions-column {
+    width: 100%;
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .package-actions-column .ant-space {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px !important;
+    width: 100%;
+  }
+
+  .package-actions-column .ant-space-item {
+    width: 100%;
+  }
+
+  .package-actions-column .ant-space-item:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .package-actions-column .ant-btn {
+    width: 100% !important;
+    min-width: 0;
+    margin: 0;
+  }
+
 }

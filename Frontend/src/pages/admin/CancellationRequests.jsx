@@ -367,11 +367,6 @@ export default function CancellationRequests() {
             key: 'reason'
         },
         {
-            title: 'Days after booking date',
-            dataIndex: 'daysAfterBooking',
-            key: 'daysAfterBooking'
-        },
-        {
             title: 'Cancellation Date',
             dataIndex: 'cancellationDate',
             key: 'cancellationDate',

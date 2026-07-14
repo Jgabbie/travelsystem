@@ -1,4 +1,5 @@
 import transporter from '../config/nodemailer.js';
+import { buildBrandedEmail } from '../utils/emailTemplate.js';
 
 
 //send contact email function
@@ -15,61 +16,198 @@ const sendContactEmail = async (req, res) => {
             to: process.env.COMPANY_EMAIL, //use actual company email here
             replyTo: process.env.COMPANY_EMAIL, //use actual company email here
             subject,
-            html: `
-                <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
-                    <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left; color:#333;">
-                        <h2 style="color: #305797; margin-bottom:10px;">New Inquiry Details</h2>
-                        <p style="color:#555; font-size:15px;"><strong>Subject:</strong> ${subject}</p>
-                        <p style="color:#555; font-size:15px;"><strong>Name:</strong> ${name}</p>
-                        <p style="color:#555; font-size:15px;"><strong>Email:</strong> ${email}</p>
-                        <p style="color:#555; font-size:15px;"><strong>Message:</strong></p>
-                        <div style="background:#f2f5fa; padding:15px; border-left:4px solid #305797; white-space:pre-wrap; color:#333;">${message}</div>
-                    </div>
-                </div>`
+            html: buildBrandedEmail({
+                title: 'New Inquiry Details',
+                introHtml: `
+                    A new inquiry has been submitted through the
+                    M&RC Travel and Tours website.
+                `,
+                bodyHtml: `
+                    <div
+                        style="
+                            margin:8px 0 14px;
+                            background:#f8fafc;
+                            border:1px solid #e2e8f0;
+                            border-radius:10px;
+                            overflow:hidden;
+                        "
+                    >
+                        <div
+                            style="
+                                padding:12px 16px;
+                                border-bottom:1px solid #e2e8f0;
+                            "
+                        >
+                            <p
+                                style="
+                                    margin:0;
+                                    font-size:13px;
+                                    color:#64748b;
+                                "
+                            >
+                                Subject
+                            </p>
+
+                            <p
+                                style="
+                                    margin:4px 0 0;
+                                    font-weight:700;
+                                    color:#1e293b;
+                                "
+                            >
+                                ${subject}
+                            </p>
+                        </div>
+
+                        <div
+                            style="
+                                padding:12px 16px;
+                                border-bottom:1px solid #e2e8f0;
+                            "
+                        >
+                            <p
+                                style="
+                                    margin:0;
+                                    font-size:13px;
+                                    color:#64748b;
+                                "
+                            >
+                                Name
+                            </p>
+
+                            <p
+                                style="
+                                    margin:4px 0 0;
+                                    color:#1e293b;
+                                "
+                            >
+                                ${name}
+                            </p>
+                        </div>
+
+                        <div
+                            style="
+                                padding:12px 16px;
+                                border-bottom:1px solid #e2e8f0;
+                            "
+                        >
+                            <p
+                                style="
+                                    margin:0;
+                                    font-size:13px;
+                                    color:#64748b;
+                                "
+                            >
+                                Email Address
+                            </p>
+
+                            <p
+                                style="
+                                    margin:4px 0 0;
+                                    color:#1e293b;
+                                "
+                            >
+                                ${email}
+                            </p>
+                        </div>
+
+                        <div style="padding:12px 16px;">
+                            <p
+                                style="
+                                    margin:0 0 8px;
+                                    font-size:13px;
+                                    color:#64748b;
+                                "
+                            >
+                                Message
+                            </p>
+
+                            <div
+                                style="
+                                    margin:0;
+                                    padding:14px 16px;
+                                    background:#ffffff;
+                                    border-left:4px solid #992A46;
+                                    border-radius:6px;
+                                    color:#334155;
+                                    line-height:1.6;
+                                    white-space:pre-wrap;
+                                "
+                            >
+                                ${message}
+                            </div>
+                        </div>
+                    </div> 
+
+                    <p style="margin:0; font-size:13px; color:#64748b;"
+                    >
+                        You may reply directly to this email to contact
+                        the sender.
+                    </p>
+                `,
+            })
         });
 
         await transporter.sendMail({
             from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
             to: email,
             subject: 'Email Received - M&RC Travel and Tours',
-            html: `
-            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
-            <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+            html: buildBrandedEmail({
+                title: 'Inquiry Received',
+                introHtml: `Hello <strong>${name}</strong>,`,
+                bodyHtml: `
+                    <p style="margin:0 0 12px;">
+                        Thank you for contacting M&RC Travel and Tours.
+                    </p>
 
-                <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+                    <p style="margin:0 0 12px;">
+                        Your inquiry has been received successfully.
+                        Our team will review your message and get back
+                        to you as soon as possible.
+                    </p>
 
-                <h2 style="color:#305797; margin-bottom:10px;">
-                    Welcome to M&RC Travel and Tours
-                </h2>
+                    <div
+                        style="
+                            margin:16px 0;
+                            padding:14px 16px;
+                            background:#f8fafc;
+                            border:1px solid #e2e8f0;
+                            border-radius:10px;
+                        "
+                    >
+                        <p
+                            style="
+                                margin:0 0 6px;
+                                font-size:13px;
+                                color:#64748b;
+                            "
+                        >
+                            Inquiry Subject
+                        </p>
 
-                <p style="color:#555; font-size:16px;">
-                    Hello <b>${name}</b>,
-                </p>
+                        <p
+                            style="
+                                margin:0;
+                                font-weight:700;
+                                color:#1e293b;
+                            "
+                        >
+                            ${subject}
+                        </p>
+                    </div>
 
-                <p style="color:#555; font-size:15px; line-height:1.6;">
-                    Your message has been received and we will get back to you soon.
-                </p>
-
-                <p style="color:#555; font-size:15px; line-height:1.6;">
-                    Thank you for contacting us.
-                </p>
-
-                <p style="color:#777; font-size:13px; margin-top:30px;">
-                    If you did not submit this message, please ignore this email.
-                </p>
-
-                <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-
-                <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                    <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                    <p>M&RC Travel and Tours</p>
-                    <p>info1@mrctravels.com</p>
-                    <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                </div>
-
-            </div>
-        </div>
-            `
+                    <p
+                        style="
+                            margin:18px 0 0;
+                            font-size:13px;
+                            color:#64748b;
+                        "
+                    >
+                        If you did not submit this inquiry, please ignore
+                        this email.
+                    </p>
+                `,
+            })
         });
 
         res.status(200).json({ message: 'Email sent successfully' });

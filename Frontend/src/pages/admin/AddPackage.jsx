@@ -1069,7 +1069,7 @@ export default function AddPackage() {
 
               {/* Package Type */}
               <div className="add-package-package-type-section">
-                <label className="add-package-input-labels">Package Type</label>
+                <label className="add-package-input-labels">Package Type <span style={{ color: "#ff0000" }}>*</span></label>
 
                 <div className="package-type-card-group">
                   {/* Domestic */}
@@ -1121,7 +1121,7 @@ export default function AddPackage() {
 
               {values.packageType === "international" && (
                 <div className="add-package-visarequirement-section">
-                  <label className="add-package-input-labels">Visa Requirement</label>
+                  <label className="add-package-input-labels">Visa Requirement <span style={{ color: "#ff0000" }}>*</span></label>
 
                   <div className="package-type-card-group">
                     {/* Visa Required */}
@@ -1171,7 +1171,7 @@ export default function AddPackage() {
 
               {/* Package Name */}
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <label className="add-package-input-labels">Package Name</label>
+                <label className="add-package-input-labels">Package Name <span style={{ color: "#ff0000" }}>*</span></label>
                 <Input
                   status={errors.name ? "error" : ""}
                   maxLength={150}
@@ -1203,7 +1203,7 @@ export default function AddPackage() {
 
               {/* Package Code */}
               <div style={{ display: "flex", flexDirection: "column", marginBottom: 20 }}>
-                <label className="add-package-input-labels">Package Code</label>
+                <label className="add-package-input-labels">Package Code <span style={{ color: "#ff0000" }}>*</span></label>
                 <Input
                   value={values.code || ""}
                   readOnly
@@ -1214,7 +1214,7 @@ export default function AddPackage() {
 
               {/* Price Per Pax */}
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <label className="add-package-input-labels">Price Per Pax</label>
+                <label className="add-package-input-labels">Price Per Pax <span style={{ color: "#ff0000" }}>*</span></label>
                 <Input
                   status={errors.pricePerPax ? "error" : ""}
                   maxLength={7}
@@ -1239,7 +1239,7 @@ export default function AddPackage() {
 
               {/* Child Rate */}
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <label className="add-package-input-labels">Child Rate</label>
+                <label className="add-package-input-labels">Child Rate <span style={{ color: "#ff0000" }}>*</span></label>
                 <Input
                   status={errors.childRate ? "error" : ""}
                   maxLength={7}
@@ -1264,7 +1264,7 @@ export default function AddPackage() {
 
               {/* Infant Rate */}
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <label className="add-package-input-labels">Infant Rate</label>
+                <label className="add-package-input-labels">Infant Rate <span style={{ color: "#ff0000" }}>*</span></label>
                 <Input
                   status={errors.infantRate ? "error" : ""}
                   maxLength={7}
@@ -1289,7 +1289,7 @@ export default function AddPackage() {
 
               {/* Solo Rate */}
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <label className="add-package-input-labels">Solo Rate</label>
+                <label className="add-package-input-labels">Solo Rate <span style={{ color: "#ff0000" }}>*</span></label>
                 <Input
                   status={errors.soloRate ? "error" : ""}
                   maxLength={7}
@@ -1314,7 +1314,7 @@ export default function AddPackage() {
 
               {/* Deposit */}
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <label className="add-package-input-labels">Deposit</label>
+                <label className="add-package-input-labels">Deposit <span style={{ color: "#ff0000" }}>*</span></label>
                 <Input
                   status={errors.deposit ? "error" : ""}
                   maxLength={7}
@@ -1338,7 +1338,7 @@ export default function AddPackage() {
               </div>
 
               {/* Description */}
-              <label className="add-package-input-labels">Package Description</label>
+              <label className="add-package-input-labels">Package Description <span style={{ color: "#ff0000" }}>*</span></label>
               <Input.TextArea
                 maxLength={500}
                 value={values.description}
@@ -1354,9 +1354,7 @@ export default function AddPackage() {
 
               {/* Package Tags */}
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <label className="add-package-input-labels">
-                  Package Tags
-                </label>
+                <label className="add-package-input-labels"> Package Tags <span style={{ color: "#ff0000" }}>*</span></label>
 
                 <Select
                   mode="tags"
@@ -1395,7 +1393,7 @@ export default function AddPackage() {
 
               {/* Duration */}
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <label className="add-package-input-labels">Tour Duration</label>
+                <label className="add-package-input-labels">Tour Duration <span style={{ color: "#ff0000" }}>*</span></label>
                 <Select
                   className={`add-package-duration-select${errors.duration ? " add-package-select-error" : ""
                     }`}
@@ -1433,7 +1431,7 @@ export default function AddPackage() {
               </div>
 
               <div className="startenddates-add-package">
-                <label className="add-package-input-labels">Start and End Dates</label>
+                <label className="add-package-input-labels">Start and End Dates <span style={{ color: "#ff0000" }}>*</span></label>
                 {values.dateRanges.map((range, index) => (
                   <Space className="add-package-date-range" key={index} style={{ marginBottom: 10, marginTop: 10 }}>
                     <RangePicker
@@ -1504,7 +1502,7 @@ export default function AddPackage() {
 
             <div className="add-package-sections-row">
               <div className="add-package-section-half add-package-section">
-                <h2 className="section-headers">Hotels and Airlines</h2>
+                <h2 className="section-headers">Hotels and Airlines <span style={{ color: "#ff0000" }}>*</span></h2>
                 {/* HOTELS */}
                 <div
                   className={errors.hotels ? "add-package-card-error" : ""}
@@ -1643,10 +1641,12 @@ export default function AddPackage() {
               </div>
 
               <div className="add-package-section-half add-package-section">
-                <h2 className="section-headers">Inclusions, Exclusions, and Terms & Conditions</h2>
+                <h2 className="section-headers">Inclusions, Exclusions, and Terms & Conditions <span style={{ color: "#ff0000" }}>*</span></h2>
 
                 {/* INCLUSIONS */}
-                <label className="add-package-input-labels">Inclusions</label>
+                <label className="add-package-input-labels">
+                  Inclusions<span style={{ color: "#ff0000" }}>*</span>
+                </label>
                 <Input.TextArea
                   status={errors.inclusions ? "error" : ""}
                   value={values.inclusions}
@@ -1659,7 +1659,7 @@ export default function AddPackage() {
 
                 {/* EXCLUSIONS */}
                 <label className="add-package-input-labels" style={{ marginTop: 15 }}>
-                  Exclusions
+                  Exclusions <span style={{ color: "#ff0000" }}>*</span>
                 </label>
                 <Input.TextArea
                   status={errors.exclusions ? "error" : ""}
@@ -1673,7 +1673,7 @@ export default function AddPackage() {
 
                 {/* TERMS & CONDITIONS */}
                 <label className="add-package-input-labels" style={{ marginTop: 15 }}>
-                  Terms & Conditions
+                  Terms & Conditions <span style={{ color: "#ff0000" }}>*</span>
                 </label>
                 <Input.TextArea
                   status={errors.termsConditions ? "error" : ""}
@@ -1691,7 +1691,7 @@ export default function AddPackage() {
 
 
             <div className="add-package-section-half add-package-section" >
-              <h2 className="section-headers">Itinerary</h2>
+              <h2 className="section-headers">Itinerary <span style={{ color: "#ff0000" }}>*</span></h2>
               {/* ITINERARIES */}
               <div
                 className={errors.itineraries ? "add-package-card-error" : ""}
@@ -1841,7 +1841,7 @@ export default function AddPackage() {
 
 
             <div className="add-package-section-half add-package-section" style={{ marginTop: 40 }}>
-              <h2 className="section-headers">Package Image</h2>
+              <h2 className="section-headers">Package Image and Video <span style={{ color: "#ff0000" }}>*</span></h2>
               {/* PACKAGE IMAGE UPLOAD */}
               <div>
                 <input

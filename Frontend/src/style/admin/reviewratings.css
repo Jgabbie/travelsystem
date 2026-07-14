@@ -218,16 +218,113 @@
     color: #fff !important;
 }
 
-@media (max-width: 576px) {
-    .reviewratings-statistics {
-        gap: 12px;
-    }
-
-    .reviewratings-actions-field {
-        width: 100%;
-    }
-
+/* View button */
+.reviewratings-view-button {
+    width: 110px;
+    height: 30px;
+    border: none !important;
+    border-radius: 16px;
+    background-color: #305797;
+    color: #ffffff;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.2);
 }
+
+.reviewratings-view-button:hover,
+.reviewratings-view-button:focus {
+    background-color: #244575 !important;
+    color: #ffffff !important;
+}
+
+
+/* View review modal */
+.reviewratings-view-modal {
+    padding: 8px 4px 2px;
+}
+
+.reviewratings-view-modal-title {
+    margin: 0 0 22px;
+    color: #305797;
+    font-family: "Montserrat", sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.reviewratings-view-detail {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 13px 0;
+    border-bottom: 1px solid #e8edf5;
+}
+
+.reviewratings-view-detail--comment {
+    display: block;
+    border-bottom: none;
+}
+
+.reviewratings-view-label {
+    color: #68738a;
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.reviewratings-view-value,
+.reviewratings-view-rating {
+    color: #1f2a44;
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: right;
+}
+
+.reviewratings-view-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #d89614;
+}
+
+.reviewratings-view-comment {
+    min-height: 80px;
+    margin: 10px 0 0;
+    padding: 14px;
+    border-radius: 10px;
+    background-color: #f6f8fc;
+    color: #1f2a44;
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.reviewratings-view-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.reviewratings-view-close-button {
+    min-width: 90px;
+    border: none !important;
+    border-radius: 16px;
+    background-color: #305797;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.reviewratings-view-close-button:hover,
+.reviewratings-view-close-button:focus {
+    background-color: #244575 !important;
+    color: #ffffff !important;
+}
+
 
 /* Table styling */
 .reviewratings-container .ant-table {
@@ -282,14 +379,31 @@
     background-color: #f9faff;
 }
 
+.reviewratings-view-detail {
+    flex-direction: column;
+    gap: 6px;
+}
 
-.user-management-container .ant-card {
-    border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.08);
+.reviewratings-view-value,
+.reviewratings-view-rating {
+    text-align: left;
+}
+
+.reviewratings-view-close-button {
+    width: 100%;
 }
 
 
 @media (max-width: 576px) {
+
+    .reviewratings-statistics {
+        gap: 12px;
+    }
+
+    .reviewratings-actions-field {
+        width: 100%;
+    }
+
     .reviewratings-container .ant-table {
         font-size: 12px;
     }

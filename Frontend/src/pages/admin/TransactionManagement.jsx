@@ -503,7 +503,7 @@ export default function TransactionManagement() {
       render: d => dayjs(d).format("MMM DD, YYYY hh:mm A")
     },
     { title: "Total Price", dataIndex: "price" },
-    { title: "Transaction Method", dataIndex: "method" },
+    { title: "Method", dataIndex: "method" },
     {
       title: "Status",
       dataIndex: "status",
@@ -577,7 +577,7 @@ export default function TransactionManagement() {
       render: d => dayjs(d).format("MMM DD, YYYY hh:mm A")
     },
     { title: "Total Price", dataIndex: "price" },
-    { title: "Transaction Method", dataIndex: "method" },
+    { title: "Method", dataIndex: "method" },
     {
       title: "Status",
       dataIndex: "status",

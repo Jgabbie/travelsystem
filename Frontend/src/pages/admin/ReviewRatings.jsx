@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Input, Select, DatePicker, Modal, ConfigProvider, Space, notification } from "antd";
-import { StarOutlined, MessageOutlined, FundOutlined, ClockCircleOutlined, CheckCircleOutlined, DeleteOutlined, SearchOutlined, FilePdfOutlined, CheckCircleFilled, InboxOutlined } from "@ant-design/icons";
+import { StarOutlined, MessageOutlined, FundOutlined, ClockCircleOutlined, CheckCircleOutlined, DeleteOutlined, SearchOutlined, FilePdfOutlined, CheckCircleFilled, InboxOutlined, EyeOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import jsPDF from 'jspdf';
@@ -44,6 +44,11 @@ export default function ReviewRatings() {
     const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
     const [isRatingRestoredModalOpen, setIsRatingRestoredModalOpen] = useState(false);
     const [deletingRating, setDeletingRating] = useState(null);
+
+
+
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [selectedRating, setSelectedRating] = useState(null);
 
     const { auth } = useAuth();
 
@@ -323,23 +328,40 @@ export default function ReviewRatings() {
             dataIndex: "date",
             key: "date",
             render: (date) =>
-                date ? (dayjs.isDayjs(date) ? date.format("MMM D, YYYY") : dayjs(date).format("MMM D, YYYY")) : "—"
+                date
+                    ? dayjs.isDayjs(date)
+                        ? date.format("MMM D, YYYY")
+                        : dayjs(date).format("MMM D, YYYY")
+                    : "—"
         },
         {
             title: "Actions",
             key: "actions",
             render: (_, record) => (
                 !showArchived && (
-                    <Button
-                        className='reviewratings-remove-button'
-                        type='primary'
-                        icon={<DeleteOutlined />}
-                        onClick={() => {
-                            setDeletingRating(record);
-                            setIsDeleteModalOpen(true);
-                        }}
-                    >
-                    </Button>
+                    <Space size={8}>
+                        <Button
+                            className="reviewratings-view-button"
+                            type="primary"
+                            icon={<EyeOutlined />}
+                            onClick={() => {
+                                setSelectedRating(record);
+                                setIsViewModalOpen(true);
+                            }}
+                        />
+
+
+                        <Button
+                            className="reviewratings-remove-button"
+                            type="primary"
+                            icon={<DeleteOutlined />}
+                            onClick={() => {
+                                setDeletingRating(record);
+                                setIsDeleteModalOpen(true);
+                            }}
+                            aria-label="Archive review"
+                        />
+                    </Space>
                 )
             ),
         },
@@ -353,17 +375,31 @@ export default function ReviewRatings() {
             title: "Actions",
             key: "actions",
             render: (_, record) => (
-                <Button
-                    className='reviewratings-restore-button'
-                    type='primary'
-                    icon={<CheckCircleOutlined />}
-                    onClick={() => {
-                        setDeletingRating(record);
-                        setIsRestoreModalOpen(true);
-                    }}
-                >
-                    Restore
-                </Button>
+                <Space size={8}>
+                    <Button
+                        className="reviewratings-view-button"
+                        type="primary"
+                        icon={<EyeOutlined />}
+                        onClick={() => {
+                            setSelectedRating(record);
+                            setIsViewModalOpen(true);
+                        }}
+                    >
+                        View
+                    </Button>
+
+                    <Button
+                        className="reviewratings-restore-button"
+                        type="primary"
+                        icon={<CheckCircleOutlined />}
+                        onClick={() => {
+                            setDeletingRating(record);
+                            setIsRestoreModalOpen(true);
+                        }}
+                    >
+                        Restore
+                    </Button>
+                </Space>
             )
         }
     ];
@@ -649,6 +685,75 @@ export default function ReviewRatings() {
                         </Button>
                     </div>
 
+                </div>
+            </Modal>
+
+
+            {/* VIEW RATING MODAL */}
+            <Modal
+                open={isViewModalOpen}
+                title="View Rating"
+                footer={null}
+                centered
+                width={480}
+                onCancel={() => {
+                    setIsViewModalOpen(false);
+                    setSelectedRating(null);
+                }}
+            >
+                <div className="reviewratings-view-modal">
+
+
+                    <div className="reviewratings-view-detail">
+                        <span className="reviewratings-view-label">
+                            Reviewer Name
+                        </span>
+
+                        <span className="reviewratings-view-value">
+                            {selectedRating?.user || "—"}
+                        </span>
+                    </div>
+
+                    <div className="reviewratings-view-detail">
+                        <span className="reviewratings-view-label">
+                            Rating
+                        </span>
+
+                        <span className="reviewratings-view-rating">
+                            <StarOutlined />
+
+                            {selectedRating?.rating
+                                ? `${selectedRating.rating} ${selectedRating.rating === 1
+                                    ? "Star"
+                                    : "Stars"
+                                }`
+                                : "—"}
+                        </span>
+                    </div>
+
+                    <div className="reviewratings-view-detail reviewratings-view-detail--comment">
+                        <span className="reviewratings-view-label">
+                            Comment
+                        </span>
+
+                        <p className="reviewratings-view-comment">
+                            {selectedRating?.comment?.trim() ||
+                                "No comment provided."}
+                        </p>
+                    </div>
+
+                    <div className="reviewratings-view-modal-footer">
+                        <Button
+                            type="primary"
+                            className="reviewratings-view-close-button"
+                            onClick={() => {
+                                setIsViewModalOpen(false);
+                                setSelectedRating(null);
+                            }}
+                        >
+                            Close
+                        </Button>
+                    </div>
                 </div>
             </Modal>
         </ConfigProvider>

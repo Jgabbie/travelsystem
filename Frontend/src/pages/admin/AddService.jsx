@@ -505,7 +505,7 @@ export default function AddService() {
                     <div className={errors.visaName || errors.description || errors.visaPrice ? "add-service-card-error" : "add-service-section"}>
                         <h2 className="section-headers">Basic Information</h2>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <label className="add-service-input-labels">Visa Name</label>
+                            <label className="add-service-input-labels">Visa Name <span style={{ color: "#ff0000" }}>*</span></label>
                             <Input
                                 status={errors.visaName ? "error" : ""}
                                 value={values.visaName}
@@ -526,7 +526,7 @@ export default function AddService() {
 
 
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <label className="add-service-input-labels">Visa Service Price</label>
+                            <label className="add-service-input-labels">Visa Service Price <span style={{ color: "#ff0000" }}>*</span></label>
                             <Input
                                 status={errors.visaPrice ? "error" : ""}
                                 value={values.visaPrice}
@@ -548,7 +548,7 @@ export default function AddService() {
 
 
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <label className="add-service-input-labels">Description</label>
+                            <label className="add-service-input-labels">Description <span style={{ color: "#ff0000" }}>*</span></label>
                             <Input.TextArea
                                 value={values.description}
                                 maxLength={500}
@@ -570,7 +570,7 @@ export default function AddService() {
 
                         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                             <label className="add-service-input-labels">
-                                Visa Service Image
+                                Visa Service Image <span style={{ color: "#ff0000" }}>*</span>
                             </label>
 
                             <Upload
@@ -643,7 +643,7 @@ export default function AddService() {
                                     <div key={`req-${index}`} className="add-service-bullet-row" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                         <Space style={{ width: '100%' }}>
                                             <div>
-                                                <label className="add-service-input-labels">Requirement Name</label>
+                                                <label className="add-service-input-labels">Requirement Name <span style={{ color: "#ff0000" }}>*</span></label>
                                                 <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
                                                     <Input
                                                         value={item.req}
@@ -661,7 +661,7 @@ export default function AddService() {
                                             </div>
                                         </Space>
 
-                                        <label className="add-service-input-labels">Required or Optional</label>
+                                        <label className="add-service-input-labels">Required or Optional <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Select
                                             value={item.isReq}
                                             className="add-service-inputs"
@@ -674,7 +674,7 @@ export default function AddService() {
                                         />
 
                                         <div>
-                                            <label className="add-service-input-labels">Requirement Description</label>
+                                            <label className="add-service-input-labels">Requirement Description <span style={{ color: "#ff0000" }}>*</span></label>
                                             <Input.TextArea
                                                 value={item.desc}
                                                 className="add-service-inputs"
@@ -739,7 +739,7 @@ export default function AddService() {
                                         <div key={`merged-step-${i}`} className="add-service-bullet-row">
                                             <Space>
                                                 <div style={{ width: '100%' }}>
-                                                    <label className="add-service-input-labels">Process Step {i + 1}</label>
+                                                    <label className="add-service-input-labels">Process Step {i + 1} <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
                                                         <Input
                                                             value={step.title}
@@ -760,7 +760,7 @@ export default function AddService() {
                                             </Space>
 
                                             <div>
-                                                <label className="add-service-input-labels">Process Step Description</label>
+                                                <label className="add-service-input-labels">Process Step Description <span style={{ color: "#ff0000" }}>*</span></label>
                                                 <Input.TextArea
                                                     value={step.description}
                                                     className="add-service-inputs"
@@ -814,7 +814,7 @@ export default function AddService() {
                         {values.reminders.map((item, index) => (
                             <div key={`reminder-${index}`} className="add-service-bullet-row">
                                 <div>
-                                    <label className="add-service-input-labels">{index + 1}. Reminder</label>
+                                    <label className="add-service-input-labels">{index + 1}. Reminder <span style={{ color: "#ff0000" }}>*</span></label>
                                     <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
                                         <Input
                                             value={item}

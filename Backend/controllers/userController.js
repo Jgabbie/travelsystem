@@ -263,7 +263,7 @@ const createUsers = async (req, res) => {
             });
 
             const resetToken = jwt.sign({ id: newUser._id, scope: 'password-reset' }, process.env.JWT_SECRET_RESET_KEY, { expiresIn: '1d' })
-            const clientUrl = 'http://localhost:3000'
+            const clientUrl = process.env.FRONTEND_URL || 'https://mrctravelandtours.com'
             const resetLink = `${clientUrl}/new-password?token=${resetToken}`
 
             await transporter.sendMail({
@@ -271,10 +271,7 @@ const createUsers = async (req, res) => {
                 to: email,
                 subject: `Set up your ${role} account`,
                 html: `
-            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
-                <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-
-                <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+            <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
                 <h2 style="color:#305797; margin-bottom:10px;">
                     Welcome to M&RC Travel and Tours
@@ -306,15 +303,6 @@ const createUsers = async (req, res) => {
                 <p style="color:#777; font-size:13px; margin-top:30px;">
                     If you did not request this account, please ignore this email.
                 </p>
-
-                <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-
-                <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                    <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                    <p>M&RC Travel and Tours</p>
-                    <p>info1@mrctravels.com</p>
-                    <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                </div>
             </div>`
             });
 

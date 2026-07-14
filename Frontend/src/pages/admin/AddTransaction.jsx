@@ -248,7 +248,7 @@ export default function AddTransaction() {
 
                             <div className="add-transaction-basic-grid">
                                 <div className="add-transaction-field">
-                                    <label>Transaction Date</label>
+                                    <label>Transaction Date <span style={{ color: "#ff0000" }}>*</span></label>
                                     <DatePicker
                                         showTime
                                         format="MMMM D, YYYY h:mm A"
@@ -266,7 +266,7 @@ export default function AddTransaction() {
                                 </div>
 
                                 <div className="add-transaction-field">
-                                    <label>Total Price</label>
+                                    <label>Total Price <span style={{ color: "#ff0000" }}>*</span></label>
 
                                     <Input
                                         readOnly
