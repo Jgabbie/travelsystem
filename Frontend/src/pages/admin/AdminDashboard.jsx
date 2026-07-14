@@ -99,7 +99,7 @@ export default function AdminDashboard() {
     ? popularPackages.map(p => ({
       packageName: p.packageName,
       count: p.bookingCount || p.bookingCount || p.count || 0,
-      packageImages: p.packageImages || p.packageImages || []
+      packageImage: p.packageImage || null
     }))
     : top3Packages;
 
@@ -155,7 +155,7 @@ export default function AdminDashboard() {
     popularPackages.forEach((p) => {
       const dur = Number(p.packageDuration || p.packageDuration || (p.packageDuration === 0 ? 0 : undefined));
       if (dur == null) return;
-      const imgs = p.packageImages || p.images || [];
+      const imgs = p.packageImage || p.images || [];
       const first = Array.isArray(imgs) ? imgs[0] : imgs;
       const imageUrl = first && typeof first === 'string' ? first : (first && (first.url || first.path || first.src)) || null;
       if (imageUrl && !durationImageMap[dur]) durationImageMap[dur] = imageUrl;
@@ -168,7 +168,7 @@ export default function AdminDashboard() {
     const dur = Number(b.packageId?.packageDuration);
     if (Number.isNaN(dur)) return;
     if (durationImageMap[dur]) return;
-    const imgs = b.packageId?.packageImages || b.packageId?.images || [];
+    const imgs = b.packageId?.packageImage || b.packageId?.images || [];
     const first = Array.isArray(imgs) ? imgs[0] : imgs;
     const imageUrl = first && typeof first === 'string' ? first : (first && (first.url || first.path || first.src)) || null;
     if (imageUrl) durationImageMap[dur] = imageUrl;
@@ -652,7 +652,7 @@ export default function AdminDashboard() {
         {displayTopPackages && displayTopPackages.length > 0 ? (
           <Row gutter={[16, 16]}>
             {displayTopPackages.map((pkg, idx) => {
-              const imgs = pkg.packageImages || pkg.images || [];
+              const imgs = pkg.packageImage || pkg.images || [];
               const first = Array.isArray(imgs) ? imgs[0] : imgs;
               const imageUrl = first && typeof first === 'string' ? first : (first && (first.url || first.path || first.src)) || null;
 

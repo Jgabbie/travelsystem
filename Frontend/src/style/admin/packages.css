@@ -292,7 +292,7 @@
 /* BUTTONS CSS */
 .packagemanagement-view-button {
   font-family: "Montserrat", sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   background-color: #305797;
   color: #fff;
@@ -305,7 +305,7 @@
 
 .packagemanagement-edit-button {
   font-family: "Montserrat", sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   background-color: #305797;
   color: #fff;
@@ -318,7 +318,7 @@
 
 .packagemanagement-slotsdiscount-button {
   font-family: "Montserrat", sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   background-color: #305797;
   color: #fff;
@@ -331,7 +331,7 @@
 
 .packagemanagement-addpackage {
   font-family: "Montserrat", sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   background-color: #305797;
   color: #fff;
@@ -344,7 +344,7 @@
 
 .packagemanagement-archive {
   font-family: "Montserrat", sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   background-color: #305797;
   color: #fff;
@@ -357,7 +357,7 @@
 
 .packagemanagement-remove-button {
   font-family: "Montserrat", sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   background-color: #992A46;
   color: #fff;
