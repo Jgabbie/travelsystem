@@ -600,14 +600,29 @@ export default function LandingPage() {
 
                 {/* first section */}
                 <div className="hero-section">
+                    <img
+                        className="hero-image"
+                        src="/images/LandingPage_Banner.webp"
+                        alt="Travel destinations featured by M&RC Travel and Tours"
+                        width="1920"
+                        height="1080"
+                        fetchPriority="high"
+                        decoding="async"
+                        draggable={false}
+                    />
+
                     <div className="hero-overlay"></div>
+
                     <div className="hero-content">
                         <h1>Your Link to the World</h1>
-                        <p>Discover affordable vacation travel and tours. Book your dream activities and start exploring the world!</p>
+
+                        <p>
+                            Discover affordable vacation travel and tours. Book your dream
+                            activities and start exploring the world!
+                        </p>
                     </div>
 
                     <div className="search-widget">
-
                         <div className="search-row">
                             <input
                                 type="text"
@@ -622,11 +637,16 @@ export default function LandingPage() {
                                     }
                                 }}
                             />
-                            <Button type='primary' className="search-btn" onClick={handleSearch}>
+
+                            <Button
+                                type="primary"
+                                className="search-btn"
+                                aria-label="Search destination"
+                                onClick={handleSearch}
+                            >
                                 <SearchOutlined />
                             </Button>
                         </div>
-
                     </div>
                 </div>
 
@@ -640,13 +660,36 @@ export default function LandingPage() {
                 {/* SECOND SECTION */}
                 <div ref={packagesRef}>
                     <div className="hero-section-packages">
+                        <img
+                            className="packages-hero-image"
+                            src="/images/LandingPage2_Banner.webp"
+                            alt="International and domestic travel destinations"
+                            width="1920"
+                            height="1080"
+                            loading="lazy"
+                            decoding="async"
+                            draggable={false}
+                        />
+
                         <div className="hero-overlay-packages"></div>
+
                         <div className="hero-content-packages">
                             <h1>Book Your Tours Now</h1>
+
                             <p>
-                                Ready for your next adventure?  Book your international tour with M&RC Travel today and explore the world with ease and comfort. From stunning destinations to well-planned itineraries, we handle all the details so you can focus on making unforgettable memories. Don’t wait—your dream journey starts now!
+                                Ready for your next adventure? Book your international tour with
+                                M&RC Travel today and explore the world with ease and comfort.
+                                From stunning destinations to well-planned itineraries, we handle
+                                all the details so you can focus on making unforgettable memories.
+                                Don’t wait—your dream journey starts now!
                             </p>
-                            <Button className='packages-button' onClick={() => { navigate('/destinations-packages') }}>BROWSE TOUR PACKAGES</Button>
+
+                            <Button
+                                className="packages-button"
+                                onClick={() => navigate('/destinations-packages')}
+                            >
+                                BROWSE TOUR PACKAGES
+                            </Button>
                         </div>
                     </div>
 
@@ -1150,11 +1193,28 @@ export default function LandingPage() {
                 <div ref={aboutusRef} style={{ paddingTop: '100px' }}>
 
                     <div className="hero-section-aboutus">
+                        <img
+                            className="aboutus-hero-image"
+                            src="/images/AboutUs_BackgroundImage.webp"
+                            alt="M&RC Travel and Tours team and travel services"
+                            width="1920"
+                            height="1080"
+                            loading="lazy"
+                            decoding="async"
+                            draggable={false}
+                        />
+
                         <div className="hero-overlay-aboutus"></div>
+
                         <div className="hero-content-aboutus">
                             <h1>M&RC Travel and Tours</h1>
+
                             <p>
-                                M&RC Travel and tours is a travel agency that provides a wide range of travel services, including tour packages, flight bookings, hotel reservations, and travel insurance. With a commitment to customer satisfaction and a passion for travel.
+                                M&RC Travel and Tours is a travel agency that provides a wide
+                                range of travel services, including tour packages, flight
+                                bookings, hotel reservations, and travel insurance. We are
+                                committed to customer satisfaction and passionate about creating
+                                memorable travel experiences.
                             </p>
                         </div>
                     </div>
@@ -1188,6 +1248,8 @@ export default function LandingPage() {
                             <img
                                 className='aboutus-image'
                                 draggable={false}
+                                width="600"
+                                height="400"
                                 alt="example"
                                 src="/images/Homepage1.webp"
                             />
@@ -1201,6 +1263,8 @@ export default function LandingPage() {
                             <img
                                 className='aboutus-image aboutus-image-offset'
                                 draggable={false}
+                                width="600"
+                                height="400"
                                 alt="example"
                                 src="/images/Homepage2.webp"
                             />
