@@ -604,6 +604,7 @@ export default function LandingPage() {
                         width="1920"
                         height="1080"
                         fetchPriority="high"
+                        loading="eager"
                         decoding="async"
                         draggable={false}
                     />
