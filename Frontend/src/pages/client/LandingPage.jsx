@@ -341,8 +341,6 @@ export default function LandingPage() {
                         pkg?.id ||
                         '';
 
-                    console.log(packageData)
-
                     return {
                         packageItem,
                         packageCode:
@@ -432,7 +430,6 @@ export default function LandingPage() {
         }
     }, [auth, authLoading])
 
-    console.log('For You Packages:', forYouPackages)
 
 
     // Check for next steps modal flag from preferences
