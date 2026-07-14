@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom'
 import '../../style/client/faqspage.css'
 
 const { Text } = Typography
-
 const { Panel } = Collapse
 
 
@@ -64,8 +63,6 @@ export default function FAQsPage() {
     const navigate = useNavigate()
     const [searchTerm, setSearchTerm] = useState('')
     const [activeCategory, setActiveCategory] = useState('All')
-
-    const [isChatbotOpen, setIsChatbotOpen] = useState(false)
 
 
     // chatbot modal handlers

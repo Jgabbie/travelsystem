@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, ConfigProvider, notification } from 'antd';
+import { Button, ConfigProvider } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Space, Spin, Empty, notification } from 'antd'
+import { Card, Col, Input, InputNumber, Row, Select, Slider, Typography, ConfigProvider, Spin, Empty, notification } from 'antd'
 import { FacebookFilled, InstagramFilled, HeartFilled, HeartOutlined, SearchOutlined, StarFilled, ShoppingCartOutlined } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router-dom'
 import '../../style/client/destinationspackages.css'
@@ -22,11 +22,9 @@ export default function DestinationsPackages() {
     const [wishlistedIds, setWishlistedIds] = useState(() => new Set())
     const [wishlistEntryMap, setWishlistEntryMap] = useState(() => new Map())
 
-    const [isChatbotOpen, setIsChatbotOpen] = useState(false)
-
     const { auth } = useAuth()
 
-    const { Title, Text } = Typography
+    const { Text } = Typography
 
 
     //get all packages from package collection and map it

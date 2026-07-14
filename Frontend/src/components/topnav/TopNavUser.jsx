@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Dropdown, Space, Button, Modal, Spin, ConfigProvider } from 'antd';
 import { DownOutlined, HomeOutlined, UserOutlined, CarryOutOutlined, StarOutlined, CreditCardOutlined, IdcardOutlined, LogoutOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -11,7 +11,7 @@ import '../../style/components/topnavuser.css'
 import '../../style/components/modals/modaldesign.css'
 
 export default function TopNavUser() {
-    const { auth, setAuth, checkAuth, authLoading } = useAuth();
+    const { auth, setAuth, checkAuth } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -124,14 +124,6 @@ export default function TopNavUser() {
         setIsModalOpen(true);
     };
 
-    const logout = async () => {
-        try {
-            showModal()
-        } catch (err) {
-            console.error('Logout failed:', err);
-        }
-    };
-
 
     //dropdown menu items
     const items = [
@@ -240,7 +232,7 @@ export default function TopNavUser() {
                 )}
                 <nav className="navbar">
                     <div className="logo-section">
-                        <img src={"/images/LogoNav.png"} alt="Logo" className="user-logo-img" onClick={() => { navigate("/home") }} />
+                        <img src={"/images/LogoNav.webp"} alt="Logo" className="user-logo-img" onClick={() => { navigate("/home") }} />
                     </div>
 
                     {/* if authenticated, show username, if not, then show signup and login button links */}

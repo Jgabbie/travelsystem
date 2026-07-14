@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Input, Button, Card, Space, notification, ConfigProvider, Select, Upload, Image } from "antd";
 import { PlusOutlined, DeleteOutlined, ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/addservice.css";
 import { useAuth } from "../../hooks/useAuth";
@@ -55,7 +55,6 @@ export default function AddService() {
 
     const INSERT_AFTER_TITLE = 'Documents Submitted';
     const insertIndex = STANDARD_PROCESS_STEPS.findIndex(s => s.title === INSERT_AFTER_TITLE);
-    const customCount = values.processSteps.length;
 
     //set the standard steps
     useEffect(() => {
@@ -89,18 +88,6 @@ export default function AddService() {
             }
         }
         return "";
-    };
-
-
-    //validate all fields at once
-    const validateAll = (updatedValues) => {
-        setErrors({
-            visaName: validate("visaName", updatedValues.visaName),
-            visaPrice: validate("visaPrice", updatedValues.visaPrice),
-            description: validate("description", updatedValues.description),
-            requirements: validate("requirements", updatedValues.requirements),
-            processSteps: validate("processSteps", updatedValues.processSteps)
-        });
     };
 
 
@@ -364,7 +351,7 @@ export default function AddService() {
 
         try {
             if (isEdit) {
-                const result = await apiFetch.put(
+                await apiFetch.put(
                     `/services/update-service/${serviceId}`,
                     payload
                 );
@@ -375,11 +362,10 @@ export default function AddService() {
                     placement: "topRight"
                 });
             } else {
-                const result = await apiFetch.post(
+                await apiFetch.post(
                     "/services/create-service",
                     payload
                 );
-
 
                 notification.success({
                     message: "Visa service created successfully.",
@@ -406,12 +392,6 @@ export default function AddService() {
                 placement: "topRight"
             });
         }
-    };
-
-
-    //format price input
-    const priceFormat = (value) => {
-        return value?.toString().replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ") || "";
     };
 
 

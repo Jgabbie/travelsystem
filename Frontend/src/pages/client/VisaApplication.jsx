@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Spin, notification, Upload, Button, Tag, ConfigProvider, Radio, Modal, Image, Input, Space, DatePicker, TimePicker, Descriptions } from 'antd';
-import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, CheckCircleFilled, PictureOutlined, EyeOutlined } from '@ant-design/icons';
+import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, CheckCircleFilled, EyeOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/visaapplication.css';
 import dayjs from 'dayjs';
@@ -122,22 +122,6 @@ export default function VisaApplication() {
     };
 
 
-    //get the date when a specific step was set in the status history, based on the title of the step
-    const getStepSetDateForTitle = (app, title) => {
-        if (!app || !title) return null;
-        const history = app.statusHistory;
-        if (Array.isArray(history) && history.length > 0) {
-            for (let i = history.length - 1; i >= 0; i--) {
-                const h = history[i];
-                if (String(h.status).toLowerCase() === String(title).toLowerCase()) {
-                    return dayjs(h.changedAt);
-                }
-            }
-        }
-        return null;
-    };
-
-
     //get the most recent staff/admin who changed the status (if available)
     const getManagerName = (app) => {
         try {
@@ -183,9 +167,6 @@ export default function VisaApplication() {
     const statusSetDate = getStatusSetDate(application);
     const managerName = getManagerName(application);
     const deadlineDays = application?.statusDeadlineDays ?? null;
-    const createdAt = application?.createdAt
-        ? dayjs(application.createdAt).startOf('day')
-        : null;
     let statusDeadlineDate = !terminalStatuses.has(String(statusText || '').toLowerCase())
         ? (application?.statusDeadlineDate
             ? dayjs(application.statusDeadlineDate)
@@ -1884,7 +1865,6 @@ export default function VisaApplication() {
                                                                 const stepDeadlineDate = step?.deadlineDate ? dayjs(step.deadlineDate) : null;
                                                                 const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
                                                                 const stepIsCurrent = currentStep === idx;
-                                                                const isTerminalStep = terminalStatuses.has(String(step.title || '').toLowerCase());
 
                                                                 const daysLeft = stepDeadlineDate ? stepDeadlineDate.diff(dayjs(), 'day') : null;
                                                                 const hoursLeft = stepDeadlineDate ? stepDeadlineDate.diff(dayjs(), 'hour') : null;

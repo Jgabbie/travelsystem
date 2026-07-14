@@ -3,7 +3,7 @@ import { Input, Button, Card, DatePicker, Select, Space, notification, message, 
 import { UploadOutlined, PlusOutlined, DeleteOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/addpackage.css";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import dayjs from "dayjs";
 import { useAuth } from "../../hooks/useAuth";
 

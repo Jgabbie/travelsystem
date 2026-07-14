@@ -1,8 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Steps, Spin, notification, Upload, Tag, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space, Input, Modal, Descriptions } from 'antd';
-import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, CheckCircleFilled, EyeOutlined } from '@ant-design/icons';
+import { Steps, Spin, notification, Upload, Tag, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space, Modal, Descriptions } from 'antd';
+import { UploadOutlined, ArrowLeftOutlined, DeleteOutlined, CheckCircleFilled, EyeOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/passportapplication.css';
 import dayjs from 'dayjs';
@@ -79,9 +79,6 @@ export default function PassportApplication() {
     const [confirmingSuggested, setConfirmingSuggested] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState(null);
-
-    const [releaseOption, setReleaseOption] = useState(null);
-    const [deliveryAddress, setDeliveryAddress] = useState("");
 
     const [isConfirmDocumentsOpen, setIsConfirmDocumentsOpen] = useState(false);
     const [isSelectDateModalOpen, setIsSelectDateModalOpen] = useState(false);
@@ -461,54 +458,8 @@ export default function PassportApplication() {
     };
 
 
-    //render file preview for uploaded documents
-    const renderFilePreview = (fileList, setter) => {
-        if (fileList.length === 0) return null;
-
-        const file = fileList[0];
-        const isPDF = file.type === 'application/pdf' || file.name?.toLowerCase().endsWith('.pdf');
-
-
-
-
-        return (
-            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
-                {isPDF ? (
-                    <Button
-                        type="dashed"
-                        style={{ minWidth: 220 }}
-                        icon={<FilePdfOutlined />}
-                        onClick={() => window.open(file.preview || file.url, '_blank')}
-                    >
-                        View PDF: {file.name}
-                    </Button>
-                ) : (
-                    <Image
-                        src={file.preview || file.url}
-                        alt="Preview"
-                        style={{ maxWidth: 220, borderRadius: '8px', border: '1px solid #d9d9d9', cursor: 'pointer' }}
-                    />
-                )}
-
-                {/* The Remove Button */}
-                <Button
-                    className='passportapplication-removefile-button'
-                    type="primary"
-                    icon={<DeleteOutlined />}
-                    onClick={() => setter([])} // Clears the specific list
-                    size="small"
-                >
-                    Remove
-                </Button>
-            </div>
-        );
-    };
-
-
     //render upload documents
     const renderReadOnlyFile = (url, label) => {
-        // Check if the URL contains '.pdf' (case insensitive)
-        const isPdf = typeof url === 'string' && url.toLowerCase().split(/[?#]/)[0].endsWith('.pdf');
 
         if (!url) {
             return <div style={{ fontSize: 13, color: '#6b7280' }}>No file</div>;
@@ -1630,7 +1581,6 @@ export default function PassportApplication() {
                                                             const processStepInfo = getProcessStepInfo(step.title);
                                                             const stepSetDate = processStepInfo.setDate || getStepSetDateForTitle(application, step.title);
                                                             const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
-                                                            const stepDeadlineDays = statusDeadlineDaysMap[step.title] ?? null;
 
                                                             // Prefer processSteps data from backend
                                                             let stepDeadlineDate = processStepInfo.deadlineDate || null;

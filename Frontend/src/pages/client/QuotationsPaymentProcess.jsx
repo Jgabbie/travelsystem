@@ -24,7 +24,7 @@ export default function QuotationsPaymentProcess() {
     const { quotationBookingData, clearBookingData } = useQuotationBooking();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const cancelRequestedRef = React.useRef(false);
+    const cancelRequestedRef = useRef(false);
 
 
     const [paymentType, setPaymentType] = useState(() => {
@@ -56,9 +56,6 @@ export default function QuotationsPaymentProcess() {
     const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
     const [isCancelProcessModalOpen, setIsCancelProcessModalOpen] = useState(false);
 
-    const onCancelModal = () => {
-        setIsProceedModalOpen(false);
-    };
 
     const hasQuotationBookingData = Boolean(
         quotationBookingData &&
@@ -286,7 +283,6 @@ export default function QuotationsPaymentProcess() {
     const startTravelDate = dayjs(quotationBookingData?.travelDate.split('-')[0].trim()).format("MMM D, YYYY") || 'TBD';
     const endTravelDate = dayjs(quotationBookingData?.travelDate.split('-')[1].trim()).format("MMM D, YYYY") || 'TBD';
 
-    const displayTravelDate = quotationBookingData?.travelDate
     const travelDate = {
         startDate: dayjs(startTravelDate).format("YYYY-MM-DD"),
         endDate: dayjs(endTravelDate).format("YYYY-MM-DD")

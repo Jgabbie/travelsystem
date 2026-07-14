@@ -11,7 +11,7 @@
 .faq-hero {
     position: relative;
     height: 600px;
-    background-image: url('/public/images/FAQs_BackgroundImage.jpg');
+    background-image: url('/public/images/FAQs_BackgroundImage.webp');
     background-position: center;
     background-size: cover;
     display: flex;

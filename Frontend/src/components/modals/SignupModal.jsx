@@ -369,7 +369,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
 
                         <div className='signup-container-left'>
                             <img
-                                src='/images/Signup_BackgroundImage.png'
+                                src='/images/Signup_BackgroundImage.webp'
                                 alt='Signup Background'
                                 className='signup-container-left-image'
                             />

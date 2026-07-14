@@ -1,7 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
-
-
 .passandvisa-container {
     background: #e9f0f7;
 }
@@ -653,7 +649,7 @@
 .passandvisa-hero-section {
     position: relative;
     height: 600px;
-    background-image: url('/public/images/PassportAndVisa_BackgroundImage.png');
+    background-image: url('/public/images/PassportAndVisa_BackgroundImage.webp');
     background-position: center;
     display: flex;
     flex-direction: column;

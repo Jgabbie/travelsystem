@@ -670,8 +670,6 @@ export default function PackagePage() {
         : basePackageDeposit
     const isWishlisted = Boolean(resolvedPackageItem && wishlistedIds.has(String(resolvedPackageItem)))
     const hasUserReview = Boolean(userReview)
-    const packageLocation = packageData?.packageDestination || packageData?.packageLocation || packageData?.packageCountry || packageData?.packageOrigin
-    const packageCategory = packageData?.packageCategory || packageData?.packageType
     const totalSlots = useMemo(() => {
         return (packageData?.packageSpecificDate || []).reduce(
             (sum, date) => sum + Number(date?.slots || 0),

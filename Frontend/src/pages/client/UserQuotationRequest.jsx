@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, notification, Button, Input, Card, ConfigProvider, Spin, Tag, Typography } from "antd"
+import { Modal, notification, Button, Input, ConfigProvider, Spin, Typography } from "antd"
 import { ArrowLeftOutlined, CheckCircleFilled } from "@ant-design/icons"
 import { useNavigate, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
@@ -7,7 +7,7 @@ import { useQuotationBooking } from "../../context/BookingQuotationContext";
 import '../../style/client/userquotationrequest.css'
 
 
-const { Title, Text: AntText } = Typography;
+const { Text: AntText } = Typography;
 
 export default function UserQuotationRequest() {
     const [notes, setNotes] = useState("");

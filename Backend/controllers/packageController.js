@@ -753,7 +753,7 @@ const getPopularPackages = async (req, res) => {
                 return total + (dateRange?.slots || 0);
             }, 0),
             packageType: entry.package.packageType,
-            packageImages: entry.package.images || [],
+            packageImage: entry.package.images?.[0] || '',
             packageTags: entry.package.packageTags || [],
             packageDiscountPercent: entry.package.packageDiscountPercent || 0,
             bookingCount: entry.bookingCount

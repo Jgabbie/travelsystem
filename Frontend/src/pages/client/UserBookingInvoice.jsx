@@ -221,23 +221,6 @@ export default function UserBookingInvoice() {
         }, 0) * 100) / 100; // Round to 2 decimal places
 
 
-    const transactionStatus = transactions.length === 0
-        ? "Pending"
-        : paidAmount >= totalPrice
-            ? "Fully Paid"
-            : "Partial";
-
-
-    const getPaymentStatus = () => {
-        if (transactionStatus === "Fully Paid" || transactionStatus === "Paid") {
-            return { label: "Fully Paid", color: "green" };
-        }
-        if (transactionStatus === "Pending") {
-            return { label: "Not Paid", color: "red" };
-        }
-        return { label: "Balance Due", color: "orange" };
-    };
-
     const packageName =
         bookingDetails.tourPackageTitle ||
         bookingDetails.packageName ||

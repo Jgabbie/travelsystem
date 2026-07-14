@@ -1,11 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Button, Card, Input, Modal, Select, Image, ConfigProvider } from 'antd';
 import { SearchOutlined, FacebookFilled, InstagramFilled, LeftOutlined, RightOutlined, EnvironmentOutlined, ClockCircleOutlined, CompassOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import LoginModal from '../../components/modals/LoginModal';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/landingpage.css'
-import Chatbot from '../../components/chatbot/Chatbot';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function LandingPage() {
@@ -16,14 +15,6 @@ export default function LandingPage() {
     const exploreRef = useRef(null)
     const aboutusRef = useRef(null)
 
-    const [budgetRange, setBudgetRange] = useState([12000, 30000]);
-    const [activity, setActivity] = useState([]);
-    const [type, setType] = useState('Tour Type');
-    const [duration, setDuration] = useState('Length of Stay');
-    const [durationOptions, setDurationOptions] = useState([
-        { value: 'Length of Stay', label: 'Length of Stay' },
-    ]);
-    const [pax, setPax] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoginVisible, setIsLoginVisible] = useState(false)
     const [isChatbotOpen, setIsChatbotOpen] = useState(false)
@@ -35,18 +26,20 @@ export default function LandingPage() {
 
     const [popularPackages, setPopularPackages] = useState([])
     const [forYouPackages, setForYouPackages] = useState([])
-    const [domesticPackages, setDomesticPackages] = useState([])
-    const [activityTags, setActivityTags] = useState([])
     const [isSending, setIsSending] = useState(false);
     const [isPopularLoading, setIsPopularLoading] = useState(false)
     const [isForYouLoading, setIsForYouLoading] = useState(false)
     const [forYouError, setForYouError] = useState('')
     const [recommendationMethod, setRecommendationMethod] = useState('')
-    const [isDomesticLoading, setIsDomesticLoading] = useState(false)
     const [exploreSlideIndex, setExploreSlideIndex] = useState(0)
     const [forYouSlideIndex, setForYouSlideIndex] = useState(0)
     const [popularSlideIndex, setPopularSlideIndex] = useState(0)
     const [popularCardsPerView, setPopularCardsPerView] = useState(3)
+
+
+    const Chatbot = lazy(() =>
+        import('../../components/chatbot/Chatbot')
+    );
 
 
     //handle contact form values
@@ -120,17 +113,17 @@ export default function LandingPage() {
     //carousel slides for explore section
     const exploreSlides = [
         {
-            src: '/images/Homepage1.png',
+            src: '/images/Homepage1.webp',
             title: 'Discover the Philippines',
             subtitle: 'Sunlit beaches, island escapes, and soulful local journeys.'
         },
         {
-            src: '/images/Homepage2.png',
+            src: '/images/Homepage2.webp',
             title: 'City Lights to Nature Trails',
             subtitle: 'From skyline adventures to quiet mountain mornings.'
         },
         {
-            src: '/images/LandingPage_Banner.png',
+            src: '/images/LandingPage_Banner.webp',
             title: 'Your Next Adventure Awaits',
             subtitle: 'Handpicked tours that match your pace and budget.'
         }
@@ -145,31 +138,6 @@ export default function LandingPage() {
         if (trimmed) {
             params.set('q', trimmed);
         }
-
-        if (Array.isArray(activity) && activity.length) {
-            activity.forEach((tag) => params.append('tag', tag));
-        }
-
-        if (duration && duration !== 'Length of Stay') {
-            const parsedDays = Number.parseInt(duration, 10);
-            if (Number.isFinite(parsedDays)) {
-                params.set('maxDays', String(parsedDays));
-            }
-        }
-
-        if (type && type !== 'Tour Type') {
-            params.set('tourType', type);
-        }
-
-        if (pax) {
-            const parsedTravelers = Number.parseInt(pax, 10);
-            if (Number.isFinite(parsedTravelers)) {
-                params.set('travelers', String(parsedTravelers));
-            }
-        }
-
-        params.set('minBudget', String(budgetRange[0]));
-        params.set('maxBudget', String(budgetRange[1]));
 
         const query = params.toString();
         navigate(query ? `/destinations-packages?${query}` : '/destinations-packages');
@@ -226,13 +194,7 @@ export default function LandingPage() {
                     packageCode: pkg.packageCode,
                     packageName: pkg.packageName,
                     packageDescription: pkg.packageDescription,
-
-                    packageImages: Array.isArray(pkg.images)
-                        ? pkg.images
-                        : Array.isArray(pkg.packageImages)
-                            ? pkg.packageImages
-                            : [],
-
+                    packageImage: pkg.packageImage,
                     bookingCount: pkg.bookingCount || 0,
                     packageType: pkg.packageType || pkg.tourType || '',
 
@@ -270,12 +232,7 @@ export default function LandingPage() {
                             packageCode: pkg.packageCode,
                             packageName: pkg.packageName,
                             packageDescription: pkg.packageDescription,
-                            packageImages: Array.isArray(pkg.images)
-                                ? pkg.images
-                                : Array.isArray(pkg.packageImages)
-                                    ? pkg.packageImages
-                                    : []
-                            ,
+                            packageImage: pkg.packageImage,
                             packageType: pkg.packageType || pkg.tourType || '',
                             discountPercent: Number.isFinite(Number(pkg.packageDiscountPercent)) ? Number(pkg.packageDiscountPercent) : (Number.isFinite(Number(pkg.discountPercent)) ? Number(pkg.discountPercent) : 0)
                         }))
@@ -485,74 +442,6 @@ export default function LandingPage() {
     }, []);
 
 
-    //fetch domestic packages for "explore now" section
-    useEffect(() => {
-        const fetchDomesticPackages = async () => {
-            setIsDomesticLoading(true)
-            try {
-                const response = await apiFetch.get('/package/get-packages')
-                const packages = (response || [])
-                    .filter((pkg) => String(pkg.packageType).toLowerCase() === 'domestic')
-                    .map((pkg) => ({
-                        id: pkg._id,
-                        packageName: pkg.packageName,
-                        packageDescription: pkg.packageDescription,
-                        image: Array.isArray(pkg.images) && pkg.images.length > 0 ? pkg.images[0] : ''
-                    }))
-
-                setDomesticPackages(packages)
-            } catch (error) {
-                console.error('Failed to load domestic packages:', error)
-                setDomesticPackages([])
-            } finally {
-                setIsDomesticLoading(false)
-            }
-        }
-
-        fetchDomesticPackages()
-    }, [])
-
-
-    //fetch activity tags for search filter options
-    useEffect(() => {
-        const fetchActivityTags = async () => {
-            try {
-                const response = await apiFetch.get('/package/get-packages-for-users')
-                const unique = new Set()
-
-                    ; (response || []).forEach((pkg) => {
-                        pkg.packageTags?.forEach((tag) => unique.add(tag))
-                    })
-
-                setActivityTags(Array.from(unique))
-
-                // Build duration options based on available package durations
-                try {
-                    const durationsSet = new Set()
-                        ; (response || []).forEach((pkg) => {
-                            const d = Number(pkg.packageDuration)
-                            if (Number.isFinite(d) && d > 0) durationsSet.add(d)
-                        })
-
-                    const durationsArr = Array.from(durationsSet).sort((a, b) => a - b)
-                    const options = [{ value: 'Length of Stay', label: 'Length of Stay' }, ...durationsArr.map((d) => ({
-                        value: `${d} Days`,
-                        label: d === 1 ? `${d} Day` : `${d} Days`,
-                    }))]
-
-                    setDurationOptions(options)
-                } catch (errDur) {
-                    console.error('Failed to compute durations:', errDur)
-                }
-            } catch (error) {
-                console.error('Failed to load activity tags:', error)
-                setActivityTags([])
-            }
-        }
-
-        fetchActivityTags()
-    }, [])
-
 
     //auto-rotate explore section carousel every 4 seconds
     useEffect(() => {
@@ -664,13 +553,7 @@ export default function LandingPage() {
     }, [forYouSlides.length])
 
 
-    //format package descriptions with max length and ellipsis
-    const formatDescription = (text, maxLength = 160) => {
-        if (!text) return 'No description available.'
-        if (text.length <= maxLength) return text
-        return `${text.slice(0, maxLength).trim()}...`
-    }
-
+    //format package price
     const formatPackagePrice = (price) => {
         const numericPrice = Number(price)
 
@@ -681,6 +564,8 @@ export default function LandingPage() {
         return `₱${numericPrice.toLocaleString('en-PH')}`
     }
 
+
+    //format package duration
     const formatPackageDuration = (duration) => {
         const numericDuration = Number(duration)
 
@@ -843,12 +728,12 @@ export default function LandingPage() {
                                                                 }
                                                                 cover={
                                                                     <div className="popular-reference-cover">
-                                                                        {pkg.packageImages?.length > 0 ? (
+                                                                        {pkg.packageImage?.length > 0 ? (
                                                                             <img
                                                                                 className="popular-reference-image"
                                                                                 draggable={false}
                                                                                 alt={pkg.packageName}
-                                                                                src={pkg.packageImages[0]}
+                                                                                src={pkg.packageImage}
                                                                             />
                                                                         ) : (
                                                                             <div className="popular-reference-image popular-card-image-placeholder">
@@ -1289,7 +1174,7 @@ export default function LandingPage() {
                                 className='aboutus-image'
                                 draggable={false}
                                 alt="example"
-                                src="/images/Homepage1.png"
+                                src="/images/Homepage1.webp"
                             />
                         </div>
 
@@ -1302,7 +1187,7 @@ export default function LandingPage() {
                                 className='aboutus-image aboutus-image-offset'
                                 draggable={false}
                                 alt="example"
-                                src="/images/Homepage2.png"
+                                src="/images/Homepage2.webp"
                             />
                         </div>
 
@@ -1635,14 +1520,27 @@ export default function LandingPage() {
 
                 {auth && (
                     <>
-                        <Button className="chatbot-fab" type="primary" onClick={() => setIsChatbotOpen(true)}>
-                            <Image preview={false} style={{ width: 20, height: 20 }} src="/images/chatbotlogo.png" />
+                        <Button
+                            className="chatbot-fab"
+                            type="primary"
+                            onClick={() => setIsChatbotOpen(true)}
+                        >
+                            <Image
+                                preview={false}
+                                width={20}
+                                height={20}
+                                src="/images/chatbotlogo.png"
+                            />
                         </Button>
 
-                        <Chatbot
-                            isChatbotOpen={isChatbotOpen}
-                            setIsChatbotOpen={setIsChatbotOpen}
-                        />
+                        {isChatbotOpen && (
+                            <Suspense fallback={null}>
+                                <Chatbot
+                                    isChatbotOpen={isChatbotOpen}
+                                    setIsChatbotOpen={setIsChatbotOpen}
+                                />
+                            </Suspense>
+                        )}
                     </>
                 )}
 

@@ -189,32 +189,7 @@ export default function QuotationBookingProcess() {
     const adultRate = Number(data?.adultRate) || 0
     const childRate = Number(data?.childRate) || 0
     const infantRate = Number(data?.infantRate) || 0
-    const adultCount = Number(travelersCount.adult) || 0
-    const childCount = Number(travelersCount.child) || 0
-    const infantCount = Number(travelersCount.infant) || 0
-    const travelerFareBreakdown = [
-        {
-            key: 'adult',
-            label: 'Adult',
-            count: adultCount,
-            rate: adultRate,
-            amount: adultCount * adultRate
-        },
-        {
-            key: 'child',
-            label: 'Child',
-            count: childCount,
-            rate: childRate,
-            amount: childCount * childRate
-        },
-        {
-            key: 'infant',
-            label: 'Infant',
-            count: infantCount,
-            rate: infantRate,
-            amount: infantCount * infantRate
-        }
-    ]
+
     const packageName = data.packageName || 'Tour Package'
     const packageType =
         data?.packageType ||
@@ -335,14 +310,6 @@ export default function QuotationBookingProcess() {
                     ? await apiFetch.get(`/package/get-package/${encodeURIComponent(packageCode)}`)
                     : await apiFetch.get(`/package/get-package/${packageId}`);
 
-                const quoteTravelers = latestDetails?.travelers || [];
-                const computeTotalTravelers = typeof quoteTravelers === 'number'
-                    ? quoteTravelers
-                    : (Number(quoteTravelers?.adult) || 0)
-                    + (Number(quoteTravelers?.child) || 0)
-                    + (Number(quoteTravelers?.infant) || 0);
-
-                const packageType = packageResponse?.packageType;
                 const packageImages = packageResponse?.images || packageResponse?.packageImages || [];
                 const itineraryImages = packageResponse?.packageItineraryImages || {};
                 const visaRequired = packageResponse?.visaRequired || false;
@@ -873,50 +840,6 @@ export default function QuotationBookingProcess() {
             return next
         })
     }
-
-
-    //handle reset of uploads
-    const handleResetUploads = (index) => {
-        const newFileLists = [...fileLists];
-        newFileLists[index] = [];
-        setFileLists(newFileLists);
-
-        const newPhotoFileLists = [...photoFileLists];
-        newPhotoFileLists[index] = [];
-        setPhotoFileLists(newPhotoFileLists);
-
-        const newPreviews = [...previews];
-        newPreviews[index] = null;
-        setPreviews(newPreviews);
-
-        const newPhotoPreviews = [...photoPreviews];
-        newPhotoPreviews[index] = null;
-        setPhotoPreviews(newPhotoPreviews);
-    };
-
-
-    // reset upload funtion for passport
-    const handleResetPassport = (index) => {
-        const newFileLists = [...fileLists];
-        newFileLists[index] = [];
-        setFileLists(newFileLists);
-
-        const newPreviews = [...previews];
-        newPreviews[index] = null;
-        setPreviews(newPreviews);
-    };
-
-
-    // reset upload funtion for photo
-    const handleResetPhoto = (index) => {
-        const newPhotoFileLists = [...photoFileLists];
-        newPhotoFileLists[index] = [];
-        setPhotoFileLists(newPhotoFileLists);
-
-        const newPhotoPreviews = [...photoPreviews];
-        newPhotoPreviews[index] = null;
-        setPhotoPreviews(newPhotoPreviews);
-    };
 
 
     //update traveler field value in form and context when user edits traveler information fields, to keep form state and context data in sync as user makes changes to traveler information

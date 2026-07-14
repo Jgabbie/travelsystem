@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import '../../style/components/mrcregistration.css';
 import '../../style/components/mrcquotation.css';
 
@@ -14,24 +14,6 @@ export default function QuotationFormInEx({
 
     const inclusions = quotationData.inclusions || [];
     const exclusions = quotationData.exclusions || [];
-
-    const buildItineraryObject = (items) => {
-        return (items || []).reduce((acc, entry, idx) => {
-            const key = entry?.day || `Day ${idx + 1}`;
-            const lines = (entry?.text || '')
-                .split('\n')
-                .map((line) => line.trim())
-                .filter(Boolean);
-
-            acc[key] = lines.map((line) => ({
-                activity: line,
-                isOptional: false,
-                optionalActivity: '',
-                optionalPrice: ''
-            }));
-            return acc;
-        }, {});
-    };
 
     const getItemText = (item) => {
         if (typeof item === 'string') return item;
@@ -91,24 +73,6 @@ export default function QuotationFormInEx({
 
     const inclusionText = ensureArray(inclusionLines).join('\n');
     const exclusionText = ensureArray(exclusionLines).join('\n');
-
-    const renderItineraryItem = (item) => {
-        if (typeof item === 'string') return item;
-        if (!item) return '';
-
-        const activity = item.activity || item.item || '';
-        const optionalPrice = Number.isFinite(Number(item.optionalPrice))
-            ? Number(item.optionalPrice).toLocaleString()
-            : null;
-
-        let text = activity;
-
-        if (item.isOptional && item.optionalActivity) {
-            text += ` (Optional: ${item.optionalActivity}${optionalPrice ? ` - ₱${optionalPrice}` : ''})`;
-        }
-
-        return text;
-    };
 
     return (
         <div className="mrc-overlay-wrapper">

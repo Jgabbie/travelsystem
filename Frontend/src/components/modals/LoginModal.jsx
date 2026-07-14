@@ -255,7 +255,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
 
                                 <div className='login-container-left'>
                                     <img
-                                        src='/images/Login_BackgroundImage.png'
+                                        src='/images/Login_BackgroundImage.webp'
                                         alt='Login Background'
                                         className='login-container-left-image'
                                     />

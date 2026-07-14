@@ -559,7 +559,7 @@
 .destinations-hero-section {
     position: relative;
     height: 600px;
-    background-image: url('/public/images/Destination_BackgroundImage.jpg');
+    background-image: url('/public/images/Destination_BackgroundImage.webp');
     background-position: center;
     background-size: cover;
     display: flex;

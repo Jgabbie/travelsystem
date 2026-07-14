@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, notification, ConfigProvider, Modal, Spin, Slider } from 'antd'
+import { Button, Card, Col, Empty, Input, Row, Select, Typography, notification, ConfigProvider, Modal, Spin, Slider } from 'antd'
 import { DeleteOutlined, EyeOutlined, CheckCircleFilled, SearchOutlined, StarFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig'
@@ -18,7 +18,7 @@ export default function Wishlist() {
     const [selectedWishlistId, setSelectedWishlistId] = useState(null);
     const [averageRatings, setAverageRatings] = useState(() => new Map())
 
-    const { Title, Text } = Typography
+    const { Text } = Typography
 
     // fetch wishlist items on component mount
     useEffect(() => {

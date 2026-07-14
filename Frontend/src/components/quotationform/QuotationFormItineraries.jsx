@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import '../../style/components/mrcregistration.css';
 import '../../style/components/mrcquotation.css';
 
@@ -62,17 +62,6 @@ export default function QuotationFormIntineraries({
 
     const normalizeList = (items) =>
         (items || []).map((item) => getItemText(item)).filter((text) => text.trim());
-
-    const ensureArray = (value) => {
-        if (Array.isArray(value)) return value;
-        if (typeof value === 'string') {
-            return value
-                .split('\n')
-                .map((line) => line.trim())
-                .filter(Boolean);
-        }
-        return [];
-    };
 
     useEffect(() => {
         if (!setFormData) return;

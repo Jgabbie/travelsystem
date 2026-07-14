@@ -16,21 +16,6 @@ import BookingRegistrationTermsPart1 from '../../components/form/BookingRegistra
 import BookingRegistrationTermsPart2 from '../../components/form/BookingRegistrationTermsPart2';
 
 
-//format date for display
-const getDisplayDate = (value) => {
-    if (!value) return ''
-    if (typeof value === 'string') return value
-    if (value instanceof Date && !Number.isNaN(value.valueOf())) {
-        return value.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-        })
-    }
-    return String(value)
-}
-
-
 //initial count for group booking
 const INITIAL_COUNTS = {
     adult: 2,
@@ -220,7 +205,6 @@ export default function BookingProcess() {
     const travelers = data.travelers?.length ? data.travelers : ['None selected']
     const hotelOptions = data.hotelOptions?.length ? data.hotelOptions : []
     const airlineOptions = data.airlineOptions?.length ? data.airlineOptions : []
-    const travelDate = getDisplayDate(data.travelDate)
     const travelersCount = selectedSoloGrouped === 'solo'
         ? { adult: 1, child: 0, infant: 0 }
         : { adult: counts.adult, child: counts.child, infant: counts.infant }
@@ -826,50 +810,6 @@ export default function BookingProcess() {
             return next
         })
     }
-
-
-    //handle reset of all uploads (passport and photo) for a traveler
-    const handleResetUploads = (index) => {
-        const newFileLists = [...fileLists];
-        newFileLists[index] = [];
-        setFileLists(newFileLists);
-
-        const newPhotoFileLists = [...photoFileLists];
-        newPhotoFileLists[index] = [];
-        setPhotoFileLists(newPhotoFileLists);
-
-        const newPreviews = [...previews];
-        newPreviews[index] = null;
-        setPreviews(newPreviews);
-
-        const newPhotoPreviews = [...photoPreviews];
-        newPhotoPreviews[index] = null;
-        setPhotoPreviews(newPhotoPreviews);
-    };
-
-
-    //reset only passport upload for a traveler
-    const handleResetPassport = (index) => {
-        const newFileLists = [...fileLists];
-        newFileLists[index] = [];
-        setFileLists(newFileLists);
-
-        const newPreviews = [...previews];
-        newPreviews[index] = null;
-        setPreviews(newPreviews);
-    };
-
-
-    //reset only 2x2 photo upload for a traveler
-    const handleResetPhoto = (index) => {
-        const newPhotoFileLists = [...photoFileLists];
-        newPhotoFileLists[index] = [];
-        setPhotoFileLists(newPhotoFileLists);
-
-        const newPhotoPreviews = [...photoPreviews];
-        newPhotoPreviews[index] = null;
-        setPhotoPreviews(newPhotoPreviews);
-    };
 
 
     //update traveler field in form and booking data context

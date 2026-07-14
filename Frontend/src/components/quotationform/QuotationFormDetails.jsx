@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Input, Upload, Button, message } from 'antd';
-import { UploadOutlined, PlusOutlined } from '@ant-design/icons';
+import { UploadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import '../../style/components/mrcregistration.css';
 import '../../style/components/mrcquotation.css';
