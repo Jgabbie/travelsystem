@@ -19,6 +19,8 @@ const UserSchema = new mongoose.Schema({
     emailVerifyExpireAt: { type: Number, default: 0 },
     resetOtp: { type: String, default: '' },
     resetOtpExpireAt: { type: Number, default: 0 },
+    resetOtpAttempts: { type: Number, default: 0 },
+    resetOtpBlockedUntil: { type: Number, default: 0 },
     otpAttempts: { type: Number, default: 0 },
     otpBlockedUntil: { type: Number, default: 0 },
     refreshToken: { type: String, default: '' },

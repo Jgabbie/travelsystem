@@ -501,7 +501,7 @@ export default function UserManagement() {
                   className="usermanagement-table"
                   loading={loading}
                   columns={showArchived ? archivedColumns : columns}
-                  dataSource={staff}
+                  dataSource={customers}
                   scroll={{ x: "max-content" }}
                   pagination={{
                     pageSize: 10,

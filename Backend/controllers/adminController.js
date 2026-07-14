@@ -8,8 +8,14 @@ import logAction from "../utils/logger.js";
 //get admins function
 const getAdmins = async (req, res) => {
     try {
-        const admins = await UserModel.find({ role: "Admin" });
-        res.status(200).json(admins);
+        const admins = await UserModel.find({ role: "Admin" })
+            // Only return fields that the frontend actually needs.
+            .select(
+                "_id username firstname lastname email role profileImage"
+            )
+            .lean();
+
+        return res.status(200).json(admins);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
