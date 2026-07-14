@@ -99,7 +99,7 @@
 }
 
 .search-btn {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 25px;
     font-weight: 600;
     background-color: #305797;
@@ -580,7 +580,7 @@
 .popular-reference-price-label {
     margin: 0 0 8px;
     color: #929292;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 11px;
 }
 
@@ -593,7 +593,7 @@
     min-height: 18px;
     margin-bottom: 16px;
     color: #6d6d6d;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 11px;
     font-weight: 500;
 }
@@ -1622,7 +1622,7 @@
 .error-text {
     color: #ff4d4f;
     font-size: 12px;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     height: 12px;
     align-self: flex-start;
 }

@@ -170,7 +170,7 @@
 }
 
 .package-container .ant-table-tbody>tr>td {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   color: #1f2a44;
   font-size: 12px;
 }
@@ -291,7 +291,7 @@
 
 /* BUTTONS CSS */
 .packagemanagement-view-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -304,7 +304,7 @@
 }
 
 .packagemanagement-edit-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -317,7 +317,7 @@
 }
 
 .packagemanagement-slotsdiscount-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -330,7 +330,7 @@
 }
 
 .packagemanagement-addpackage {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -343,7 +343,7 @@
 }
 
 .packagemanagement-archive {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -356,7 +356,7 @@
 }
 
 .packagemanagement-remove-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #992A46;
@@ -421,7 +421,7 @@
   color: #6b7280;
   letter-spacing: 0.8px;
   text-transform: uppercase;
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
 }
 
 .package-details-title {
@@ -560,7 +560,7 @@
 
 .package-slots-save-button,
 .package-discount-save-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -580,7 +580,7 @@
 
 .package-slots-cancel-button,
 .package-discount-cancel-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #992A46;
@@ -599,7 +599,7 @@
 }
 
 .packagemanagement-restore-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #00bf63;

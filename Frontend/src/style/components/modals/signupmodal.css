@@ -126,7 +126,7 @@ body {
 
 .signup-labels-modal {
     font-size: 12px;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     color: #305797;
 }
 
@@ -176,7 +176,7 @@ body {
 }
 
 #signup-button-modal {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -309,7 +309,7 @@ body {
 .signup-terms-header h3 {
     margin: 0;
     color: #172b3a;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 14px;
     font-weight: 700;
     line-height: 1.3;
@@ -323,7 +323,7 @@ body {
     overflow-x: hidden;
     overflow-y: auto;
     color: #5c5c5c;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     line-height: 1.45;
     scrollbar-width: thin;
@@ -352,7 +352,7 @@ body {
 .signup-terms-content-modal h4 {
     margin: 0;
     color: #555555;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 500;
     line-height: 1.45;
@@ -394,7 +394,7 @@ body {
     border: none !important;
     border-radius: 0;
     box-shadow: none;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 500;
 }
@@ -413,7 +413,7 @@ body {
     border: none !important;
     border-radius: 16px;
     box-shadow: none;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 500;
 }
@@ -582,7 +582,7 @@ body {
 }
 
 .signup-success-text {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 14px;
     color: #4b5563;
     margin: 0 0 6px;
@@ -597,7 +597,7 @@ body {
 }
 
 #signup-success-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -610,7 +610,7 @@ body {
 }
 
 #signup-success-button-cancel {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #992A46;

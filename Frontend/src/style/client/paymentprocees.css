@@ -400,7 +400,7 @@
 
 /* BUTTONS CSS */
 .payment-process-back-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -418,7 +418,7 @@
 }
 
 .payment-process-proceed-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -441,7 +441,7 @@
 }
 
 .payment-process-upload-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;

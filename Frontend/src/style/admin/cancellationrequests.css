@@ -141,7 +141,7 @@
 }
 
 .cancellations-container .ant-table-tbody>tr>td {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     color: #1f2a44;
     font-size: 12px;
 }
@@ -168,7 +168,7 @@
 
 /* BUTTONS CSS */
 .cancellations-view-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -181,7 +181,7 @@
 }
 
 .cancellations-export-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -194,7 +194,7 @@
 }
 
 .cancellations-archive-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -207,7 +207,7 @@
 }
 
 .cancellations-reject-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #992A46;
@@ -220,7 +220,7 @@
 }
 
 .cancellations-approve-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #00bf63;
@@ -233,7 +233,7 @@
 }
 
 .cancellations-restore-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #00bf63;
@@ -246,7 +246,7 @@
 }
 
 .cancellations-viewproof-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     font-weight: 600;
     background-color: #305797;
@@ -420,7 +420,7 @@
 }
 
 .cancellations-container .ant-table-tbody>tr>td {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     color: #1f2a44;
 }

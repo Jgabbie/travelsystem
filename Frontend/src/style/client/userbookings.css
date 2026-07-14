@@ -54,7 +54,7 @@
 }
 
 .user-bookings-table .ant-table-tbody>tr>td {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     color: #2f3a4a;
 }
@@ -130,7 +130,7 @@
 }
 
 .user-bookings-view-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     font-weight: 600;
     background-color: #305797;
@@ -148,7 +148,7 @@
 }
 
 .user-bookings-cancel-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     font-weight: 600;
     background-color: #992A46;

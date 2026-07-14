@@ -37,7 +37,7 @@
 .successpayment-message {
     margin: 0 auto 24px;
     color: #374151;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 16px;
     line-height: 1.6;
 }
@@ -45,7 +45,7 @@
 .successpayment-redirect {
     margin: 0 0 24px;
     color: rgba(0, 0, 0, 0.45);
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 14px;
     line-height: 1.5;
 }
@@ -60,7 +60,7 @@
 
 
 .successpayment-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;

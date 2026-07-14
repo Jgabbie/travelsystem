@@ -83,7 +83,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.4px;
@@ -132,7 +132,7 @@
 
 .visa-description {
     margin: 0;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 14px;
     line-height: 1.55;
     color: #252525;
@@ -270,7 +270,7 @@
 }
 
 .visa-container .ant-table-tbody>tr>td {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     color: #1f2a44;
     font-size: 12px;
 }
@@ -317,7 +317,7 @@
 
 /* BUTTONS CSS */
 .visaservices-view-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -330,7 +330,7 @@
 }
 
 .visaservices-edit-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -343,7 +343,7 @@
 }
 
 .visaservices-archive-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -356,7 +356,7 @@
 }
 
 .visaservices-remove-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #992A46;
@@ -369,7 +369,7 @@
 }
 
 .visaservices-add-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -399,7 +399,7 @@
 }
 
 .visaservices-restore-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #00bf63;
@@ -460,7 +460,7 @@
     color: #6b7280;
     letter-spacing: 0.8px;
     text-transform: uppercase;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
 }
 
 .visa-details-title {

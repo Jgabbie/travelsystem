@@ -105,7 +105,7 @@
 }
 
 .visa-applications-container .ant-table-tbody>tr>td {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     color: #1f2a44;
     font-size: 12px;
 }
@@ -127,7 +127,7 @@
 }
 
 .visaapplications-export {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -140,7 +140,7 @@
 }
 
 .visaapplications-archive {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -153,7 +153,7 @@
 }
 
 .viewbutton-visa-application {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -172,7 +172,7 @@
 }
 
 .visaapplications-archive-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #992A46;
@@ -191,7 +191,7 @@
 
 
 .visaapplications-restore-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #00bf63;

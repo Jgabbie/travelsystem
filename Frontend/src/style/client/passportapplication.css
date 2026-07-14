@@ -10,7 +10,7 @@
 .passportapplication-page {
     min-height: 100vh;
     padding: 40px 32px 40px;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     margin-bottom: 40px;
 }
 
@@ -206,7 +206,7 @@
 
 
 .passportapplication-back-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -219,7 +219,7 @@
 }
 
 .passportapplication-submit-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -232,7 +232,7 @@
 }
 
 .passportapplication-uploadreceipt-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -245,7 +245,7 @@
 }
 
 .passportapplication-upload-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -260,7 +260,7 @@
 }
 
 .passportapplication-download-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -276,7 +276,7 @@
 }
 
 .passportapplication-preview-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #ffffff;
@@ -308,7 +308,7 @@
 }
 
 .passportapplication-removefile-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #992A46;
@@ -391,7 +391,7 @@
 }
 
 .passport-requirement-placeholder {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #ffffff;
@@ -414,7 +414,7 @@
 }
 
 .passport-requirement-file-preview-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #ffffff;

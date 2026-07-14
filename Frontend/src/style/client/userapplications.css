@@ -54,7 +54,7 @@
 }
 
 .userapplications-table .ant-table-tbody>tr>td {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     color: #2f3a4a;
 }
@@ -130,7 +130,7 @@
 }
 
 .userapplications-view-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     font-weight: 600;
     background-color: #305797;

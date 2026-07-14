@@ -140,7 +140,7 @@ body {
 
 .login-labels-modal {
     font-size: 12px;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     color: #305797;
 }
 
@@ -219,7 +219,7 @@ body {
 }
 
 #login-button-modal {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 18px;
     font-weight: 600;
     background-color: #305797;
@@ -358,7 +358,7 @@ body {
     border-radius: 16px;
     background-color: #305797;
     color: #ffffff;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);

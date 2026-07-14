@@ -60,7 +60,7 @@
 }
 
 .emailverify-success-modal .emailverify-secondary-heading-modal {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 14px;
     font-weight: 500;
     color: #4b5563;
@@ -107,7 +107,7 @@
 }
 
 #emailverify-submit-otp-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 20px;
     background-color: #305797;
     color: #FFF;
@@ -126,7 +126,7 @@
 }
 
 #emailverify-success-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;

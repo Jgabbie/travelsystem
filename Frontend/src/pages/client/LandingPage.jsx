@@ -2,10 +2,19 @@ import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Button, Card, Input, Modal, Select, Image, ConfigProvider } from 'antd';
 import { SearchOutlined, FacebookFilled, InstagramFilled, LeftOutlined, RightOutlined, EnvironmentOutlined, ClockCircleOutlined, CompassOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import LoginModal from '../../components/modals/LoginModal';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/landingpage.css'
 import { useAuth } from '../../hooks/useAuth';
+
+
+const LoginModal = lazy(() =>
+    import('../../components/modals/LoginModal')
+);
+
+const Chatbot = lazy(() =>
+    import('../../components/chatbot/Chatbot')
+);
+
 
 export default function LandingPage() {
     const navigate = useNavigate()
@@ -36,10 +45,6 @@ export default function LandingPage() {
     const [popularSlideIndex, setPopularSlideIndex] = useState(0)
     const [popularCardsPerView, setPopularCardsPerView] = useState(3)
 
-
-    const Chatbot = lazy(() =>
-        import('../../components/chatbot/Chatbot')
-    );
 
 
     //handle contact form values
@@ -180,6 +185,8 @@ export default function LandingPage() {
     };
 
 
+
+
     //fetch popular packages for carousel
     useEffect(() => {
         const fetchPopularPackages = async () => {
@@ -254,11 +261,7 @@ export default function LandingPage() {
                             packageName: pkg.packageName,
                             packageDescription: pkg.packageDescription,
 
-                            packageImages: Array.isArray(pkg.images)
-                                ? pkg.images
-                                : Array.isArray(pkg.packageImages)
-                                    ? pkg.packageImages
-                                    : [],
+                            packageImage: pkg.packageImage,
 
                             packageType: pkg.packageType || pkg.tourType || '',
 
@@ -294,6 +297,7 @@ export default function LandingPage() {
 
         fetchPopularPackages()
     }, [])
+
 
 
     //close chatbot when user logs out
@@ -337,6 +341,8 @@ export default function LandingPage() {
                         pkg?.id ||
                         '';
 
+                    console.log(packageData)
+
                     return {
                         packageItem,
                         packageCode:
@@ -354,11 +360,7 @@ export default function LandingPage() {
                             pkg?.packageDescription ||
                             '',
 
-                        packageImages: Array.isArray(packageData?.images)
-                            ? packageData.images
-                            : Array.isArray(packageData?.packageImages)
-                                ? packageData.packageImages
-                                : [],
+                        packageImage: packageData?.images?.[0],
 
                         packageType:
                             packageData?.packageType ||
@@ -429,6 +431,8 @@ export default function LandingPage() {
             isMounted = false
         }
     }, [auth, authLoading])
+
+    console.log('For You Packages:', forYouPackages)
 
 
     // Check for next steps modal flag from preferences
@@ -575,6 +579,7 @@ export default function LandingPage() {
 
         return `${numericDuration} ${numericDuration === 1 ? 'Day' : 'Days'}`
     }
+
 
     return (
         <ConfigProvider
@@ -728,12 +733,17 @@ export default function LandingPage() {
                                                                 }
                                                                 cover={
                                                                     <div className="popular-reference-cover">
-                                                                        {pkg.packageImage?.length > 0 ? (
+                                                                        {pkg.packageImage ? (
                                                                             <img
                                                                                 className="popular-reference-image"
-                                                                                draggable={false}
-                                                                                alt={pkg.packageName}
                                                                                 src={pkg.packageImage}
+                                                                                alt={pkg.packageName}
+                                                                                width="380"
+                                                                                height="220"
+                                                                                loading="lazy"
+                                                                                decoding="async"
+                                                                                fetchPriority="low"
+                                                                                draggable={false}
                                                                             />
                                                                         ) : (
                                                                             <div className="popular-reference-image popular-card-image-placeholder">
@@ -941,12 +951,17 @@ export default function LandingPage() {
                                                             }
                                                             cover={
                                                                 <div className="popular-reference-cover">
-                                                                    {pkg.packageImages?.length > 0 ? (
+                                                                    {pkg.packageImage ? (
                                                                         <img
                                                                             className="popular-reference-image"
-                                                                            draggable={false}
+                                                                            src={pkg.packageImage}
                                                                             alt={pkg.packageName}
-                                                                            src={pkg.packageImages[0]}
+                                                                            width="380"
+                                                                            height="220"
+                                                                            loading="lazy"
+                                                                            decoding="async"
+                                                                            fetchPriority="low"
+                                                                            draggable={false}
                                                                         />
                                                                     ) : (
                                                                         <div className="popular-reference-image popular-card-image-placeholder">

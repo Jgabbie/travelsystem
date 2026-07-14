@@ -27,20 +27,20 @@
 }
 
 .adduser-subtitle {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 14px;
     color: #4b5563;
     margin: 0 0 10px;
 }
 
 .adduser-form .ant-form-item-label>label {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     color: #305797;
 }
 
 .adduser-label {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     color: #305797;
     display: block;
@@ -104,7 +104,7 @@
 }
 
 .adduser-cancel-btn {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #992A46;
@@ -122,7 +122,7 @@
 }
 
 .adduser-submit-btn {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;

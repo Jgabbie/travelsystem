@@ -10,7 +10,7 @@
 .visaapplication-page {
     min-height: 100vh;
     padding: 40px 32px 40px;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     margin-bottom: 40px;
 }
 
@@ -144,7 +144,7 @@
 }
 
 .visaapplication-back-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -157,7 +157,7 @@
 }
 
 .visaapplication-uploadreceipt-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -170,7 +170,7 @@
 }
 
 .visaapplication-upload-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -185,7 +185,7 @@
 }
 
 .visaapplication-submit-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -198,7 +198,7 @@
 }
 
 .visaapplication-download-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -214,7 +214,7 @@
 }
 
 .visaapplication-submitdate-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -228,7 +228,7 @@
 
 
 .visaapplication-removefile-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #992A46;
@@ -295,7 +295,7 @@
 }
 
 .visa-requirement-placeholder {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #ffffff;
@@ -318,7 +318,7 @@
 }
 
 .visa-requirement-file-preview-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #ffffff;

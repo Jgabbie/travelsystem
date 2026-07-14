@@ -16,7 +16,7 @@
     padding: 24px;
     max-width: 1300px;
     margin: 0 auto;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
 }
 
 .user-invoice-header {
@@ -276,7 +276,7 @@
 
 /* BUTTONS CSS */
 .user-invoice-back-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -291,7 +291,7 @@
 }
 
 .user-invoice-form-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -304,7 +304,7 @@
 }
 
 .user-invoice-checkout-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -317,7 +317,7 @@
 }
 
 .user-invoice-receipt-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     font-weight: 600;
     background-color: #305797;

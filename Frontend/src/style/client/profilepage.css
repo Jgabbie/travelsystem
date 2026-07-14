@@ -108,7 +108,7 @@
 
 .profile-summary-meta {
     margin: 0;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     color: #6b7280;
 }
@@ -177,7 +177,7 @@
 }
 
 .profile-section-label {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
@@ -203,7 +203,7 @@
 .profile-empty-text {
     margin: 0;
     color: #6b7280;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
 }
 
 .profile-review-list {
@@ -256,7 +256,7 @@
     margin: 4px 0 0;
     font-size: 11px;
     color: #7b8492;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
 }
 
 .profile-review-score {
@@ -269,7 +269,7 @@
     justify-content: center;
     background: #fff8dd;
     color: #ca9700;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     font-weight: 700;
 }
@@ -284,7 +284,7 @@
     font-size: 13px;
     line-height: 1.55;
     color: #374151;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -331,14 +331,14 @@
     margin: 0;
     font-size: 12px;
     color: #6b7280;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
 }
 
 .profile-booking-details {
     margin: 0;
     font-size: 13px;
     color: #374151;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
 }
 
 .profile-booking-status {
@@ -432,7 +432,7 @@
     margin-left: 14px;
     font-size: 11px;
     color: #6b7280;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
 }
 
 .profile-fields {
@@ -461,14 +461,14 @@
 
 .profile-error-message {
     margin: 0;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 10px;
     line-height: 1.4;
     color: #ff4d4f !important;
 }
 
 .profile-action-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797 !important;
@@ -485,7 +485,7 @@
 }
 
 .profile-cancel-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #992A46;
@@ -497,7 +497,7 @@
 }
 
 .profile-delete-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     font-weight: 600;
     background: #992a46 !important;
@@ -579,7 +579,7 @@
     background: #effcf5;
     border: 1px solid #a7e8c3;
     color: #008f4c;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 11px;
     font-weight: 600;
     white-space: nowrap;
@@ -598,7 +598,7 @@
     border-radius: 999px;
     background: #edf3fc;
     color: #305797;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 11px;
     font-weight: 600;
     text-transform: capitalize;
@@ -606,7 +606,7 @@
 
 .profile-summary-location {
     margin: 0;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     color: #6b7280;
     overflow-wrap: anywhere;

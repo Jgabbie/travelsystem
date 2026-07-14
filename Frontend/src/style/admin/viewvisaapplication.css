@@ -10,7 +10,7 @@
 .viewvisaapplication-page {
     min-height: 100vh;
     padding: 40px 32px 40px;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     margin-bottom: 40px;
 }
 
@@ -186,7 +186,7 @@
 }
 
 .viewvisaapplication-delivery-details-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     font-weight: 600;
     background-color: #305797;
@@ -245,7 +245,7 @@
 
 /* BUTTONS */
 .viewvisaapplication-back-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -258,7 +258,7 @@
 }
 
 .viewvisaapplication-submit-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -271,7 +271,7 @@
 }
 
 .viewvisaapplication-download-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -286,7 +286,7 @@
 /* Preview button style to match provided design */
 
 .application-doc-preview-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -320,7 +320,7 @@
 
 
 .viewvisaapplication-submitdocu-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -334,7 +334,7 @@
 }
 
 .viewvisaapplication-dfa-processing-approve-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #00bf63;
@@ -348,7 +348,7 @@
 }
 
 .viewvisaapplication-dfa-processing-reject-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #992A46;

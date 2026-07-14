@@ -45,7 +45,7 @@
     margin: 0;
     border-top: 1px solid #d9d9d9;
     box-sizing: border-box;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 10px;
     font-weight: 500;
     line-height: 1;
@@ -435,7 +435,7 @@
 
 /* BUTTONS */
 .quotationformdetails-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -469,7 +469,7 @@
     justify-content: space-between;
     padding-top: 8px;
     border-top: 1px solid #d9d9d9;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 10px;
     font-weight: 500;
     color: #666666;
@@ -564,7 +564,7 @@
     border-top: 1px solid #d9d9d9;
     box-sizing: border-box;
 
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 10px;
     font-weight: 500;
     line-height: 1.2;

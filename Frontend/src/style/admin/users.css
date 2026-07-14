@@ -68,7 +68,7 @@
 }
 
 .usermanagement-table .ant-table-tbody>tr>td {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   color: #1f2a44;
   font-size: 12px;
 }
@@ -117,7 +117,7 @@
 
 /* BUTTONS CSS */
 .usermanagement-view-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -130,7 +130,7 @@
 }
 
 .usermanagement-edit-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -143,7 +143,7 @@
 }
 
 .usermanagement-add-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -156,7 +156,7 @@
 }
 
 .usermanagement-export-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -169,7 +169,7 @@
 }
 
 .usermanagement-archive-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -182,7 +182,7 @@
 }
 
 .usermanagement-okmodal-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -205,7 +205,7 @@
 }
 
 .usermanagement-restore-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #00bf63;
@@ -223,7 +223,7 @@
 }
 
 .usermanagement-remove-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #992A46;
@@ -300,7 +300,7 @@
 }
 
 .users-manage-confirm-text {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 14px;
   color: #4b5563;
   margin: 0 0 4px;
@@ -314,7 +314,7 @@
 }
 
 .users-manage-cancel-btn {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 14px;
   border-radius: 16px;
   height: 38px;
@@ -329,7 +329,7 @@
 }
 
 .users-manage-confirm-btn {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 14px;
   font-weight: 600;
   background-color: #305797;

@@ -106,7 +106,7 @@
 }
 
 .transaction-table .ant-table-tbody>tr>td {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   color: #1f2a44;
   font-size: 12px;
 }
@@ -115,7 +115,7 @@
 /* BUTTONS DESIGNS */
 .transactionmanagement-view-button,
 .transactionmanagement-viewproof-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -128,7 +128,7 @@
 }
 
 .transactionmanagement-edit-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -142,7 +142,7 @@
 
 
 .transactionmanagement-export-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -155,7 +155,7 @@
 }
 
 .transactionmanagement-add-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -168,7 +168,7 @@
 }
 
 .transactionmanagement-archive-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -181,7 +181,7 @@
 }
 
 .transactionmanagement-download-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -194,7 +194,7 @@
 }
 
 .transactionmanagement-accept-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #00bf63;
@@ -207,7 +207,7 @@
 }
 
 .transactionmanagement-remove-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #992A46;

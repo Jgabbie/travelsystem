@@ -166,14 +166,14 @@
     margin: 0;
     padding-left: 18px;
     color: #1f2a44;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     line-height: 1.5;
 }
 
 .info-list-empty {
     margin: 0;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     color: #5b677a;
 }
@@ -239,7 +239,7 @@
 }
 
 .card-desc {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     color: #484c58;
 }
@@ -313,7 +313,7 @@
 .quotation-field .ant-input,
 .quotation-field .ant-input-number,
 .quotation-field .ant-input-number-input {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 14px;
 }
 
@@ -337,7 +337,7 @@
 .quotation-budget-values {
     display: flex;
     justify-content: space-between;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     color: #305797;
@@ -395,7 +395,7 @@
 }
 
 .quotation-flight-note {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 10px;
     text-align: justify;
     padding: 10px;
@@ -543,7 +543,7 @@
     margin: 0;
     padding-left: 18px;
     color: #1f2a44;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     line-height: 1.5;
 }
@@ -558,7 +558,7 @@
 .quotation-itinerary-note,
 .quotation-airline-note,
 .quotation-hotel-note {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 10px;
     font-style: italic;
     color: #e72323;
@@ -573,13 +573,13 @@
 }
 
 .quotation-cancel {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     border-radius: 10px;
     height: 40px;
 }
 
 .quotation-submit {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -622,7 +622,7 @@
 }
 
 .quotation-modal-text {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 14px;
     color: #5b677a;
     margin: 0;
@@ -634,7 +634,7 @@
 }
 
 .quotation-modal-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -652,7 +652,7 @@
 }
 
 .packagequotation-back-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;

@@ -130,7 +130,7 @@
 }
 
 .booking-management-container .ant-table-tbody>tr>td {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   color: #1f2a44;
   font-size: 12px;
 }
@@ -170,7 +170,7 @@
 
 /* BUTTONS CSS */
 .bookingmanagement-view-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -183,7 +183,7 @@
 }
 
 .bookingmanagement-edit-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -196,7 +196,7 @@
 }
 
 .bookingmanagement-export-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -209,7 +209,7 @@
 }
 
 .bookingmanagement-archive-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;
@@ -222,7 +222,7 @@
 }
 
 .bookingmanagement-remove-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #992A46;
@@ -235,7 +235,7 @@
 }
 
 .bookingmanagement-restore-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #00bf63;
@@ -359,7 +359,7 @@
 }
 
 .bookingmanagement-cancel-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #992A46;
@@ -377,7 +377,7 @@
 }
 
 .bookingmanagement-okmodal-button {
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 13px;
   font-weight: 600;
   background-color: #305797;

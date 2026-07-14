@@ -126,7 +126,7 @@
 }
 
 .reviewratings-container .ant-table-tbody>tr>td {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     color: #1f2a44;
     font-size: 12px;
 }
@@ -150,7 +150,7 @@
 
 /* BUTTONS CSS */
 .reviewratings-remove-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #992A46;
@@ -163,7 +163,7 @@
 }
 
 .reviewratings-export-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -176,7 +176,7 @@
 }
 
 .reviewratings-archive-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -201,7 +201,7 @@
 }
 
 .reviewratings-restore-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #00bf63;
@@ -226,7 +226,7 @@
     border-radius: 16px;
     background-color: #305797;
     color: #ffffff;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     box-shadow: 0 8px 20px rgba(48, 87, 151, 0.2);
@@ -314,7 +314,7 @@
     border: none !important;
     border-radius: 16px;
     background-color: #305797;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
 }
@@ -370,7 +370,7 @@
 }
 
 .reviewratings-container .ant-table-tbody>tr>td {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     color: #1f2a44;
 }

@@ -90,7 +90,7 @@
 
 .package-description p {
     margin: 0;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-weight: 400;
     font-size: 14px;
     line-height: 1.7;
@@ -105,7 +105,7 @@
 
 .package-action-secondary,
 .package-action-outline {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     font-weight: 600;
     background-color: #305797;
@@ -124,7 +124,7 @@
 }
 
 .package-action-remove {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
     font-weight: 600;
     background-color: #992A46;
@@ -221,7 +221,7 @@
 .itinerary-day ul,
 .itinerary-day ul li,
 .itinerary-day ul li div {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-weight: 400;
     font-size: 14px;
 }
@@ -335,7 +335,7 @@
     color: #1f2a44;
     position: relative;
     padding-left: 18px;
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-weight: 400;
     font-size: 14px;
 }
@@ -526,7 +526,7 @@
 }
 
 .package-availability-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
