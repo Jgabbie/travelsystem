@@ -133,13 +133,23 @@ export default function QuotationFormDetails({
             value: (
                 <div>
                     <Input
+                        maxLength={30}
                         size="small"
                         className="mrc-tour-details-input"
                         placeholder={formatTravelDates(quotationData.travelDates)}
                         value={formData.travelDates || ''}
-                        onChange={(e) =>
-                            setFormData(prev => ({ ...prev, travelDates: e.target.value }))
-                        }
+                        onChange={(e) => {
+                            const cleanedValue = e.target.value
+                                .replace(/[^a-zA-Z0-9\s,/-]/g, '')
+                                .replace(/\s{2,}/g, ' ')
+                                .replace(/-{2,}/g, '-')
+                                .replace(/^\s+/, '');
+
+                            setFormData((prev) => ({
+                                ...prev,
+                                travelDates: cleanedValue,
+                            }));
+                        }}
                         style={formErrors.travelDates ? { borderColor: '#ff4d4f' } : undefined}
                     />
                     {formErrors.travelDates ? (
@@ -153,13 +163,22 @@ export default function QuotationFormDetails({
             value: (
                 <div>
                     <Input
+                        maxLength={30}
                         size="small"
                         className="mrc-tour-details-input"
                         placeholder={quotationData.hotel || 'Hotel name'}
                         value={formData.hotel || ''}
-                        onChange={(e) =>
-                            setFormData(prev => ({ ...prev, hotel: e.target.value }))
-                        }
+                        onChange={(e) => {
+                            const cleanedValue = e.target.value
+                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                .replace(/\s{2,}/g, ' ')
+                                .replace(/^\s+/, '');
+
+                            setFormData((prev) => ({
+                                ...prev,
+                                hotel: cleanedValue,
+                            }));
+                        }}
                         style={formErrors.hotel ? { borderColor: '#ff4d4f' } : undefined}
                     />
                     {formErrors.hotel ? (
@@ -173,13 +192,22 @@ export default function QuotationFormDetails({
             value: (
                 <div>
                     <Input
+                        maxLength={30}
                         size="small"
                         className="mrc-tour-details-input"
                         placeholder="1 STUDIO TWIN ROOM"
                         value={formData.roomType}
-                        onChange={(e) =>
-                            setFormData(prev => ({ ...prev, roomType: e.target.value }))
-                        }
+                        onChange={(e) => {
+                            const cleanedValue = e.target.value
+                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                .replace(/\s{2,}/g, ' ')
+                                .replace(/^\s+/, '');
+
+                            setFormData((prev) => ({
+                                ...prev,
+                                roomType: cleanedValue,
+                            }));
+                        }}
                         style={formErrors.roomType ? { borderColor: '#ff4d4f' } : undefined}
                     />
                     {formErrors.roomType ? (
@@ -193,13 +221,22 @@ export default function QuotationFormDetails({
             value: (
                 <div>
                     <Input
+                        maxLength={30}
                         size="small"
                         className="mrc-tour-details-input"
                         placeholder={quotationData.airline || 'Airline'}
                         value={formData.airline || ''}
-                        onChange={(e) =>
-                            setFormData(prev => ({ ...prev, airline: e.target.value }))
-                        }
+                        onChange={(e) => {
+                            const cleanedValue = e.target.value
+                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                .replace(/\s{2,}/g, ' ')
+                                .replace(/^\s+/, '');
+
+                            setFormData((prev) => ({
+                                ...prev,
+                                airline: cleanedValue,
+                            }));
+                        }}
                         style={formErrors.airline ? { borderColor: '#ff4d4f' } : undefined}
                     />
                     {formErrors.airline ? (
@@ -213,13 +250,22 @@ export default function QuotationFormDetails({
             value: (
                 <div>
                     <Input
+                        maxLength={30}
                         size="small"
                         className="mrc-tour-details-input"
                         placeholder="HANDCARRY: 1PC. 7KGS/PERSON | CHECK IN: N/A"
                         value={formData.baggageAllowance}
-                        onChange={(e) =>
-                            setFormData(prev => ({ ...prev, baggageAllowance: e.target.value }))
-                        }
+                        onChange={(e) => {
+                            const cleanedValue = e.target.value
+                                .replace(/[^a-zA-Z0-9\s:./|]/g, '')
+                                .replace(/\s{2,}/g, ' ')
+                                .replace(/^\s+/, '');
+
+                            setFormData((prev) => ({
+                                ...prev,
+                                baggageAllowance: cleanedValue,
+                            }));
+                        }}
                         style={formErrors.baggageAllowance ? { borderColor: '#ff4d4f' } : undefined}
                     />
                     {formErrors.baggageAllowance ? (
@@ -235,6 +281,7 @@ export default function QuotationFormDetails({
             value: (
                 <div>
                     <Input
+                        maxLength={30}
                         size="small"
                         className="mrc-tour-details-input"
                         placeholder="TOTAL"

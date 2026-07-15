@@ -508,11 +508,20 @@ export default function CancellationRequests() {
                             <div className="cancel-actions-field cancel-actions-field--search">
                                 <label className="cancellationrequests-label">Search</label>
                                 <Input
+                                    maxLength={40}
                                     prefix={<SearchOutlined />}
                                     placeholder="Search username, package or reason..."
                                     className="cancellationrequests-search-input"
                                     value={searchText}
-                                    onChange={(e) => setSearchText(e.target.value)}
+                                    onChange={(e) => {
+                                        const cleanedValue = e.target.value
+                                            .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                            .replace(/\s{2,}/g, ' ')
+                                            .replace(/-{2,}/g, '-')
+                                            .replace(/^\s+/, '');
+
+                                        setSearchText(cleanedValue);
+                                    }}
                                     allowClear
                                 />
                             </div>
@@ -536,6 +545,7 @@ export default function CancellationRequests() {
                             <div className="cancel-actions-field">
                                 <label className="cancellationrequests-label">Cancellation Date</label>
                                 <DatePicker
+                                    inputReadOnly
                                     className="cancellation-date-filter"
                                     placeholder="Cancellation Date"
                                     value={dateFilter}
@@ -649,7 +659,6 @@ export default function CancellationRequests() {
             {/* APPROVE CANCELLATION REQUEST MODAL */}
             <Modal
                 open={isAcceptModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 centered={true}
@@ -657,15 +666,15 @@ export default function CancellationRequests() {
                     setIsAcceptModalOpen(false);
                 }}
             >
-                <div className='signup-success-container'>
-                    <h1 className='signup-success-heading'>Accept Cancellation Request?</h1>
-                    <p className='signup-success-text'>Are you sure you want to accept this cancellation request?</p>
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Accept Cancellation Request?</h1>
+                    <p className='modal-text'>Are you sure you want to accept this cancellation request?</p>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                         <Button
                             type='primary'
-                            className='logout-confirm-btn'
+                            className='modal-button'
                             onClick={() => {
                                 handleAccept();
                                 setIsAcceptModalOpen(false);
@@ -675,7 +684,8 @@ export default function CancellationRequests() {
                         </Button>
                         <Button
                             type='primary'
-                            className='logout-cancel-btn'
+                            className='modal-button-cancel'
+
                             onClick={() => {
                                 setIsAcceptModalOpen(false);
                             }}
@@ -690,7 +700,6 @@ export default function CancellationRequests() {
             {/* APPROVE CANCELLATION REQUEST MODAL */}
             <Modal
                 open={isRejectModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 centered={true}
@@ -698,15 +707,15 @@ export default function CancellationRequests() {
                     setIsRejectModalOpen(false);
                 }}
             >
-                <div className='signup-success-container'>
-                    <h1 className='signup-success-heading'>Reject Cancellation Request?</h1>
-                    <p className='signup-success-text'>Are you sure you want to reject this cancellation request?</p>
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Reject Cancellation Request?</h1>
+                    <p className='modal-text'>Are you sure you want to reject this cancellation request?</p>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                         <Button
                             type='primary'
-                            className='logout-confirm-btn'
+                            className='modal-button'
                             onClick={() => {
                                 handleReject();
                                 setIsRejectModalOpen(false);
@@ -716,7 +725,7 @@ export default function CancellationRequests() {
                         </Button>
                         <Button
                             type='primary'
-                            className='logout-cancel-btn'
+                            className='modal-button-cancel'
                             onClick={() => {
                                 setIsRejectModalOpen(false);
                             }}
@@ -731,7 +740,6 @@ export default function CancellationRequests() {
             {/* CANCELLATION REQUEST HAS BEEN ACCEPTED MODAL */}
             <Modal
                 open={isCancellationAcceptedModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 centered={true}
@@ -739,20 +747,20 @@ export default function CancellationRequests() {
                     setIsCancellationAcceptedModalOpen(false);
                 }}
             >
-                <div className='signup-success-container'>
-                    <h1 className='signup-success-heading'>Cancellation Request Accepted!</h1>
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Cancellation Request Accepted!</h1>
 
                     <div>
                         <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
-                    <p className='signup-success-text'>The cancellation request has been accepted.</p>
+                    <p className='modal-text'>The cancellation request has been accepted.</p>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                         <Button
                             type='primary'
-                            className='logout-confirm-btn'
+                            className='modal-button'
                             onClick={() => {
                                 setIsCancellationAcceptedModalOpen(false);
                             }}
@@ -768,7 +776,6 @@ export default function CancellationRequests() {
             {/* CANCELLATION REQUEST HAS BEEN REJECTED MODAL */}
             <Modal
                 open={isCancellationRejectedModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 centered={true}
@@ -776,20 +783,20 @@ export default function CancellationRequests() {
                     setIsCancellationRejectedModalOpen(false);
                 }}
             >
-                <div className='signup-success-container'>
-                    <h1 className='signup-success-heading'>Cancellation Request Rejected!</h1>
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Cancellation Request Rejected!</h1>
 
                     <div>
                         <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
-                    <p className='signup-success-text'>The cancellation request has been rejected.</p>
+                    <p className='modal-text'>The cancellation request has been rejected.</p>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                         <Button
                             type='primary'
-                            className='logout-confirm-btn'
+                            className='modal-button'
                             onClick={() => {
                                 setIsCancellationRejectedModalOpen(false);
                             }}

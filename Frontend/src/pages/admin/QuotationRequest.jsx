@@ -778,7 +778,7 @@ export default function QuotationRequest() {
                     </div>
 
                     <div className="quotationrequest-header">
-                        <Button onClick={() => navigate(-1)} type="primary" className="viewvisaapplication-back-button">
+                        <Button onClick={() => navigate(-1)} type="primary" className="quotationrequest-back-button">
                             <ArrowLeftOutlined />
                             Back
                         </Button>
@@ -967,64 +967,138 @@ export default function QuotationRequest() {
                                 <div>
                                     <label className="quotationrequest-label">Travel Dates <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
+                                        maxLength={30}
                                         placeholder="Travel dates"
                                         value={formData.travelDates}
                                         disabled
-                                        onChange={(e) => setFormData(prev => ({ ...prev, travelDates: e.target.value }))}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s,/-]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/-{2,}/g, '-')
+                                                .replace(/^\s+/, '');
+
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                travelDates: cleanedValue,
+                                            }));
+                                        }}
                                     />
                                     {formErrors.travelDates && <div className="quotationrequest-error">{formErrors.travelDates}</div>}
                                 </div>
                                 <div>
                                     <label className="quotationrequest-label">Hotel <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
+                                        maxLength={30}
                                         placeholder="Hotel"
                                         value={formData.hotel}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, hotel: e.target.value }))}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/^\s+/, '');
+
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                hotel: cleanedValue,
+                                            }));
+                                        }}
                                     />
                                     {formErrors.hotel && <div className="quotationrequest-error">{formErrors.hotel}</div>}
                                 </div>
                                 <div>
                                     <label className="quotationrequest-label">Room/Type <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
+                                        maxLength={30}
                                         placeholder="Room/Type"
                                         value={formData.roomType}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, roomType: e.target.value }))}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/^\s+/, '');
+
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                roomType: cleanedValue,
+                                            }));
+                                        }}
                                     />
                                     {formErrors.roomType && <div className="quotationrequest-error">{formErrors.roomType}</div>}
                                 </div>
                                 <div>
                                     <label className="quotationrequest-label">Airline <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
+                                        maxLength={30}
                                         placeholder="Airline"
                                         value={formData.airline}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, airline: e.target.value }))}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/^\s+/, '');
+
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                airline: cleanedValue,
+                                            }));
+                                        }}
                                     />
                                     {formErrors.airline && <div className="quotationrequest-error">{formErrors.airline}</div>}
                                 </div>
                                 <div>
                                     <label className="quotationrequest-label">Baggage Allowance <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
+                                        maxLength={30}
                                         placeholder="Baggage allowance"
                                         value={formData.baggageAllowance}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, baggageAllowance: e.target.value }))}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/^\s+/, '');
+
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                baggageAllowance: cleanedValue,
+                                            }));
+                                        }}
                                     />
                                 </div>
                                 <div>
                                     <label className="quotationrequest-label">Travelers <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
+                                        maxLength={30}
                                         placeholder="Travelers"
                                         value={formData.travelers}
                                         disabled
-                                        onChange={(e) => setFormData(prev => ({ ...prev, travelers: e.target.value }))}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/^\s+/, '');
+
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                travelers: cleanedValue,
+                                            }));
+                                        }}
                                     />
                                     {formErrors.travelers && <div className="quotationrequest-error">{formErrors.travelers}</div>}
                                 </div>
                                 <div>
                                     <label className="quotationrequest-label">Total Rate per Adult <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
+                                        maxLength={6}
                                         placeholder="Total rate per adult"
                                         value={formData.totalRate}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, totalRate: e.target.value.replace(/[^0-9.]/g, '') }))}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value.replace(/[^0-9.]/g, '');
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                totalRate: cleanedValue
+                                            }));
+                                        }}
                                     />
                                     {formErrors.totalRate && <div className="quotationrequest-error">{formErrors.totalRate}</div>}
                                 </div>
@@ -1032,9 +1106,16 @@ export default function QuotationRequest() {
                                     <div>
                                         <label className="quotationrequest-label">Total Rate per Child <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input
+                                            maxLength={6}
                                             placeholder="Total rate per child"
                                             value={formData.totalChildRate}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, totalChildRate: e.target.value.replace(/[^0-9.]/g, '') }))}
+                                            onChange={(e) => {
+                                                const cleanedValue = e.target.value.replace(/[^0-9.]/g, '');
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    totalChildRate: cleanedValue
+                                                }));
+                                            }}
                                         />
                                         {formErrors.totalChildRate && <div className="quotationrequest-error">{formErrors.totalChildRate}</div>}
                                     </div>
@@ -1043,9 +1124,16 @@ export default function QuotationRequest() {
                                     <div>
                                         <label className="quotationrequest-label">Total Rate per Infant <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input
+                                            maxLength={6}
                                             placeholder="Total rate per infant"
                                             value={formData.totalInfantRate}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, totalInfantRate: e.target.value.replace(/[^0-9.]/g, '') }))}
+                                            onChange={(e) => {
+                                                const cleanedValue = e.target.value.replace(/[^0-9.]/g, '');
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    totalInfantRate: cleanedValue
+                                                }));
+                                            }}
                                         />
                                         {formErrors.totalInfantRate && <div className="quotationrequest-error">{formErrors.totalInfantRate}</div>}
                                     </div>
@@ -1053,6 +1141,7 @@ export default function QuotationRequest() {
                                 <div>
                                     <label className="quotationrequest-label">Total Price <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
+                                        maxLength={7}
                                         placeholder="Total price"
                                         value={formData.totalPrice}
                                         readOnly
@@ -1062,6 +1151,7 @@ export default function QuotationRequest() {
                                 <div>
                                     <label className="quotationrequest-label">Deposit Per PAX <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input
+                                        maxLength={7}
                                         placeholder="Deposit"
                                         value={formData.totalDeposit}
                                         onChange={(e) => setFormData(prev => ({ ...prev, totalDeposit: e.target.value.replace(/[^0-9.]/g, '') }))}
@@ -1077,10 +1167,17 @@ export default function QuotationRequest() {
                                         autoSize={{ minRows: 6, maxRows: 12 }}
                                         placeholder="Inclusions (one per line)"
                                         value={formData.inclusionsText}
-                                        onChange={(e) => setFormData(prev => ({
-                                            ...prev,
-                                            inclusionsText: e.target.value
-                                        }))}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                .replace(/[^\S\r\n]{2,}/g, ' ')
+                                                .replace(/^\s+/, '');
+
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                inclusionsText: cleanedValue,
+                                            }));
+                                        }}
                                         onBlur={(e) => setFormData(prev => ({
                                             ...prev,
                                             inclusionsText: normalizeBullets(e.target.value)
@@ -1094,10 +1191,17 @@ export default function QuotationRequest() {
                                         autoSize={{ minRows: 6, maxRows: 12 }}
                                         placeholder="Exclusions (one per line)"
                                         value={formData.exclusionsText}
-                                        onChange={(e) => setFormData(prev => ({
-                                            ...prev,
-                                            exclusionsText: e.target.value
-                                        }))}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s•]/g, '')
+                                                .replace(/[^\S\r\n]{2,}/g, ' ')
+                                                .replace(/^\s+/, '');
+
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                exclusionsText: cleanedValue,
+                                            }));
+                                        }}
                                         onBlur={(e) => setFormData(prev => ({
                                             ...prev,
                                             exclusionsText: normalizeBullets(e.target.value)
@@ -1116,9 +1220,18 @@ export default function QuotationRequest() {
                                             placeholder={`Day ${index + 1} itinerary (one per line)`}
                                             value={row}
                                             onChange={(e) => {
+                                                const cleanedValue = e.target.value
+                                                    .replace(/[^a-zA-Z0-9\s•]/g, '')
+                                                    .replace(/[^\S\r\n]{2,}/g, ' ')
+                                                    .replace(/^\s+/, '');
+
                                                 const nextRows = [...(formData.itineraryRows || [])];
-                                                nextRows[index] = e.target.value;
-                                                setFormData(prev => ({ ...prev, itineraryRows: nextRows }));
+                                                nextRows[index] = cleanedValue;
+
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    itineraryRows: nextRows,
+                                                }));
                                             }}
                                             onBlur={(e) => {
                                                 const nextRows = [...(formData.itineraryRows || [])];
@@ -1160,7 +1273,14 @@ export default function QuotationRequest() {
                                                     <Input
                                                         placeholder="Label"
                                                         value={row.label}
-                                                        onChange={(e) => updateDynamicRow(index, 'label', e.target.value)}
+                                                        onChange={(e) => {
+                                                            const cleanedValue = e.target.value
+                                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                                .replace(/\s{2,}/g, ' ')
+                                                                .replace(/^\s+/, '');
+
+                                                            updateDynamicRow(index, 'label', cleanedValue);
+                                                        }}
                                                     />
                                                     {formErrors.dynamicRows?.[index]?.label && (
                                                         <div className="quotationrequest-error">{formErrors.dynamicRows[index].label}</div>
@@ -1170,7 +1290,14 @@ export default function QuotationRequest() {
                                                     <Input
                                                         placeholder="Value"
                                                         value={row.value}
-                                                        onChange={(e) => updateDynamicRow(index, 'value', e.target.value)}
+                                                        onChange={(e) => {
+                                                            const cleanedValue = e.target.value
+                                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                                .replace(/\s{2,}/g, ' ')
+                                                                .replace(/^\s+/, '');
+
+                                                            updateDynamicRow(index, 'value', cleanedValue);
+                                                        }}
                                                     />
                                                     {formErrors.dynamicRows?.[index]?.value && (
                                                         <div className="quotationrequest-error">{formErrors.dynamicRows[index].value}</div>

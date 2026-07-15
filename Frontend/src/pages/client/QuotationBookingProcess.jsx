@@ -1231,7 +1231,7 @@ export default function QuotationBookingProcess() {
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                                 <label className='upload-passport-label'>FIRST NAME</label>
                                                 <Input
-                                                    maxLength={50}
+                                                    maxLength={30}
                                                     size="small"
                                                     placeholder="First name"
                                                     value={form.getFieldValue(['travelers', index, 'firstName'])}
@@ -1257,7 +1257,7 @@ export default function QuotationBookingProcess() {
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                                 <label className='upload-passport-label'>LAST NAME</label>
                                                 <Input
-                                                    maxLength={50}
+                                                    maxLength={30}
                                                     size="small"
                                                     placeholder="Last name"
                                                     value={form.getFieldValue(['travelers', index, 'lastName'])}
@@ -1297,6 +1297,7 @@ export default function QuotationBookingProcess() {
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                                 <label className='upload-passport-label'>BIRTHDATE</label>
                                                 <DatePicker
+                                                    inputReadOnly
                                                     showToday={false}
                                                     size="small"
                                                     placeholder="Birthdate"

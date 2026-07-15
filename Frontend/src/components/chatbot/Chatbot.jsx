@@ -157,7 +157,14 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
                     <Input.TextArea
                         maxLength={150}
                         value={chatMessage}
-                        onChange={(e) => setChatMessage(e.target.value)}
+                        onChange={(e) => {
+                            const cleanedValue = e.target.value
+                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                .replace(/[^\S\r\n]{2,}/g, ' ')
+                                .replace(/^\s+/, '');
+
+                            setChatMessage(cleanedValue);
+                        }}
                         placeholder="Type your message..."
                         rows={3}
                         onKeyPress={(e) => {

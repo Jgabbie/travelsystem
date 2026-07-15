@@ -15,12 +15,15 @@ export default function DestinationsPackages() {
     const [search, setSearch] = useState('')
     const [budgetRange, setBudgetRange] = useState([0, 200000])
     const [selectedTags, setSelectedTags] = useState([])
+    const [tagSearch, setTagSearch] = useState('');
     const [tourType, setTourType] = useState('All')
     const [daysValue, setDaysValue] = useState(14)
     const [travelersValue, setTravelersValue] = useState(null)
     const [loading, setLoading] = useState(false)
     const [wishlistedIds, setWishlistedIds] = useState(() => new Set())
     const [wishlistEntryMap, setWishlistEntryMap] = useState(() => new Map())
+
+
 
     const { auth } = useAuth()
 
@@ -374,12 +377,19 @@ export default function DestinationsPackages() {
                         </div>
 
                         <Input
-                            maxLength={60}
+                            maxLength={30}
                             className='destinations-inputs'
                             allowClear
                             placeholder="Search by destination or package"
                             value={search}
-                            onChange={(event) => setSearch(event.target.value)}
+                            onChange={(event) => {
+                                const cleanedValue = event.target.value
+                                    .replace(/[^a-zA-Z0-9\s]/g, '')
+                                    .replace(/\s{2,}/g, ' ')
+                                    .replace(/^\s+/, '');
+
+                                setSearch(cleanedValue);
+                            }}
                         />
                     </div>
 
@@ -441,12 +451,26 @@ export default function DestinationsPackages() {
                                 <div className="filter-field">
                                     <Text className="destinations-label">Tags</Text>
                                     <Select
+                                        maxLength={30}
                                         className='destinations-inputs'
                                         mode="multiple"
                                         allowClear
                                         placeholder="Select tags"
                                         value={selectedTags}
-                                        onChange={(value) => setSelectedTags(value)}
+                                        searchValue={tagSearch}
+                                        onSearch={(value) => {
+                                            const cleanedValue = value
+                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/^\s+/, '')
+                                                .slice(0, 30);
+
+                                            setTagSearch(cleanedValue);
+                                        }}
+                                        onChange={(value) => {
+                                            setSelectedTags(value);
+                                            setTagSearch('');
+                                        }}
                                         options={tagOptions.map((tag) => ({
                                             value: tag,
                                             label: tag,

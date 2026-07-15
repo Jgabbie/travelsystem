@@ -326,7 +326,14 @@ export default function UserQuotationRequest() {
                                                     rows={4}
                                                     placeholder="Kindly provide any notes for revision (max 200 characters). Please be as detailed as possible."
                                                     value={notes}
-                                                    onChange={(e) => setNotes(e.target.value)}
+                                                    onChange={(e) => {
+                                                        const cleanedValue = e.target.value
+                                                            .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                            .replace(/[^\S\r\n]{2,}/g, ' ')
+                                                            .replace(/^\s+/, '');
+
+                                                        setNotes(cleanedValue);
+                                                    }}
                                                     className="quotation-input-request"
                                                     disabled={isDisabled}
                                                 />

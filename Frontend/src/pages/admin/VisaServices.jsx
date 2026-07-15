@@ -198,7 +198,15 @@ export default function VisaServices() {
                                     className="visaservices-search-input"
                                     prefix={<SearchOutlined />}
                                     placeholder="Search service..."
-                                    onChange={(event) => setSearchText(event.target.value)}
+                                    value={searchText}
+                                    onChange={(event) => {
+                                        const cleanedValue = event.target.value
+                                            .replace(/[^a-zA-Z0-9\s]/g, '')
+                                            .replace(/\s{2,}/g, ' ')
+                                            .replace(/^\s+/, '');
+
+                                        setSearchText(cleanedValue);
+                                    }}
                                 />
                             </div>
                         </div>

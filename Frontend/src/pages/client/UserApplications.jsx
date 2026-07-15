@@ -167,11 +167,20 @@ export default function UserApplications() {
                                 <div className="userapplications-actions-field userapplications-actions-field--search">
                                     <label className="userapplications-label">Search</label>
                                     <Input
+                                        maxLength={40}
                                         prefix={<SearchOutlined />}
                                         placeholder="Search reference, type or status..."
                                         className="userapplications-search-input"
                                         value={searchText}
-                                        onChange={e => setSearchText(e.target.value)}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/-{2,}/g, '-')
+                                                .replace(/^\s+/, '');
+
+                                            setSearchText(cleanedValue);
+                                        }}
                                         allowClear
                                     />
                                 </div>
@@ -208,6 +217,7 @@ export default function UserApplications() {
                                     <DatePicker
                                         className="userapplications-date-filter"
                                         placeholder="Application Date"
+                                        inputReadOnly
                                         value={dateFilter}
                                         onChange={d => setDateFilter(d)}
                                         allowClear
@@ -221,7 +231,10 @@ export default function UserApplications() {
                             columns={columns}
                             dataSource={filteredData}
                             loading={loading}
-                            pagination={{ pageSize: 10 }}
+                            pagination={{
+                                pageSize: 10,
+                                showSizeChanger: false,
+                            }}
                             scroll={{ x: 'max-content' }}
                         />
                     </div>

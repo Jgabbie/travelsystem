@@ -42,7 +42,6 @@ const getBase64ImageFromURL = (url) => {
 
 export default function UserManagement() {
   const [form] = Form.useForm();
-  const [editForm] = Form.useForm();
   const [users, setUsers] = useState([]);
   const [archivedUsers, setArchivedUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -63,6 +62,16 @@ export default function UserManagement() {
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
   const [isUserRestoredModalOpen, setIsUserRestoredModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("customers");
+
+  const [editUserData, setEditUserData] = useState({
+    firstname: "",
+    lastname: "",
+    username: "",
+    email: "",
+    role: "",
+  });
+
+  const [editErrors, setEditErrors] = useState({});
 
 
   //fetch users function
@@ -218,38 +227,104 @@ export default function UserManagement() {
   const edit = (record) => {
     setEditingUser(record);
 
-    editForm.setFieldsValue({
-      firstname: record.firstname,
-      lastname: record.lastname,
-      username: record.username,
-      email: record.email,
-      role: record.role
+    setEditUserData({
+      firstname: record.firstname || "",
+      lastname: record.lastname || "",
+      username: record.username || "",
+      email: record.email || "",
+      role: record.role || "Customer",
     });
 
-
+    setEditErrors({});
     setIsEditModalOpen(true);
   };
 
 
   //handle save edited user
   const save = async () => {
-    try {
-      const values = await editForm.validateFields();
+    const errors = {};
 
+    if (!editUserData.firstname.trim()) {
+      errors.firstname = "First name is required";
+    }
+
+    if (!editUserData.lastname.trim()) {
+      errors.lastname = "Last name is required";
+    }
+
+    if (!editUserData.username.trim()) {
+      errors.username = "Username is required";
+    }
+
+    if (!editUserData.role) {
+      errors.role = "Role is required";
+    }
+
+    const usernameExists = users.some(
+      (user) =>
+        user.id !== editingUser.id &&
+        user.username?.trim().toLowerCase() ===
+        editUserData.username.trim().toLowerCase()
+    );
+
+    if (usernameExists) {
+      errors.username = "Username already exists";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setEditErrors(errors);
+      return;
+    }
+
+    try {
       await apiFetch.put(
-        `/admin/editUser/${editingUser.id}`, // also fix this
-        values,
+        `/admin/editUser/${editingUser.id}`,
+        {
+          firstname: editUserData.firstname.trim(),
+          lastname: editUserData.lastname.trim(),
+          username: editUserData.username.trim(),
+          email: editUserData.email,
+          role: editUserData.role,
+        },
         { withCredentials: true }
       );
 
-      notification.success({ message: "User updated", placement: "topRight" });
+      notification.success({
+        message: "User updated",
+        placement: "topRight",
+      });
+
       setIsEditModalOpen(false);
       setIsUserEditedModalOpen(true);
       setEditingUser(null);
-      editForm.resetFields();
+      setEditErrors({});
       getUsers();
-    } catch {
-      notification.error({ message: "Update failed", placement: "topRight" });
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Update failed";
+
+      const normalizedMessage = errorMessage.toLowerCase();
+
+      if (
+        normalizedMessage.includes("username") &&
+        (normalizedMessage.includes("already") ||
+          normalizedMessage.includes("exist") ||
+          normalizedMessage.includes("duplicate"))
+      ) {
+        setEditErrors((previous) => ({
+          ...previous,
+          username: "Username already exists",
+        }));
+
+        return;
+      }
+
+      notification.error({
+        message: errorMessage,
+        placement: "topRight",
+      });
     }
   };
 
@@ -412,12 +487,21 @@ export default function UserManagement() {
               <div className="usermanagement-actions-field usermanagement-actions-field--search">
                 <label className="usermanagement-label">Search</label>
                 <Input
+                  maxLength={40}
                   prefix={<SearchOutlined />}
                   placeholder="Search..."
                   className="usermanagement-search-input"
                   value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  allowClear />
+                  onChange={(e) => {
+                    const cleanedValue = e.target.value
+                      .replace(/[^a-zA-Z0-9\s@._+-]/g, "")
+                      .replace(/\s{2,}/g, " ")
+                      .replace(/^\s+/, "");
+
+                    setSearchText(cleanedValue);
+                  }}
+                  allowClear
+                />
               </div>
 
               <div className="usermanagement-actions-field">
@@ -569,67 +653,191 @@ export default function UserManagement() {
         onCancel={() => {
           setIsEditModalOpen(false);
           setEditingUser(null);
+          setEditErrors({});
         }}
         footer={null}
-        centered={true}
+        centered
         className="users-edit-modal"
       >
-        <Form form={editForm} layout="vertical" className="users-edit-form">
+        <div className="users-edit-form">
           <Row gutter={12}>
-            <Col span={12}>
-              <Form.Item
-                name="firstname"
-                label="First Name"
-                rules={[{ required: true, message: "First name is required" }]}
-              >
-                <Input />
-              </Form.Item>
+            <Col xs={24} sm={12}>
+              <div className="users-edit-field">
+                <label className="users-edit-label">
+                  First Name <span style={{ color: "#ff0000" }}>*</span>
+                </label>
+
+                <Input
+                  maxLength={30}
+                  value={editUserData.firstname}
+                  status={editErrors.firstname ? "error" : ""}
+                  onChange={(event) => {
+                    const cleanedValue = event.target.value
+                      .replace(/[^a-zA-Z\s]/g, "")
+                      .replace(/\s{2,}/g, " ")
+                      .replace(/^\s+/, "");
+
+                    setEditUserData((previous) => ({
+                      ...previous,
+                      firstname: cleanedValue,
+                    }));
+
+                    setEditErrors((previous) => ({
+                      ...previous,
+                      firstname: "",
+                    }));
+                  }}
+                />
+
+                {editErrors.firstname && (
+                  <span className="users-edit-error">
+                    {editErrors.firstname}
+                  </span>
+                )}
+              </div>
             </Col>
 
-            <Col span={12}>
-              <Form.Item
-                name="lastname"
-                label="Last Name"
-                rules={[{ required: true, message: "Last name is required" }]}
-              >
-                <Input />
-              </Form.Item>
+            <Col xs={24} sm={12}>
+              <div className="users-edit-field">
+                <label className="users-edit-label">
+                  Last Name <span style={{ color: "#ff0000" }}>*</span>
+                </label>
+
+                <Input
+                  maxLength={30}
+                  value={editUserData.lastname}
+                  status={editErrors.lastname ? "error" : ""}
+                  onChange={(event) => {
+                    const cleanedValue = event.target.value
+                      .replace(/[^a-zA-Z\s]/g, "")
+                      .replace(/\s{2,}/g, " ")
+                      .replace(/^\s+/, "");
+
+                    setEditUserData((previous) => ({
+                      ...previous,
+                      lastname: cleanedValue,
+                    }));
+
+                    setEditErrors((previous) => ({
+                      ...previous,
+                      lastname: "",
+                    }));
+                  }}
+                />
+
+                {editErrors.lastname && (
+                  <span className="users-edit-error">
+                    {editErrors.lastname}
+                  </span>
+                )}
+              </div>
             </Col>
           </Row>
 
-          <Form.Item name="username" label="Username" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
+          <div className="users-edit-field">
+            <label className="users-edit-label">
+              Username <span style={{ color: "#ff0000" }}>*</span>
+            </label>
 
-          <Form.Item name="email" label="Email">
-            <Input disabled />
-          </Form.Item>
+            <Input
+              maxLength={30}
+              value={editUserData.username}
+              status={editErrors.username ? "error" : ""}
+              onChange={(event) => {
+                const cleanedValue = event.target.value
+                  .replace(/[^a-zA-Z0-9]/g, "")
+                  .replace(/^\s+/, "");
 
-          <Form.Item name="role" label="Role" rules={[{ required: true }]}>
+                setEditUserData((previous) => ({
+                  ...previous,
+                  username: cleanedValue,
+                }));
+
+                setEditErrors((previous) => ({
+                  ...previous,
+                  username: "",
+                }));
+              }}
+            />
+
+            {editErrors.username && (
+              <span className="users-edit-error">
+                {editErrors.username}
+              </span>
+            )}
+          </div>
+
+          <div className="users-edit-field">
+            <label className="users-edit-label">
+              Email
+            </label>
+
+            <Input
+              disabled
+              value={editUserData.email}
+            />
+          </div>
+
+          <div className="users-edit-field">
+            <label className="users-edit-label">
+              Role <span style={{ color: "#ff0000" }}>*</span>
+            </label>
+
             <Select
+              style={{ width: "100%" }}
+              value={editUserData.role}
+              status={editErrors.role ? "error" : ""}
+              onChange={(value) => {
+                setEditUserData((previous) => ({
+                  ...previous,
+                  role: value,
+                }));
+
+                setEditErrors((previous) => ({
+                  ...previous,
+                  role: "",
+                }));
+              }}
               options={[
                 { value: "Admin", label: "Admin" },
                 { value: "Customer", label: "Customer" },
-                { value: "Employee", label: "Employee" }
+                { value: "Employee", label: "Employee" },
               ]}
             />
-          </Form.Item>
-        </Form>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            {editErrors.role && (
+              <span className="users-edit-error">
+                {editErrors.role}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: "10px",
+            marginTop: "20px",
+          }}
+        >
           <Button
-            type='primary'
+            type="primary"
+            className="modal-button-cancel"
             onClick={() => {
               setIsEditModalOpen(false);
               setEditingUser(null);
+              setEditErrors({});
             }}
-            className="modal-button-cancel">
+          >
             Cancel
           </Button>
+
           <Button
-            type='primary'
+            type="primary"
+            className="modal-button"
             onClick={save}
-            className="modal-button">
+          >
             Save
           </Button>
         </div>

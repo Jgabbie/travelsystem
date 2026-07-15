@@ -133,9 +133,18 @@ export default function FAQsPage() {
                             <Text className="destinations-primary-label">Search</Text>
                         </div>
                         <Input
+                            maxLength={30}
                             placeholder="Search a question or keyword"
                             value={searchTerm}
-                            onChange={(event) => setSearchTerm(event.target.value)}
+                            onChange={(event) => {
+                                const cleanedValue = event.target.value
+                                    .replace(/[^a-zA-Z0-9\s]/g, '')
+                                    .replace(/\s{2,}/g, ' ')
+                                    .replace(/^\s+/, '')
+                                    .slice(0, 30);
+
+                                setSearchTerm(cleanedValue);
+                            }}
                             allowClear
                         />
                     </div>

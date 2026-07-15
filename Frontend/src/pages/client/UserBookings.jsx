@@ -381,11 +381,20 @@ export default function UserBookings() {
                                     <div className="user-bookings-actions-field user-bookings-actions-field--search">
                                         <label className="user-bookings-label">Search</label>
                                         <Input
+                                            maxLength={40}
                                             prefix={<SearchOutlined />}
                                             placeholder="Search reference, package or status..."
                                             className="user-bookings-search-input"
                                             value={searchText}
-                                            onChange={(e) => setSearchText(e.target.value)}
+                                            onChange={(e) => {
+                                                const cleanedValue = e.target.value
+                                                    .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                                    .replace(/\s{2,}/g, ' ')
+                                                    .replace(/-{2,}/g, '-')
+                                                    .replace(/^\s+/, '');
+
+                                                setSearchText(cleanedValue);
+                                            }}
                                             allowClear
                                         />
                                     </div>
@@ -412,6 +421,7 @@ export default function UserBookings() {
                                         <DatePicker
                                             className="user-bookings-date-filter"
                                             placeholder="Booking Date"
+                                            inputReadOnly
                                             value={bookingDateFilter}
                                             onChange={(d) => setBookingDateFilter(d)}
                                             allowClear
@@ -423,6 +433,7 @@ export default function UserBookings() {
                                         <DatePicker
                                             className="user-bookings-date-filter"
                                             placeholder="Travel Date"
+                                            inputReadOnly
                                             value={travelDateFilter}
                                             onChange={(d) => setTravelDateFilter(d)}
                                             allowClear
@@ -438,7 +449,10 @@ export default function UserBookings() {
                                 columns={columns}
                                 dataSource={filteredData}
                                 loading={loading}
-                                pagination={{ pageSize: 10 }}
+                                pagination={{
+                                    pageSize: 10,
+                                    showSizeChanger: false,
+                                }}
                                 scroll={{ x: 'max-content' }}
                             />
                         </div>
@@ -521,15 +535,31 @@ export default function UserBookings() {
                             />
                             {cancelReason === 'Other' && (
                                 <Input
+                                    maxLength={30}
                                     value={cancelOtherReason}
-                                    onChange={(event) => setCancelOtherReason(event.target.value)}
+                                    onChange={(event) => {
+                                        const cleanedValue = event.target.value
+                                            .replace(/[^a-zA-Z0-9\s]/g, '')
+                                            .replace(/\s{2,}/g, ' ')
+                                            .replace(/^\s+/, '');
+
+                                        setCancelOtherReason(cleanedValue);
+                                    }}
                                     placeholder="Please specify"
                                     style={{ width: '100%', marginTop: 12 }}
                                 />
                             )}
                             <Input.TextArea
+                                maxLength={100}
                                 value={cancelComments}
-                                onChange={(event) => setCancelComments(event.target.value)}
+                                onChange={(event) => {
+                                    const cleanedValue = event.target.value
+                                        .replace(/[^a-zA-Z0-9\s]/g, '')
+                                        .replace(/\s{2,}/g, ' ')
+                                        .replace(/^\s+/, '');
+
+                                    setCancelComments(cleanedValue);
+                                }}
                                 placeholder="Additional comments (optional)"
                                 autoSize={{ minRows: 3, maxRows: 5 }}
                                 className="user-bookings-comments"

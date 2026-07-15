@@ -628,6 +628,7 @@ export default function ViewVisaApplication() {
                                                         <div key={idx} className="viewvisaapplication-appointment-row" style={{ display: "flex", gap: 12, alignItems: "center" }}>
                                                             <span style={{ minWidth: 20 }}>{idx + 1}.</span>
                                                             <DatePicker
+                                                                inputReadOnly
                                                                 disabledDate={disableDates}
                                                                 placeholder="Select date"
                                                                 value={slot.date}
@@ -638,6 +639,7 @@ export default function ViewVisaApplication() {
                                                                 }}
                                                             />
                                                             <TimePicker
+                                                                inputReadOnly
                                                                 format="h:mm A"
                                                                 use12Hours
                                                                 showNow={false}
@@ -785,6 +787,7 @@ export default function ViewVisaApplication() {
                                                 />
                                                 <label className="viewvisaapplication-delivery-details-label">Delivery Date</label>
                                                 <DatePicker
+                                                    inputReadOnly
                                                     showToday={false}
                                                     className="viewvisaapplication-delivery-details-date"
                                                     value={deliveryDate}

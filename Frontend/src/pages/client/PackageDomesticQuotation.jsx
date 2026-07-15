@@ -325,7 +325,6 @@ export default function PackageDomesticQuotation() {
             setFlightDate('')
             setFlightTime('')
             setError({})
-            window.location.reload()
         } catch (error) {
             notification.error({ message: 'Failed to submit quotation request. Please try again later.', placement: 'topRight' })
             return
@@ -511,9 +510,17 @@ export default function PackageDomesticQuotation() {
                                                     {(preferredAirlines === 'Other' || (preferredAirlines && !airlines?.some(a => a.name === preferredAirlines))) && (
                                                         <div style={{ marginTop: 8 }}>
                                                             <Input
+                                                                maxLength={30}
                                                                 placeholder="Enter preferred airline"
                                                                 value={preferredAirlines === 'Other' ? '' : preferredAirlines}
-                                                                onChange={(e) => setPreferredAirlines(e.target.value)}
+                                                                onChange={(e) => {
+                                                                    const cleanedValue = e.target.value
+                                                                        .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                                        .replace(/\s{2,}/g, ' ')
+                                                                        .replace(/^\s+/, '');
+
+                                                                    setPreferredAirlines(cleanedValue);
+                                                                }}
                                                                 className={`quotation-input ${error.preferredAirlines ? 'input-error' : ''}`}
                                                             />
                                                         </div>
@@ -550,9 +557,17 @@ export default function PackageDomesticQuotation() {
                                                 {(preferredHotels === 'Other' || (preferredHotels && !hotels?.some(h => h.name === preferredHotels))) && (
                                                     <div style={{ marginTop: 8 }}>
                                                         <Input
+                                                            maxLength={30}
                                                             placeholder="Enter preferred hotel"
                                                             value={preferredHotels === 'Other' ? '' : preferredHotels}
-                                                            onChange={(e) => setPreferredHotels(e.target.value)}
+                                                            onChange={(e) => {
+                                                                const cleanedValue = e.target.value
+                                                                    .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                                    .replace(/\s{2,}/g, ' ')
+                                                                    .replace(/^\s+/, '');
+
+                                                                setPreferredHotels(cleanedValue);
+                                                            }}
                                                             className={`quotation-input ${error.preferredHotels ? 'input-error' : ''}`}
                                                         />
                                                     </div>
@@ -621,10 +636,18 @@ export default function PackageDomesticQuotation() {
                                                 <div className="quotation-field">
                                                     <label htmlFor="flight-airline">Airline <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <Input
+                                                        maxLength={30}
                                                         id="flight-airline"
                                                         placeholder="Enter airline name"
                                                         value={flightAirline}
-                                                        onChange={(e) => setFlightAirline(e.target.value)}
+                                                        onChange={(e) => {
+                                                            const cleanedValue = e.target.value
+                                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                                .replace(/\s{2,}/g, ' ')
+                                                                .replace(/^\s+/, '');
+
+                                                            setFlightAirline(cleanedValue);
+                                                        }}
                                                         className={`quotation-input ${error.flightAirline ? 'input-error' : ''}`}
                                                     />
                                                     <p className='package-quotation-error'>{error.flightAirline}</p>
@@ -634,6 +657,7 @@ export default function PackageDomesticQuotation() {
                                                     <label htmlFor="flight-date">Flight Date <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <DatePicker
                                                         id="flight-date"
+                                                        inputReadOnly
                                                         placeholder="Select flight date"
                                                         value={flightDate ? dayjs(flightDate) : null}
                                                         onChange={(value) => setFlightDate(value)}
@@ -650,6 +674,7 @@ export default function PackageDomesticQuotation() {
                                                 <div className="quotation-field">
                                                     <label htmlFor="flight-time">Flight Time <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <TimePicker
+                                                        inputReadOnly
                                                         id="flight-time"
                                                         placeholder="Select flight time"
                                                         value={flightTime ? dayjs(flightTime, 'hh:mm A') : null}
@@ -736,9 +761,14 @@ export default function PackageDomesticQuotation() {
                                                         placeholder={`Notes for ${label.toLowerCase()}. Type "NONE" if no changes`}
                                                         value={itineraryNotes[index]}
                                                         onChange={(e) => {
-                                                            const updated = [...itineraryNotes]
-                                                            updated[index] = e.target.value
-                                                            setItineraryNotes(updated)
+                                                            const cleanedValue = e.target.value
+                                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                                .replace(/[^\S\r\n]{2,}/g, ' ')
+                                                                .replace(/^\s+/, '');
+
+                                                            const updated = [...itineraryNotes];
+                                                            updated[index] = cleanedValue;
+                                                            setItineraryNotes(updated);
                                                         }}
                                                         className={`quotation-input ${error.itineraryNotes ? 'input-error' : ''}`}
                                                         required
@@ -763,7 +793,14 @@ export default function PackageDomesticQuotation() {
                                         rows={4}
                                         placeholder="Anything else we should know?"
                                         value={additionalComments}
-                                        onChange={(e) => setAdditionalComments(e.target.value)}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                .replace(/[^\S\r\n]{2,}/g, ' ')
+                                                .replace(/^\s+/, '');
+
+                                            setAdditionalComments(cleanedValue);
+                                        }}
                                         className="quotation-input"
                                     />
                                 </div>

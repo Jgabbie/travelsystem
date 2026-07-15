@@ -58,6 +58,7 @@ export default function PackagePage() {
 
     //review states
     const [showReviews, setShowReviews] = useState(false)
+    const [visibleReviewCount, setVisibleReviewCount] = useState(3);
     const [isEditingReview, setIsEditingReview] = useState(false);
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
     const [reviews, setReviews] = useState([])
@@ -155,14 +156,15 @@ export default function PackagePage() {
             const mapped = (response || []).map((rating) => ({
                 id: rating._id,
                 userId: rating.userId?._id,
-                name: rating.userId?.username || 'User',
-                avatar: rating.userId?.profileImage || '',
+                name: rating.userId?.username || "User",
+                avatar: rating.userId?.profileImage || "",
                 rating: rating.rating,
-                comment: rating.review || '',
+                comment: rating.review || "",
+                createdAt: rating.createdAt,
                 date: rating.createdAt
-                    ? dayjs(rating.createdAt).format('MMM D, YYYY')
-                    : 'Recently'
-            }))
+                    ? dayjs(rating.createdAt).format("MMM D, YYYY")
+                    : "Recently",
+            }));
             setReviews(mapped)
         } catch {
             setReviews([])
@@ -254,6 +256,17 @@ export default function PackagePage() {
             }
         )
     }, [reviews, auth, currentAuthUserId, currentAuthUsername])
+
+
+    const sortedReviews = useMemo(() => {
+        return [...reviews].sort((a, b) => {
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+    }, [reviews]);
+
+    const visibleReviews = useMemo(() => {
+        return sortedReviews.slice(0, visibleReviewCount);
+    }, [sortedReviews, visibleReviewCount]);
 
 
     //itinerary content for itinerary tab
@@ -824,6 +837,7 @@ export default function PackagePage() {
                                 {packageData?.packageVideo && (
                                     <div className="package-video-section" style={{ marginTop: 20 }}>
                                         <video
+                                            muted
                                             autoPlay
                                             loop
                                             controls
@@ -962,7 +976,7 @@ export default function PackagePage() {
                                             </div>
                                             <div className="package-review-list">
                                                 {reviews.length ? (
-                                                    reviews.map((review) => {
+                                                    visibleReviews.map((review) => {
                                                         const reviewOwnerId = review?.userId ? String(review.userId) : null
                                                         const reviewOwnerName = String(review?.name || '').trim().toLowerCase()
                                                         const isUserReview = Boolean(
@@ -995,7 +1009,15 @@ export default function PackagePage() {
                                                                     <Rate disabled value={review.rating} />
                                                                 </div>
                                                                 <p className="package-review-date">{review.date || 'Recently'}</p>
-                                                                <p className="package-review-comment">{review.comment}</p>
+                                                                <p
+                                                                    className="package-review-comment"
+                                                                    style={{
+                                                                        whiteSpace: "pre-wrap",
+                                                                        overflowWrap: "anywhere",
+                                                                    }}
+                                                                >
+                                                                    {review.comment}
+                                                                </p>
 
                                                                 {isUserReview && (
                                                                     <div>
@@ -1038,6 +1060,28 @@ export default function PackagePage() {
                                                 ) : (
                                                     <p>No reviews yet.</p>
                                                 )}
+
+                                                {visibleReviewCount < sortedReviews.length && (
+                                                    <div
+                                                        style={{
+                                                            display: "flex",
+                                                            justifyContent: "center",
+                                                            marginTop: 16,
+                                                        }}
+                                                    >
+                                                        <Button
+                                                            type="link"
+                                                            className="package-load-more-reviews"
+                                                            onClick={() => {
+                                                                setVisibleReviewCount((previousCount) =>
+                                                                    previousCount + 3
+                                                                );
+                                                            }}
+                                                        >
+                                                            Load More Reviews
+                                                        </Button>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div ref={reviewFormRef} className="package-review-form">
@@ -1065,16 +1109,22 @@ export default function PackagePage() {
                                                 />
 
                                                 <Input.TextArea
+                                                    maxLength={200}
                                                     rows={4}
                                                     disabled={isSubmittingReview || (!isEditingReview && !!userReview) || (!isEditingReview && !hasValidBooking)} // disable if already reviewed or no valid booking
                                                     placeholder="Share your experience..."
                                                     value={reviewForm.comment}
-                                                    onChange={(e) =>
-                                                        setReviewForm(prev => ({
+                                                    onChange={(e) => {
+                                                        const cleanedValue = e.target.value
+                                                            .replace(/[^a-zA-Z0-9\s.,!?'"():;-]/g, "")
+                                                            .replace(/[^\S\r\n]{2,}/g, " ")
+                                                            .replace(/^\s+/, "");
+
+                                                        setReviewForm((prev) => ({
                                                             ...prev,
-                                                            comment: e.target.value
-                                                        }))
-                                                    }
+                                                            comment: cleanedValue,
+                                                        }));
+                                                    }}
                                                     style={{ marginTop: 10 }}
                                                 />
                                                 <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>

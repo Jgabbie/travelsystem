@@ -153,13 +153,17 @@ export default function TransactionManagement() {
 
   const filteredData = currentData.filter(item => {
 
+    const searchValue = searchText.trim().toLowerCase();
+
     const matchesSearch =
-      item.ref.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.package.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.method.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.status.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.username.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.price.toString().toLowerCase().includes(searchText.toLowerCase());
+      String(item.ref || "").toLowerCase().includes(searchValue) ||
+      String(item.package || "").toLowerCase().includes(searchValue) ||
+      String(item.method || "").toLowerCase().includes(searchValue) ||
+      String(item.status || "").toLowerCase().includes(searchValue) ||
+      String(item.username || "").toLowerCase().includes(searchValue) ||
+      String(item.firstname || "").toLowerCase().includes(searchValue) ||
+      String(item.lastname || "").toLowerCase().includes(searchValue) ||
+      String(item.price || "").toLowerCase().includes(searchValue);
 
     const matchesMethod =
       methodFilter === "" || item.method === methodFilter;
@@ -698,11 +702,20 @@ export default function TransactionManagement() {
                 <div className="transaction-actions-field transaction-actions-field--search">
                   <label className="transactionmanagement-label">Search</label>
                   <Input
+                    maxLength={40}
                     prefix={<SearchOutlined />}
                     placeholder="Search reference, package, method or status..."
                     className="transaction-search-input"
                     value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
+                    onChange={(e) => {
+                      const cleanedValue = e.target.value
+                        .replace(/[^a-zA-Z0-9\s-]/g, '')
+                        .replace(/\s{2,}/g, ' ')
+                        .replace(/-{2,}/g, '-')
+                        .replace(/^\s+/, '');
+
+                      setSearchText(cleanedValue);
+                    }}
                     allowClear
                   />
                 </div>
@@ -741,6 +754,7 @@ export default function TransactionManagement() {
                 <div className="transaction-actions-field">
                   <label className="transactionmanagement-label">Payment Date</label>
                   <DatePicker
+                    inputReadOnly
                     className="transaction-date-filter"
                     placeholder="Payment Date"
                     value={paymentDateFilter}
@@ -849,13 +863,13 @@ export default function TransactionManagement() {
                     setIsEditModalOpen(false);
                     setEditingTransaction(null);
                   }}
-                  className="usermanagement-remove-button">
+                  className="transactionmanagement-cancel-button">
                   Cancel
                 </Button>
                 <Button
                   type='primary'
                   onClick={save}
-                  className="usermanagement-okmodal-button">
+                  className="transactionmanagement-save-button">
                   Save
                 </Button>
               </div>
@@ -1147,7 +1161,7 @@ export default function TransactionManagement() {
 
             <Space style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
               <Button
-                className='user-transactions-download-button'
+                className='transactionmanagement-download-button'
                 type="primary"
                 onClick={async () => {
                   try {

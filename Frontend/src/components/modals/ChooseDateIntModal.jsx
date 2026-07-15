@@ -86,13 +86,21 @@ export default function ChooseDateIntModal({
                             placeholder="Search dates (e.g. Mar, Apr)"
                             allowClear
                             value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
+                            onChange={(e) => {
+                                const cleanedValue = e.target.value
+                                    .replace(/[^a-zA-Z0-9\s]/g, '')
+                                    .replace(/\s{2,}/g, ' ')
+                                    .replace(/^\s+/, '');
+
+                                setSearchText(cleanedValue);
+                            }}
                             className="choose-date-search"
                         />
 
                         <DatePicker
                             placeholder="Filter by date"
                             allowClear
+                            inputReadOnly
                             value={filterDate}
                             onChange={(d) => setFilterDate(d)}
                             className="choose-date-datepicker"

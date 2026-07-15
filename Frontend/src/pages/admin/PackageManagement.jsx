@@ -337,10 +337,20 @@ export default function PackageManagement() {
               <div className="packagemanagement-actions-field packagemanagement-actions-field--search">
                 <label className="packagemanagement-label">Search</label>
                 <Input
+                  maxLength={50}
                   className="packagemanagement-search-input"
+                  allowClear
                   prefix={<SearchOutlined />}
                   placeholder="Search package..."
-                  onChange={(e) => setSearchText(e.target.value)}
+                  value={searchText}
+                  onChange={(e) => {
+                    const cleanedValue = e.target.value
+                      .replace(/[^a-zA-Z0-9\s]/g, '')
+                      .replace(/\s{2,}/g, ' ')
+                      .replace(/^\s+/, '');
+
+                    setSearchText(cleanedValue);
+                  }}
                 />
               </div>
 
@@ -688,7 +698,6 @@ export default function PackageManagement() {
         {/* DISCOUNT APPLIED MODAL */}
         <Modal
           open={isDiscountAppliedModalOpen}
-          className='signup-success-modal'
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
           centered={true}
@@ -696,20 +705,20 @@ export default function PackageManagement() {
             setIsDiscountAppliedModalOpen(false);
           }}
         >
-          <div className='signup-success-container'>
-            <h1 className='signup-success-heading'>Discount Applied!</h1>
+          <div className='modal-container'>
+            <h1 className='modal-heading'>Discount Applied!</h1>
 
             <div>
               <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
             </div>
 
-            <p className='signup-success-text'>The discount has been applied successfully.</p>
+            <p className='modal-text'>The discount has been applied successfully.</p>
 
             <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
               <Button
                 type='primary'
-                className='logout-confirm-btn'
+                className='modal-button'
                 onClick={() => {
                   setIsDiscountAppliedModalOpen(false);
                 }}
@@ -725,7 +734,6 @@ export default function PackageManagement() {
         {/* SLOTS SAVED MODAL */}
         <Modal
           open={isSlotsSavedModalOpen}
-          className='signup-success-modal'
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
           centered={true}
@@ -733,20 +741,20 @@ export default function PackageManagement() {
             setIsSlotsSavedModalOpen(false);
           }}
         >
-          <div className='signup-success-container'>
-            <h1 className='signup-success-heading'>Slots Saved!</h1>
+          <div className='modal-container'>
+            <h1 className='modal-heading'>Slots Saved!</h1>
 
             <div>
               <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
             </div>
 
-            <p className='signup-success-text'>The slots have been saved successfully.</p>
+            <p className='modal-text'>The slots have been saved successfully.</p>
 
             <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
               <Button
                 type='primary'
-                className='logout-confirm-btn'
+                className='modal-button'
                 onClick={() => {
                   setIsSlotsSavedModalOpen(false);
                 }}

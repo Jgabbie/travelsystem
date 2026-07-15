@@ -580,12 +580,12 @@
 
 .quotation-submit {
     font-family: "Montserrat", sans-serif;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     background-color: #305797;
     color: #fff;
     border-radius: 16px;
-    width: 130px;
+    width: 150px;
     height: 40px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);

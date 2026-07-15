@@ -185,8 +185,8 @@
         background-color: #305797;
         color: #fff;
         border-radius: 16px;
-        width: 140px;
-        height: 30px;
+        width: 180px;
+        height: 35px;
         border: none !important;
         box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
     }
@@ -238,7 +238,7 @@
         color: #fff;
         border-radius: 16px;
         width: 90px;
-        height: 30px;
+        height: 35px;
         border: none !important;
         box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
     }

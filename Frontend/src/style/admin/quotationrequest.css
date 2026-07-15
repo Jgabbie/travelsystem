@@ -185,6 +185,20 @@
     color: #1f2a44;
 }
 
+.quotationrequest-back-button {
+    font-family: "Montserrat", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 130px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
+
 .quotationrequest-formremove-button {
     font-family: "Montserrat", sans-serif;
     font-size: 13px;
@@ -193,7 +207,7 @@
     color: #fff !important;
     border-radius: 16px;
     width: 160px;
-    height: 40px;
+    height: 35px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
 }
@@ -212,7 +226,7 @@
     color: #fff;
     border-radius: 16px;
     width: 100px;
-    height: 40px;
+    height: 35px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
@@ -258,7 +272,7 @@
 
 .quotationrequest-viewpdf-button {
     font-family: "Montserrat", sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     background-color: #305797;
     color: #fff;
@@ -273,7 +287,8 @@
 .quotationrequest-upload-button:hover,
 .quotationrequest-form-button:hover,
 .quotationrequest-formgenerate-button:hover,
-.quotationrequest-sendquotation-button:hover {
+.quotationrequest-sendquotation-button:hover,
+.quotationrequest-back-button:hover {
     background-color: #244575 !important;
     color: #fff !important;
 }

@@ -1079,9 +1079,16 @@ export default function VisaApplication() {
                                                                     style={{ resize: 'none' }}
                                                                     rows={4}
                                                                     style={{ marginBottom: 12 }}
-                                                                    maxLength={250}
+                                                                    maxLength={100}
                                                                     value={deliveryAddress}
-                                                                    onChange={(e) => { setDeliveryAddress(e.target.value) }}
+                                                                    onChange={(e) => {
+                                                                        const cleanedValue = e.target.value
+                                                                            .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                                            .replace(/[^\S\r\n]{2,}/g, ' ')
+                                                                            .replace(/^\s+/, '');
+
+                                                                        setDeliveryAddress(cleanedValue);
+                                                                    }}
                                                                 />
                                                             </div>
                                                         )}

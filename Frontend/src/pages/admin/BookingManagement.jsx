@@ -576,11 +576,20 @@ export default function BookingManagement() {
               <div className="bookingmanagement-actions-field bookingmanagement-actions-field--search">
                 <label className="bookingmanagement-label">Search</label>
                 <Input
+                  maxLength={40}
                   prefix={<SearchOutlined />}
                   placeholder="Search reference, package or status..."
                   className="bookingmanagement-search-input"
                   value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
+                  onChange={(e) => {
+                    const cleanedValue = e.target.value
+                      .replace(/[^a-zA-Z0-9\s-]/g, '')
+                      .replace(/\s{2,}/g, ' ')
+                      .replace(/-{2,}/g, '-')
+                      .replace(/^\s+/, '');
+
+                    setSearchText(cleanedValue);
+                  }}
                   allowClear
                 />
               </div>
@@ -604,6 +613,7 @@ export default function BookingManagement() {
               <div className="bookingmanagement-actions-field">
                 <label className="bookingmanagement-label">Booking Date</label>
                 <DatePicker
+                  inputReadOnly
                   className="booking-date-filter"
                   placeholder="Booking Date"
                   value={bookingDateFilter}
@@ -615,6 +625,7 @@ export default function BookingManagement() {
               <div className="bookingmanagement-actions-field">
                 <label className="bookingmanagement-label">Travel Date</label>
                 <DatePicker
+                  inputReadOnly
                   className="booking-date-filter"
                   placeholder="Travel Date"
                   value={travelDateFilter}

@@ -1414,7 +1414,7 @@ export default function BookingProcess() {
                                                 <label className='upload-passport-label'>FIRST NAME <span style={{ color: "#ff0000" }}>*</span></label>
                                                 <Input
                                                     style={{ height: 40 }}
-                                                    maxLength={50}
+                                                    maxLength={30}
                                                     size="small"
                                                     placeholder="First name"
                                                     value={form.getFieldValue(['travelers', index, 'firstName'])}
@@ -1441,7 +1441,7 @@ export default function BookingProcess() {
                                                 <label className='upload-passport-label'>LAST NAME <span style={{ color: "#ff0000" }}>*</span></label>
                                                 <Input
                                                     style={{ height: 40 }}
-                                                    maxLength={50}
+                                                    maxLength={30}
                                                     size="small"
                                                     placeholder="Last name"
                                                     value={form.getFieldValue(['travelers', index, 'lastName'])}
@@ -1487,6 +1487,7 @@ export default function BookingProcess() {
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                                 <label className='upload-passport-label'>BIRTHDATE <span style={{ color: "#ff0000" }}>*</span></label>
                                                 <DatePicker
+                                                    inputReadOnly
                                                     showToday={false}
                                                     style={{ height: 40 }}
                                                     size="small"

@@ -491,6 +491,24 @@
   flex-shrink: 0;
 }
 
+.users-edit-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.users-edit-label {
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.users-edit-error {
+  margin-top: 4px;
+  color: #ff4d4f;
+  font-size: 14px;
+}
+
 @media (max-width: 768px) {
   .users-view-modal .ant-modal-content {
     padding: 18px;

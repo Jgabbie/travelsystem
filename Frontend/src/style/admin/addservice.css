@@ -109,6 +109,18 @@
     width: 200px !important;
 }
 
+.add-service-upload-button {
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797 !important;
+    color: #fff !important;
+    border-radius: 16px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
 .highlighted-button {
     font-family: "Montserrat", sans-serif;
     font-size: 12px;
@@ -151,7 +163,8 @@
 }
 
 .highlighted-button:hover,
-.backsubmit-button:hover {
+.backsubmit-button:hover,
+.add-service-upload-button:hover {
     background-color: #244575 !important;
     color: #fff !important;
 }

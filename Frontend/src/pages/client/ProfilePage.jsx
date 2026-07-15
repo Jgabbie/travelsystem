@@ -17,6 +17,7 @@ export default function ProfilePage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [isRatingDeletedModalOpen, setIsRatingDeletedModalOpen] = useState(false)
     const [reviewToDelete, setReviewToDelete] = useState(null)
+    const [nationalitySearch, setNationalitySearch] = useState('');
 
     const fileInputRef = useRef(null)
 
@@ -851,6 +852,7 @@ export default function ProfilePage() {
                                             <span className="profile-section-label">First Name</span>
                                             {editing ? (
                                                 <Input
+                                                    maxLength={30}
                                                     placeholder="Enter your first name"
                                                     allowClear
                                                     status={error.firstname ? "error" : ""}
@@ -885,6 +887,7 @@ export default function ProfilePage() {
                                             <span className="profile-section-label">Last Name</span>
                                             {editing ? (
                                                 <Input
+                                                    maxLength={30}
                                                     placeholder="Enter your last name"
                                                     allowClear
                                                     status={error.lastname ? "error" : ""}
@@ -931,6 +934,7 @@ export default function ProfilePage() {
                                                     }
                                                     format="YYYY-MM-DD"
                                                     allowClear
+                                                    inputReadOnly
                                                     showToday={false}
                                                     disabledDate={(current) =>
                                                         current && current > dayjs().subtract(18, 'years').endOf('day')
@@ -950,12 +954,19 @@ export default function ProfilePage() {
                                             <span className="profile-section-label">Email Address</span>
                                             {editing ? (
                                                 <Input
+                                                    maxLength={50}
                                                     placeholder="Enter your email"
                                                     type="email"
                                                     allowClear
                                                     status={error.email ? "error" : ""}
                                                     value={values.email}
-                                                    onChange={(e) => valueHandler('email', e.target.value)}
+                                                    onChange={(e) => {
+                                                        const cleanedValue = e.target.value
+                                                            .replace(/\s/g, '')
+                                                            .replace(/[^a-zA-Z0-9@._+-]/g, '');
+
+                                                        valueHandler('email', cleanedValue);
+                                                    }}
                                                     onKeyDown={(e) => {
                                                         if (e.key === " " && e.key !== "Backspace") {
                                                             e.preventDefault()
@@ -1013,10 +1024,18 @@ export default function ProfilePage() {
                                             <span className="profile-section-label">Home Address</span>
                                             {editing ? (
                                                 <Input
+                                                    maxLength={100}
                                                     placeholder="Enter your home address"
                                                     allowClear
                                                     value={values.homeAddress}
-                                                    onChange={(e) => valueHandler('homeAddress', e.target.value)}
+                                                    onChange={(e) => {
+                                                        const cleanedValue = e.target.value
+                                                            .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                            .replace(/\s{2,}/g, ' ')
+                                                            .replace(/^\s+/, '');
+
+                                                        valueHandler('homeAddress', cleanedValue);
+                                                    }}
                                                 />
                                             ) : (
                                                 <p className="profile-section-value">{values.homeAddress || 'Not set'}</p>
@@ -1031,14 +1050,33 @@ export default function ProfilePage() {
                                                     allowClear
                                                     placeholder="Select nationality"
                                                     value={values.nationality || undefined}
-                                                    onChange={(value) => valueHandler('nationality', value)}
+                                                    searchValue={nationalitySearch}
+                                                    onSearch={(value) => {
+                                                        const cleanedValue = value
+                                                            .replace(/[^a-zA-Z\s]/g, '')
+                                                            .replace(/\s{2,}/g, ' ')
+                                                            .replace(/^\s+/, '')
+                                                            .slice(0, 30);
+
+                                                        setNationalitySearch(cleanedValue);
+                                                    }}
+                                                    onChange={(value) => {
+                                                        valueHandler('nationality', value);
+                                                        setNationalitySearch('');
+                                                    }}
+                                                    onClear={() => {
+                                                        valueHandler('nationality', undefined);
+                                                        setNationalitySearch('');
+                                                    }}
                                                     style={{ width: '100%' }}
                                                     options={nationalities.map((nationality) => ({
                                                         label: nationality,
                                                         value: nationality,
                                                     }))}
                                                     filterOption={(input, option) =>
-                                                        option?.label.toLowerCase().includes(input.toLowerCase())
+                                                        option?.label
+                                                            ?.toLowerCase()
+                                                            .includes(input.toLowerCase())
                                                     }
                                                 />
                                             ) : (

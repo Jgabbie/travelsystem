@@ -112,6 +112,7 @@ export default function NewPassport() {
 
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [location, setLocation] = useState(undefined)
+    const [locationSearch, setLocationSearch] = useState('');
     const [preferredDate, setPreferredDate] = useState(null)
     const [preferredTime, setPreferredTime] = useState(null)
     const { auth } = useAuth()
@@ -373,13 +374,31 @@ export default function NewPassport() {
                                             </label>
 
                                             <Select
+                                                allowSearch
+                                                allowClear
                                                 className={`passport-select ${error.location ? 'input-error' : ''}`}
                                                 placeholder="Choose a DFA site"
                                                 value={location}
-                                                onChange={(value) => setLocation(value)}
+                                                searchValue={locationSearch}
+                                                onSearch={(value) => {
+                                                    setLocationSearch(value.slice(0, 30));
+                                                }}
+                                                onChange={(value) => {
+                                                    setLocation(value);
+                                                    setLocationSearch('');
+                                                }}
+                                                onClear={() => {
+                                                    setLocation('');
+                                                    setLocationSearch('');
+                                                }}
+                                                filterOption={(input, option) =>
+                                                    option?.label
+                                                        ?.toLowerCase()
+                                                        .includes(input.toLowerCase())
+                                                }
                                                 options={dfaLocations.map((item) => ({
                                                     value: item,
-                                                    label: item
+                                                    label: item,
                                                 }))}
                                             />
 
@@ -395,6 +414,7 @@ export default function NewPassport() {
 
                                             <DatePicker
                                                 value={preferredDate ? dayjs(preferredDate) : null}
+                                                inputReadOnly
                                                 disabledDate={disableDates}
                                                 showNow={false}
                                                 onChange={(date) =>
@@ -421,6 +441,7 @@ export default function NewPassport() {
                                                         ? dayjs(preferredTime, 'h:mm A')
                                                         : null
                                                 }
+                                                inputReadOnly
                                                 format="h:mm A"
                                                 use12Hours
                                                 showNow={false}

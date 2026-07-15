@@ -93,12 +93,17 @@ export default function QuotationFormInEx({
                     ) : (
                         <textarea
                             value={inclusionText}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                                const cleanedValue = e.target.value
+                                    .replace(/[^a-zA-Z0-9\s]/g, '')
+                                    .replace(/[^\S\r\n]{2,}/g, ' ')
+                                    .replace(/^\s+/, '');
+
                                 setFormData((prev) => ({
                                     ...prev,
-                                    inclusions: ensureArray(e.target.value),
-                                }))
-                            }
+                                    inclusions: ensureArray(cleanedValue),
+                                }));
+                            }}
                             rows={Math.max(4, inclusionLines.length)}
                             style={{
                                 width: '100%',
@@ -124,12 +129,17 @@ export default function QuotationFormInEx({
                     ) : (
                         <textarea
                             value={exclusionText}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                                const cleanedValue = e.target.value
+                                    .replace(/[^a-zA-Z0-9\s]/g, '')
+                                    .replace(/[^\S\r\n]{2,}/g, ' ')
+                                    .replace(/^\s+/, '');
+
                                 setFormData((prev) => ({
                                     ...prev,
-                                    exclusions: ensureArray(e.target.value),
-                                }))
-                            }
+                                    exclusions: ensureArray(cleanedValue),
+                                }));
+                            }}
                             rows={Math.max(4, exclusionLines.length)}
                             style={{
                                 width: '100%',

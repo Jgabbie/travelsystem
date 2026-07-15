@@ -319,11 +319,20 @@ export default function UserTransactions() {
                                 <div className="user-transactions-actions-field user-transactions-actions-field--search">
                                     <label className="user-transactions-label">Search</label>
                                     <Input
+                                        maxLength={40}
                                         prefix={<SearchOutlined />}
                                         placeholder="Search reference, package or status..."
                                         className="user-transactions-search-input"
                                         value={searchText}
-                                        onChange={(e) => setSearchText(e.target.value)}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/-{2,}/g, '-')
+                                                .replace(/^\s+/, '');
+
+                                            setSearchText(cleanedValue);
+                                        }}
                                         allowClear
                                     />
                                 </div>
@@ -349,6 +358,7 @@ export default function UserTransactions() {
                                     <DatePicker
                                         className="user-transactions-date-filter"
                                         placeholder="Transaction Date"
+                                        inputReadOnly
                                         value={transactionDateFilter}
                                         onChange={(d) => setTransactionDateFilter(d)}
                                         allowClear
@@ -364,7 +374,10 @@ export default function UserTransactions() {
                             columns={columns}
                             dataSource={filteredData}
                             loading={loading}
-                            pagination={{ pageSize: 10 }}
+                            pagination={{
+                                pageSize: 10,
+                                showSizeChanger: false,
+                            }}
                             scroll={{ x: 'max-content' }}
                         />
                     </div>

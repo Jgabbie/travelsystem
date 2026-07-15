@@ -250,6 +250,7 @@ export default function AddTransaction() {
                                 <div className="add-transaction-field">
                                     <label>Transaction Date <span style={{ color: "#ff0000" }}>*</span></label>
                                     <DatePicker
+                                        inputReadOnly
                                         showTime
                                         format="MMMM D, YYYY h:mm A"
                                         value={transactionDate}
@@ -319,12 +320,17 @@ export default function AddTransaction() {
                                             }
                                         />
                                         <Input
-                                            maxLength={200}
+                                            maxLength={100}
                                             placeholder="Item description"
                                             value={item.description}
-                                            onChange={(event) =>
-                                                updateItem(item.id, "description", event.target.value)
-                                            }
+                                            onChange={(event) => {
+                                                const cleanedValue = event.target.value
+                                                    .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                    .replace(/\s{2,}/g, ' ')
+                                                    .replace(/^\s+/, '');
+
+                                                updateItem(item.id, 'description', cleanedValue);
+                                            }}
                                         />
                                         <InputNumber
                                             min={0}

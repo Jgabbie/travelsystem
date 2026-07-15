@@ -311,9 +311,12 @@ export default function ResetPassword() {
                                             value={getEmail}
                                             maxLength={40}
                                             onChange={(e) => {
-                                                const value = e.target.value
-                                                setEmail(value)
-                                                setErrorEmail(validateEmail(value))
+                                                const cleanedValue = e.target.value
+                                                    .replace(/\s/g, '')
+                                                    .replace(/[^a-zA-Z0-9@._+-]/g, '');
+
+                                                setEmail(cleanedValue);
+                                                setErrorEmail(validateEmail(cleanedValue));
                                             }}
                                             autoComplete='off'
                                             onKeyDown={(e) => {

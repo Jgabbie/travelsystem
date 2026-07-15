@@ -361,6 +361,7 @@ export default function ApplyVisa() {
                                                     <label className="passport-label">Preferred appointment date <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <DatePicker
                                                         value={preferredDate ? dayjs(preferredDate, 'YYYY-MM-DD') : null}
+                                                        inputReadOnly
                                                         disabledDate={disableDates}
                                                         onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
                                                         className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
@@ -372,6 +373,7 @@ export default function ApplyVisa() {
                                                     <label className="passport-label">Preferred appointment time <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <TimePicker
                                                         value={preferredTime ? dayjs(preferredTime, 'h:mm A') : null}
+                                                        inputReadOnly
                                                         format="h:mm A"
                                                         use12Hours
                                                         showNow={false}
@@ -388,11 +390,19 @@ export default function ApplyVisa() {
                                                 <div className="form-group">
                                                     <label className="passport-label">Purpose of travel <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <Input.TextArea
+                                                        maxLength={100}
                                                         className={`passport-input ${error.purpose ? 'input-error' : ''}`}
                                                         rows={3}
                                                         placeholder="Share your purpose of travel"
                                                         value={purpose}
-                                                        onChange={(event) => setPurpose(event.target.value)}
+                                                        onChange={(event) => {
+                                                            const cleanedValue = event.target.value
+                                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                                .replace(/[^\S\r\n]{2,}/g, ' ')
+                                                                .replace(/^\s+/, '');
+
+                                                            setPurpose(cleanedValue);
+                                                        }}
                                                     />
                                                     <p className="error-message">{error.purpose || ''}</p>
                                                 </div>

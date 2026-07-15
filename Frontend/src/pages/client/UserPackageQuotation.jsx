@@ -158,11 +158,20 @@ export default function UserPackageQuotation() {
                                 <div className="user-quotation-actions-field user-quotation-actions-field--search">
                                     <label className="user-quotation-label">Search</label>
                                     <Input
+                                        maxLength={40}
                                         prefix={<SearchOutlined />}
                                         placeholder="Search reference, package or status..."
                                         className="user-quotation-search-input"
                                         value={searchText}
-                                        onChange={(e) => setSearchText(e.target.value)}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/-{2,}/g, '-')
+                                                .replace(/^\s+/, '');
+
+                                            setSearchText(cleanedValue);
+                                        }}
                                         allowClear
                                     />
                                 </div>
@@ -192,6 +201,7 @@ export default function UserPackageQuotation() {
                                     <DatePicker
                                         className="user-quotation-date-filter"
                                         placeholder="Requested Date"
+                                        inputReadOnly
                                         value={quotationDateFilter}
                                         onChange={(d) => setQuotationDateFilter(d)}
                                         allowClear
@@ -206,7 +216,10 @@ export default function UserPackageQuotation() {
                             columns={columns}
                             dataSource={filteredDataSource}
                             loading={loading}
-                            pagination={{ pageSize: 10 }}
+                            pagination={{
+                                pageSize: 10,
+                                showSizeChanger: false,
+                            }}
                             scroll={{ x: 'max-content' }}
                         />
                     </div>

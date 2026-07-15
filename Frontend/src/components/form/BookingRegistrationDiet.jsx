@@ -182,6 +182,12 @@ export default function BookingRegistrationDiet({
                                     maxLength={200}
                                     rows={2}
                                     disabled={dietaryRequest !== 'Y'}
+                                    onInput={(e) => {
+                                        e.currentTarget.value = e.currentTarget.value
+                                            .replace(/[^a-zA-Z0-9\s]/g, '')
+                                            .replace(/[^\S\r\n]{2,}/g, ' ')
+                                            .replace(/^\s+/, '');
+                                    }}
                                 />
                             </Form.Item>
                         </div>
@@ -256,6 +262,12 @@ export default function BookingRegistrationDiet({
                                     maxLength={200}
                                     rows={2}
                                     disabled={medicalRequest !== 'Y'}
+                                    onInput={(e) => {
+                                        e.currentTarget.value = e.currentTarget.value
+                                            .replace(/[^a-zA-Z0-9\s]/g, '')
+                                            .replace(/[^\S\r\n]{2,}/g, ' ')
+                                            .replace(/^\s+/, '');
+                                    }}
                                 />
                             </Form.Item>
                         </div>
@@ -434,6 +446,12 @@ export default function BookingRegistrationDiet({
                                                         event.preventDefault();
                                                     }
                                                 }}
+                                                onInput={(event) => {
+                                                    event.currentTarget.value = event.currentTarget.value
+                                                        .replace(/[^a-zA-Z\s]/g, '')
+                                                        .replace(/\s{2,}/g, ' ')
+                                                        .replace(/^\s+/, '');
+                                                }}
                                             />
                                         </Form.Item>
                                     </td>
@@ -468,6 +486,11 @@ export default function BookingRegistrationDiet({
                                                     ) {
                                                         event.preventDefault();
                                                     }
+                                                }}
+                                                onInput={(event) => {
+                                                    event.currentTarget.value = event.currentTarget.value
+                                                        .replace(/\s/g, '')
+                                                        .replace(/[^A-Za-z0-9@._+-]/g, '');
                                                 }}
                                             />
                                         </Form.Item>

@@ -460,7 +460,14 @@ export default function ReviewRatings() {
                                     placeholder="Search by user or package"
                                     prefix={<SearchOutlined />}
                                     value={searchText}
-                                    onChange={(e) => setSearchText(e.target.value)}
+                                    onChange={(e) => {
+                                        const cleanedValue = e.target.value
+                                            .replace(/[^a-zA-Z0-9\s]/g, '')
+                                            .replace(/\s{2,}/g, ' ')
+                                            .replace(/^\s+/, '');
+
+                                        setSearchText(cleanedValue);
+                                    }}
                                     allowClear
                                 />
                             </div>
@@ -480,6 +487,7 @@ export default function ReviewRatings() {
                             <div className="reviewratings-actions-field">
                                 <label className="reviewratings-label">Review Date</label>
                                 <DatePicker
+                                    inputReadOnly
                                     className="reviewratings-date-filter"
                                     placeholder="Review Date"
                                     value={dateFilter}

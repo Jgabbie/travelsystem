@@ -467,7 +467,15 @@ export default function PassportApplications() {
                                     placeholder="Search reference, package, method or status..."
                                     className="passportapplications-search-input"
                                     value={searchText}
-                                    onChange={(e) => setSearchText(e.target.value)}
+                                    onChange={(e) => {
+                                        const cleanedValue = e.target.value
+                                            .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                            .replace(/\s{2,}/g, ' ')
+                                            .replace(/-{2,}/g, '-')
+                                            .replace(/^\s+/, '');
+
+                                        setSearchText(cleanedValue);
+                                    }}
                                     allowClear
                                 />
                             </div>
@@ -491,6 +499,7 @@ export default function PassportApplications() {
                             <div className="passportapplications-actions-field">
                                 <label className="passportapplications-label">Preferred Date</label>
                                 <DatePicker
+                                    inputReadOnly
                                     className="passportapplications-date-filter"
                                     placeholder="Preferred Date"
                                     value={submissionDateFilter}

@@ -124,7 +124,14 @@ export default function QuotationFormIntineraries({
                                         // Editable UI
                                         <textarea
                                             value={entry.text}
-                                            onChange={(e) => handleItineraryChange(index, e.target.value)}
+                                            onChange={(e) => {
+                                                const cleanedValue = e.target.value
+                                                    .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                    .replace(/[^\S\r\n]{2,}/g, ' ')
+                                                    .replace(/^\s+/, '');
+
+                                                handleItineraryChange(index, cleanedValue);
+                                            }}
                                             rows={Math.max(3, entry.text.split('\n').length)}
                                             style={{ width: '100%', resize: 'vertical', marginTop: 4 }}
                                         />

@@ -483,7 +483,15 @@ export default function VisaApplications() {
                                     placeholder="Search reference, package, method or status..."
                                     className="visaapplications-search-input"
                                     value={searchText}
-                                    onChange={(e) => setSearchText(e.target.value)}
+                                    onChange={(e) => {
+                                        const cleanedValue = e.target.value
+                                            .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                            .replace(/\s{2,}/g, ' ')
+                                            .replace(/-{2,}/g, '-')
+                                            .replace(/^\s+/, '');
+
+                                        setSearchText(cleanedValue);
+                                    }}
                                     allowClear
                                 />
                             </div>
@@ -507,6 +515,7 @@ export default function VisaApplications() {
                             <div className="visaapplications-actions-field">
                                 <label className="visaapplications-label">Preferred Date</label>
                                 <DatePicker
+                                    inputReadOnly
                                     className="visaapplications-date-filter"
                                     placeholder="Preferred Date"
                                     value={submissionDateFilter}

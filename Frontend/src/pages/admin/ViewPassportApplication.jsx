@@ -620,6 +620,7 @@ export default function ViewPassportApplication() {
                                                         <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center" }}>
                                                             <span style={{ minWidth: 20 }}>{idx + 1}.</span>
                                                             <DatePicker
+                                                                inputReadOnly
                                                                 disabledDate={disableDates}
                                                                 placeholder="Select date"
                                                                 value={slot.date}
@@ -630,6 +631,7 @@ export default function ViewPassportApplication() {
                                                                 }}
                                                             />
                                                             <TimePicker
+                                                                inputReadOnly
                                                                 format="h:mm A"
                                                                 use12Hours
                                                                 showNow={false}

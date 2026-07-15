@@ -623,11 +623,15 @@ export default function LandingPage() {
                     <div className="search-widget">
                         <div className="search-row">
                             <input
+                                maxLength={30}
                                 type="text"
                                 placeholder="Search your destination..."
                                 className="search-input-land"
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={(e) => {
+                                    const cleanedValue = e.target.value.replace(/[^a-zA-Z0-9\s]/g, '');
+                                    setSearchTerm(cleanedValue);
+                                }}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         e.preventDefault();
@@ -1392,13 +1396,26 @@ export default function LandingPage() {
                                         <div className='contact-field'>
                                             <span className='contact-field-label'>Your Name</span>
                                             <Input
+                                                maxLength={30}
                                                 placeholder="Your Name"
                                                 className='contact-input'
                                                 status={contactErrors.name ? 'error' : ''}
                                                 value={contactValues.name}
                                                 onChange={(e) => {
-                                                    setContactValues(prev => ({ ...prev, name: e.target.value }));
-                                                    setContactErrors(prev => ({ ...prev, name: '' }));
+                                                    const cleanedValue = e.target.value
+                                                        .replace(/[^a-zA-Z\s]/g, '')
+                                                        .replace(/\s{2,}/g, ' ')
+                                                        .replace(/^\s+/, '');
+
+                                                    setContactValues((prev) => ({
+                                                        ...prev,
+                                                        name: cleanedValue,
+                                                    }));
+
+                                                    setContactErrors((prev) => ({
+                                                        ...prev,
+                                                        name: '',
+                                                    }));
                                                 }}
                                                 onKeyDown={(e) => {
                                                     const value = e.target.value
@@ -1425,13 +1442,25 @@ export default function LandingPage() {
                                         <div className='contact-field'>
                                             <span className='contact-field-label'>Your Email</span>
                                             <Input
+                                                maxLength={50}
                                                 placeholder="Your Email"
                                                 className='contact-input'
                                                 status={contactErrors.email ? 'error' : ''}
                                                 value={contactValues.email}
                                                 onChange={(e) => {
-                                                    setContactValues(prev => ({ ...prev, email: e.target.value }))
-                                                    setContactErrors(prev => ({ ...prev, email: '' }))
+                                                    const cleanedValue = e.target.value
+                                                        .replace(/\s/g, '')
+                                                        .replace(/[^a-zA-Z0-9@._+-]/g, '');
+
+                                                    setContactValues((prev) => ({
+                                                        ...prev,
+                                                        email: cleanedValue,
+                                                    }));
+
+                                                    setContactErrors((prev) => ({
+                                                        ...prev,
+                                                        email: '',
+                                                    }));
                                                 }}
                                                 onKeyDown={(e) => {
                                                     if (e.key === " ") {
@@ -1465,6 +1494,7 @@ export default function LandingPage() {
                                         <div className='contact-field'>
                                             <span className='contact-field-label'>Message</span>
                                             <Input.TextArea
+                                                maxLength={200}
                                                 resize="none"
                                                 placeholder="Your Message"
                                                 className='contact-textarea'
@@ -1472,8 +1502,20 @@ export default function LandingPage() {
                                                 status={contactErrors.message ? 'error' : ''}
                                                 value={contactValues.message}
                                                 onChange={(e) => {
-                                                    setContactValues(prev => ({ ...prev, message: e.target.value }))
-                                                    setContactErrors(prev => ({ ...prev, message: '' }))
+                                                    const cleanedValue = e.target.value
+                                                        .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                        .replace(/[^\S\r\n]{2,}/g, ' ')
+                                                        .replace(/^\s+/, '');
+
+                                                    setContactValues((prev) => ({
+                                                        ...prev,
+                                                        message: cleanedValue,
+                                                    }));
+
+                                                    setContactErrors((prev) => ({
+                                                        ...prev,
+                                                        message: '',
+                                                    }));
                                                 }}
                                                 onKeyDown={(e) => {
                                                     const value = e.target.value

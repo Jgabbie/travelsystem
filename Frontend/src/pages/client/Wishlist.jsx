@@ -193,10 +193,18 @@ export default function Wishlist() {
                                     <Text className="wishlist-primary-label-search">Search</Text>
                                 </div>
                                 <Input
+                                    maxLength={30}
                                     allowClear
                                     placeholder="Search by destination or package name"
                                     value={search}
-                                    onChange={(event) => setSearch(event.target.value)}
+                                    onChange={(event) => {
+                                        const cleanedValue = event.target.value
+                                            .replace(/[^a-zA-Z0-9\s]/g, '')
+                                            .replace(/\s{2,}/g, ' ')
+                                            .replace(/^\s+/, '');
+
+                                        setSearch(cleanedValue);
+                                    }}
                                 />
                             </div>
                         </div>

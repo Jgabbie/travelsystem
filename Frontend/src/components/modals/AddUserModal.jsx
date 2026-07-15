@@ -263,7 +263,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
 
                     <form className="adduser-form" onSubmit={handleSubmit}>
                         <div className="adduser-field">
-                            <label className="adduser-label">Role</label>
+                            <label className="adduser-label">Role <span style={{ color: "#ff0000" }}>*</span></label>
                             <Select
                                 value={values.role}
                                 className="adduser-input adduser-select"
@@ -278,7 +278,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                         </div>
 
                         <div className="adduser-field">
-                            <label className="adduser-label" htmlFor="username">Username</label>
+                            <label className="adduser-label" htmlFor="username">Username <span style={{ color: "#ff0000" }}>*</span></label>
                             <Input
                                 id="username"
                                 className="adduser-input"
@@ -299,7 +299,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
 
                         <div className="adduser-row">
                             <div className="adduser-col">
-                                <label className="adduser-label" htmlFor="firstname">First Name</label>
+                                <label className="adduser-label" htmlFor="firstname">First Name <span style={{ color: "#ff0000" }}>*</span></label>
                                 <Input
                                     id="firstname"
                                     className="adduser-input"
@@ -328,7 +328,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                             </div>
 
                             <div className="adduser-col">
-                                <label className="adduser-label" htmlFor="lastname">Last Name</label>
+                                <label className="adduser-label" htmlFor="lastname">Last Name <span style={{ color: "#ff0000" }}>*</span></label>
                                 <Input
                                     id="lastname"
                                     className="adduser-input"
@@ -360,7 +360,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                         </div>
 
                         <div className="adduser-field">
-                            <label className="adduser-label" htmlFor="email">Email</label>
+                            <label className="adduser-label" htmlFor="email">Email <span style={{ color: "#ff0000" }}>*</span></label>
                             <Input
                                 id="email"
                                 className="adduser-input"
@@ -380,7 +380,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                         </div>
 
                         <div className="adduser-field">
-                            <label className="adduser-label" htmlFor="phone">Phone Number</label>
+                            <label className="adduser-label" htmlFor="phone">Phone Number <span style={{ color: "#ff0000" }}>*</span></label>
                             <Input
                                 id="phone"
                                 className="adduser-input"
@@ -424,7 +424,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                                 <div className="adduser-row">
                                     <div className="adduser-col">
                                         <div className="adduser-field">
-                                            <label className="adduser-label" htmlFor="password">Password</label>
+                                            <label className="adduser-label" htmlFor="password">Password <span style={{ color: "#ff0000" }}>*</span></label>
                                             <Input.Password
                                                 id="password"
                                                 className="adduser-input"
@@ -446,7 +446,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
 
                                     <div className="adduser-col">
                                         <div className="adduser-field">
-                                            <label className="adduser-label" htmlFor="confirmPassword">Confirm Password</label>
+                                            <label className="adduser-label" htmlFor="confirmPassword">Confirm Password <span style={{ color: "#ff0000" }}>*</span></label>
                                             <Input.Password
                                                 id="confirmPassword"
                                                 className="adduser-input"

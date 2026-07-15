@@ -499,11 +499,20 @@ export default function QuotationManagement() {
                             <div className="quotation-management-actions-field quotation-management-actions-field--search">
                                 <label className="quotationmanagement-label">Search</label>
                                 <Input
+                                    maxLength={40}
                                     prefix={<SearchOutlined />}
                                     placeholder="Search request, package, customer or status..."
                                     className="quotationmanagement-search-input"
                                     value={searchText}
-                                    onChange={(event) => setSearchText(event.target.value)}
+                                    onChange={(e) => {
+                                        const cleanedValue = e.target.value
+                                            .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                            .replace(/\s{2,}/g, ' ')
+                                            .replace(/-{2,}/g, '-')
+                                            .replace(/^\s+/, '');
+
+                                        setSearchText(cleanedValue);
+                                    }}
                                     allowClear
                                 />
                             </div>
@@ -545,6 +554,7 @@ export default function QuotationManagement() {
                             <div className="quotation-management-actions-field">
                                 <label className="quotationmanagement-label">Request Date</label>
                                 <DatePicker
+                                    inputReadOnly
                                     className="quotation-date-filter"
                                     placeholder="Request Date"
                                     value={dateFilter}

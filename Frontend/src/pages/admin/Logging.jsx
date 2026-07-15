@@ -173,7 +173,15 @@ export default function Logging() {
                                     placeholder="Search logs by action, username, or email..."
                                     prefix={<SearchOutlined />}
                                     className="logging-search-input"
-                                    onChange={(e) => setSearchText(e.target.value)}
+                                    value={searchText}
+                                    onChange={(e) => {
+                                        const cleanedValue = e.target.value
+                                            .replace(/[^a-zA-Z0-9\s@._+-]/g, "")
+                                            .replace(/\s{2,}/g, " ")
+                                            .replace(/^\s+/, "");
+
+                                        setSearchText(cleanedValue);
+                                    }}
                                 />
                             </div>
 

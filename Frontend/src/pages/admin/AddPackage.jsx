@@ -27,6 +27,7 @@ export default function AddPackage() {
   const [savingPackage, setSavingPackage] = useState(false);
 
   const [availableTags, setAvailableTags] = useState([]);
+  const [tagSearch, setTagSearch] = useState("");
   const [loadingTags, setLoadingTags] = useState(false);
 
 
@@ -1195,7 +1196,12 @@ export default function AddPackage() {
                     e.preventDefault();
                   }}
                   onChange={(e) => {
-                    valueHandler("name", e.target.value);
+                    const cleanedValue = e.target.value
+                      .replace(/[^a-zA-Z\s]/g, '')
+                      .replace(/\s{2,}/g, ' ')
+                      .replace(/^\s+/, '');
+
+                    valueHandler('name', cleanedValue);
                   }}
                 />
                 <p className="add-package-error-message">{errors.name}</p>
@@ -1347,7 +1353,12 @@ export default function AddPackage() {
                 autoSize={{ minRows: 4, maxRows: 8 }}
                 style={{ marginBottom: 10 }}
                 onChange={(e) => {
-                  valueHandler("description", e.target.value);
+                  const cleanedValue = e.target.value
+                    .replace(/[^a-zA-Z0-9\s]/g, '')
+                    .replace(/[^\S\r\n]{2,}/g, ' ')
+                    .replace(/^\s+/, '');
+
+                  valueHandler('description', cleanedValue);
                 }}
               />
               <p className="add-package-error-message">{errors.description}</p>
@@ -1370,13 +1381,40 @@ export default function AddPackage() {
                   className={`add-package-inputs${errors.tags ? " add-package-inputs-error" : ""
                     }`}
                   value={values.tags}
+                  searchValue={tagSearch}
                   options={availableTags.map((tag) => ({
                     label: tag,
                     value: tag,
                   }))}
-                  onChange={handleTagsChange}
+                  onSearch={(value) => {
+                    const cleanedValue = value
+                      .replace(/[^a-zA-Z\s]/g, '')
+                      .replace(/\s{2,}/g, ' ')
+                      .replace(/^\s+/, '')
+                      .slice(0, 30);
+
+                    setTagSearch(cleanedValue);
+                  }}
+                  onChange={(selectedTags) => {
+                    const cleanedTags = selectedTags
+                      .map((tag) =>
+                        String(tag)
+                          .replace(/[^a-zA-Z\s]/g, '')
+                          .replace(/\s{2,}/g, ' ')
+                          .trim()
+                          .slice(0, 30)
+                      )
+                      .filter(Boolean);
+
+                    handleTagsChange([...new Set(cleanedTags)]);
+                    setTagSearch('');
+                  }}
+                  onClear={() => {
+                    handleTagsChange([]);
+                    setTagSearch('');
+                  }}
                   filterOption={(input, option) =>
-                    String(option?.label || "")
+                    String(option?.label || '')
                       .toLowerCase()
                       .includes(input.toLowerCase())
                   }
@@ -1468,6 +1506,7 @@ export default function AddPackage() {
 
                     {/* Slots */}
                     <Input
+                      maxLength={3}
                       status={errors.dateRanges?.[index] ? "error" : ""}
                       placeholder="Slots"
                       value={range.slots}
@@ -1492,6 +1531,7 @@ export default function AddPackage() {
                 <Button
                   className="add-package-add-button highlighted-button"
                   type="primary"
+                  icon={<PlusOutlined />}
                   onClick={addDateRange}>
                   Add Date Range
                 </Button>
@@ -1510,6 +1550,7 @@ export default function AddPackage() {
                   {values.hotels?.map((hotel, index) => (
                     <Space className="add-package-hotels" key={index} style={{ width: "100%", marginBottom: 16 }}>
                       <Input
+                        maxLength={40}
                         status={errors.hotels ? "error" : ""}
                         className="add-package-inputs"
                         placeholder="Hotel Name"
@@ -1536,7 +1577,14 @@ export default function AddPackage() {
                             e.preventDefault();
                           }
                         }}
-                        onChange={(e) => updateHotel(index, "name", e.target.value)}
+                        onChange={(e) => {
+                          const cleanedValue = e.target.value
+                            .replace(/[^a-zA-Z\s]/g, '')
+                            .replace(/\s{2,}/g, ' ')
+                            .replace(/^\s+/, '');
+
+                          updateHotel(index, 'name', cleanedValue);
+                        }}
                       />
                       <Select
                         status={errors.hotels ? "error" : ""}
@@ -1606,7 +1654,14 @@ export default function AddPackage() {
                             e.preventDefault();
                           }
                         }}
-                        onChange={(e) => updateAirline(index, "name", e.target.value)}
+                        onChange={(e) => {
+                          const cleanedValue = e.target.value
+                            .replace(/[^a-zA-Z\s]/g, '')
+                            .replace(/\s{2,}/g, ' ')
+                            .replace(/^\s+/, '');
+
+                          updateAirline(index, 'name', cleanedValue);
+                        }}
                       />
                       <Select
                         status={errors.airlines ? "error" : ""}
@@ -1648,9 +1703,19 @@ export default function AddPackage() {
                   Inclusions<span style={{ color: "#ff0000" }}>*</span>
                 </label>
                 <Input.TextArea
+                  maxLength={500}
                   status={errors.inclusions ? "error" : ""}
                   value={values.inclusions}
-                  onChange={(e) => handleTextAreaChange("inclusions", e)}
+                  onChange={(e) => {
+                    const cleanedValue = e.target.value
+                      .replace(/[^a-zA-Z0-9\s]/g, '')
+                      .replace(/[^\S\r\n]{2,}/g, ' ')
+                      .replace(/^\s+/, '');
+
+                    handleTextAreaChange('inclusions', {
+                      target: { value: cleanedValue },
+                    });
+                  }}
                   autoSize={{ minRows: 4, maxRows: 10 }}
                   className="add-package-input-textarea"
                   style={{ marginBottom: 5 }}
@@ -1662,9 +1727,19 @@ export default function AddPackage() {
                   Exclusions <span style={{ color: "#ff0000" }}>*</span>
                 </label>
                 <Input.TextArea
+                  maxLength={500}
                   status={errors.exclusions ? "error" : ""}
                   value={values.exclusions}
-                  onChange={(e) => handleTextAreaChange("exclusions", e)}
+                  onChange={(e) => {
+                    const cleanedValue = e.target.value
+                      .replace(/[^a-zA-Z0-9\s]/g, '')
+                      .replace(/[^\S\r\n]{2,}/g, ' ')
+                      .replace(/^\s+/, '');
+
+                    handleTextAreaChange('exclusions', {
+                      target: { value: cleanedValue },
+                    });
+                  }}
                   autoSize={{ minRows: 4, maxRows: 10 }}
                   className="add-package-input-textarea"
                   style={{ marginBottom: 5 }}
@@ -1676,9 +1751,19 @@ export default function AddPackage() {
                   Terms & Conditions <span style={{ color: "#ff0000" }}>*</span>
                 </label>
                 <Input.TextArea
+                  maxLength={500}
                   status={errors.termsConditions ? "error" : ""}
                   value={values.termsConditions}
-                  onChange={(e) => handleTextAreaChange("termsConditions", e)}
+                  onChange={(e) => {
+                    const cleanedValue = e.target.value
+                      .replace(/[^a-zA-Z0-9\s]/g, '')
+                      .replace(/[^\S\r\n]{2,}/g, ' ')
+                      .replace(/^\s+/, '');
+
+                    handleTextAreaChange('termsConditions', {
+                      target: { value: cleanedValue },
+                    });
+                  }}
                   autoSize={{ minRows: 4, maxRows: 10 }}
                   className="add-package-input-textarea"
                   style={{ marginBottom: 5 }}
@@ -1710,6 +1795,7 @@ export default function AddPackage() {
                           return (
                             <Space key={index} style={{ display: "flex", marginBottom: 8, width: "100%" }} wrap>
                               <Input
+                                maxLength={70}
                                 status={errors.itineraries ? "error" : ""}
                                 className="add-package-inputs"
                                 value={itineraryItem.activity}
@@ -1728,7 +1814,20 @@ export default function AddPackage() {
                                     e.preventDefault();
                                   }
                                 }}
-                                onChange={(e) => updateItineraryItem(day, index, "activity", e.target.value)}
+                                onChange={(e) => {
+                                  const cleanedValue = e.target.value
+                                    .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                    .replace(/\s{2,}/g, ' ')
+                                    .replace(/-{2,}/g, '-')
+                                    .replace(/^\s+/, '');
+
+                                  updateItineraryItem(
+                                    day,
+                                    index,
+                                    'activity',
+                                    cleanedValue
+                                  );
+                                }}
                                 placeholder={`Activity ${index + 1}`}
                               />
 

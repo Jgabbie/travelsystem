@@ -491,7 +491,14 @@ export default function AddService() {
                                 value={values.visaName}
                                 maxLength={40}
                                 className={`add-service-inputs${errors.visaName ? " add-service-inputs-error" : ""}`}
-                                onChange={(event) => valueHandler("visaName", event.target.value)}
+                                onChange={(event) => {
+                                    const cleanedValue = event.target.value
+                                        .replace(/[^a-zA-Z0-9\s]/g, "")
+                                        .replace(/\s{2,}/g, " ")
+                                        .replace(/^\s+/, "");
+
+                                    valueHandler("visaName", cleanedValue);
+                                }}
                                 onKeyDown={(event) => {
                                     const newValue = event.key.length === 1
                                         ? values.visaName + event.key
@@ -534,7 +541,14 @@ export default function AddService() {
                                 maxLength={500}
                                 className={`add-service-input-textarea${errors.description ? " add-service-input-textarea-error" : ""}`}
                                 autoSize={{ minRows: 4, maxRows: 7 }}
-                                onChange={(event) => valueHandler("description", event.target.value)}
+                                onChange={(event) => {
+                                    const cleanedValue = event.target.value
+                                        .replace(/[^a-zA-Z0-9\s]/g, "")
+                                        .replace(/[^\S\r\n]{2,}/g, " ")
+                                        .replace(/^\s+/, "");
+
+                                    valueHandler("description", cleanedValue);
+                                }}
                                 onKeyDown={(event) => {
                                     const newValue = event.key.length === 1
                                         ? values.description + event.key
@@ -574,7 +588,7 @@ export default function AddService() {
                                 }
                             >
                                 {!values.imageFile && (
-                                    <Button icon={<UploadOutlined />}>
+                                    <Button type="primary" className="add-service-upload-button" icon={<UploadOutlined />}>
                                         Select Image
                                     </Button>
                                 )}
@@ -628,7 +642,19 @@ export default function AddService() {
                                                     <Input
                                                         value={item.req}
                                                         className="add-service-inputs"
-                                                        onChange={(event) => updateBullet("requirements", index, event.target.value, "req")}
+                                                        onChange={(event) => {
+                                                            const cleanedValue = event.target.value
+                                                                .replace(/[^a-zA-Z0-9\s]/g, "")
+                                                                .replace(/\s{2,}/g, " ")
+                                                                .replace(/^\s+/, "");
+
+                                                            updateBullet(
+                                                                "requirements",
+                                                                index,
+                                                                cleanedValue,
+                                                                "req"
+                                                            );
+                                                        }}
                                                     />
 
                                                     <Button
@@ -660,7 +686,19 @@ export default function AddService() {
                                                 className="add-service-inputs"
                                                 autoSize={{ minRows: 3, maxRows: 5 }}
                                                 maxLength={500}
-                                                onChange={(event) => updateBullet("requirements", index, event.target.value, "desc")}
+                                                onChange={(event) => {
+                                                    const cleanedValue = event.target.value
+                                                        .replace(/[^a-zA-Z0-9\s]/g, "")
+                                                        .replace(/[^\S\r\n]{2,}/g, " ")
+                                                        .replace(/^\s+/, "");
+
+                                                    updateBullet(
+                                                        "requirements",
+                                                        index,
+                                                        cleanedValue,
+                                                        "desc"
+                                                    );
+                                                }}
                                                 style={{ marginTop: 2 }}
                                             />
                                         </div>
@@ -672,7 +710,22 @@ export default function AddService() {
                                                 value={item.applicationLink}
                                                 className="add-service-inputs"
                                                 maxLength={200}
-                                                onChange={(event) => updateBullet("requirements", index, event.target.value, "applicationLink")}
+                                                onChange={(event) => {
+                                                    const cleanedValue = event.target.value
+                                                        .replace(/\s/g, "")
+                                                        .replace(
+                                                            /[^a-zA-Z0-9:/?#\[\]@!$&'()*+,;=._~%-]/g,
+                                                            ""
+                                                        )
+                                                        .slice(0, 200);
+
+                                                    updateBullet(
+                                                        "requirements",
+                                                        index,
+                                                        cleanedValue,
+                                                        "applicationLink"
+                                                    );
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -722,10 +775,27 @@ export default function AddService() {
                                                     <label className="add-service-input-labels">Process Step {i + 1} <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
                                                         <Input
+                                                            maxLength={50}
                                                             value={step.title}
                                                             className="add-service-inputs"
                                                             disabled={isStandard}
-                                                            onChange={isStandard ? undefined : (event) => updateBullet("processSteps", step.customIndex, event.target.value, "title")}
+                                                            onChange={
+                                                                isStandard
+                                                                    ? undefined
+                                                                    : (event) => {
+                                                                        const cleanedValue = event.target.value
+                                                                            .replace(/[^a-zA-Z0-9\s]/g, "")
+                                                                            .replace(/\s{2,}/g, " ")
+                                                                            .replace(/^\s+/, "");
+
+                                                                        updateBullet(
+                                                                            "processSteps",
+                                                                            step.customIndex,
+                                                                            cleanedValue,
+                                                                            "title"
+                                                                        );
+                                                                    }
+                                                            }
                                                         />
                                                         {!isStandard && (
                                                             <Button
@@ -746,9 +816,27 @@ export default function AddService() {
                                                     className="add-service-inputs"
                                                     autoSize={{ minRows: 2, maxRows: 4 }}
                                                     maxLength={300}
-                                                    onChange={isStandard
-                                                        ? (event) => updateStandardStep(step.standardIndex, "description", event.target.value)
-                                                        : (event) => updateBullet("processSteps", step.customIndex, event.target.value, "description")}
+                                                    onChange={(event) => {
+                                                        const cleanedValue = event.target.value
+                                                            .replace(/[^a-zA-Z0-9\s]/g, "")
+                                                            .replace(/[^\S\r\n]{2,}/g, " ")
+                                                            .replace(/^\s+/, "");
+
+                                                        if (isStandard) {
+                                                            updateStandardStep(
+                                                                step.standardIndex,
+                                                                "description",
+                                                                cleanedValue
+                                                            );
+                                                        } else {
+                                                            updateBullet(
+                                                                "processSteps",
+                                                                step.customIndex,
+                                                                cleanedValue,
+                                                                "description"
+                                                            );
+                                                        }
+                                                    }}
                                                     style={{ marginTop: 2 }}
                                                 />
                                             </div>
@@ -760,9 +848,26 @@ export default function AddService() {
                                                         min={0}
                                                         value={step.daysToBeCompleted}
                                                         className="add-service-inputs"
-                                                        onChange={isStandard
-                                                            ? (event) => updateStandardStep(step.standardIndex, "daysToBeCompleted", event.target.value)
-                                                            : (event) => updateBullet("processSteps", step.customIndex, event.target.value, "daysToBeCompleted")}
+                                                        onChange={(event) => {
+                                                            const cleanedValue = event.target.value
+                                                                .replace(/\D/g, "")
+                                                                .slice(0, 3);
+
+                                                            if (isStandard) {
+                                                                updateStandardStep(
+                                                                    step.standardIndex,
+                                                                    "daysToBeCompleted",
+                                                                    cleanedValue
+                                                                );
+                                                            } else {
+                                                                updateBullet(
+                                                                    "processSteps",
+                                                                    step.customIndex,
+                                                                    cleanedValue,
+                                                                    "daysToBeCompleted"
+                                                                );
+                                                            }
+                                                        }}
                                                         placeholder="Enter days"
                                                         style={{ marginTop: 2 }}
                                                     />
@@ -800,7 +905,18 @@ export default function AddService() {
                                             value={item}
                                             className="add-service-inputs"
                                             maxLength={300}
-                                            onChange={(event) => updateBullet("reminders", index, event.target.value)}
+                                            onChange={(event) => {
+                                                const cleanedValue = event.target.value
+                                                    .replace(/[^a-zA-Z0-9\s]/g, "")
+                                                    .replace(/\s{2,}/g, " ")
+                                                    .replace(/^\s+/, "");
+
+                                                updateBullet(
+                                                    "reminders",
+                                                    index,
+                                                    cleanedValue
+                                                );
+                                            }}
                                         />
                                         <Button
                                             className="delete-add-service-button delete-button"

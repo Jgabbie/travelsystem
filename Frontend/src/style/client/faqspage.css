@@ -136,10 +136,6 @@
     color: #ffffff;
 }
 
-.faq-search .ant-input::placeholder {
-    color: rgba(255, 255, 255, 0.8);
-}
-
 .faq-search .ant-input-clear-icon {
     color: rgba(255, 255, 255, 0.9);
 }

@@ -441,7 +441,7 @@
     background-color: #305797;
     color: #fff;
     border-radius: 16px;
-    width: 180px;
+    width: 200px;
     height: 30px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
@@ -588,6 +588,23 @@
     flex: 1;
     text-align: right;
     color: #666666;
+}
+
+/* Make quotation input fields use the full available width */
+.mrc-quotation-value>div {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.mrc-quotation-value .mrc-tour-details-input,
+.mrc-quotation-value .mrc-quotation-inline-input,
+.mrc-quotation-value .mrc-currency-input,
+.mrc-quotation-value .ant-input,
+.mrc-quotation-value .ant-input-affix-wrapper {
+    width: 100% !important;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 
