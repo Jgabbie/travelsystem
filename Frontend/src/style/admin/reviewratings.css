@@ -12,8 +12,7 @@
 }
 
 /* Statistic / management card styling */
-.rating-management-card,
-.rating-management-card .ant-card {
+.rating-management-card {
     background-color: #305797 !important;
     color: #ffffff !important;
     border: none !important;
@@ -47,15 +46,6 @@
     margin-bottom: 24px;
 }
 
-.user-stats-row .ant-card {
-    border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
-}
-
-.user-stats-row .ant-statistic-content {
-    font-size: 20px;
-    font-weight: 600;
-}
 
 .reviewratings-actions {
     width: 100%;
@@ -194,8 +184,7 @@
     color: #fff !important;
 }
 
-.reviewratings-remove-button:hover,
-.reviewratings-add-button:hover {
+.reviewratings-remove-button:hover {
     background-color: #7D2239 !important;
     color: #fff !important;
 }
@@ -242,14 +231,6 @@
 /* View review modal */
 .reviewratings-view-modal {
     padding: 8px 4px 2px;
-}
-
-.reviewratings-view-modal-title {
-    margin: 0 0 22px;
-    color: #305797;
-    font-family: "Montserrat", sans-serif;
-    font-size: 22px;
-    font-weight: 700;
 }
 
 .reviewratings-view-detail {

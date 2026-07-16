@@ -7,13 +7,6 @@
     margin: 0 auto;
 }
 
-.passportapplication-page {
-    min-height: 100vh;
-    padding: 40px 32px 40px;
-    font-family: "Montserrat", sans-serif;
-    margin-bottom: 40px;
-}
-
 .app-detail-shell {
     background: #ffffff;
     border-radius: 16px;
@@ -55,25 +48,7 @@
     letter-spacing: 0.08em;
 }
 
-.app-detail-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 22px;
-}
 
-.app-detail-main {
-    min-width: 0;
-}
-
-.app-detail-side {
-    min-width: 0;
-}
-
-.app-detail-panel {
-    border-radius: 12px;
-    border: 1px solid #dde4ef;
-    box-shadow: 0 6px 20px rgba(18, 24, 38, 0.06);
-}
 
 .passportapplication-suggestedoptions {
     display: grid;
@@ -96,14 +71,6 @@
     font-size: 12px;
     margin-left: 8px;
     color: #1f2a44;
-}
-
-.passportapplication-suggestedoptions-container {
-    background: #ffffff;
-    border-radius: 12px;
-    border: 1px solid #f0f0f0;
-    padding: 16px;
-    cursor: pointer;
 }
 
 .passportapplication-suggestedoptions-group {
@@ -259,22 +226,6 @@
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-.passportapplication-download-button {
-    font-family: "Montserrat", sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    background-color: #305797;
-    color: #fff;
-    border-radius: 16px;
-    width: 92%;
-    max-width: 300px;
-    height: 36px;
-    margin: 0 auto;
-    border: none !important;
-    box-shadow: 0 6px 14px rgba(153, 42, 70, 0.18);
-    margin-top: 6px;
-}
-
 .passportapplication-preview-button {
     font-family: "Montserrat", sans-serif;
     font-size: 13px;
@@ -291,20 +242,6 @@
     align-items: center;
     justify-content: center;
     padding: 0 12px;
-}
-
-.passport-additional-doc-item {
-    width: 320px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.passport-additional-doc-item .passportapplication-preview-button,
-.passport-additional-doc-item .passportapplication-download-button {
-    width: 92%;
-    max-width: 300px;
-    margin: 0 auto;
 }
 
 .passportapplication-removefile-button {
@@ -333,8 +270,7 @@
 
 .passportapplication-back-button:hover,
 .passportapplication-upload-button:hover,
-.passportapplication-uploadreceipt-button:hover,
-.passportapplication-download-button:hover {
+.passportapplication-uploadreceipt-button:hover {
     background-color: #244575 !important;
     color: #fff !important;
 }
@@ -380,14 +316,6 @@
     flex-direction: column;
     gap: 12px;
     box-shadow: 0 6px 18px rgba(31, 42, 68, 0.04);
-}
-
-.passport-document-uploaded-container {
-    display: flex;
-    flex-direction: row;
-    gap: 32px;
-    flex-wrap: wrap;
-    justify-content: center;
 }
 
 .passport-requirement-placeholder {
@@ -483,13 +411,7 @@
         flex-direction: column;
     }
 
-    .app-detail-layout {
-        grid-template-columns: 1fr;
-    }
 
-    .app-detail-barcode-card {
-        width: 100%;
-    }
 }
 
 @media (max-width: 768px) {
@@ -534,17 +456,6 @@
         margin-top: 80px;
         padding-left: 16px;
         padding-right: 16px;
-    }
-
-    .passport-document-uploaded-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        gap: 30px;
-        margin: 5px;
-        padding: 5px;
     }
 
     .passport-document-uploaded-section {

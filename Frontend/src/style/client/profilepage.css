@@ -353,20 +353,12 @@
     white-space: nowrap;
 }
 
-.profile-booking-fullypaid {
-    background: #f6ffed;
-    color: #389e0d;
-}
 
 .profile-booking-pending {
     background: #fffbe6;
     color: #d48806;
 }
 
-.profile-booking-notpaid {
-    background: #e6f4ff;
-    color: #ff4d4f;
-}
 
 .profile-card .ant-card-body {
     display: flex;
@@ -375,53 +367,12 @@
     padding: 24px;
 }
 
-.profile-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
-.profile-card-header h2 {
-    font-family: "Montserrat", sans-serif;
-    margin: 0;
-    font-size: 24px;
-    color: #333;
-}
-
-.profile-avatar-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
-}
-
-.profile-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: #eef2f7;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border: 3px solid #ffffff;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-}
-
 .profile-avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.profile-avatar-placeholder {
-    font-family: "Montserrat", sans-serif;
-    font-size: 36px;
-    font-weight: 600;
-    color: #305797;
-}
 
 .profile-avatar-input {
     display: none;
@@ -433,30 +384,6 @@
     font-size: 11px;
     color: #6b7280;
     font-family: "Montserrat", sans-serif;
-}
-
-.profile-fields {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-}
-
-.profile-field {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.profile-label {
-    font-family: "Montserrat", sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    color: #2f3a4a;
-}
-
-.profile-field .ant-input {
-    border-radius: 10px;
-    height: 42px;
 }
 
 .profile-error-message {

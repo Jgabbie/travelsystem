@@ -7,13 +7,6 @@
     margin: 0 auto;
 }
 
-.visaapplication-page {
-    min-height: 100vh;
-    padding: 40px 32px 40px;
-    font-family: "Montserrat", sans-serif;
-    margin-bottom: 40px;
-}
-
 .app-detail-shell {
     background: #ffffff;
     border-radius: 16px;
@@ -57,26 +50,6 @@
 }
 
 
-.app-detail-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 22px;
-}
-
-.app-detail-main {
-    min-width: 0;
-}
-
-.app-detail-side {
-    min-width: 0;
-}
-
-.app-detail-panel {
-    border-radius: 12px;
-    border: 1px solid #dde4ef;
-    box-shadow: 0 6px 20px rgba(18, 24, 38, 0.06);
-}
-
 .visaapplication-suggestedoptions {
     display: grid;
     grid-template-columns: 1fr;
@@ -98,14 +71,6 @@
     font-size: 12px;
     margin-left: 8px;
     color: #1f2a44;
-}
-
-.visaapplication-suggestedoptions-container {
-    background: #ffffff;
-    border-radius: 12px;
-    border: 1px solid #f0f0f0;
-    padding: 16px;
-    cursor: pointer;
 }
 
 .visaapplication-suggestedoptions-group {
@@ -197,21 +162,7 @@
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-.visaapplication-download-button {
-    font-family: "Montserrat", sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    background-color: #305797;
-    color: #fff;
-    border-radius: 16px;
-    width: 92%;
-    max-width: 320px;
-    width: 320px;
-    height: 38px;
-    margin: 0 auto;
-    border: none !important;
-    box-shadow: 0 6px 14px rgba(153, 42, 70, 0.18);
-}
+
 
 .visaapplication-submitdate-button {
     font-family: "Montserrat", sans-serif;
@@ -254,8 +205,7 @@
 
 .visaapplication-back-button:hover,
 .visaapplication-upload-button:hover,
-.visaapplication-uploadreceipt-button:hover,
-.visaapplication-download-button:hover {
+.visaapplication-uploadreceipt-button:hover {
     background-color: #244575 !important;
     color: #fff !important;
 }
@@ -347,14 +297,12 @@
     box-shadow: 0 18px 34px rgba(31, 42, 68, 0.18) !important;
 }
 
-.visaapplication-suggestedoption-card,
-.visaapplication-releaseoption-card {
+.visaapplication-suggestedoption-card {
     position: relative;
     overflow: hidden;
 }
 
-.visaapplication-suggestedoption-card.selected,
-.visaapplication-releaseoption-card.selected {
+.visaapplication-suggestedoption-card.selected {
     border-color: #305797 !important;
     background: linear-gradient(180deg,
             #f7faff 0%,
@@ -383,11 +331,6 @@
     text-transform: uppercase;
 
     pointer-events: none;
-}
-
-.visaapplication-releaseoption-card:hover {
-    border-color: #305797 !important;
-    box-shadow: 0 4px 12px rgba(48, 87, 151, 0.1);
 }
 
 .payment-card {
@@ -511,15 +454,7 @@
         padding-right: 30px;
     }
 
-    .app-info-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
 
-    .app-info-value {
-        text-align: left;
-        width: 100%;
-    }
 }
 
 @media (max-width: 480px) {
@@ -545,48 +480,6 @@
 
 
 /* Custom Application Info Card (replaces Ant Descriptions) */
-.app-info-card {
-    background: #ffffff;
-    border: 1px solid #e6eef9;
-    padding: 16px;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    box-shadow: 0 6px 18px rgba(31, 42, 68, 0.04);
-}
-
-.app-info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.app-info-label {
-    color: #5b6b82;
-    font-weight: 700;
-    font-size: 13px;
-    min-width: 140px;
-}
-
-.app-info-value {
-    color: #1f2a44;
-    font-weight: 600;
-    font-size: 14px;
-    text-align: right;
-    flex: 1 1 auto;
-}
-
-.app-detail-layout {
-    grid-template-columns: 1fr;
-}
-
-.app-detail-barcode-card {
-    width: 100%;
-}
-
 .visaapplication-uploaded-documents,
 .visaapplication-release-option {
     border: 1px dashed #cfd8ee;

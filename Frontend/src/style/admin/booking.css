@@ -15,8 +15,7 @@
 }
 
 /* Make statistic/cards use primary blue and ensure readable contrast */
-.booking-management-card,
-.booking-management-card .ant-card {
+.booking-management-card {
   background-color: #305797 !important;
   color: #ffffff !important;
   border: none !important;
@@ -276,45 +275,6 @@
 }
 
 
-
-@media (max-width: 576px) {
-  .booking-statistics {
-    gap: 12px;
-  }
-
-  .bookingmanagement-actions-field {
-    width: 100%;
-  }
-
-  .booking-date-filter {
-    width: 100%;
-  }
-
-}
-
-@media (max-width: 480px) {
-
-  .bookingmanagement-export-button,
-  .bookingmanagement-archive-button,
-  .bookingmanagement-actions-buttons {
-    width: 100%;
-    flex: none !important;
-  }
-
-  .bookingmanagement-status-tag {
-    white-space: nowrap !important;
-    word-break: keep-all !important;
-    min-width: max-content;
-  }
-
-  .bookingmanagement-table-card .ant-table-cell {
-    overflow-wrap: normal;
-  }
-
-}
-
-
-
 /* Modal content styling */
 .booking-edit-modal .ant-modal-content {
   border-radius: 16px;
@@ -344,16 +304,12 @@
   margin-bottom: 14px;
 }
 
-.booking-edit-modal .ant-input,
-.booking-edit-modal .ant-select-selector,
-.booking-edit-modal .ant-picker {
+.booking-edit-modal .ant-select-selector {
   border-radius: 10px !important;
   background-color: #f8fafc !important;
 }
 
-.booking-edit-modal .ant-input:focus,
-.booking-edit-modal .ant-select-focused .ant-select-selector,
-.booking-edit-modal .ant-picker-focused {
+.booking-edit-modal .ant-select-focused .ant-select-selector {
   border-color: #305797 !important;
   box-shadow: 0 0 0 2px rgba(48, 87, 151, 0.12) !important;
 }
@@ -394,8 +350,42 @@
   color: #fff !important;
 }
 
-.booking-edit-modal .booking-edit-cancel-btn {
-  border-radius: 10px;
-  height: 38px;
-  padding: 0 18px;
+
+
+
+
+@media (max-width: 576px) {
+  .booking-statistics {
+    gap: 12px;
+  }
+
+  .bookingmanagement-actions-field {
+    width: 100%;
+  }
+
+  .booking-date-filter {
+    width: 100%;
+  }
+
+}
+
+@media (max-width: 480px) {
+
+  .bookingmanagement-export-button,
+  .bookingmanagement-archive-button,
+  .bookingmanagement-actions-buttons {
+    width: 100%;
+    flex: none !important;
+  }
+
+  .bookingmanagement-status-tag {
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    min-width: max-content;
+  }
+
+  .bookingmanagement-table-card .ant-table-cell {
+    overflow-wrap: normal;
+  }
+
 }

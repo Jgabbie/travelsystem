@@ -13,23 +13,12 @@
     pointer-events: all;
 }
 
-.payment-process-spin .ant-spin {
-    color: #305797;
-}
-
 
 /* PAGE CONTAINER AND WHOLE PAGE CSS */
 .payment-process-container {
     padding: 40px;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
-
-.payment-process-backbutton {
-    display: flex;
-    justify-content: flex-start;
-    margin: 40px 0;
-}
-
 
 /* MODE OF PAYMENT AND INVOICE */
 .payment-top-grid {
@@ -84,7 +73,6 @@
 }
 
 
-.payment-section .display-invoice-card,
 .payment-section .payment-methods-wrapper,
 .payment-section .manual-transfer-details {
     background: #ffffff;
@@ -93,9 +81,6 @@
     box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
 }
 
-.payment-section .display-invoice-card {
-    padding: 20px;
-}
 
 .payment-section .payment-methods-wrapper {
     padding: 0;
@@ -186,59 +171,9 @@
     box-shadow: 0 16px 30px rgba(48, 87, 151, 0.16);
 }
 
-.payment-section .payment-card.selected .payment-card-content {
-    padding-top: 24px;
-}
-
-
 /* Deposit payment schedule */
-.deposit-payment-schedule {
-    width: 100%;
-    margin-top: 18px;
-    padding: 16px;
-
-    background: #ffffff;
-    border: 1px dashed #cfd8ee;
-    border-radius: 14px;
-
-    white-space: normal;
-    line-height: normal;
-}
-
-.deposit-schedule-heading {
-    margin: 0 0 10px !important;
-
-    color: #1f2a44 !important;
-    font-family: "Montserrat", sans-serif !important;
-    font-size: 13px !important;
-    font-weight: 700;
-}
-
 .deposit-frequency-select {
     width: 100%;
-}
-
-.deposit-schedule-divider {
-    width: 100%;
-    height: 1px;
-    margin: 16px 0;
-
-    background-color: #e5e7eb;
-}
-
-.deposit-unavailable-message {
-    margin-top: 8px !important;
-    color: #e72323 !important;
-    font-size: 12px !important;
-    font-weight: 500;
-}
-
-.deposit-payment-schedule .payment-schedule-item {
-    white-space: normal;
-}
-
-.deposit-payment-schedule .payment-schedule-note {
-    margin-bottom: 0;
 }
 
 .payment-cards-group {
@@ -442,7 +377,7 @@
 
 .payment-process-upload-button {
     font-family: "Montserrat", sans-serif;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     background-color: #305797;
     color: #fff;
@@ -470,12 +405,6 @@
     animation: slideDown 0.3s ease-out;
 }
 
-.manual-transfer-container {
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
 
 .upload-note {
     font-size: 12px;

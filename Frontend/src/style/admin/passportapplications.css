@@ -8,8 +8,7 @@
 }
 
 /* Statistic / management card styling */
-.passportapps-management-card,
-.passportapps-management-card .ant-card {
+.passportapps-management-card {
     background-color: #305797 !important;
     color: #ffffff !important;
     border: none !important;

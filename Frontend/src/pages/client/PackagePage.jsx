@@ -6,10 +6,14 @@ import { useBooking } from '../../context/BookingContext';
 import { useAuth } from '../../hooks/useAuth';
 import dayjs from 'dayjs';
 import apiFetch from '../../config/fetchConfig';
+
 import '../../style/client/packagepage.css'
 
 import AllInOrLandArrangementModal from '../../components/modals/AllInOrLandArrangementModal'
 import ChooseDateIntModal from '../../components/modals/ChooseDateIntModal';
+
+
+
 import LoginModal from '../../components/modals/LoginModal';
 import SignupModal from '../../components/modals/SignupModal';
 

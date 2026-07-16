@@ -12,8 +12,7 @@
 }
 
 /* Statistic card styling to match primary theme */
-.cancellation-management-card,
-.cancellation-management-card .ant-card {
+.cancellation-management-card {
     background-color: #305797 !important;
     color: #ffffff !important;
     border: none !important;
@@ -60,16 +59,6 @@
     font-size: 28px;
     font-weight: 600;
     margin-bottom: 24px;
-}
-
-.user-stats-row .ant-card {
-    border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
-}
-
-.user-stats-row .ant-statistic-content {
-    font-size: 20px;
-    font-weight: 600;
 }
 
 .cancel-actions {
@@ -330,75 +319,6 @@
 
 
 
-/* View modal */
-.cancellation-view-modal .ant-modal-content {
-    border-radius: 16px;
-    padding: 18px;
-}
-
-.cancellation-view-modal .ant-modal-title {
-    font-family: "Montserrat", sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: #305797;
-}
-
-.cancellation-view-content {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.cancellation-view-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.cancellation-view-title {
-    margin: 0 0 6px;
-    font-size: 22px;
-    font-weight: 700;
-    color: #1f2a44;
-}
-
-.cancellation-view-subtitle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #6b7280;
-    font-size: 13px;
-}
-
-.cancellation-view-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px 16px;
-}
-
-.cancellation-view-item {
-    background: #f8fafc;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 12px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.cancellation-view-label {
-    font-size: 12px;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-}
-
-.cancellation-view-value {
-    font-size: 14px;
-    color: #1f2a44;
-    font-weight: 600;
-}
-
 /* Table styling */
 .cancellations-container .ant-table {
     border-radius: 16px;
@@ -427,12 +347,6 @@
 
 .cancellations-container .ant-table-tbody>tr:hover>td {
     background-color: #f9faff;
-}
-
-/* Card for filters and table */
-.user-management-container .ant-card {
-    border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.08);
 }
 
 /* DatePicker */

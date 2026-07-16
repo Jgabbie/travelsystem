@@ -15,8 +15,7 @@
 }
 
 /* Statistic card styling to match primary theme */
-.quotation-management-card,
-.quotation-management-card .ant-card {
+.quotation-management-card {
     background-color: #305797 !important;
     color: #ffffff !important;
     border: none !important;

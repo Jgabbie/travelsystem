@@ -169,22 +169,8 @@
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-.user-transactions-download-button {
-    font-family: "Montserrat", sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    background-color: #305797;
-    color: #fff;
-    border-radius: 16px;
-    width: 140px;
-    height: 30px;
-    border: none !important;
-    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
-}
-
 .user-transactions-view-button:hover,
 .user-transactions-viewproof-button:hover,
-.user-transactions-download-button:hover,
 .user-transactions-downloadproof-button:hover {
     background-color: #244575 !important;
     color: #fff !important;

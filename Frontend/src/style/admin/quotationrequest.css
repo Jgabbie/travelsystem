@@ -23,14 +23,6 @@
     margin-bottom: 20px;
 }
 
-.quotationrequest-eyebrow {
-    margin: 0;
-    color: #305797;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
 .quotationrequest-content-stack {
     display: flex;
     flex-direction: column;
@@ -38,22 +30,6 @@
     margin-bottom: 20px;
 }
 
-.quotationrequest-status-card {
-    margin-bottom: 20px;
-    border-radius: 8px;
-}
-
-.quotation-request-tag {
-    font-family: "Montserrat", sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.quotation-request-tag-text {
-    font-family: "Montserrat", sans-serif;
-    font-size: 14px;
-    margin: 0;
-}
 
 .quotationrequest-details-card,
 .quotationrequest-revision-grid .ant-card {
@@ -69,22 +45,7 @@
     gap: 12px;
 }
 
-.quotationrequest-summary-strip {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 22px;
-}
 
-.quotationrequest-summary-strip>div {
-    min-width: 0;
-    padding: 14px 16px;
-    background: #f8fafc;
-    border: 1px solid #e8edf5;
-    border-radius: 8px;
-}
-
-.quotationrequest-summary-strip span,
 .quotationrequest-detail-item>span {
     display: block;
     margin-bottom: 5px;
@@ -94,7 +55,6 @@
     text-transform: uppercase;
 }
 
-.quotationrequest-summary-strip strong,
 .quotationrequest-detail-value {
     color: #172033;
     font-size: 14px;
@@ -364,11 +324,6 @@
         gap: 12px;
     }
 
-    .quotationrequest-header h1 {
-        font-size: 24px;
-    }
-
-    .quotationrequest-summary-strip,
     .quotationrequest-detail-grid,
     .quotationrequest-mode-grid,
     .quotationrequest-revision-grid {

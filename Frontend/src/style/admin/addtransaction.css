@@ -1,6 +1,20 @@
     .add-transaction-header {
         margin: 0px auto 18px;
         margin-bottom: 24px;
+        margin-top: 24px;
+    }
+
+    .add-transaction-back-button {
+        font-family: "Montserrat", sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        background-color: #305797;
+        color: #fff;
+        border-radius: 10px;
+        width: 130px;
+        height: 40px;
+        border: none !important;
+        box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
     }
 
     .add-transaction-header h1 {
@@ -247,7 +261,8 @@
     .add-transaction-review-button:hover,
     .add-transaction-confirm-button:hover,
     .add-transaction-backtoedit-button:hover,
-    .add-transaction-cancel-button:hover {
+    .add-transaction-cancel-button:hover,
+    .add-transaction-back-button:hover {
         background-color: #244575 !important;
         color: #fff !important;
     }

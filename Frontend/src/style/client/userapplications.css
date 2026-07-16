@@ -147,47 +147,6 @@
     color: #fff !important;
 }
 
-.userapplications-action-danger {
-    background-color: #992A46 !important;
-    color: #fff !important;
-}
-
-.userapplications-action-danger:hover {
-    background-color: #7D2239 !important;
-    color: #fff !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-.userapplications-upload {
-    margin-top: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.userapplications-comments {
-    margin-top: 12px;
-}
-
-.userapplications-upload-btn {
-    border-radius: 16px;
-    height: 38px;
-    font-weight: 600;
-    color: #fff !important;
-    background-color: #305797 !important;
-    box-shadow: none !important;
-}
-
-.userapplications-upload-btn:hover {
-    background-color: #244575 !important;
-    color: #fff !important;
-}
-
-.userapplications-upload-note {
-    font-size: 12px;
-    color: #6b7280;
-}
 
 @media (max-width: 480px) {
     .userapplications-container {

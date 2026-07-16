@@ -691,38 +691,6 @@
 
 
 /* For-you card elements */
-.popular-card-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 8px;
-}
-
-.popular-package-type {
-    display: inline-block;
-    background: rgba(48, 87, 151, 0.08);
-    color: #305797;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 13px;
-    text-transform: capitalize;
-}
-
-.popular-discount-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: #00bf63;
-    color: #ffffff;
-    font-weight: 700;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-    z-index: 5;
-}
-
 .popular-packages-dots {
     position: absolute;
     left: 50%;
@@ -803,16 +771,6 @@
     color: #fff !important;
 }
 
-.for-you-grid {
-    width: 100%;
-    max-width: 1400px;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-items: stretch;
-    gap: 24px;
-    padding: 10px 20px;
-    box-sizing: border-box;
-}
 
 /* Same card design as Popular Packages */
 .for-you-section .popular-reference-card.ant-card {
@@ -859,9 +817,6 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .for-you-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
 
     .for-you-section .popular-reference-card.ant-card {
         max-width: 400px;
@@ -882,10 +837,6 @@
         grid-template-columns: 1fr;
     }
 
-    .for-you-grid {
-        grid-template-columns: 1fr;
-        padding: 10px 12px;
-    }
 
     .for-you-section .popular-reference-card.ant-card {
         max-width: 420px;
@@ -895,24 +846,6 @@
 
 
 /* EXPLORE SECTION */
-.explore-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: white;
-    padding: 0 16px;
-}
-
-.explore-local-packages-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    max-width: 1200px;
-    width: 100%;
-}
 
 .explore-text {
     font-family: "Montserrat", sans-serif;
@@ -922,19 +855,6 @@
     line-height: .5;
     padding-bottom: 0;
     margin-bottom: 40px;
-}
-
-.explore-local-packages {
-    display: flex;
-    flex-direction: row;
-    gap: 30px;
-    flex-wrap: wrap;
-    width: 100%;
-}
-
-.explore-local-packages .ant-card {
-    width: 100%;
-    max-width: 320px;
 }
 
 /* EXPLORE CAROUSEL */
@@ -1306,11 +1226,6 @@
     width: 50%;
 }
 
-.aboutus-vision-mision-block {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
 
 .aboutus-accreditation {
     margin-top: 100px;
@@ -1365,10 +1280,6 @@
     filter: drop-shadow(0 12px 12px rgba(48, 87, 151, 0.35));
 }
 
-.aboutus-accreditation-text {
-    width: 600px;
-    text-align: center;
-}
 
 .ourservices-section {
     margin-top: 100px;
@@ -1982,37 +1893,6 @@
         font-size: 28px;
     }
 
-    .explore-local-packages .ant-card {
-        width: 100% !important;
-        max-width: 360px;
-    }
-
-    .explore-local-packages .ant-card-cover img {
-        height: 200px !important;
-        object-fit: cover;
-    }
-
-    .explore-world-section {
-        flex-direction: column;
-        gap: 16px;
-        padding: 0 20px 20px;
-    }
-
-    .explore-world-section img {
-        width: 100% !important;
-        height: auto !important;
-        max-width: 520px;
-        margin: 0 !important;
-    }
-
-    .explore-world-text {
-        margin-left: 0;
-    }
-
-    .explore-world-text-description {
-        margin-right: 0;
-    }
-
     .aboutus-text-wrap {
         padding-left: 35px;
         padding-right: 35px;
@@ -2369,9 +2249,6 @@
         height: 200px;
     }
 
-    .for-you-grid {
-        padding: 10px 8px;
-    }
 
     .for-you-section .popular-reference-card.ant-card {
         max-width: 340px;

@@ -140,15 +140,6 @@
     margin-bottom: 0 !important;
   }
 
-  .add-package-form .ant-form-item {
-    margin-bottom: 0px !important;
-  }
-
-
-
-  .add-package-container .ant-checkbox-inner {
-    transition: all 0.2s ease;
-  }
 
   .package-image-action-button {
     font-family: "Montserrat", sans-serif;
@@ -192,13 +183,6 @@
     background: #f9fafb;
   }
 
-  .package-image-preview-img {
-    display: block;
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-  }
-
 
   .footer-add-packages {
     display: flex;
@@ -206,10 +190,6 @@
     margin-top: 20px;
   }
 
-
-  .add-package-form-error {
-    border: 1px solid #d9534f !important;
-  }
 
   .add-package-inputs-error {
     border-color: #d9534f !important;
@@ -361,10 +341,6 @@
       overflow: auto;
     }
 
-    .add-package-form.ant-card {
-      height: auto;
-    }
-
     .add-package-inputs,
     .add-package-duration-select {
       width: 100% !important;
@@ -377,9 +353,6 @@
   }
 
   @media (max-width: 768px) {
-    .add-package-form.ant-card {
-      height: auto;
-    }
 
     .add-package-inputs,
     .add-package-duration-select {

@@ -8,7 +8,6 @@
 .dashboard-section,
 .dashboard-chart-card,
 .top-package-card,
-.top-duration-card,
 .dash-card {
   font-family: "Montserrat", sans-serif;
 }
@@ -17,11 +16,6 @@
   font-size: 30px;
   font-weight: 600;
   margin-bottom: 24px;
-}
-
-.activity-card {
-  border-radius: 16px;
-  padding: 20px;
 }
 
 .dashboard-charts {
@@ -38,14 +32,6 @@
 
 .dashboard-stats-row {
   margin-top: 24px;
-}
-
-.dashboard-stats-row .dashboard-chart-row {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.dashboard-stats-row .dashboard-chart-card {
-  min-width: 0;
 }
 
 .dashboard-chart-card {
@@ -72,13 +58,6 @@
 
 .dashboard-chart-body.is-tall {
   min-height: 320px;
-}
-
-.dash-card-content-horizontal {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 .dash-card {
@@ -125,13 +104,6 @@
   display: flex;
   flex-direction: row;
   gap: 10px;
-}
-
-.dash-text-vertical h2 {
-  margin: 0;
-  font-size: 28px;
-  color: #ffffff;
-  line-height: 1.1;
 }
 
 /* top 3 packages css */
@@ -195,29 +167,6 @@
   font-weight: 700;
 }
 
-.top-duration-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  min-height: 300px;
-  height: 300px;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-start;
-  padding: 16px;
-  background-color: #f8fafc;
-  /* fallback */
-}
-
-.top-duration-card .top-duration-content {
-  position: relative;
-  z-index: 2;
-}
-
-.top-duration-card .top-duration-name,
-.top-duration-card .top-duration-count,
-.top-duration-card .top-duration-rank {
-  color: inherit;
-}
 
 .top-duration-name {
   font-size: 1.05rem;
@@ -247,10 +196,7 @@
 /* when card has background image, prefer white text for contrast */
 .top-package-card.has-image .top-package-card-name,
 .top-package-card.has-image .top-package-card-bookings,
-.top-package-card.has-image .top-package-card-number,
-.top-duration-card.has-image .top-duration-name,
-.top-duration-card.has-image .top-duration-count,
-.top-duration-card.has-image .top-duration-rank {
+.top-package-card.has-image .top-package-card-number {
   color: #ffffff;
 }
 
@@ -287,13 +233,8 @@
   overflow: hidden;
 }
 
-.dashboard-line-chart,
-.dashboard-conversion-chart {
+.dashboard-line-chart {
   height: 260px;
-}
-
-.dashboard-secondary-chart-row {
-  margin-top: 20px;
 }
 
 /* Prevent MUI charts from exceeding the card width */
@@ -307,17 +248,12 @@
 
 @media (max-width: 900px) {
 
-  .dash-card-content-horizontal {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 
   .dashboard-chart-card {
     box-sizing: border-box;
   }
 
-  .dashboard-chart-row,
-  .dashboard-stats-row .dashboard-chart-row {
+  .dashboard-chart-row {
     grid-template-columns: 1fr;
   }
 
@@ -325,8 +261,7 @@
     gap: 16px;
   }
 
-  .dashboard-chart-row,
-  .dashboard-stats-row .dashboard-chart-row {
+  .dashboard-chart-row {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
@@ -345,14 +280,10 @@
     min-height: 300px;
   }
 
-  .dashboard-line-chart,
-  .dashboard-conversion-chart {
+  .dashboard-line-chart {
     height: 260px;
   }
 
-  .dashboard-secondary-chart-row {
-    margin-top: 16px;
-  }
 }
 
 
@@ -395,13 +326,8 @@
     min-height: 250px;
   }
 
-  .dashboard-line-chart,
-  .dashboard-conversion-chart {
+  .dashboard-line-chart {
     height: 240px;
-  }
-
-  .dashboard-secondary-chart-row {
-    margin-top: 14px;
   }
 
   .dashboard-chart-body .MuiChartsAxis-tickLabel {
@@ -415,23 +341,13 @@
 
 
 @media (max-width: 640px) {
-  .dash-card-content-horizontal {
-    align-items: center;
-    text-align: center;
-  }
 
   .dashboard-chart-card {
     box-sizing: border-box;
   }
 
-  .dashboard-chart-row,
-  .dashboard-stats-row .dashboard-chart-row {
+  .dashboard-chart-row {
     grid-template-columns: 1fr;
-  }
-
-  .dash-card-content-horizontal .dash-text {
-    flex-direction: column;
-    gap: 4px;
   }
 }
 
@@ -542,8 +458,7 @@
     font-size: 18px;
   }
 
-  .top-package-card,
-  .top-duration-card {
+  .top-package-card {
     width: 100%;
     max-width: 100%;
     min-width: 0;

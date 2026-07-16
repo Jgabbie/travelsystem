@@ -154,9 +154,6 @@
     display: flex;
 }
 
-.destinations-results .ant-col .destinations-card {
-    width: 100%;
-}
 
 .destinations-results-header {
     display: flex;
@@ -527,27 +524,6 @@
     box-shadow: none !important;
 }
 
-.destinations-wishlist-btn {
-    border: none;
-    background: transparent;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.destinations-wishlist-btn:hover {
-    transform: scale(1.2);
-}
-
-.destinations-wishlist-btn:focus-visible {
-    outline: 2px solid rgba(48, 87, 151, 0.4);
-    outline-offset: 2px;
-    border-radius: 999px;
-}
-
 .destinations-inputs:hover,
 .destinations-inputs:focus-within {
     border-color: #305797 !important;
@@ -658,18 +634,6 @@
         text-align: center;
     }
 
-    .destinations-card .ant-card-body {
-        flex-direction: column;
-    }
-
-    .destinations-card-image {
-        width: 100%;
-        flex: 0 0 220px;
-        min-height: 220px;
-        height: 220px;
-        align-self: auto;
-        border-radius: 14px 14px 0 0;
-    }
 
     .destinations-reference-card.ant-card {
         max-width: 440px;

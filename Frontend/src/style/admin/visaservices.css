@@ -8,8 +8,7 @@
 }
 
 /* Statistic / management card styling */
-.visaservice-management-card,
-.visaservice-management-card .ant-card {
+.visaservice-management-card {
     background-color: #305797 !important;
     color: #ffffff !important;
     border: none !important;
@@ -161,56 +160,14 @@
     padding-top: 18px;
 }
 
-.visa-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 14px;
-}
 
-.visa-media {
-    width: 280px;
-    min-width: 250px;
-}
 
-.visa-image {
-    width: 100%;
-    height: 180px;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-    background: #f9fafb;
-}
-
-.visa-image-placeholder {
-    width: 100%;
-    height: 180px;
-    border-radius: 10px;
-    border: 1px dashed #cbd5f5;
-    background: #f2f4f8;
-    color: #6b7280;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-}
-
-.visa-details {
-    flex: 1;
-}
 
 .visaservices-actions {
     width: 100%;
     margin-bottom: 20px;
     box-shadow: 0 10px 20px rgba(48, 87, 151, 0.1);
     border-radius: 16px;
-}
-
-.visaservices-table-card {
-    border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
 .visaservices-actions-row {
@@ -255,30 +212,7 @@
     color: #1f2a44;
 }
 
-.visa-container .ant-table-thead>tr>th {
-    font-family: "Montserrat", sans-serif;
-    background-color: #305797 !important;
-    color: #ffffff !important;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.visa-container .ant-table-thead>tr>th .ant-table-column-title,
-.visa-container .ant-table-thead>tr>th .ant-table-column-sorters,
-.visa-container .ant-table-thead>tr>th .anticon {
-    color: #ffffff !important;
-}
-
-.visa-container .ant-table-tbody>tr>td {
-    font-family: "Montserrat", sans-serif;
-    color: #1f2a44;
-    font-size: 12px;
-}
-
-.search-input,
-.visaservices-search-input,
-.visa-date-filter,
-.ant-picker {
+.visaservices-search-input {
     height: 32px !important;
     line-height: 32px !important;
     padding: 0 8px !important;
@@ -295,8 +229,7 @@
     flex-direction: column;
 }
 
-.visa-name,
-.visa-code {
+.visa-name {
     font-size: 22px;
     margin: 0;
 }
@@ -308,12 +241,6 @@
     margin: 4px 0 12px 0;
 }
 
-
-.visa-available-slots {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
 
 /* BUTTONS CSS */
 .visaservices-view-button {
@@ -434,11 +361,6 @@
     color: #1f2a44;
 }
 
-.package-details-modal .ant-modal-header {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
 .visa-details-modal-header {
     display: flex;
     justify-content: space-between;
@@ -479,38 +401,6 @@
     border-radius: 999px;
     font-size: 14px;
     white-space: nowrap;
-}
-
-.visa-details-modal .package-details-body {
-    grid-template-columns: 1fr;
-}
-
-.visa-details-media {
-    width: 100%;
-}
-
-.visa-details-image {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    background: #f9fafb;
-}
-
-.visa-details-image-placeholder {
-    width: 100%;
-    height: 180px;
-    border-radius: 12px;
-    border: 1px dashed #cbd5f5;
-    background: #f2f4f8;
-    color: #6b7280;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
 }
 
 .visa-details-description {
@@ -604,14 +494,6 @@
 
 
 @media (max-width: 768px) {
-    .package-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .package-container {
-        flex-direction: column;
-    }
 
     .visa-card-layout {
         flex-direction: column;
@@ -632,19 +514,6 @@
 
     .visa-actions {
         justify-content: flex-start;
-    }
-
-    .package-actions {
-        justify-content: flex-start;
-        flex-wrap: wrap;
-    }
-
-    .package-details-body {
-        grid-template-columns: 1fr;
-    }
-
-    .package-details-stats {
-        grid-template-columns: 1fr;
     }
 
     .visa-details-meta {

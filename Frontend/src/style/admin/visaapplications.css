@@ -8,8 +8,7 @@
 }
 
 /* Statistic / management card styling */
-.visaapps-management-card,
-.visaapps-management-card .ant-card {
+.visaapps-management-card {
     background-color: #305797 !important;
     color: #ffffff !important;
     border: none !important;
@@ -228,11 +227,6 @@
     .visa-applications-statistics {
         gap: 12px;
     }
-
-    .visapplications-actions-field {
-        width: 100%;
-    }
-
 }
 
 

@@ -15,8 +15,7 @@
 }
 
 /* Statistic card styling to match primary theme */
-.transaction-management-card,
-.transaction-management-card .ant-card {
+.transaction-management-card {
   background-color: #305797 !important;
   color: #ffffff !important;
   border: none !important;
@@ -416,12 +415,6 @@
   font-size: 18px;
 }
 
-.receipt-footer {
-  margin-top: 50px;
-  font-size: 12px;
-  color: #666;
-  clear: both;
-}
 
 
 
@@ -429,62 +422,6 @@
 .transaction-view-modal .ant-modal-content {
   border-radius: 16px;
   padding: 18px;
-}
-
-.transaction-view-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.transaction-view-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.transaction-view-title {
-  margin: 0 0 6px;
-  font-size: 22px;
-  font-weight: 700;
-  color: #1f2a44;
-}
-
-.transaction-view-subtitle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #6b7280;
-  font-size: 13px;
-}
-
-.transaction-view-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px 16px;
-}
-
-.transaction-view-item {
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.transaction-view-label {
-  font-size: 12px;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-
-.transaction-view-value {
-  font-size: 14px;
-  color: #1f2a44;
-  font-weight: 600;
 }
 
 /* receipt format */
@@ -504,11 +441,6 @@
   margin-bottom: 0;
   padding-bottom: 20px;
   border-bottom: 3px solid #1f2a44;
-}
-
-.receipt-header-left {
-  display: flex;
-  flex-direction: column;
 }
 
 .receipt-company-logo {
@@ -726,14 +658,6 @@
   font-weight: bold;
 }
 
-.receipt-footer {
-  margin-top: 30px;
-  font-size: 9px;
-  color: #555;
-  font-weight: bold;
-  text-align: center;
-  clear: both;
-}
 
 .receipt-bank-info {
   margin-top: 10px;
@@ -803,45 +727,16 @@
   margin-bottom: 14px;
 }
 
-.transaction-edit-modal .ant-input,
-.transaction-edit-modal .ant-select-selector,
-.transaction-edit-modal .ant-picker {
+.transaction-edit-modal .ant-select-selector {
   border-radius: 10px !important;
   background-color: #f8fafc !important;
 }
 
-.transaction-edit-modal .ant-input:focus,
-.transaction-edit-modal .ant-select-focused .ant-select-selector,
-.transaction-edit-modal .ant-picker-focused {
+.transaction-edit-modal .ant-select-focused .ant-select-selector {
   border-color: #305797 !important;
   box-shadow: 0 0 0 2px rgba(48, 87, 151, 0.12) !important;
 }
 
-.transaction-edit-modal .ant-btn-primary.transaction-edit-save-btn {
-  background-color: #305797;
-  border-color: #305797;
-  border-radius: 10px;
-  height: 38px;
-  padding: 0 18px;
-  font-weight: 600;
-  box-shadow: 0 10px 22px rgba(48, 87, 151, 0.2);
-}
-
-.transaction-edit-modal .ant-btn-primary.transaction-edit-save-btn:hover {
-  background-color: #24477a;
-  border-color: #24477a;
-}
-
-.transaction-edit-modal .transaction-edit-cancel-btn {
-  border-radius: 10px;
-  height: 38px;
-  padding: 0 18px;
-}
-
-.support-text {
-  font-weight: 600;
-  margin: 0;
-}
 
 .transaction-receipt-actions {
   display: flex;

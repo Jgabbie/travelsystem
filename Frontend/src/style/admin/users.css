@@ -181,24 +181,11 @@
   box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-.usermanagement-okmodal-button {
-  font-family: "Montserrat", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  background-color: #305797;
-  color: #fff;
-  border-radius: 16px;
-  width: 85px;
-  height: 30px;
-  border: none !important;
-  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
-}
 
 .usermanagement-view-button:hover,
 .usermanagement-edit-button:hover,
 .usermanagement-export-button:hover,
 .usermanagement-add-button:hover,
-.usermanagement-okmodal-button:hover,
 .usermanagement-archive-button:hover {
   background-color: #244575 !important;
   color: #fff !important;
@@ -276,76 +263,6 @@
 
 
 /* MODAL STYLES */
-.users-manage-confirm-modal .ant-modal-content {
-  border-radius: 16px;
-  padding: 24px;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-  box-shadow: 0 18px 50px rgba(48, 87, 151, 0.18);
-}
-
-.users-manage-confirm-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 12px;
-}
-
-.users-manage-confirm-title {
-  font-family: "Montserrat", sans-serif;
-  font-size: 24px;
-  font-weight: 700;
-  color: #305797;
-  margin: 0;
-}
-
-.users-manage-confirm-text {
-  font-family: "Montserrat", sans-serif;
-  font-size: 14px;
-  color: #4b5563;
-  margin: 0 0 4px;
-}
-
-.users-manage-confirm-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin-top: 12px;
-}
-
-.users-manage-cancel-btn {
-  font-family: "Montserrat", sans-serif;
-  font-size: 14px;
-  border-radius: 16px;
-  height: 38px;
-  padding: 0 18px;
-}
-
-.users-manage-cancel-btn:hover,
-.users-manage-cancel-btn:focus-visible {
-  border-color: #305797 !important;
-  color: #fff !important;
-  background-color: #244575 !important;
-}
-
-.users-manage-confirm-btn {
-  font-family: "Montserrat", sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  background-color: #305797;
-  color: #fff;
-  border-radius: 16px;
-  height: 38px;
-  padding: 0 18px;
-  box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
-}
-
-.users-manage-confirm-btn:hover {
-  background-color: #244575 !important;
-  color: #fff !important;
-  border-color: #305797 !important;
-}
-
 .users-view-modal .ant-modal-content {
   border-radius: 18px;
   padding: 24px;
@@ -377,10 +294,6 @@
   padding-top: 16px;
 }
 
-.users-edit-form .ant-form-item {
-  margin-bottom: 14px;
-}
-
 .users-edit-modal .ant-input,
 .users-edit-modal .ant-select-selector {
   border-radius: 10px !important;
@@ -391,27 +304,6 @@
 .users-edit-modal .ant-select-focused .ant-select-selector {
   border-color: #305797 !important;
   box-shadow: 0 0 0 2px rgba(48, 87, 151, 0.12) !important;
-}
-
-.users-edit-modal .ant-btn-primary.users-edit-save-btn {
-  background-color: #305797;
-  border-color: #305797;
-  border-radius: 10px;
-  height: 38px;
-  padding: 0 18px;
-  font-weight: 600;
-  box-shadow: 0 10px 22px rgba(48, 87, 151, 0.2);
-}
-
-.users-edit-modal .ant-btn-primary.users-edit-save-btn:hover {
-  background-color: #24477a;
-  border-color: #24477a;
-}
-
-.users-edit-modal .users-edit-cancel-btn {
-  border-radius: 10px;
-  height: 38px;
-  padding: 0 18px;
 }
 
 .users-view-content {

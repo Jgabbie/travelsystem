@@ -230,7 +230,7 @@ export default function AddTransaction() {
                 <div className="add-transaction-page">
                     <Button
                         type="primary"
-                        className="backsubmit-button"
+                        className="add-transaction-back-button"
                         icon={<ArrowLeftOutlined />}
                         onClick={() => navigate(`${basePath}/transactions`)}
                     >
