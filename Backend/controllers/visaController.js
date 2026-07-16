@@ -184,15 +184,31 @@ const buildProcessSteps = (application, serviceProcessSteps = []) => {
         const stepTitle = String(step?.title || '').trim();
         if (!stepTitle) continue;
 
-        const setDate = getVisaStatusSetDate(application, stepTitle) || (stepTitle === 'Application Submitted' ? createdAt : null);
-        const deadlineDays = Number(step?.daysToBeCompleted ?? 0);
+        const normalizedStepTitle = stepTitle.toLowerCase();
+
+        const isApplicationSubmittedStep =
+            normalizedStepTitle === 'application submitted';
+
+        const isProcessingByEmbassyStep =
+            normalizedStepTitle === 'processing by embassy';
+
+        const setDate =
+            getVisaStatusSetDate(application, stepTitle) ||
+            (isApplicationSubmittedStep ? createdAt : null);
+
+        const deadlineDays = Number(
+            step?.daysToBeCompleted ?? 0
+        );
 
         let deadline = null;
 
-        if (stepTitle === 'Processing by Embassy' && preferredDate) {
+        if (isProcessingByEmbassyStep && preferredDate) {
             deadline = preferredDate.startOf('day');
-        } else if (Number.isFinite(deadlineDays) && deadlineDays > 0) {
-            if (stepTitle === 'Application Submitted') {
+        } else if (
+            Number.isFinite(deadlineDays) &&
+            deadlineDays > 0
+        ) {
+            if (isApplicationSubmittedStep) {
                 if (setDate) deadline = setDate.add(deadlineDays, 'day').startOf('day');
             } else if (prevDeadline) {
                 deadline = prevDeadline.add(deadlineDays, 'day').startOf('day');
@@ -240,9 +256,19 @@ const getVisaStoredDeadlineDate = (application, status) => {
     if (!application || !status) return null;
 
     const normalizedStatus = String(status || '').trim();
-    const processStep = application.processSteps && typeof application.processSteps === 'object'
-        ? application.processSteps[normalizedStatus]
-        : null;
+    const normalizedStatusLower =
+        normalizedStatus.toLowerCase();
+
+    const processStep =
+        application.processSteps &&
+            typeof application.processSteps === 'object'
+            ? Object.entries(application.processSteps).find(
+                ([stepTitle]) =>
+                    String(stepTitle || '')
+                        .trim()
+                        .toLowerCase() === normalizedStatusLower
+            )?.[1] || null
+            : null;
 
     if (processStep?.deadlineDate) {
         const deadlineDate = normalizeVisaDate(processStep.deadlineDate);
@@ -1771,8 +1797,18 @@ const updateVisaApplicationStatus = async (req, res) => {
         updated.status = status;
 
         const statusIndex = validStatuses.findIndex((item) => String(item || '').trim().toLowerCase() === String(status || '').trim().toLowerCase());
+
         if (statusIndex >= 0) {
             updated.currentStepIndex = statusIndex;
+        }
+
+        updated.processSteps = buildProcessSteps(
+            updated,
+            serviceDoc?.visaProcessSteps || []
+        );
+
+        if (typeof updated.markModified === 'function') {
+            updated.markModified('processSteps');
         }
 
         await updated.save();

@@ -5,6 +5,7 @@ import { Steps, Spin, notification, Upload, Tag, ConfigProvider, Button, Radio, 
 import { UploadOutlined, ArrowLeftOutlined, DeleteOutlined, CheckCircleFilled, EyeOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/passportapplication.css';
+import '../../style/client/paymentprocees.css';
 import dayjs from 'dayjs';
 
 // status color mapping for passport application statuses
@@ -1583,7 +1584,18 @@ export default function PassportApplication() {
                                                             const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
 
                                                             // Prefer processSteps data from backend
-                                                            let stepDeadlineDate = processStepInfo.deadlineDate || null;
+                                                            const stepDeadlineDate =
+                                                                processStepInfo.deadlineDate || null;
+
+                                                            const stepIsCurrent = currentStep === idx;
+
+                                                            const isPaymentCompletedStep =
+                                                                String(step?.title || '').trim().toLowerCase() ===
+                                                                'payment completed';
+
+                                                            const shouldShowStepDeadline =
+                                                                Boolean(stepDeadlineDate) &&
+                                                                (!isPaymentCompletedStep || stepIsCurrent);
 
                                                             return {
                                                                 title: (
@@ -1609,7 +1621,7 @@ export default function PassportApplication() {
                                                                                 <>Set on: {stepSetDate.format('MMM D, YYYY')} {daysAgo !== null ? `• ${daysAgo} days ago` : ''}</>
                                                                             )}
                                                                         </span>
-                                                                        {stepDeadlineDate && (
+                                                                        {shouldShowStepDeadline && (
                                                                             <span style={{ fontSize: 12, color: stepDeadlineDate.isBefore(dayjs()) ? '#ff4d4f' : '#333' }}>
                                                                                 Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({stepDeadlineDate.isBefore(dayjs()) ? 'Deadline overdue' : (stepDeadlineDate.diff(dayjs(), 'day') === 0 ? (() => {
                                                                                     const hoursLeft = stepDeadlineDate.diff(dayjs(), 'hour');

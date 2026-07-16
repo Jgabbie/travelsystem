@@ -4,6 +4,7 @@ import { Steps, Spin, notification, Upload, Button, Tag, ConfigProvider, Radio, 
 import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, CheckCircleFilled, EyeOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/visaapplication.css';
+import '../../style/client/paymentprocees.css';
 import dayjs from 'dayjs';
 import { normalizeVisaProcessSteps } from '../../utils/visaDeadlineUtils';
 
@@ -94,7 +95,12 @@ export default function VisaApplication() {
 
     const resubmissionRequested = requestedResubmissionTargets.length > 0;
 
-    const terminalStatuses = new Set(['processing by embassy', 'embassy approved', 'passport released']);
+    const terminalStatuses = new Set([
+        'embassy approved',
+        'passport released',
+        'delivery fee fully paid',
+        'rejected'
+    ]);
 
     const appointmentDate = application?.preferredDate
         ? dayjs(application.preferredDate)
@@ -1868,12 +1874,51 @@ export default function VisaApplication() {
                                                             current={currentStep}
                                                             style={{ width: '100%', paddingTop: 4, paddingBottom: 8 }}
                                                             items={process.map((step, idx) => {
-                                                                const stepSetDate = step?.setDate ? dayjs(step.setDate) : null;
-                                                                const stepDeadlineDate = step?.deadlineDate ? dayjs(step.deadlineDate) : null;
-                                                                const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
-                                                                const stepIsCurrent = currentStep === idx;
+                                                                const normalizedStepTitle = String(step?.title || '')
+                                                                    .trim()
+                                                                    .toLowerCase();
 
-                                                                const daysLeft = stepDeadlineDate ? stepDeadlineDate.diff(dayjs(), 'day') : null;
+                                                                const normalizedCurrentStatus = String(statusValue || '')
+                                                                    .trim()
+                                                                    .toLowerCase();
+
+                                                                const stepIsCurrent =
+                                                                    normalizedStepTitle === normalizedCurrentStatus;
+
+                                                                const stepSetDate = step?.setDate
+                                                                    ? dayjs(step.setDate)
+                                                                    : stepIsCurrent && statusSetDate
+                                                                        ? dayjs(statusSetDate)
+                                                                        : null;
+
+                                                                const resolvedStepDeadlineValue =
+                                                                    step?.deadlineDate ||
+                                                                    (stepIsCurrent
+                                                                        ? application?.statusDeadlineDate
+                                                                        : null);
+
+                                                                const stepDeadlineDate = resolvedStepDeadlineValue
+                                                                    ? dayjs(resolvedStepDeadlineValue)
+                                                                    : null;
+
+                                                                const daysAgo = stepSetDate
+                                                                    ? dayjs().diff(stepSetDate, 'day')
+                                                                    : null;
+
+                                                                const deadlineVisibleStatuses = new Set([
+                                                                    'payment completed',
+                                                                    'processing by embassy',
+                                                                ]);
+
+                                                                const shouldShowStepDeadline =
+                                                                    Boolean(stepDeadlineDate) &&
+                                                                    stepIsCurrent &&
+                                                                    deadlineVisibleStatuses.has(normalizedStepTitle);
+
+                                                                const daysLeft = stepDeadlineDate
+                                                                    ? stepDeadlineDate.diff(dayjs(), 'day')
+                                                                    : null;
+
                                                                 const hoursLeft = stepDeadlineDate ? stepDeadlineDate.diff(dayjs(), 'hour') : null;
                                                                 const isOverdue = stepDeadlineDate ? stepDeadlineDate.isBefore(dayjs()) : false;
 
@@ -1901,7 +1946,7 @@ export default function VisaApplication() {
                                                                                 {stepIsCurrent && stepSetDate && (
                                                                                     <div>Set on: {stepSetDate.format('MMM D, YYYY')}{daysAgo !== null ? ` • ${daysAgo} days ago` : ''}</div>
                                                                                 )}
-                                                                                {stepDeadlineDate && (
+                                                                                {shouldShowStepDeadline && (
                                                                                     <div style={{ color: isOverdue ? '#ff4d4f' : '#333' }}>
                                                                                         Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({isOverdue ? 'Deadline overdue' : (daysLeft === 0 ? (hoursLeft > 1 ? `${hoursLeft} hours left` : hoursLeft === 1 ? '1 hour left' : 'Less than 1 hour left') : `${daysLeft} days left`)})
                                                                                     </div>
