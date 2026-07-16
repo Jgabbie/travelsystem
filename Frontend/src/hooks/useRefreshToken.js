@@ -1,14 +1,36 @@
 import apiFetch from "../config/fetchConfig";
 import { useAuth } from "./useAuth";
 
-const useRefreshToken = () => {
-    const { setAuth } = useAuth();
-    const refresh = async () => {
-        const response = await apiFetch.get('/auth/refresh', { withCredentials: true });
-        setAuth(prev => prev ? { ...prev, accessToken: response.accessToken } : prev);
-        return response.accessToken;
+let refreshRequest = null;
+
+const requestSessionRefresh = () => {
+    if (!refreshRequest) {
+        refreshRequest = apiFetch
+            .post("/auth/refresh-token", {})
+            .finally(() => {
+                refreshRequest = null;
+            });
     }
+
+    return refreshRequest;
+};
+
+const useRefreshToken = () => {
+    const { checkAuth } = useAuth();
+
+    const refresh = async () => {
+        const response = await requestSessionRefresh();
+
+        /*
+         * Reload the authenticated user's information after
+         * the HttpOnly access-token cookie has been renewed.
+         */
+        await checkAuth();
+
+        return response;
+    };
+
     return refresh;
-}
+};
 
 export default useRefreshToken;

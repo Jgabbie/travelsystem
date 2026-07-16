@@ -27,7 +27,6 @@ router.post('/is-verified', userVerify, authController.isUserVerified)
 router.post('/send-reset-otp', refreshLimiter, authController.sendResetOtp)
 router.post('/check-reset-otp', authController.checkResetOtp)
 router.post('/reset-password', authController.resetPassword)
-router.post('/refresh-token', authController.refreshToken)
-router.get('/refresh', authController.refreshToken)
+router.post('/refresh-token', refreshLimiter, authController.refreshToken);
 
 export default router;

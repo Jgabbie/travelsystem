@@ -18,6 +18,10 @@ export const AuthProvider = ({ children }) => {
         return Boolean(err?.data?.idleLogout) || err?.status === 401 && (err?.data?.message || err?.message || '').includes('idling');
     }, []);
 
+    const isUnauthorizedError = useCallback((err) => {
+        return err?.status === 401;
+    }, []);
+
     const triggerIdleLogout = useCallback((message) => {
         setAuth(null);
         setIdleLogoutMessage(message || 'You have been logged out by the system for idling');
@@ -48,17 +52,28 @@ export const AuthProvider = ({ children }) => {
                 withCredentials: true
             });
         } catch (err) {
-            console.error("Session touch failed:", err);
             if (isIdleLogoutError(err)) {
                 triggerIdleLogout(err?.data?.message);
                 return;
             }
 
-            setAuth(null);
+            if (isUnauthorizedError(err)) {
+                setAuth(null);
+                return;
+            }
+
+            /*
+             * Do not log the user out because of a temporary network,
+             * database, CORS, or server error.
+             */
+            console.warn(
+                "Temporary session heartbeat failure. Keeping the current session.",
+                err
+            );
         } finally {
             touchInFlightRef.current = false;
         }
-    }, [isIdleLogoutError, triggerIdleLogout]);
+    }, [isIdleLogoutError, isUnauthorizedError, triggerIdleLogout]);
 
     const checkAuth = useCallback(async () => {
         setAuthLoading(true);
@@ -69,17 +84,28 @@ export const AuthProvider = ({ children }) => {
 
             syncAuthFromResponse(res);
         } catch (err) {
-            console.error("Auth check failed:", err);
             if (isIdleLogoutError(err)) {
                 triggerIdleLogout(err?.data?.message);
                 return;
             }
 
-            setAuth(null);
+            if (isUnauthorizedError(err)) {
+                setAuth(null);
+                return;
+            }
+
+            /*
+             * Keep the existing authenticated state when the API is
+             * temporarily unavailable.
+             */
+            console.warn(
+                "Temporary authentication check failure.",
+                err
+            );
         } finally {
             setAuthLoading(false);
         }
-    }, [isIdleLogoutError, syncAuthFromResponse, triggerIdleLogout]);
+    }, [isIdleLogoutError, isUnauthorizedError, syncAuthFromResponse, triggerIdleLogout]);
 
     useEffect(() => {
         checkAuth();
