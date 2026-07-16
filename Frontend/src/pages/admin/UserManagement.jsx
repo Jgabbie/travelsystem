@@ -474,10 +474,34 @@ export default function UserManagement() {
         <h1 className="page-header">User Management</h1>
 
         {!showArchived && (
-          <Row className='usermanagement-statistics' gutter={16} style={{ marginBottom: 20 }}>
-            <Col xs={24} sm={8}><Card><Statistic title="Total Users" value={users.length} prefix={<UserOutlined />} /></Card></Col>
-            <Col xs={24} sm={8}><Card><Statistic title="Verified Users" value={users.filter(u => u.status === "Verified").length} prefix={<CheckCircleOutlined />} /></Card></Col>
-            <Col xs={24} sm={8}><Card><Statistic title="Unverified Users" value={users.filter(u => u.status === "Pending").length} prefix={<ExclamationCircleOutlined />} /></Card></Col>
+          <Row gutter={16} className='usermanagement-statistics' >
+            <Col xs={24} sm={8}>
+              <Card className='usermanagement-card'>
+                <Statistic
+                  title="Total Users"
+                  value={users.length}
+                  prefix={<UserOutlined />}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={8}>
+              <Card className='usermanagement-card'>
+                <Statistic
+                  title="Verified Users"
+                  value={users.filter(u => u.status === "Verified").length}
+                  prefix={<CheckCircleOutlined />}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={8}>
+              <Card className='usermanagement-card'>
+                <Statistic
+                  title="Unverified Users"
+                  value={users.filter(u => u.status === "Pending").length}
+                  prefix={<ExclamationCircleOutlined />}
+                />
+              </Card>
+            </Col>
           </Row>
         )}
 
@@ -1036,6 +1060,6 @@ export default function UserManagement() {
 
 
 
-    </ConfigProvider>
+    </ConfigProvider >
   );
 }

@@ -52,23 +52,6 @@
     max-height: 80px;
 }
 
-.mrc-header-title {
-    background-color: #f7e04f;
-    /* Yellow banner */
-    color: #4a4a4a;
-    font-weight: bold;
-    padding: 8px 0;
-    margin: 10px 0;
-    font-size: 16px;
-    text-transform: uppercase;
-}
-
-.mrc-instructions {
-    font-style: italic;
-    font-size: 12px;
-    margin-bottom: 0;
-}
-
 /* Specific Section Blocks */
 .mrc-main-form label {
     font-weight: 500;
@@ -76,108 +59,20 @@
     margin-bottom: 4px;
 }
 
-.mrc-input-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
 .mrc-yn-dropdown .ant-select {
     width: 60px !important;
     /* Forces the small Y/N dropdown box style */
 }
 
-.mrc-section-block,
-.mrc-insurance-section {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 15px;
-    margin-bottom: 20px;
-    background-color: #fafafa;
-}
-
-.mrc-section-question {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 13px;
-    color: #444;
-}
 
 /* --- Emergency Contact "Table" --- */
-.mrc-emergency-contact-table {
-    margin-bottom: 20px;
-}
-
-.mrc-table-header {
-    display: flex;
-    background-color: #f0f0f0;
-    border: 1px solid #ddd;
-    border-bottom: none;
-    font-weight: bold;
-}
-
-.mrc-col-title,
-.mrc-col-title-input {
+.mrc-col-title {
     width: 100px;
     text-align: center;
 }
 
-.mrc-col-name,
-.mrc-col-name-input {
-    flex-grow: 1;
-    padding: 0 10px;
-}
-
-.mrc-table-inputs {
-    display: flex;
-    border: 1px solid #ddd;
-    border-top: none;
-}
-
-.mrc-table-row {
-    display: flex;
-    flex-wrap: wrap;
-    /* Important for grid flow */
-    border: 1px solid #ddd;
-    border-top: none;
-}
-
-.mrc-table-cell {
-    flex: 1 1 33.33%;
-    /* Grid cells flow across three columns */
-    padding: 8px;
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid #eee;
-}
-
-.mrc-table-cell.label {
-    background-color: #fcfcfc;
-    font-size: 12px;
-}
-
-.mrc-data-display {
-    flex-grow: 1;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 4px;
-    color: #222;
-}
-
 .mrc-signature-area .ant-input {
     border-bottom: 2px solid #333;
-}
-
-.mrc-action-bar {
-    text-align: center;
-    margin-top: 30px;
-    padding-bottom: 20px;
-}
-
-.mrc-table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
 }
 
 .mrc-table-container .ant-row {
@@ -185,26 +80,6 @@
 }
 
 /* travelers */
-
-.mrc-table-header-row {
-    background-color: #f0f2f5;
-    padding: 8px 0;
-    border: 1px solid #d9d9d9;
-    border-bottom: none;
-}
-
-.mrc-table-data-row {
-    border: 1px solid #d9d9d9;
-    padding: 4px 0;
-}
-
-.mrc-section-header {
-    background-color: #e6f7ff;
-    padding: 5px 10px;
-    border-left: 4px solid #1890ff;
-    margin-bottom: 15px;
-}
-
 .mrc-tour-details-input {
     border-radius: 0;
     height: 22px;
@@ -213,35 +88,6 @@
     outline: none;
 }
 
-.mrc-lead-guest-section-header,
-.mrc-passengers-section-header {
-    background-color: #ADD8E6;
-    font-weight: bold;
-    margin-top: 5px;
-    font-size: 14px;
-    border: 1px solid #000;
-    text-align: center;
-}
-
-.mrc-booking-section-header,
-.mrc-diet-header-title {
-    background-color: #FFD700;
-    font-weight: bold;
-    padding: 4px;
-    margin-top: 5px;
-    font-size: 14px;
-    border: 1px solid #000;
-}
-
-.mrc-lead-guest-section-input {
-    border-radius: 0;
-    height: 22px;
-    border-bottom: 1px solid black;
-    border-top: 0;
-    border-left: 0;
-    border-right: 0;
-    font-size: 11px;
-}
 
 .mrc-home-address-field .ant-form-item-explain-error,
 .mrc-dietary-restrictions-field .ant-form-item-explain-error,
@@ -358,13 +204,6 @@
         box-sizing: border-box;
     }
 
-    .mrc-table-container {
-        width: 100%;
-        max-width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
     .mrc-table-container .ant-row {
         min-width: 700px;
     }
@@ -435,16 +274,6 @@
         object-fit: contain;
     }
 
-    .mrc-header-title {
-        font-size: 14px;
-        padding: 7px 5px;
-    }
-
-    .mrc-instructions {
-        font-size: 11px;
-        line-height: 1.5;
-    }
-
     /*
      * Stack the registration form's two-column sections.
      */
@@ -483,7 +312,6 @@
     }
 
     .mrc-tour-details-input,
-    .mrc-lead-guest-section-input,
     .mrc-form-page .ant-input,
     .mrc-form-page textarea.ant-input,
     .mrc-form-page .ant-picker,
@@ -494,22 +322,9 @@
         box-sizing: border-box;
     }
 
-    .mrc-section-block,
-    .mrc-insurance-section {
-        padding: 12px;
-        margin-bottom: 14px;
-    }
-
     /*
      * Keep traveler and dietary tables usable through horizontal scrolling.
      */
-    .mrc-table-container {
-        width: 100%;
-        max-width: 100%;
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-    }
 
     .mrc-table-container .ant-row {
         min-width: 700px;
@@ -597,13 +412,6 @@
         max-height: 64px;
     }
 
-    .mrc-lead-guest-section-header,
-    .mrc-passengers-section-header,
-    .mrc-booking-section-header,
-    .mrc-diet-header-title {
-        font-size: 12px;
-    }
-
     .mrc-table-container .ant-row {
         min-width: 700px;
     }
@@ -648,14 +456,6 @@
         margin-bottom: 6px !important;
     }
 
-    .mrc-booking-section-header,
-    .mrc-diet-header-title,
-    .mrc-lead-guest-section-header,
-    .mrc-passengers-section-header {
-        padding: 5px 4px;
-        font-size: 11px;
-        line-height: 1.3;
-    }
 
     /* Stack the main two-column sections on mobile. */
     .mrc-tour-details>.ant-row>.ant-col,
@@ -693,21 +493,13 @@
     }
 
     .mrc-tour-details-input,
-    .mrc-lead-guest-section-input,
     .mrc-form-page .ant-input,
     .mrc-form-page textarea.ant-input {
         max-width: 100%;
         font-size: 10px !important;
     }
 
-    .mrc-section-block,
-    .mrc-insurance-section {
-        padding: 10px !important;
-        margin-bottom: 12px;
-    }
 
-    .mrc-section-question,
-    .mrc-insurance-section p,
     .mrc-form-footer p,
     .mrc-terms-content p,
     .mrc-waiver-content p {

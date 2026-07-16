@@ -31,6 +31,9 @@
     padding-bottom: 65px !important;
 }
 
+
+
+
 /* Footer */
 .mrc-quotation-footer {
     position: absolute;
@@ -636,6 +639,15 @@
         width: 100%;
     }
 }
+
+
+
+@media (max-width: 640px) {
+    .mrc-form-page {
+        padding: 16px;
+    }
+}
+
 
 @media (max-width: 480px) {
 

@@ -74,42 +74,55 @@
 }
 
 /* Stats cards in user management should match primary theme */
-.usermanagement-statistics .ant-card,
-.usermanagement-statistics .ant-card .ant-card-body {
+.usermanagement-statistics {
+  margin-bottom: 20px;
+}
+
+
+.usermanagement-card {
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
+}
+
+/* Statistic card styling to match primary theme */
+.usermanagement-card {
   background-color: #305797 !important;
   color: #ffffff !important;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(48, 87, 151, 0.12);
+  border: none !important;
+}
+
+.usermanagement-card .ant-card-body {
+  background: transparent !important;
+  color: #ffffff !important;
+  padding: 18px !important;
 }
 
 /* make all statistic cards uniform height and center content */
-.usermanagement-statistics .ant-card {
-  min-height: 120px;
+.usermanagement-card {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.usermanagement-statistics .ant-card .ant-card-body {
+.usermanagement-card .ant-card-body {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
 }
 
-.usermanagement-statistics .ant-card .ant-statistic-title {
-  font-family: "Montserrat", sans-serif;
+.usermanagement-card .ant-statistic-title {
   color: rgba(255, 255, 255, 0.9) !important;
+  font-family: "Montserrat", sans-serif;
 }
 
-.usermanagement-statistics .ant-card .ant-statistic-content,
-.usermanagement-statistics .ant-card .ant-statistic-content-value {
-  font-family: "Montserrat", sans-serif;
+.usermanagement-card .ant-statistic-content,
+.usermanagement-card .ant-statistic-content-value {
   color: #ffffff !important;
   font-weight: 700;
 }
 
-.usermanagement-statistics .ant-card .anticon {
+.usermanagement-card .anticon {
   color: rgba(255, 255, 255, 0.95) !important;
 }
 
@@ -466,6 +479,7 @@
   .usermanagement-statistics {
     flex-direction: column;
     gap: 12px;
+    margin-bottom: 20px;
   }
 
   .usermanagement-table-tag {

@@ -18,25 +18,11 @@
     gap: 6px;
 }
 
-.adduser-title {
-    font-family: "Montserrat", sans-serif;
-    font-size: 26px;
-    font-weight: 700;
-    color: #305797;
-    margin: 0 0 4px;
-}
-
 .adduser-subtitle {
     font-family: "Montserrat", sans-serif;
     font-size: 14px;
     color: #4b5563;
     margin: 0 0 10px;
-}
-
-.adduser-form .ant-form-item-label>label {
-    font-family: "Montserrat", sans-serif;
-    font-size: 13px;
-    color: #305797;
 }
 
 .adduser-label {

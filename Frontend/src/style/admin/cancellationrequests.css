@@ -26,7 +26,6 @@
 
 /* ensure all cancellation statistic cards share same height and centered layout */
 .cancellation-management-card {
-    min-height: 120px;
     display: flex;
     align-items: center;
     justify-content: center;
