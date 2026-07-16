@@ -113,20 +113,22 @@
 .user-quotation-table .ant-table-thead>tr>th {
     background: #305797 !important;
     color: #ffffff !important;
-    font-size: 13px;
+    font-size: 12px !important;
     font-family: "Montserrat", sans-serif;
     font-weight: 600;
 }
 
 .user-quotation-table .ant-table-tbody>tr>td {
     font-family: "Montserrat", sans-serif;
-    font-size: 12px;
+    font-size: 11px !important;
     color: #2f3a4a;
 }
 
 .user-quotation-table .ant-tag {
-    border-radius: 999px;
-    font-weight: 600;
+    font-family: "Montserrat", sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .user-quotation-view-button {

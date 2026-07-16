@@ -83,7 +83,7 @@
     font-family: "Montserrat", sans-serif;
     background-color: #305797 !important;
     color: #ffffff !important;
-    font-size: 13px;
+    font-size: 12px !important;
     font-weight: 600;
 }
 
@@ -100,29 +100,19 @@
 .auditing-table .ant-table-tbody>tr>td {
     font-family: "Montserrat", sans-serif;
     color: #1f2a44;
-    font-size: 12px;
+    font-size: 11px !important;
 }
 
-.logging-table-tag {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: max-content;
-    white-space: nowrap;
-    word-break: keep-all;
-    overflow-wrap: normal;
-    flex-shrink: 0;
-}
-
+.logging-table-tag,
 .auditing-table-tag {
+    font-family: "Montserrat", sans-serif !important;
+    font-size: 10px !important;
+    font-weight: 500;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-width: max-content;
     white-space: nowrap;
-    word-break: keep-all;
-    overflow-wrap: normal;
-    flex-shrink: 0;
 }
 
 

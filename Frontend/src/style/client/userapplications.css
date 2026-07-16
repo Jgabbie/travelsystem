@@ -48,20 +48,22 @@
 .userapplications-table .ant-table-thead>tr>th {
     background: #305797 !important;
     color: #ffffff !important;
-    font-size: 13px;
+    font-size: 12px !important;
     font-family: "Montserrat", sans-serif;
     font-weight: 600;
 }
 
 .userapplications-table .ant-table-tbody>tr>td {
     font-family: "Montserrat", sans-serif;
-    font-size: 12px;
+    font-size: 11px !important;
     color: #2f3a4a;
 }
 
-.userapplications-table .ant-tag {
-    border-radius: 999px;
-    font-weight: 600;
+.user-transactions-table .ant-tag {
+    font-family: "Montserrat", sans-serif !important;
+    font-size: 10px !important;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .userapplications-actions {

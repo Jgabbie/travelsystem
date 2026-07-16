@@ -100,6 +100,15 @@ export default function UploadBookingInvoice() {
     const reference = booking?.reference || booking?.ref || booking?._id;
     const bookingId = booking?.bookingItem ?? booking?._id ?? booking?.id ?? booking?.bookingId ?? booking?.reference ?? booking?.ref ?? null;
 
+
+    const bookingStatus = String(
+        booking?.status ||
+        booking?.bookingStatus ||
+        bookingDetails?.status ||
+        ""
+    ).trim().toLowerCase();
+
+
     const handleBackNavigation = () => {
         const fromState = location.state?.from;
         if (typeof fromState === "string" && fromState.trim()) {
@@ -171,52 +180,154 @@ export default function UploadBookingInvoice() {
             setIsGeneratingPdf(true);
 
             if (!pdfContainerRef.current) {
-                throw new Error('PDF container not found');
+                throw new Error("PDF container not found");
             }
 
             const element = pdfContainerRef.current;
-            const pages = element.querySelectorAll('[data-booking-page]');
+            const pages = element.querySelectorAll("[data-booking-page]");
 
             if (!pages.length) {
-                throw new Error('No pages were captured in the PDF');
+                throw new Error("No pages were captured in the PDF");
             }
 
-            const pdf = new jsPDF('p', 'pt', 'a4');
+            const pdf = new jsPDF("p", "pt", "a4");
+
             const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+
+            // Fixed footer positioning
+            const footerMarginX = 28;
+            const footerTextY = pdfHeight - 18;
+            const footerLineY = footerTextY - 11;
+
+            // Prevent page content from overlapping the footer
+            const maxContentHeight = footerLineY - 6;
 
             for (let i = 0; i < pages.length; i += 1) {
                 const pageEl = pages[i];
-                const canvas = await html2canvas(pageEl, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
+
+                /*
+                 * Hide the existing HTML footer during capture because
+                 * the footer will be drawn directly through jsPDF.
+                 */
+                const htmlFooters = pageEl.querySelectorAll(
+                    ".mrc-booking-invoice-footer"
+                );
+
+                const previousFooterVisibility = Array.from(htmlFooters).map(
+                    (footer) => footer.style.visibility
+                );
+
+                htmlFooters.forEach((footer) => {
+                    footer.style.visibility = "hidden";
                 });
 
-                const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+                let canvas;
+
+                try {
+                    canvas = await html2canvas(pageEl, {
+                        scale: 2,
+                        useCORS: true,
+                        backgroundColor: "#ffffff"
+                    });
+                } finally {
+                    // Restore footer visibility after capturing
+                    htmlFooters.forEach((footer, footerIndex) => {
+                        footer.style.visibility =
+                            previousFooterVisibility[footerIndex];
+                    });
+                }
 
                 if (i > 0) {
                     pdf.addPage();
                 }
 
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight);
+                /*
+                 * Scale the captured page so that it fits inside the
+                 * available space above the fixed PDF footer.
+                 */
+                const scale = Math.min(
+                    pdfWidth / canvas.width,
+                    maxContentHeight / canvas.height
+                );
+
+                const imgWidth = canvas.width * scale;
+                const imgHeight = canvas.height * scale;
+                const imgX = (pdfWidth - imgWidth) / 2;
+
+                const imgData = canvas.toDataURL("image/jpeg", 1.0);
+
+                pdf.addImage(
+                    imgData,
+                    "JPEG",
+                    imgX,
+                    0,
+                    imgWidth,
+                    imgHeight
+                );
+
+                // Footer separator line
+                pdf.setDrawColor(210, 210, 210);
+                pdf.setLineWidth(0.5);
+
+                pdf.line(
+                    footerMarginX,
+                    footerLineY,
+                    pdfWidth - footerMarginX,
+                    footerLineY
+                );
+
+                // Footer text
+                pdf.setFont("helvetica", "normal");
+                pdf.setFontSize(8);
+                pdf.setTextColor(85, 85, 85);
+
+                pdf.text(
+                    "M&RC Travel and Tours",
+                    footerMarginX,
+                    footerTextY
+                );
+
+                pdf.text(
+                    `Page ${i + 1} of ${pages.length}`,
+                    pdfWidth - footerMarginX,
+                    footerTextY,
+                    {
+                        align: "right"
+                    }
+                );
             }
 
             const date = dayjs().format("YYYY-MM-DD");
 
-            const pdfBlob = pdf.output('blob');
+            const pdfBlob = pdf.output("blob");
             const url = URL.createObjectURL(pdfBlob);
-            const link = document.createElement('a');
+            const link = document.createElement("a");
+
             link.href = url;
-            link.download = `Booking_Registration_${reference}_${date}.pdf`;
+            link.download =
+                `Booking_Registration_${reference}_${date}.pdf`;
+
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
+
             URL.revokeObjectURL(url);
 
-            notification.success({ message: "Booking Registration PDF downloaded successfully.", placement: "topRight" });
-
+            notification.success({
+                message:
+                    "Booking Registration PDF downloaded successfully.",
+                placement: "topRight"
+            });
         } catch (err) {
             console.error("PDF generation error:", err);
-            notification.error({ message: "Failed to download PDF: " + (err?.message || "Unknown error"), placement: "topRight" });
+
+            notification.error({
+                message:
+                    "Failed to download PDF: " +
+                    (err?.message || "Unknown error"),
+                placement: "topRight"
+            });
         } finally {
             setDownloading(false);
             setIsGeneratingPdf(false);
@@ -811,6 +922,66 @@ export default function UploadBookingInvoice() {
                                 </AntText>
                             </div>
                         </div>
+
+                        {bookingStatus === "cancellation requested" && (
+                            <div
+                                style={{
+                                    marginBottom: 24,
+                                    borderLeft: "4px solid #faad14",
+                                    backgroundColor: "#fffbe6",
+                                    padding: 16,
+                                    paddingBottom: 40,
+                                    paddingTop: 40,
+                                    borderRadius: 8
+                                }}
+                            >
+                                <h2
+                                    style={{
+                                        marginBottom: 10,
+                                        fontSize: 20,
+                                        fontWeight: 600,
+                                        color: "#d48806"
+                                    }}
+                                >
+                                    CANCELLATION REQUESTED
+                                </h2>
+
+                                <p style={{ margin: 0, fontSize: 14 }}>
+                                    Your cancellation request has been submitted and is currently under
+                                    review. Kindly wait for further updates regarding your booking.
+                                </p>
+                            </div>
+                        )}
+
+                        {bookingStatus === "cancelled" && (
+                            <div
+                                style={{
+                                    marginBottom: 24,
+                                    borderLeft: "4px solid #ff4d4f",
+                                    backgroundColor: "#fff1f0",
+                                    padding: 16,
+                                    paddingBottom: 40,
+                                    paddingTop: 40,
+                                    borderRadius: 8
+                                }}
+                            >
+                                <h2
+                                    style={{
+                                        marginBottom: 10,
+                                        fontSize: 20,
+                                        fontWeight: 600,
+                                        color: "#cf1322"
+                                    }}
+                                >
+                                    BOOKING CANCELLED
+                                </h2>
+
+                                <p style={{ margin: 0, fontSize: 14 }}>
+                                    This booking has been cancelled. Payment and refund updates, when
+                                    applicable, will be provided through your booking details.
+                                </p>
+                            </div>
+                        )}
 
                         <Card className="upload-invoice-card" style={{ marginBottom: 40 }}>
                             <div className="upload-invoice-meta">

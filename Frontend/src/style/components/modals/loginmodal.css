@@ -33,15 +33,6 @@ body {
     margin: none;
 }
 
-.login-container-otp {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-width: 575px;
-    padding: 0px;
-}
-
 .login-container-modal {
     display: flex;
     flex-direction: row;
@@ -161,11 +152,6 @@ body {
     gap: 30px;
 }
 
-.login-label-links-modal {
-    font-size: 13px;
-    font-weight: 600;
-    color: #305797;
-}
 
 .login-button-links-modal {
     font-size: 13px;
@@ -628,8 +614,7 @@ body {
         font-size: 20px;
     }
 
-    .login-button-links-modal,
-    .login-label-links-modal {
+    .login-button-links-modal {
         font-size: 10px;
     }
 

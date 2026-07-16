@@ -1134,50 +1134,61 @@ export default function TransactionManagement() {
           <Modal
             open={isProofModalOpen}
             onCancel={() => setIsProofModalOpen(false)}
-            className="transaction-view-modal"
-            width={720}
-            centered={true}
+            className="transaction-proof-modal"
+            width={520}
+            centered
             footer={null}
             title={`Proof of Payment - ${proofTransaction?.ref || ""}`}
           >
             {proofTransaction && (
-              <div className="receipt-container">
+              <div className="transaction-proof-content">
                 {proofTransaction.proofImage ? (
-                  <div className="upload-preview-box" style={{ maxHeight: 520 }}>
+                  <div className="transaction-proof-preview">
                     <Image
                       src={proofTransaction.proofImage}
-                      alt={proofTransaction.proofFileName || "Proof of payment"}
-                      className="upload-preview-image"
-                      style={{ width: "100%", height: "auto" }}
+                      alt={
+                        proofTransaction.proofFileName ||
+                        "Proof of payment"
+                      }
+                      className="transaction-proof-image"
                     />
                   </div>
                 ) : (
                   <p>No proof image available.</p>
                 )}
               </div>
-
-
             )}
 
-            <Space style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
+            <Space className="transaction-proof-actions">
               <Button
-                className='transactionmanagement-download-button'
+                className="transactionmanagement-download-button"
                 type="primary"
                 onClick={async () => {
                   try {
                     const date = dayjs().format("YYYY-MM-DD");
-                    const response = await fetch(proofTransaction.proofImage, { mode: 'cors' });
+                    const response = await fetch(
+                      proofTransaction.proofImage,
+                      { mode: "cors" }
+                    );
+
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement('a');
+                    const link = document.createElement("a");
+
                     link.href = url;
-                    link.download = 'Proof_of_Payment_' + proofTransaction.ref + '_' + date + '.png';
+                    link.download =
+                      "Proof_of_Payment_" +
+                      proofTransaction.ref +
+                      "_" +
+                      date +
+                      ".png";
+
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     window.URL.revokeObjectURL(url);
                   } catch (err) {
-                    window.open(proofTransaction.proofImage, '_blank');
+                    window.open(proofTransaction.proofImage, "_blank");
                   }
                 }}
               >
@@ -1186,10 +1197,10 @@ export default function TransactionManagement() {
 
               <Button
                 type="primary"
-                className='transactionmanagement-accept-button'
+                className="transactionmanagement-accept-button"
                 onClick={() => {
-                  handleProofDecision(proofTransaction, "Successful")
-                  setIsProofDecision('Accept');
+                  handleProofDecision(proofTransaction, "Successful");
+                  setIsProofDecision("Accept");
                 }}
               >
                 Accept Proof
@@ -1197,10 +1208,10 @@ export default function TransactionManagement() {
 
               <Button
                 type="primary"
-                className='transactionmanagement-remove-button'
+                className="transactionmanagement-reject-button"
                 onClick={() => {
-                  handleProofDecision(proofTransaction, "Failed")
-                  setIsProofDecision('Reject');
+                  handleProofDecision(proofTransaction, "Failed");
+                  setIsProofDecision("Reject");
                 }}
               >
                 Reject Proof

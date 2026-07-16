@@ -93,7 +93,7 @@
     font-family: "Montserrat", sans-serif;
     background-color: #305797 !important;
     color: #ffffff !important;
-    font-size: 13px;
+    font-size: 12px !important;
     font-weight: 600;
 }
 
@@ -106,7 +106,7 @@
 .passport-applications-container .ant-table-tbody>tr>td {
     font-family: "Montserrat", sans-serif;
     color: #1f2a44;
-    font-size: 12px;
+    font-size: 11px !important;
 }
 
 .passportapplications-search-input,
@@ -220,6 +220,13 @@
 
 .passportapplications-status-tag {
     min-width: max-content;
+}
+
+.passportapplications-table-tag,
+.passportapplications-status-tag {
+    font-family: "Montserrat", sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 500;
 }
 
 @media (max-width: 576px) {

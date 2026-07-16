@@ -393,9 +393,15 @@ export default function BookingRegistrationTravelersInvoice({
 
                         <div className="mrc-registration-signature-row">
                             <div className="mrc-registration-signature-box">
-                                <Form.Item name="travelersSignature" noStyle>
-                                    <Input className="mrc-registration-signature-input" readOnly />
-                                </Form.Item>
+                                <Input
+                                    className="mrc-registration-signature-input"
+                                    value={
+                                        summaryInvoice?.leadFullName ||
+                                        form.getFieldValue("leadFullName") ||
+                                        ""
+                                    }
+                                    readOnly
+                                />
                                 <div className="mrc-registration-signature-label">
                                     Signature over printed name
                                 </div>

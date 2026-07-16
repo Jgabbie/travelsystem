@@ -10,14 +10,12 @@
     padding: 15px 0 0;
 }
 
-.arrangement-content {
-    padding-top: 6px;
-}
 
 .arrangement-content {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    padding-top: 6px;
 }
 
 .arrangement-heading {
