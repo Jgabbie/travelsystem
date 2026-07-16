@@ -12,6 +12,7 @@ import QuotationFormTermsConditions from "../../components/quotationform/Quotati
 import QuotationFormItineraries from "../../components/quotationform/QuotationFormItineraries";
 import '../../style/components/mrcquotation.css';
 import '../../style/admin/quotationrequest.css';
+import "../../style/components/modals/modaldesign.css";
 
 
 
@@ -1392,7 +1393,6 @@ export default function QuotationRequest() {
                     {/* QUOTATION HAS BEEN SENT */}
                     <Modal
                         open={isQuotationSentModalOpen}
-                        className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
                         centered={true}
@@ -1400,20 +1400,20 @@ export default function QuotationRequest() {
                             setIsQuotationSentModalOpen(false);
                         }}
                     >
-                        <div className='signup-success-container'>
-                            <h1 className='signup-success-heading'>Quotation Sent Successfully!</h1>
+                        <div className='modal-container'>
+                            <h1 className='modal-heading'>Quotation Sent Successfully!</h1>
 
                             <div>
                                 <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
-                            <p className='signup-success-text'>The quotation has been sent.</p>
+                            <p className='modal-text'>The quotation has been sent.</p>
 
                             <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                                 <Button
                                     type='primary'
-                                    className='logout-confirm-btn'
+                                    className='modal-button'
                                     onClick={() => {
                                         setIsQuotationSentModalOpen(false);
                                         window.location.reload();

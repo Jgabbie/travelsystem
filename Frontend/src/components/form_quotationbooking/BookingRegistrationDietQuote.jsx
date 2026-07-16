@@ -15,18 +15,68 @@ export default function BookingRegistrationDietQuote({
     const medicalRequest = Form.useWatch('medicalRequest', form);
 
     const formatTravelDate = () => {
-        const start = summary?.travelDate?.startDate
-            ? dayjs(summary.travelDate.startDate)
-            : null;
-        const end = summary?.travelDate?.endDate
-            ? dayjs(summary.travelDate.endDate)
-            : null;
+        const travelDate = summary?.travelDate;
 
-        if (start?.isValid() && end?.isValid()) {
-            return `${start.format('MMM D, YYYY')} - ${end.format('MMM D, YYYY')}`;
+        if (!travelDate) return '____________________';
+
+        // Handle a travel date stored as a string
+        if (typeof travelDate === 'string') {
+            const dateText = travelDate.trim();
+
+            if (!dateText || dateText.toUpperCase() === 'N/A') {
+                return '____________________';
+            }
+
+            const dateParts = dateText.split(/\s+(?:-|–|—|to)\s+/i);
+
+            const start = dayjs(dateParts[0]?.trim());
+            const end = dayjs(
+                (dateParts[1] || dateParts[0])?.trim()
+            );
+
+            if (start.isValid() && end.isValid()) {
+                if (start.isSame(end, 'day')) {
+                    return start.format('MMM D, YYYY');
+                }
+
+                return `${start.format('MMM D, YYYY')} - ${end.format(
+                    'MMM D, YYYY'
+                )}`;
+            }
+
+            return dateText;
         }
 
-        if (start?.isValid()) return start.format('MMM D, YYYY');
+        // Handle a travel date stored as an object
+        const startValue =
+            travelDate.startDate ||
+            travelDate.start ||
+            travelDate.from ||
+            travelDate.date;
+
+        const endValue =
+            travelDate.endDate ||
+            travelDate.end ||
+            travelDate.to ||
+            startValue;
+
+        const start = startValue ? dayjs(startValue) : null;
+        const end = endValue ? dayjs(endValue) : null;
+
+        if (start?.isValid() && end?.isValid()) {
+            if (start.isSame(end, 'day')) {
+                return start.format('MMM D, YYYY');
+            }
+
+            return `${start.format('MMM D, YYYY')} - ${end.format(
+                'MMM D, YYYY'
+            )}`;
+        }
+
+        if (start?.isValid()) {
+            return start.format('MMM D, YYYY');
+        }
+
         return '____________________';
     };
 
@@ -36,6 +86,13 @@ export default function BookingRegistrationDietQuote({
             [detailsField]: value === 'N' ? 'N/A' : '',
         });
     };
+
+    useEffect(() => {
+        form.setFieldsValue({
+            tourPackageTitle: summary?.packageName || '',
+            packageTravelDate: formatTravelDate(),
+        });
+    }, [form, summary?.packageName, summary?.travelDate]);
 
     useEffect(() => {
         const fetchUserData = async () => {

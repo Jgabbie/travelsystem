@@ -121,6 +121,102 @@ const getBirthdayDisabledDate = (travelerType) => {
 }
 
 
+// Normalize the quotation travel date into a start/end date object
+const normalizeTravelDate = (value) => {
+    if (!value) return null;
+
+    // Handle object values
+    if (typeof value === 'object' && !Array.isArray(value)) {
+        const startValue =
+            value.startDate ||
+            value.start ||
+            value.from ||
+            value.date;
+
+        const endValue =
+            value.endDate ||
+            value.end ||
+            value.to ||
+            startValue;
+
+        const start = startValue ? dayjs(startValue) : null;
+        const end = endValue ? dayjs(endValue) : null;
+
+        if (start?.isValid()) {
+            return {
+                startDate: start.format('YYYY-MM-DD'),
+                endDate: end?.isValid()
+                    ? end.format('YYYY-MM-DD')
+                    : start.format('YYYY-MM-DD'),
+            };
+        }
+
+        return null;
+    }
+
+    // Handle array values
+    if (Array.isArray(value)) {
+        return normalizeTravelDate({
+            startDate: value[0],
+            endDate: value[1] || value[0],
+        });
+    }
+
+    // Handle string values
+    const dateText = String(value).trim();
+
+    if (!dateText || dateText.toUpperCase() === 'N/A') {
+        return null;
+    }
+
+    // Split the date range without splitting ISO date hyphens
+    const dateParts = dateText.split(/\s+(?:-|–|—|to)\s+/i);
+
+    const start = dayjs(dateParts[0]?.trim());
+    const end = dayjs(
+        (dateParts[1] || dateParts[0])?.trim()
+    );
+
+    if (!start.isValid()) {
+        return null;
+    }
+
+    return {
+        startDate: start.format('YYYY-MM-DD'),
+        endDate: end.isValid()
+            ? end.format('YYYY-MM-DD')
+            : start.format('YYYY-MM-DD'),
+    };
+};
+
+
+// Format the travel date for display
+const formatTravelDate = (value) => {
+    const normalized = normalizeTravelDate(value);
+
+    if (normalized) {
+        const start = dayjs(normalized.startDate);
+        const end = dayjs(normalized.endDate);
+
+        if (start.isValid() && end.isValid()) {
+            if (start.isSame(end, 'day')) {
+                return start.format('MMM D, YYYY');
+            }
+
+            return `${start.format('MMM D, YYYY')} - ${end.format(
+                'MMM D, YYYY'
+            )}`;
+        }
+    }
+
+    if (typeof value === 'string' && value.trim()) {
+        return value.trim();
+    }
+
+    return 'N/A';
+};
+
+
 export default function QuotationBookingProcess() {
     const [form] = Form.useForm();
     const { quotationBookingData, setQuotationBookingData, clearQuotationBookingData } = useQuotationBooking();
@@ -316,15 +412,15 @@ export default function QuotationBookingProcess() {
 
                 if (!latestDetails || !isMounted) return;
 
-                const formattedStartTravelDate = dayjs(latestDetails.travelDates.split('-')[0].trim()).format("YYYY-MM-DD") || dayjs(latestDetails.travelDate).format("YYYY-MM-DD") || dayjs(latestDetails.date).format("YYYY-MM-DD") || null;
-                const formattedEndTravelDate = dayjs(latestDetails.travelDates.split('-')[1].trim()).format("YYYY-MM-DD") || dayjs(latestDetails.travelDate).format("YYYY-MM-DD") || dayjs(latestDetails.date).format("YYYY-MM-DD") || null;
+                const rawTravelDate =
+                    latestDetails.travelDates ||
+                    latestDetails.travelDate ||
+                    latestDetails.date ||
+                    null;
 
-                const formattedTravelDates = {
-                    startDate: formattedStartTravelDate,
-                    endDate: formattedEndTravelDate
-                }
+                const travelDateValue = normalizeTravelDate(rawTravelDate);
 
-                const travelDateValue = formattedTravelDates
+
                 const priceValue = latestDetails.totalPrice || "N/A"
                 const travelersValue = latestDetails.travelers || 0;
                 const hotelValue = latestDetails.preferredHotels || latestDetails.hotel || "";
