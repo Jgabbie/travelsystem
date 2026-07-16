@@ -4,22 +4,100 @@ import userAuth from '../middleware/userAuth.js';
 
 const router = express.Router();
 
-router.post("/create-checkout-session", userAuth, paymentController.createCheckoutSession);
-router.post("/create-checkout-session-quotation", userAuth, paymentController.createCheckoutSessionQuotation);
-router.post("/create-checkout-session-passport", userAuth, paymentController.createCheckoutSessionPassport);
-router.post("/create-checkout-session-visa", userAuth, paymentController.createCheckoutSessionVisa);
-router.post("/create-checkout-session-visa-penalty", userAuth, paymentController.createCheckoutSessionVisaPenalty);
-router.post("/create-checkout-session-passport-penalty", userAuth, paymentController.createCheckoutSessionPassportPenalty);
-router.post("/create-checkout-session-deposit", userAuth, paymentController.createCheckoutSessionDeposit);
-router.post("/create-checkout-session-delivery-fee", userAuth, paymentController.createCheckoutSessionDeliveryFee);
-router.post("/create-checkout-token", userAuth, paymentController.createCheckoutToken);
-router.post("/manual", userAuth, paymentController.createManualPayment);
-router.post("/manual-quotation", userAuth, paymentController.createManualPaymentQuotation);
-router.post("/manual-deposit", userAuth, paymentController.createManualPaymentDeposit);
-router.post("/manual-visa", userAuth, paymentController.createManualPaymentVisa);
-router.post("/manual-passport", userAuth, paymentController.createManualPaymentPassport);
-router.post("/manual-visa-penalty", userAuth, paymentController.createManualPaymentVisaPenalty);
-router.post("/manual-passport-penalty", userAuth, paymentController.createManualPaymentPassportPenalty);
-router.post("/manual-delivery-fee", userAuth, paymentController.createManualPaymentDeliveryFee);
-router.post('/webhook/paymongo', express.raw({ type: 'application/json' }), paymentController.handlePayMongoWebhook);
+router.post(
+    '/webhook/paymongo',
+    express.raw({ type: 'application/json' }),
+    paymentController.handlePayMongoWebhook
+);
+
+router.use(userAuth);
+
+router.post(
+    '/create-checkout-session',
+    paymentController.createCheckoutSession
+);
+
+router.post(
+    '/create-checkout-session-quotation',
+    paymentController.createCheckoutSessionQuotation
+);
+
+router.post(
+    '/create-checkout-session-passport',
+    paymentController.createCheckoutSessionPassport
+);
+
+router.post(
+    '/create-checkout-session-visa',
+    paymentController.createCheckoutSessionVisa
+);
+
+router.post(
+    '/create-checkout-session-visa-penalty',
+    paymentController.createCheckoutSessionVisaPenalty
+);
+
+router.post(
+    '/create-checkout-session-passport-penalty',
+    paymentController.createCheckoutSessionPassportPenalty
+);
+
+router.post(
+    '/create-checkout-session-deposit',
+    paymentController.createCheckoutSessionDeposit
+);
+
+router.post(
+    '/create-checkout-session-delivery-fee',
+    paymentController.createCheckoutSessionDeliveryFee
+);
+
+router.post(
+    '/create-checkout-token',
+    paymentController.createCheckoutToken
+);
+
+
+/* Manual payments */
+
+router.post(
+    '/manual',
+    paymentController.createManualPayment
+);
+
+router.post(
+    '/manual-quotation',
+    paymentController.createManualPaymentQuotation
+);
+
+router.post(
+    '/manual-deposit',
+    paymentController.createManualPaymentDeposit
+);
+
+router.post(
+    '/manual-visa',
+    paymentController.createManualPaymentVisa
+);
+
+router.post(
+    '/manual-passport',
+    paymentController.createManualPaymentPassport
+);
+
+router.post(
+    '/manual-visa-penalty',
+    paymentController.createManualPaymentVisaPenalty
+);
+
+router.post(
+    '/manual-passport-penalty',
+    paymentController.createManualPaymentPassportPenalty
+);
+
+router.post(
+    '/manual-delivery-fee',
+    paymentController.createManualPaymentDeliveryFee
+);
+
 export default router;

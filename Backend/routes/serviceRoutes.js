@@ -1,15 +1,55 @@
 import express from 'express';
 import * as serviceController from '../controllers/serviceController.js';
 import userAuth from '../middleware/userAuth.js';
+import authorizeRoles from '../middleware/authorizeRoles.js';
 
 const router = express.Router();
 
-router.post('/create-service', userAuth, serviceController.createService);
-router.get('/services', serviceController.getAllServices);
-router.get('/archived-services', userAuth, serviceController.getArchivedServices);
-router.post('/archived-services/:id/restore', userAuth, serviceController.restoreArchivedService);
-router.put('/update-service/:id', userAuth, serviceController.updateService);
-router.delete('/delete-service/:id', userAuth, serviceController.deleteService);
-router.get('/get-service/:id', userAuth, serviceController.getService);
+const staffOnly = authorizeRoles('Admin', 'Employee');
+
+router.get(
+    '/services',
+    serviceController.getAllServices
+);
+
+router.get(
+    '/get-service/:id',
+    serviceController.getService
+);
+
+router.post(
+    '/create-service',
+    userAuth,
+    staffOnly,
+    serviceController.createService
+);
+
+router.get(
+    '/archived-services',
+    userAuth,
+    staffOnly,
+    serviceController.getArchivedServices
+);
+
+router.post(
+    '/archived-services/:id/restore',
+    userAuth,
+    staffOnly,
+    serviceController.restoreArchivedService
+);
+
+router.put(
+    '/update-service/:id',
+    userAuth,
+    staffOnly,
+    serviceController.updateService
+);
+
+router.delete(
+    '/delete-service/:id',
+    userAuth,
+    staffOnly,
+    serviceController.deleteService
+);
 
 export default router;

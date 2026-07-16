@@ -1,16 +1,29 @@
 import express from 'express';
 import * as recommendController from '../controllers/recommendController.js';
 import userAuth from '../middleware/userAuth.js';
+import authorizeRoles from '../middleware/authorizeRoles.js';
 
 const router = express.Router();
 
-// Personalized recommendations for currently authenticated user
-router.get('/', userAuth, recommendController.getRecommendations);
+const staffOnly = authorizeRoles('Admin', 'Employee');
 
-// Manual training trigger (can be restricted later)
-router.post('/train', recommendController.trainModels);
+router.get(
+    '/',
+    userAuth,
+    recommendController.getRecommendations
+);
 
-// Health status of AI service
-router.get('/health', recommendController.checkHealth);
+// Manually retrain the recommendation models
+router.post(
+    '/train',
+    userAuth,
+    staffOnly,
+    recommendController.trainModels
+);
 
+// Basic AI recommendation-service health check
+router.get(
+    '/health',
+    recommendController.checkHealth
+);
 export default router;

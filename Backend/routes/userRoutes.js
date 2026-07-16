@@ -1,35 +1,70 @@
 import express from 'express';
 import * as userController from '../controllers/userController.js';
 import userAuth from '../middleware/userAuth.js';
-import UserModel from '../models/user.js';
+import authorizeRoles from '../middleware/authorizeRoles.js';
+
 
 const router = express.Router();
 
-const authorizeRoles = (allowedRoles) => async (req, res, next) => {
-    try {
-        if (!req.userId) {
-            return res.status(401).json({ message: "Unauthorized: User ID missing" });
-        }
+const staffOnly = authorizeRoles('Admin', 'Employee');
+const adminOnly = authorizeRoles('Admin');
 
-        const user = await UserModel.findById(req.userId);
-        if (!user || !allowedRoles.includes(user.role)) {
-            return res.status(403).json({ message: "Forbidden: Insufficient role" });
-        }
 
-        return next();
-    } catch (err) {
-        console.error("Role authorization failed:", err);
-        return res.status(500).json({ message: "Role authorization failed" });
-    }
-};
+router.get(
+    '/data',
+    userAuth,
+    userController.getUserData
+);
 
-router.get('/data', userAuth, userController.getUserData);
-router.put('/data', userAuth, userController.updateUserData);
-router.post('/login-once', userAuth, userController.markLoginOnce);
-router.post('/createUsers', userAuth, authorizeRoles(['Admin', 'Employee']), userController.createUsers);
-router.get('/getUsers', userController.getUsers);
-router.get('/getArchivedUsers', userAuth, authorizeRoles(['Admin', 'Employee']), userController.getArchivedUsers);
-router.post('/archived-users/:id/restore', userAuth, authorizeRoles(['Admin', 'Employee']), userController.restoreArchivedUser);
-router.delete('/deleteUsers/:id', userAuth, authorizeRoles(['Admin', 'Employee']), userController.delUsers);
+router.put(
+    '/data',
+    userAuth,
+    userController.updateUserData
+);
+
+router.post(
+    '/login-once',
+    userAuth,
+    userController.markLoginOnce
+);
+
+
+// Admin and Employee can view users
+router.get(
+    '/getUsers',
+    userAuth,
+    staffOnly,
+    userController.getUsers
+);
+
+router.get(
+    '/getArchivedUsers',
+    userAuth,
+    staffOnly,
+    userController.getArchivedUsers
+);
+
+// Only Admin can create, archive, or restore accounts
+router.post(
+    '/createUsers',
+    userAuth,
+    adminOnly,
+    userController.createUsers
+);
+
+router.post(
+    '/archived-users/:id/restore',
+    userAuth,
+    adminOnly,
+    userController.restoreArchivedUser
+);
+
+router.delete(
+    '/deleteUsers/:id',
+    userAuth,
+    adminOnly,
+    userController.delUsers
+);
+
 
 export default router;

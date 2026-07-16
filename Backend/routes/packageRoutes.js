@@ -1,26 +1,81 @@
 import express from 'express';
 import * as packageController from '../controllers/packageController.js';
 import userAuth from '../middleware/userAuth.js';
+import authorizeRoles from '../middleware/authorizeRoles.js';
 
 const router = express.Router();
 
-const adminAuth = (req, res, next) => {
-    if (!req.user || req.user.role !== "admin") {
-        return res.status(403).json({ message: "Forbidden" });
-    }
-    next();
-};
+const staffOnly = authorizeRoles('Admin', 'Employee');
 
-router.post('/add-package', userAuth, packageController.addPackage);
-router.get('/popular-packages', packageController.getPopularPackages);
-router.get('/get-packages', packageController.getPackages);
-router.get('/archived-packages', userAuth, packageController.getArchivedPackages);
-router.post('/archived-packages/:id/restore', userAuth, packageController.restoreArchivedPackage);
-router.get('/get-packages-for-users', packageController.getPackagesForUsers);
-router.delete('/remove-package/:id', userAuth, packageController.removePackage);
-router.get('/get-package/:id', packageController.getPackage);
-router.put('/update-package/:id', userAuth, packageController.updatePackage);
-router.put('/update-slots', userAuth, packageController.updateSlots);
-router.put('/update-discount', userAuth, packageController.updateDiscount);
+router.get(
+    '/popular-packages',
+    packageController.getPopularPackages
+);
+
+router.get(
+    '/get-packages-for-users',
+    packageController.getPackagesForUsers
+);
+
+router.get(
+    '/get-package/:id',
+    packageController.getPackage
+);
+
+router.post(
+    '/add-package',
+    userAuth,
+    staffOnly,
+    packageController.addPackage
+);
+
+router.get(
+    '/get-packages',
+    userAuth,
+    staffOnly,
+    packageController.getPackages
+);
+
+router.get(
+    '/archived-packages',
+    userAuth,
+    staffOnly,
+    packageController.getArchivedPackages
+);
+
+router.post(
+    '/archived-packages/:id/restore',
+    userAuth,
+    staffOnly,
+    packageController.restoreArchivedPackage
+);
+
+router.delete(
+    '/remove-package/:id',
+    userAuth,
+    staffOnly,
+    packageController.removePackage
+);
+
+router.put(
+    '/update-package/:id',
+    userAuth,
+    staffOnly,
+    packageController.updatePackage
+);
+
+router.put(
+    '/update-slots',
+    userAuth,
+    staffOnly,
+    packageController.updateSlots
+);
+
+router.put(
+    '/update-discount',
+    userAuth,
+    staffOnly,
+    packageController.updateDiscount
+);
 
 export default router;

@@ -1,44 +1,124 @@
 import express from 'express';
 import * as bookingController from '../controllers/bookingController.js';
 import userAuth from '../middleware/userAuth.js';
-import UserModel from '../models/user.js';
+import authorizeRoles from '../middleware/authorizeRoles.js';
 import upload from '../middleware/upload.js';
 
 const router = express.Router();
 
+// Reusable authorization middleware
+const staffOnly = authorizeRoles('Admin', 'Employee');
+router.use(userAuth);
+
 //to make sure that the admin-only routes are only accessible by admins, we create a middleware function that checks the user's role before allowing access to the route. 
 // This is done by fetching the user from the database using their ID (which is set in the userAuth middleware) and checking if their role is 'Admin'. 
 // If not, we return a 403 Forbidden response. If they are an admin, we call next() to proceed to the route handler.
-const adminOnly = async (req, res, next) => {
-    try {
-        const user = await UserModel.findById(req.userId).lean()
-        if (!user || (user.role !== 'Admin' && user.role !== 'Employee')) {
-            return res.status(403).json({ message: 'Forbidden: Admins and Employees only' })
-        }
-        next()
-    } catch (err) {
-        res.status(500).json({ message: 'Authorization check failed: ' + err.message })
-    }
-}
 
-router.post('/create-booking', userAuth, bookingController.createBooking)
-router.get('/my-bookings', userAuth, bookingController.getUserBookings)
-router.get('/by-reference/:reference', userAuth, bookingController.getBookingByReference)
-router.get('/all-bookings', userAuth, bookingController.getAllBookings)
-router.get('/archived-bookings', userAuth, adminOnly, bookingController.getArchivedBookings)
-router.post('/archived-bookings/:id/restore', userAuth, adminOnly, bookingController.restoreArchivedBooking)
-router.get('/bookings-total-month', userAuth, bookingController.getBookingsTotalBaseOnMonth)
-router.put('/:id', userAuth, adminOnly, bookingController.updateBooking)
-router.delete('/:id', userAuth, adminOnly, bookingController.deleteBooking)
-router.post('/cancel/:id', userAuth, upload.array('files', 5), bookingController.cancelBooking)
-router.get('/cancellations', userAuth, adminOnly, bookingController.getcancellations)
-router.get('/archived-cancellations', userAuth, adminOnly, bookingController.getArchivedCancellations)
-router.delete('/cancellations/:id/archive', userAuth, adminOnly, bookingController.archiveCancellation)
-router.post('/archived-cancellations/:id/restore', userAuth, adminOnly, bookingController.restoreArchivedCancellation)
-router.post('/cancellations/:id/approve', userAuth, adminOnly, bookingController.approveCancellation)
-router.post('/cancellations/:id/reject', userAuth, adminOnly, bookingController.disApproveCancellation)
-router.post('/verify-payment', userAuth, bookingController.verifyTokenCheckout)
-router.post('/:id/request-document-resubmission', userAuth, adminOnly, bookingController.requestDocumentResubmission)
-router.post('/:id/resubmit-documents', userAuth, bookingController.resubmitBookingDocuments)
+router.post(
+    '/create-booking',
+    bookingController.createBooking
+);
 
+router.get(
+    '/my-bookings',
+    bookingController.getUserBookings
+);
+
+router.get(
+    '/by-reference/:reference',
+    bookingController.getBookingByReference
+);
+
+router.get(
+    '/bookings-total-month',
+    bookingController.getBookingsTotalBaseOnMonth
+);
+
+router.post(
+    '/cancel/:id',
+    upload.array('files', 5),
+    bookingController.cancelBooking
+);
+
+router.post(
+    '/verify-payment',
+    bookingController.verifyTokenCheckout
+);
+
+router.post(
+    '/:id/resubmit-documents',
+    bookingController.resubmitBookingDocuments
+);
+
+router.get(
+    '/all-bookings',
+    staffOnly,
+    bookingController.getAllBookings
+);
+
+router.get(
+    '/archived-bookings',
+    staffOnly,
+    bookingController.getArchivedBookings
+);
+
+router.post(
+    '/archived-bookings/:id/restore',
+    staffOnly,
+    bookingController.restoreArchivedBooking
+);
+
+router.put(
+    '/:id',
+    staffOnly,
+    bookingController.updateBooking
+);
+
+router.delete(
+    '/:id',
+    staffOnly,
+    bookingController.deleteBooking
+);
+
+router.get(
+    '/cancellations',
+    staffOnly,
+    bookingController.getcancellations
+);
+
+router.get(
+    '/archived-cancellations',
+    staffOnly,
+    bookingController.getArchivedCancellations
+);
+
+router.delete(
+    '/cancellations/:id/archive',
+    staffOnly,
+    bookingController.archiveCancellation
+);
+
+router.post(
+    '/archived-cancellations/:id/restore',
+    staffOnly,
+    bookingController.restoreArchivedCancellation
+);
+
+router.post(
+    '/cancellations/:id/approve',
+    staffOnly,
+    bookingController.approveCancellation
+);
+
+router.post(
+    '/cancellations/:id/reject',
+    staffOnly,
+    bookingController.disApproveCancellation
+);
+
+router.post(
+    '/:id/request-document-resubmission',
+    staffOnly,
+    bookingController.requestDocumentResubmission
+);
 export default router;

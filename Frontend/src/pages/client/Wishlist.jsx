@@ -171,11 +171,29 @@ export default function Wishlist() {
         >
 
             <div className="wishlist-container">
-                <div className="destinations-hero-section">
-                    <div className="destinations-hero-overlay"></div>
-                    <div className="destinations-hero-content">
-                        <h1>Your Favorites Are Here!</h1>
-                        <p>Discover packages that are currently available or in discount!</p>
+                <div
+                    className="wishlist-hero"
+                    style={{
+                        backgroundImage:
+                            "url('/images/Wishlist_BackgroundImage.webp')"
+                    }}
+                >
+                    <div className="wishlist-hero">
+                        <img
+                            src="/images/AboutUs_BackgroundImage.webp"
+                            alt="Travel destinations"
+                            className="wishlist-hero-image"
+                            draggable={false}
+                        />
+
+                        <div className="wishlist-hero-overlay"></div>
+
+                        <div className="wishlist-hero-content">
+                            <h1>Your Favorites Are Here!</h1>
+                            <p>
+                                Discover packages that are currently available or on discount!
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -558,10 +576,6 @@ export default function Wishlist() {
 
                     </div>
                 </Modal>
-
-
-
-
 
             </div>
         </ConfigProvider>

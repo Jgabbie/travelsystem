@@ -91,10 +91,20 @@ const getPackageRatings = async (req, res) => {
 
     try {
 
-        const packageId = await PackageModel.findById(packageItem)
-        const ratings = await Rating.find({ packageId })
-            .populate('userId', 'username firstname lastname profileImage')
-            .sort({ createdAt: -1 })
+        if (!mongoose.Types.ObjectId.isValid(packageItem)) {
+            return res.status(400).json({
+                message: 'Invalid package ID'
+            });
+        }
+
+        const ratings = await Rating.find({
+            packageId: packageItem
+        })
+            .populate(
+                'userId',
+                'username firstname lastname profileImage'
+            )
+            .sort({ createdAt: -1 });
         res.status(200).json(ratings)
     } catch (error) {
         res.status(500).json({ message: "Error fetching ratings", error })

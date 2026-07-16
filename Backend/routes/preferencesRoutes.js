@@ -4,7 +4,16 @@ import userAuth from '../middleware/userAuth.js';
 
 const router = express.Router();
 
-router.post('/save', userAuth, preferrencesController.savePreferrences);
-router.get('/me', userAuth, preferrencesController.getMyPreferrences);
+router.use(userAuth);
+
+router.post(
+    '/save',
+    preferrencesController.savePreferrences
+);
+
+router.get(
+    '/me',
+    preferrencesController.getMyPreferrences
+);
 
 export default router;
