@@ -11,6 +11,9 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const navigate = useNavigate();
     const { setAuth } = useAuth();
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const [values, setValues] = useState({
         username: '',
         password: ''
@@ -105,7 +108,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
             const errorMsg = err.data?.message || 'Login failed';
             console.error("Error: ", errorMsg)
             setError(errorMsg)
-            notification.error({
+            notificationApi.error({
                 message: 'Login Failed',
                 description: errorMsg,
                 placement: 'topRight',
@@ -149,7 +152,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                     isCloseLogin();
                     onLoginSuccess?.();
                     clearForm();
-                    notification.success({
+                    notificationApi.success({
                         message: 'Login Successful',
                         description: 'You have successfully logged in.',
                         placement: 'topRight',
@@ -158,7 +161,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
             }
         } catch (err) {
             if (err.status === 429) {
-                notification.error({
+                notificationApi.error({
                     message: 'Too many failed attempts',
                     description: 'Please try again later.',
                     placement: 'topRight',
@@ -235,6 +238,9 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                 }
             }}
         >
+
+            {notificationContextHolder}
+
             <div>
                 {isLoading ? (
                     <div>

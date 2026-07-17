@@ -47,6 +47,9 @@ export default function PassportApplications() {
     const [isPassportApplicationRestoredModalOpen, setIsPassportApplicationRestoredModalOpen] = useState(false);
     const [archivingApplication, setArchivingApplication] = useState(null);
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const { auth } = useAuth();
 
     //fetch passport applications
@@ -237,14 +240,14 @@ export default function PassportApplications() {
         }
 
         doc.save(`Passport_Applications_Report_${new Date().toLocaleDateString()}.pdf`);
-        notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
+        notificationApi.success({ title: "Report exported to PDF successfully.", placement: "topRight" });
     };
 
 
     //archive passport application function
     const handleArchive = async (key) => {
         if (!key) {
-            notification.error({ message: "Passport application not found", placement: "topRight" });
+            notificationApi.error({ title: "Passport application not found", placement: "topRight" });
             return
         }
         try {
@@ -253,7 +256,7 @@ export default function PassportApplications() {
             setPassportApplications((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error archiving passport application:", error)
-            notification.error({ message: "Passport application archived unsuccessfully", placement: "topRight" });
+            notificationApi.error({ title: "Passport application archived unsuccessfully", placement: "topRight" });
         }
     }
 
@@ -261,7 +264,7 @@ export default function PassportApplications() {
     //restore passport application function
     const handleRestore = async (key) => {
         if (!key) {
-            notification.error({ message: "Passport application not found", placement: "topRight" });
+            notificationApi.error({ title: "Passport application not found", placement: "topRight" });
             return
         }
         try {
@@ -270,7 +273,7 @@ export default function PassportApplications() {
             setArchivedApplications((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error restoring passport application:", error)
-            notification.error({ message: "Passport application restore unsuccessfully", placement: "topRight" });
+            notificationApi.error({ title: "Passport application restore unsuccessfully", placement: "topRight" });
         }
     }
 
@@ -412,6 +415,7 @@ export default function PassportApplications() {
                 }
             }}
         >
+            {notificationContextHolder}
             <div className="passport-applications-container">
 
                 <h1 className="page-header">Passport Applications</h1>

@@ -19,6 +19,9 @@ export default function ProfilePage() {
     const [reviewToDelete, setReviewToDelete] = useState(null)
     const [nationalitySearch, setNationalitySearch] = useState('');
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const fileInputRef = useRef(null)
 
 
@@ -228,8 +231,8 @@ export default function ProfilePage() {
             );
 
             if (!exists && limit && current.length >= limit) {
-                notification.warning({
-                    message: `You can only select up to ${limit} options.`,
+                notificationApi.warning({
+                    title: `You can only select up to ${limit} options.`,
                     placement: 'topRight'
                 });
 
@@ -254,15 +257,18 @@ export default function ProfilePage() {
     //save preferences
     const savePreferences = async () => {
         if ((preferences.moods || []).length !== 3) {
-            notification.error({
-                message: 'Please select exactly 3 mood preferences.',
+            notificationApi.error({
+                title: 'Please select exactly 3 mood preferences.',
                 placement: 'topRight'
             });
             return;
         }
 
         if ((preferences.tours || []).length < 1) {
-            notification.error({ message: 'Please select at least 1 tour type preference.', placement: 'topRight' });
+            notificationApi.error({
+                title: 'Please select at least 1 tour type preference.',
+                placement: 'topRight'
+            });
             return;
         }
 
@@ -275,11 +281,11 @@ export default function ProfilePage() {
 
             setEditingPreferences(false);
             setIsUserPreferencesEdited(true);
-            notification.success({ message: 'Preferences saved successfully!', placement: 'topRight' });
+            notificationApi.success({ title: 'Preferences saved successfully!', placement: 'topRight' });
         } catch (error) {
             console.error('Error saving preferences:', error);
             const errorMsg = error?.data?.message || 'Failed to save preferences';
-            notification.error({ message: errorMsg, placement: 'topRight' });
+            notificationApi.error({ title: errorMsg, placement: 'topRight' });
         }
     };
 
@@ -459,13 +465,13 @@ export default function ProfilePage() {
                     nationality: data.userData.nationality || ''
                 })
             } else if (response?.status === 401) {
-                notification.error({ message: 'Please login to view your profile', placement: 'topRight' })
+                notificationApi.error({ title: 'Please login to view your profile', placement: 'topRight' })
             } else {
-                notification.error({ message: 'Failed to fetch user data', placement: 'topRight' })
+                notificationApi.error({ title: 'Failed to fetch user data', placement: 'topRight' })
             }
         } catch (error) {
             console.error('Error fetching user data:', error)
-            notification.error({ message: 'Error fetching profile', placement: 'topRight' })
+            notificationApi.error({ title: 'Error fetching profile', placement: 'topRight' })
         }
     }
 
@@ -523,7 +529,7 @@ export default function ProfilePage() {
     //delete review modal
     const handleOpenDeleteModal = (review) => {
         if (!review?.id) {
-            notification.error({ message: 'No review to delete.', placement: 'topRight' })
+            notificationApi.error({ title: 'No review to delete.', placement: 'topRight' })
             return
         }
 
@@ -535,7 +541,7 @@ export default function ProfilePage() {
     //delete review handler
     const handleDeleteReview = async () => {
         if (!reviewToDelete?.id) {
-            notification.error({ message: 'No review to delete.', placement: 'topRight' })
+            notificationApi.error({ title: 'No review to delete.', placement: 'topRight' })
             return
         }
 
@@ -547,7 +553,7 @@ export default function ProfilePage() {
             setIsRatingDeletedModalOpen(true)
         } catch (error) {
             console.error('Error deleting review:', error)
-            notification.error({ message: 'Unable to delete review', placement: 'topRight' })
+            notificationApi.error({ title: 'Unable to delete review', placement: 'topRight' })
         }
     }
 
@@ -639,12 +645,12 @@ export default function ProfilePage() {
         if (!file) return
 
         if (!file.type.startsWith('image/')) {
-            notification.error({ message: 'Please select a valid image file.', placement: 'topRight' })
+            notificationApi.error({ title: 'Please select a valid image file.', placement: 'topRight' })
             return
         }
 
         if (file.size > 2 * 1024 * 1024) {
-            notification.error({ message: 'Image must be 2MB or less.', placement: 'topRight' })
+            notificationApi.error({ title: 'Image must be 2MB or less.', placement: 'topRight' })
             return
         }
 
@@ -666,11 +672,11 @@ export default function ProfilePage() {
             // save Cloudinary URL
             setProfileImage(imageUrl)
 
-            notification.success({ message: "Image uploaded successfully!", placement: 'topRight' })
+            notificationApi.success({ title: "Image uploaded successfully!", placement: 'topRight' })
 
         } catch (error) {
             console.error(error)
-            notification.error({ message: "Upload failed", placement: 'topRight' })
+            notificationApi.error({ title: "Upload failed", placement: 'topRight' })
         }
     }
 
@@ -686,7 +692,7 @@ export default function ProfilePage() {
         setError(nextErrors)
         const hasErrors = Object.values(nextErrors).some(Boolean)
         if (hasErrors) {
-            notification.error({ message: 'Please fix the highlighted fields before saving.', placement: 'topRight' })
+            notificationApi.error({ title: 'Please fix the highlighted fields before saving.', placement: 'topRight' })
             return
         }
         try {
@@ -729,7 +735,7 @@ export default function ProfilePage() {
         } catch (error) {
             console.error('Error updating profile:', error)
             const apiMessage = error?.data?.message
-            notification.error({ message: apiMessage || 'Error updating profile', placement: 'topRight' })
+            notificationApi.error({ title: apiMessage || 'Error updating profile', placement: 'topRight' })
         } finally {
             setSaving(false)
         }
@@ -745,7 +751,7 @@ export default function ProfilePage() {
                 }
             }}
         >
-
+            {notificationContextHolder}
             {isLoading ? (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
                     <Spin size="large" description="Loading Profile..." />

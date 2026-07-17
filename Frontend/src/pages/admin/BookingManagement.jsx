@@ -54,6 +54,9 @@ export default function BookingManagement() {
   const isEmployee = auth?.role === 'Employee';
   const basePath = isEmployee ? '/employee' : '';
 
+  const [notificationApi, notificationContextHolder] =
+    notification.useNotification();
+
 
   // function to map bookings from API response to table data
   const mapBookings = (response) => response.map((b) => {
@@ -101,7 +104,7 @@ export default function BookingManagement() {
       const response = await apiFetch.get("/booking/all-bookings");
       setData(mapBookings(response));
     } catch (error) {
-      notification.error({ message: 'Unable to load bookings', placement: 'topRight' });
+      notificationApi.error({ title: 'Unable to load bookings', placement: 'topRight' });
       setData([]);
     } finally {
       setLoading(false);
@@ -116,7 +119,7 @@ export default function BookingManagement() {
       const response = await apiFetch.get("/booking/archived-bookings");
       setArchivedData(mapBookings(response));
     } catch (error) {
-      notification.error({ message: 'Unable to load archived bookings', placement: 'topRight' });
+      notificationApi.error({ title: 'Unable to load archived bookings', placement: 'topRight' });
       setArchivedData([]);
     } finally {
       setLoading(false);
@@ -279,8 +282,8 @@ export default function BookingManagement() {
 
     doc.save(`Booking_Report_${dayjs().format("YYYY-MM-DD")}.pdf`);
 
-    notification.success({
-      message: "Report exported to PDF successfully.",
+    notificationApi.success({
+      title: "Report exported to PDF successfully.",
       placement: "topRight"
     });
   };
@@ -305,7 +308,7 @@ export default function BookingManagement() {
       setData((prev) => prev.filter((item) => item.key !== key));
       setIsBookingDeletedModalOpen(true);
     } catch (error) {
-      notification.error({ message: 'Unable to archive booking', placement: 'topRight' });
+      notificationApi.error({ title: 'Unable to archive booking', placement: 'topRight' });
     }
 
   };
@@ -319,7 +322,7 @@ export default function BookingManagement() {
       setIsBookingRestoredModalOpen(true);
       setArchivedData((prev) => prev.filter((item) => item.key !== key));
     } catch (error) {
-      notification.error({ message: error?.response?.data?.message || 'Unable to restore booking', placement: 'topRight' });
+      notificationApi.error({ title: error?.response?.data?.message || 'Unable to restore booking', placement: 'topRight' });
     }
 
   };
@@ -391,13 +394,13 @@ export default function BookingManagement() {
         )
       );
 
-      notification.success({ message: 'Booking updated', placement: 'topRight' });
+      notificationApi.success({ title: 'Booking updated', placement: 'topRight' });
       setIsEditModalOpen(false);
       setIsBookingEditedModalOpen(true);
       setEditingBooking(null);
       editForm.resetFields();
     } catch {
-      notification.error({ message: 'Please fix validation errors', placement: 'topRight' });
+      notificationApi.error({ title: 'Please fix validation errors', placement: 'topRight' });
     }
   };
 
@@ -543,6 +546,8 @@ export default function BookingManagement() {
         }
       }}
     >
+      {notificationContextHolder}
+
       <div className="booking-management-container">
         <h1 className="page-header">Booking Management</h1>
         {!showArchived && (

@@ -45,7 +45,8 @@ export default function ReviewRatings() {
     const [isRatingRestoredModalOpen, setIsRatingRestoredModalOpen] = useState(false);
     const [deletingRating, setDeletingRating] = useState(null);
 
-
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
 
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [selectedRating, setSelectedRating] = useState(null);
@@ -75,7 +76,7 @@ export default function ReviewRatings() {
             setRatings(mapped);
         } catch (error) {
             setRatings([]);
-            notification.error({ message: "Failed to fetch reviews", placement: "topRight" });
+            notificationApi.error({ title: "Failed to fetch reviews", placement: "topRight" });
         } finally {
             setLoading(false);
         }
@@ -105,7 +106,7 @@ export default function ReviewRatings() {
             setArchivedRatings(mapped);
         } catch (error) {
             setArchivedRatings([]);
-            notification.error({ message: "Failed to fetch archived reviews", placement: "topRight" });
+            notificationApi.error({ title: "Failed to fetch archived reviews", placement: "topRight" });
         } finally {
             setLoading(false);
         }
@@ -260,14 +261,14 @@ export default function ReviewRatings() {
         }
 
         doc.save(`Reviews_Report_${new Date().toLocaleDateString()}.pdf`);
-        notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
+        notificationApi.success({ title: "Report exported to PDF successfully.", placement: "topRight" });
     };
 
 
     //archive rating function
     const handleArchive = async (key) => {
         if (!key) {
-            notification.error({ message: "Rating not found", placement: "topRight" });
+            notificationApi.error({ title: "Rating not found", placement: "topRight" });
             return
         }
         try {
@@ -275,7 +276,7 @@ export default function ReviewRatings() {
             setRatings((prev) => prev.filter((r) => r.id !== key));
             setIsRatingDeletedModalOpen(true);
         } catch {
-            notification.error({ message: "Failed to archive review", placement: "topRight" });
+            notificationApi.error({ title: "Failed to archive review", placement: "topRight" });
         }
 
     };
@@ -284,7 +285,7 @@ export default function ReviewRatings() {
     //restore rating function
     const handleRestore = async (key) => {
         if (!key) {
-            notification.error({ message: "Rating not found", placement: "topRight" });
+            notificationApi.error({ title: "Rating not found", placement: "topRight" });
             return
         }
         try {
@@ -293,7 +294,7 @@ export default function ReviewRatings() {
             setArchivedRatings((prev) => prev.filter((item) => item.id !== key))
         } catch (error) {
             console.error("Error restoring rating:", error)
-            notification.error({ message: "Rating restore unsuccessfully", placement: "topRight" });
+            notificationApi.error({ title: "Rating restore unsuccessfully", placement: "topRight" });
         }
     };
 
@@ -415,6 +416,7 @@ export default function ReviewRatings() {
                 }
             }}
         >
+            {notificationContextHolder}
             <div className="reviewratings-container">
                 <h1 className="page-header">Reviews & Ratings</h1>
 

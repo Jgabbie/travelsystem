@@ -16,6 +16,9 @@ export default function AddService() {
     const { serviceId } = location.state || {};
     const isEdit = Boolean(serviceId);
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
 
     //form values and error states
     const [errors, setErrors] = useState({
@@ -173,8 +176,8 @@ export default function AddService() {
         const isImage = file.type?.startsWith("image/");
 
         if (!isImage) {
-            notification.error({
-                message: "Invalid file",
+            notificationApi.error({
+                title: "Invalid file",
                 description: "Please upload an image file.",
                 placement: "topRight"
             });
@@ -185,8 +188,8 @@ export default function AddService() {
         const isBelow5MB = file.size / 1024 / 1024 < 5;
 
         if (!isBelow5MB) {
-            notification.error({
-                message: "Image is too large",
+            notificationApi.error({
+                title: "Image is too large",
                 description: "The image must be smaller than 5MB.",
                 placement: "topRight"
             });
@@ -236,8 +239,8 @@ export default function AddService() {
         setErrors(newErrors);
 
         if (hasError) {
-            notification.error({
-                message: "Please fill all required fields correctly.",
+            notificationApi.error({
+                title: "Please fill all required fields correctly.",
                 placement: "topRight"
             });
             return;
@@ -283,8 +286,8 @@ export default function AddService() {
             } catch (uploadError) {
                 console.error("SERVICE IMAGE UPLOAD ERROR:", uploadError);
 
-                notification.error({
-                    message: "Failed to upload service image.",
+                notificationApi.error({
+                    title: "Failed to upload service image.",
                     description:
                         uploadError?.response?.data?.error ||
                         uploadError?.response?.data?.message ||
@@ -356,8 +359,8 @@ export default function AddService() {
                     payload
                 );
 
-                notification.success({
-                    message: "Visa service updated successfully.",
+                notificationApi.success({
+                    title: "Visa service updated successfully.",
                     description: "Changes to the visa service have been saved.",
                     placement: "topRight"
                 });
@@ -367,8 +370,8 @@ export default function AddService() {
                     payload
                 );
 
-                notification.success({
-                    message: "Visa service created successfully.",
+                notificationApi.success({
+                    title: "Visa service created successfully.",
                     description: "The new visa service has been created.",
                     placement: "topRight"
                 });
@@ -378,8 +381,8 @@ export default function AddService() {
         } catch (serviceError) {
             console.error("CREATE/UPDATE SERVICE ERROR:", serviceError);
 
-            notification.error({
-                message: isEdit
+            notificationApi.error({
+                title: isEdit
                     ? "Failed to update visa service."
                     : "Failed to create visa service.",
                 description:
@@ -446,7 +449,7 @@ export default function AddService() {
                 });
 
             } catch (error) {
-                notification.error({ message: 'Failed to load service details.', placement: 'topRight' });
+                notificationApi.error({ title: 'Failed to load service details.', placement: 'topRight' });
                 navigate(`${basePath}/visa-services`);
             }
         }
@@ -464,7 +467,7 @@ export default function AddService() {
                 }
             }}
         >
-
+            {notificationContextHolder}
             <div>
                 <Button
                     style={{ marginBottom: 20, width: 120 }}

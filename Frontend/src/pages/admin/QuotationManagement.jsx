@@ -53,6 +53,9 @@ export default function QuotationManagement() {
     const isEmployee = auth?.role === 'Employee'
     const basePath = isEmployee ? '/employee' : ''
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const sumTravelers = (travelers) => {
         if (typeof travelers === "number") return travelers;
         if (!travelers || typeof travelers !== "object") return 0;
@@ -263,7 +266,7 @@ export default function QuotationManagement() {
 
 
         doc.save(`Quotation_Report_${new Date().toLocaleDateString()}.pdf`);
-        notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
+        notificationApi.success({ title: "Report exported to PDF successfully.", placement: "topRight" });
     };
 
 
@@ -279,7 +282,7 @@ export default function QuotationManagement() {
     //archive function
     const handleArchive = async (key) => {
         if (!key) {
-            notification.error({ message: "Quotation not found", placement: "topRight" });
+            notificationApi.error({ title: "Quotation not found", placement: "topRight" });
             return
         }
         try {
@@ -288,7 +291,7 @@ export default function QuotationManagement() {
             setData((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error archiving quotation:", error)
-            notification.error({ message: "Quotation archived unsuccessfully", placement: "topRight" });
+            notificationApi.error({ title: "Quotation archived unsuccessfully", placement: "topRight" });
         }
     }
 
@@ -296,7 +299,7 @@ export default function QuotationManagement() {
     //restore function
     const handleRestore = async (key) => {
         if (!key) {
-            notification.error({ message: "Quotation not found", placement: "topRight" });
+            notificationApi.error({ title: "Quotation not found", placement: "topRight" });
             return
         }
         try {
@@ -305,7 +308,7 @@ export default function QuotationManagement() {
             setArchivedData((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error restoring quotation:", error)
-            notification.error({ message: error?.response?.data?.message || "Quotation restore failed", placement: "topRight" });
+            notificationApi.error({ title: error?.response?.data?.message || "Quotation restore failed", placement: "topRight" });
         }
 
     }
@@ -449,6 +452,7 @@ export default function QuotationManagement() {
                 }
             }}
         >
+            {notificationContextHolder}
             <div className="quotation-management-container">
                 <h1 className="page-header">Quotation Management</h1>
 

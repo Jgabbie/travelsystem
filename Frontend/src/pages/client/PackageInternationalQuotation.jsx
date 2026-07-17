@@ -30,11 +30,14 @@ export default function PackageInternationalQuotation() {
     const [packageData, setPackageData] = useState(null)
     const [loading, setLoading] = useState(true)
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
 
     //fetch package details
     useEffect(() => {
         if (!packageItem) {
-            notification.error({ message: 'No package selected for quotation.', placement: 'topRight' })
+            notificationApi.error({ title: 'No package selected for quotation.', placement: 'topRight' })
             return
         }
 
@@ -46,12 +49,12 @@ export default function PackageInternationalQuotation() {
                 })
                 .catch((error) => {
                     console.error('Failed to fetch package data:', error)
-                    notification.error({ message: 'Failed to load package details. Please try again later.', placement: 'topRight' })
+                    notificationApi.error({ title: 'Failed to load package details. Please try again later.', placement: 'topRight' })
                 })
         }
         catch (error) {
             console.error('An unexpected error occurred while fetching package data:', error)
-            notification.error({ message: 'An unexpected error occurred. Please try again later.', placement: 'topRight' })
+            notificationApi.error({ title: 'An unexpected error occurred. Please try again later.', placement: 'topRight' })
         } finally {
             setLoading(false)
         }
@@ -327,7 +330,7 @@ export default function PackageInternationalQuotation() {
 
         } catch (error) {
             console.error('An unexpected error occurred while submitting the quotation request:', error)
-            notification.error({ message: 'An unexpected error occurred. Please try again later.', placement: 'topRight' })
+            notificationApi.error({ title: 'An unexpected error occurred. Please try again later.', placement: 'topRight' })
             return
         }
     }
@@ -343,6 +346,7 @@ export default function PackageInternationalQuotation() {
                 }
             }}
         >
+            {notificationContextHolder}
             <div>
                 <Spin spinning={loading} tip="Loading package details..." size="large">
                     <div className="quotation-container">

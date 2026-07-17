@@ -54,6 +54,9 @@ export default function CancellationRequests() {
 
     const { auth } = useAuth();
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     //show confirm modal function
     const showConfirmModal = (record, type) => {
         setPendingActionRequest(record);
@@ -285,7 +288,7 @@ export default function CancellationRequests() {
 
 
         doc.save(`Cancellation_Report_${new Date().toLocaleDateString()}.pdf`);
-        notification.success({ message: 'Report exported to PDF successfully.', placement: 'topRight' });
+        notificationApi.success({ title: 'Report exported to PDF successfully.', placement: 'topRight' });
     };
 
 
@@ -298,10 +301,10 @@ export default function CancellationRequests() {
             setRequests((prev) =>
                 prev.map((item) => (item.key === key ? { ...item, status } : item))
             )
-            notification.success({ message: `Cancellation ${status.toLowerCase()}.`, placement: 'topRight' })
+            notificationApi.success({ title: `Cancellation ${status.toLowerCase()}.`, placement: 'topRight' })
         } catch (err) {
             console.error('Failed to update cancellation status:', err)
-            notification.error({ message: 'Failed to update cancellation status. Please try again.', placement: 'topRight' })
+            notificationApi.error({ title: 'Failed to update cancellation status. Please try again.', placement: 'topRight' })
         } finally {
             setLoading(false)
         }
@@ -324,7 +327,7 @@ export default function CancellationRequests() {
             setRequests((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error archiving cancellation request:", error)
-            notification.error({ message: 'Cancellation request archived unsuccessfully', placement: 'topRight' })
+            notificationApi.error({ title: 'Cancellation request archived unsuccessfully', placement: 'topRight' })
         }
 
     }
@@ -339,7 +342,7 @@ export default function CancellationRequests() {
             setArchivedRequests((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error restoring cancellation request:", error)
-            notification.error({ message: error?.response?.data?.message || 'Cancellation restore failed', placement: 'topRight' })
+            notificationApi.error({ title: error?.response?.data?.message || 'Cancellation restore failed', placement: 'topRight' })
         }
     }
 
@@ -465,6 +468,8 @@ export default function CancellationRequests() {
                 }
             }}
         >
+            {notificationContextHolder}
+
             <div className="cancellations-container">
                 <h1 className="page-header">Cancellation Requests</h1>
 

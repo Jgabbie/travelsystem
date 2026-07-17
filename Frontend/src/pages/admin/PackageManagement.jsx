@@ -1,4 +1,4 @@
-import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, notification, Select, ConfigProvider, Dropdown, Space, Spin, InputNumber, Tag } from "antd";
+import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, notification, Select, ConfigProvider, Space, Spin, InputNumber, Tag } from "antd";
 import { PlusOutlined, SearchOutlined, SolutionOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined, CalendarOutlined, PercentageOutlined, CheckCircleFilled, InboxOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -13,6 +13,9 @@ export default function PackageManagement() {
   const { auth } = useAuth();
   const isEmployee = auth?.role === 'Employee';
   const basePath = isEmployee ? '/employee' : '';
+
+  const [notificationApi, notificationContextHolder] =
+    notification.useNotification();
 
   const [packagesData, setPackagesData] = useState([]);
   const [archivedPackagesData, setArchivedPackagesData] = useState([]);
@@ -29,6 +32,7 @@ export default function PackageManagement() {
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
+
 
   const [filters, setFilters] = useState({
     packageType: null,
@@ -117,7 +121,7 @@ export default function PackageManagement() {
 
     } catch (error) {
       console.error("Error updating slots:", error);
-      notification.error({ message: 'Failed to update slots.', placement: 'topRight' });
+      notificationApi.error({ title: 'Failed to update slots.', placement: 'topRight' });
       return;
     }
 
@@ -130,7 +134,7 @@ export default function PackageManagement() {
       )
     );
 
-    notification.success({ message: 'Slots updated successfully.', placement: 'topRight' });
+    notificationApi.success({ title: 'Slots updated successfully.', placement: 'topRight' });
     handleSlotsCancel();
   };
 
@@ -148,7 +152,7 @@ export default function PackageManagement() {
       setIsDiscountAppliedModalOpen(true);
     } catch (error) {
       console.error("Error updating discount:", error);
-      notification.error({ message: 'Failed to update discount.', placement: 'topRight' });
+      notificationApi.error({ title: 'Failed to update discount.', placement: 'topRight' });
       return;
     }
 
@@ -160,7 +164,7 @@ export default function PackageManagement() {
       )
     );
 
-    notification.success({ message: 'Discount updated successfully.', placement: 'topRight' });
+    notificationApi.success({ title: 'Discount updated successfully.', placement: 'topRight' });
     handleDiscountCancel();
   };
 
@@ -179,7 +183,7 @@ export default function PackageManagement() {
       getPackages();
     } catch (error) {
       console.error("Error removing package:", error);
-      notification.error({ message: 'Package archived unsuccessfully', placement: 'topRight' });
+      notificationApi.error({ title: 'Package archived unsuccessfully', placement: 'topRight' });
     }
 
   }
@@ -194,7 +198,7 @@ export default function PackageManagement() {
       setArchivedPackagesData((prev) => prev.filter((item) => item.packageItem !== key));
     } catch (error) {
       console.error("Error restoring package:", error);
-      notification.error({ message: error?.response?.data?.message || 'Package restore failed', placement: 'topRight' });
+      notificationApi.error({ title: error?.response?.data?.message || 'Package restore failed', placement: 'topRight' });
     }
   }
 
@@ -291,6 +295,8 @@ export default function PackageManagement() {
         }
       }}
     >
+
+      {notificationContextHolder}
       <div>
         <h1 className="page-header">Package Management</h1>
 
@@ -447,7 +453,7 @@ export default function PackageManagement() {
                     </div>
 
                     <div className="package-actions-column">
-                      <Space direction="horizontal" size={8} wrap>
+                      <Space orientation="horizontal" size={8} wrap>
                         <Button
                           className="packagemanagement-view-button"
                           type="primary"

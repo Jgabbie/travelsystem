@@ -135,6 +135,9 @@ export default function BookingProcess() {
     const pdfStepRef = useRef(null);
     const allowHistoryExitRef = useRef(false);
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
     const [isGoBackModalOpen, setIsGoBackModalOpen] = useState(false);
     const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
@@ -531,12 +534,12 @@ export default function BookingProcess() {
                 const missingPhotos = photoFileLists.some(list => !list || list.length === 0);
 
                 if (missingPhotos) {
-                    notification.error({ message: 'Please upload 2x2 photo for all travelers.', placement: 'topRight' });
+                    notificationApi.error({ title: 'Please upload 2x2 photo for all travelers.', placement: 'topRight' });
                     return;
                 }
 
                 if (missingUploads) {
-                    notification.error({ message: `Please upload ${travelDocumentShortLabel} for all travelers.`, placement: 'topRight' });
+                    notificationApi.error({ title: `Please upload ${travelDocumentShortLabel} for all travelers.`, placement: 'topRight' });
                     return;
                 }
             }
@@ -645,10 +648,10 @@ export default function BookingProcess() {
                 const errorMessage = firstError.errors?.[0]
                     ? firstError.errors[0]
                     : 'Please complete all required fields before proceeding.'
-                notification.error({ message: errorMessage, placement: 'topRight' });
+                notificationApi.error({ title: errorMessage, placement: 'topRight' });
                 return;
             }
-            notification.error({ message: 'Please complete all required fields before proceeding. Check the console for details.', placement: 'topRight' });
+            notificationApi.error({ title: 'Please complete all required fields before proceeding. Check the console for details.', placement: 'topRight' });
         }
     };
 
@@ -680,13 +683,13 @@ export default function BookingProcess() {
             file.type === 'application/pdf'
 
         if (!isValidType) {
-            notification.error({ message: 'Only JPG, PNG, or PDF', placement: 'topRight' });
+            notificationApi.error({ title: 'Only JPG, PNG, or PDF', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
         const isValidSize = file.size / 1024 / 1024 < 5;
         if (!isValidSize) {
-            notification.error({ message: 'File must be smaller than 5MB', placement: 'topRight' });
+            notificationApi.error({ title: 'File must be smaller than 5MB', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
@@ -730,12 +733,12 @@ export default function BookingProcess() {
 
             setCurrentStep(previousStep);
             setIsGeneratingPdf(false);
-            notification.success({ message: 'Registration details saved. Proceeding to payment...', placement: 'topRight' });
+            notificationApi.success({ title: 'Registration details saved. Proceeding to payment...', placement: 'topRight' });
             navigate('/booking-payment');
         } catch (error) {
             setIsGeneratingPdf(false);
             console.error(error);
-            notification.error({ message: 'An error occurred during submission.', placement: 'topRight' });
+            notificationApi.error({ title: 'An error occurred during submission.', placement: 'topRight' });
         }
     };
 
@@ -824,6 +827,28 @@ export default function BookingProcess() {
         setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }
 
+    const getTravelerValue = (index, field) => {
+        const traveler = bookingData?.travelers?.[index];
+
+        if (!traveler || typeof traveler !== 'object') {
+            return undefined;
+        }
+
+        return traveler[field];
+    };
+
+    const getTravelerDateValue = (index, field) => {
+        const value = getTravelerValue(index, field);
+
+        if (!value) {
+            return null;
+        }
+
+        const parsedValue = dayjs(value);
+
+        return parsedValue.isValid() ? parsedValue : null;
+    };
+
 
     //cleanup object URLs for previews when component unmounts or previews change
     useEffect(() => {
@@ -856,6 +881,9 @@ export default function BookingProcess() {
                 token: { colorPrimary: '#305797' }
             }}
         >
+
+            {notificationContextHolder}
+
             {isGeneratingPdf && (
                 <div className="booking-loading-overlay">
                     <Spin description="Preparing your PDF..." size="large" />
@@ -1401,7 +1429,7 @@ export default function BookingProcess() {
                                                     style={{ height: 40 }}
                                                     size="small"
                                                     placeholder="Title"
-                                                    value={form.getFieldValue(['travelers', index, 'title'])}
+                                                    value={getTravelerValue(index, 'title')}
                                                     onChange={(value) => updateTravelerField(index, 'title', value)}
                                                     options={[
                                                         { value: 'MR', label: 'MR' },
@@ -1417,7 +1445,7 @@ export default function BookingProcess() {
                                                     maxLength={30}
                                                     size="small"
                                                     placeholder="First name"
-                                                    value={form.getFieldValue(['travelers', index, 'firstName'])}
+                                                    value={getTravelerValue(index, 'firstName') || ''}
                                                     onChange={(event) => updateTravelerField(index, 'firstName', event.target.value)}
                                                     onKeyDown={(e) => {
                                                         const regex = /^[A-Za-z\s'-]$/;
@@ -1429,10 +1457,14 @@ export default function BookingProcess() {
                                                             e.preventDefault();
                                                         }
                                                     }}
-                                                    onBlur={() => {
-                                                        const v = String(form.getFieldValue(['travelers', index, 'firstName']) || '').trim();
-                                                        if (v.length < 2) {
-                                                            notification.error({ message: 'First name must be at least 2 characters', placement: 'topRight' });
+                                                    onBlur={(event) => {
+                                                        const value = event.currentTarget.value.trim();
+
+                                                        if (value.length < 2) {
+                                                            notificationApi.error({
+                                                                title: 'First name must be at least 2 characters',
+                                                                placement: 'topRight'
+                                                            });
                                                         }
                                                     }}
                                                 />
@@ -1444,7 +1476,7 @@ export default function BookingProcess() {
                                                     maxLength={30}
                                                     size="small"
                                                     placeholder="Last name"
-                                                    value={form.getFieldValue(['travelers', index, 'lastName'])}
+                                                    value={getTravelerValue(index, 'lastName') || ''}
                                                     onChange={(event) => updateTravelerField(index, 'lastName', event.target.value)}
                                                     onKeyDown={(e) => {
                                                         const regex = /^[A-Za-z\s'-]$/;
@@ -1456,10 +1488,14 @@ export default function BookingProcess() {
                                                             e.preventDefault();
                                                         }
                                                     }}
-                                                    onBlur={() => {
-                                                        const v = String(form.getFieldValue(['travelers', index, 'lastName']) || '').trim();
-                                                        if (v.length < 2) {
-                                                            notification.error({ message: 'Last name must be at least 2 characters', placement: 'topRight' });
+                                                    onBlur={(event) => {
+                                                        const value = event.currentTarget.value.trim();
+
+                                                        if (value.length < 2) {
+                                                            notificationApi.error({
+                                                                title: 'Last name must be at least 2 characters',
+                                                                placement: 'topRight'
+                                                            });
                                                         }
                                                     }}
                                                 />
@@ -1476,7 +1512,11 @@ export default function BookingProcess() {
                                                             style={{ height: 40 }}
                                                             size="small"
                                                             placeholder="Room type"
-                                                            value={isMinorTraveler ? 'N/A' : form.getFieldValue(['travelers', index, 'roomType'])}
+                                                            value={
+                                                                isMinorTraveler
+                                                                    ? 'N/A'
+                                                                    : getTravelerValue(index, 'roomType')
+                                                            }
                                                             onChange={(value) => updateTravelerField(index, 'roomType', value)}
                                                             options={isMinorTraveler ? [{ value: 'N/A', label: 'N/A' }] : roomOptions}
                                                             disabled={bookingType === 'Solo Booking' || isMinorTraveler}
@@ -1500,7 +1540,7 @@ export default function BookingProcess() {
                                                                 : dayjs().subtract(25, 'year')
                                                     }
                                                     format="MMMM D, YYYY"
-                                                    value={form.getFieldValue(['travelers', index, 'birthday'])}
+                                                    value={getTravelerDateValue(index, 'birthday')}
                                                     onChange={(date) => {
                                                         const travelerType = travelerTypeLabels[index] || 'Adult'
                                                         if (date && !isDateAllowedForTraveler(date, travelerType)) {
@@ -1510,7 +1550,7 @@ export default function BookingProcess() {
                                                                 : ageBounds.minAge === 3 && ageBounds.maxAge === 11
                                                                     ? '3-11'
                                                                     : '12+'
-                                                            notification.error({ message: `Please select a ${ageLabel} year old birthdate for ${travelerType.toLowerCase()}.`, placement: 'topRight' })
+                                                            notificationApi.error({ title: `Please select a ${ageLabel} year old birthdate for ${travelerType.toLowerCase()}.`, placement: 'topRight' })
                                                             return
                                                         }
 
@@ -1521,7 +1561,7 @@ export default function BookingProcess() {
                                                             ? 'N/A'
                                                             : bookingType === 'Solo Booking'
                                                                 ? 'SINGLE'
-                                                                : form.getFieldValue(['travelers', index, 'roomType'])
+                                                                : getTravelerValue(index, 'roomType')
                                                         updateTravelerField(index, 'birthday', date, { age, ageCategory, roomType })
                                                     }}
                                                     disabledDate={(current) => {
@@ -1552,10 +1592,9 @@ export default function BookingProcess() {
                                                         maxLength={9}
                                                         size="small"
                                                         placeholder="P1234567A"
-                                                        value={(() => {
-                                                            const val = String(form.getFieldValue(['travelers', index, 'passportNo']) || '');
-                                                            return val.slice(0, 9);
-                                                        })()}
+                                                        value={String(
+                                                            getTravelerValue(index, 'passportNo') || ''
+                                                        ).slice(0, 9)}
                                                         onChange={(event) => {
                                                             const raw = String(event.target.value || '');
                                                             const cleaned = raw.replace(/^p/i, '');
@@ -1575,7 +1614,7 @@ export default function BookingProcess() {
                                                         size="small"
                                                         placeholder="Passport expiry"
                                                         format="MMMM D, YYYY"
-                                                        value={form.getFieldValue(['travelers', index, 'passportExpiry'])}
+                                                        value={getTravelerDateValue(index, 'passportExpiry')}
                                                         onChange={(date) => updateTravelerField(index, 'passportExpiry', date)}
                                                         disabledDate={(current) => {
                                                             if (!current) return false

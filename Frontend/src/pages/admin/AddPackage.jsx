@@ -15,6 +15,9 @@ export default function AddPackage() {
   const isEmployee = auth?.role === "Employee";
   const basePath = isEmployee ? "/employee" : "";
 
+  const [notificationApi, notificationContextHolder] =
+    notification.useNotification();
+
   const location = useLocation();
   const { packageItem } = location.state || {};
   const fileInputRef = useRef(null);
@@ -133,7 +136,7 @@ export default function AddPackage() {
         errorMsg = "Something went wrong. Please try again.";
       }
 
-      notification.error({ message: errorMsg, placement: 'topRight' });
+      notificationApi.error({ title: errorMsg, placement: 'topRight' });
     }
   }, [backEndErrors]);
 
@@ -480,13 +483,13 @@ export default function AddPackage() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      notification.error({ message: "Please select a valid image file.", placement: "topRight" });
+      notificationApi.error({ title: "Please select a valid image file.", placement: "topRight" });
       event.target.value = "";
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      notification.error({ message: "Image must be 2MB or less.", placement: "topRight" });
+      notificationApi.error({ title: "Image must be 2MB or less.", placement: "topRight" });
       event.target.value = "";
       return;
     }
@@ -495,7 +498,7 @@ export default function AddPackage() {
       const current = prev.itinerariesImages?.[day] || [];
 
       if (current.length >= 3) {
-        notification.error({ message: "You can upload up to 3 images only.", placement: "topRight" });
+        notificationApi.error({ title: "You can upload up to 3 images only.", placement: "topRight" });
         return prev;
       }
 
@@ -530,17 +533,17 @@ export default function AddPackage() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      notification.error({ message: 'Please select a valid image file.', placement: 'topRight' });
+      notificationApi.error({ title: 'Please select a valid image file.', placement: 'topRight' });
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      notification.error({ message: 'Image must be 2MB or less.', placement: 'topRight' });
+      notificationApi.error({ title: 'Image must be 2MB or less.', placement: 'topRight' });
       return;
     }
 
     if (values.images.length >= 3) {
-      notification.error({ message: 'You can upload up to 3 images only.', placement: 'topRight' });
+      notificationApi.error({ title: 'You can upload up to 3 images only.', placement: 'topRight' });
       return;
     }
 
@@ -554,14 +557,14 @@ export default function AddPackage() {
     if (!file) return;
 
     if (!file.type.startsWith("video/")) {
-      notification.error({ message: 'Please select a valid video file.', placement: 'topRight' });
+      notificationApi.error({ title: 'Please select a valid video file.', placement: 'topRight' });
       event.target.value = "";
       return;
     }
 
     // Limit to 100MB
     if (file.size > 100 * 1024 * 1024) {
-      notification.error({ message: 'Video must be 100MB or less.', placement: 'topRight' });
+      notificationApi.error({ title: 'Video must be 100MB or less.', placement: 'topRight' });
       event.target.value = "";
       return;
     }
@@ -692,7 +695,7 @@ export default function AddPackage() {
     setErrors(newErrors);
 
     if (hasError) {
-      notification.error({ message: 'Please fill all required fields correctly.', placement: 'topRight' });
+      notificationApi.error({ title: 'Please fill all required fields correctly.', placement: 'topRight' });
       return; // stop submission
     }
 
@@ -731,11 +734,11 @@ export default function AddPackage() {
       uploadedImageUrls = await uploadPackageImages(newFiles);
 
       if (!uploadedImageUrls.length) {
-        notification.error({ message: 'Failed to add package', key: 'upload', placement: 'topRight' });
+        notificationApi.error({ title: 'Failed to add package', key: 'upload', placement: 'topRight' });
         return;
       }
 
-      notification.success({ message: 'Package added successfully!', key: 'upload', placement: 'topRight' });
+      notificationApi.success({ title: 'Package added successfully!', key: 'upload', placement: 'topRight' });
     }
 
     // combine both
@@ -750,11 +753,11 @@ export default function AddPackage() {
       message.loading({ content: "Uploading video...", key: "video-upload" });
       const uploaded = await uploadPackageVideo(newVideoFile);
       if (!uploaded) {
-        notification.error({ message: 'Failed to upload video', key: 'video-upload', placement: 'topRight' });
+        notificationApi.error({ title: 'Failed to upload video', key: 'video-upload', placement: 'topRight' });
         return;
       }
       uploadedVideoUrl = uploaded;
-      notification.success({ message: 'Video uploaded', key: 'video-upload', placement: 'topRight' });
+      notificationApi.success({ title: 'Video uploaded', key: 'video-upload', placement: 'topRight' });
     }
 
     const finalVideo = existingVideoUrl || uploadedVideoUrl || null;
@@ -779,7 +782,7 @@ export default function AddPackage() {
         dayUploadedUrls = await uploadItineraryImages(dayNewFiles);
 
         if (!dayUploadedUrls.length) {
-          notification.error({ message: "Failed to upload itinerary images", key: "itinerary-upload", placement: "topRight" });
+          notificationApi.error({ title: "Failed to upload itinerary images", key: "itinerary-upload", placement: "topRight" });
           return;
         }
       }
@@ -788,7 +791,7 @@ export default function AddPackage() {
     }
 
     if (hasNewItineraryFiles) {
-      notification.success({ message: "Itinerary images uploaded successfully!", key: "itinerary-upload", placement: "topRight" });
+      notificationApi.success({ title: "Itinerary images uploaded successfully!", key: "itinerary-upload", placement: "topRight" });
     }
 
     const normalizedItineraries = Object.fromEntries(
@@ -975,8 +978,8 @@ export default function AddPackage() {
       } catch (error) {
         console.error("Failed to load package tags:", error);
 
-        notification.error({
-          message: "Failed to load reusable package tags.",
+        notificationApi.error({
+          title: "Failed to load reusable package tags.",
           placement: "topRight",
         });
       } finally {
@@ -1019,8 +1022,8 @@ export default function AddPackage() {
     } catch (error) {
       console.error("Failed to save reusable package tags:", error);
 
-      notification.error({
-        message:
+      notificationApi.error({
+        title:
           error?.data?.message ||
           error?.message ||
           "The new tag could not be saved.",
@@ -1042,6 +1045,8 @@ export default function AddPackage() {
         },
       }}
     >
+      {notificationContextHolder}
+
       {loadingPackage || savingPackage ? (
         <div className="loading-container">
           <Spin description={loadingPackage ? "Loading package..." : "Saving..."} />

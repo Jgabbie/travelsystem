@@ -18,6 +18,9 @@ export default function Wishlist() {
     const [selectedWishlistId, setSelectedWishlistId] = useState(null);
     const [averageRatings, setAverageRatings] = useState(() => new Map())
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const { Text } = Typography
 
     // fetch wishlist items on component mount
@@ -55,8 +58,8 @@ export default function Wishlist() {
                     error?.data?.message ||
                     'Unable to load wishlist.'
 
-                notification.error({
-                    message: errorMessage,
+                notificationApi.error({
+                    title: 'Error Loading Wishlist',
                     placement: 'topRight'
                 })
 
@@ -150,11 +153,11 @@ export default function Wishlist() {
             setWishlistItems((prev) =>
                 prev.filter((entry) => entry?._id !== wishlistId)
             )
-            notification.success({ message: 'Removed from wishlist', placement: 'topRight' })
+            notificationApi.success({ title: 'Removed from Wishlist', placement: 'topRight' })
         } catch (error) {
             const errorMessage =
                 error?.data?.message || 'Unable to remove wishlist item.'
-            notification.error({ message: errorMessage, placement: 'topRight' })
+            notificationApi.error({ title: 'Error Removing Item', placement: 'topRight' })
         }
     }
 
@@ -169,7 +172,7 @@ export default function Wishlist() {
                 }
             }}
         >
-
+            {notificationContextHolder}
             <div className="wishlist-container">
                 <div
                     className="wishlist-hero"
@@ -203,7 +206,7 @@ export default function Wishlist() {
                         <p>Search and filter the packages you saved for later.</p>
                     </header>
 
-                    <Card className="wishlist-controls-card-search" bordered={false}>
+                    <Card className="wishlist-controls-card-search" variant="borderless">
                         <div className="wishlist-controls">
                             <div className="wishlist-search">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -228,7 +231,7 @@ export default function Wishlist() {
                         </div>
                     </Card>
 
-                    <Card className="wishlist-controls-card" bordered={false}>
+                    <Card className="wishlist-controls-card" variant="borderless">
                         <div className="wishlist-controls">
 
 

@@ -374,7 +374,7 @@ export default function NewPassport() {
                                             </label>
 
                                             <Select
-                                                allowSearch
+                                                showSearch
                                                 allowClear
                                                 className={`passport-select ${error.location ? 'input-error' : ''}`}
                                                 placeholder="Choose a DFA site"

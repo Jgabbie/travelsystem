@@ -35,6 +35,9 @@ export default function VisaApplications() {
     const isEmployee = auth?.role === "Employee";
     const basePath = isEmployee ? "/employee" : "";
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const [applications, setApplications] = useState([])
     const [archivedApplications, setArchivedApplications] = useState([])
     const [showArchived, setShowArchived] = useState(false)
@@ -72,7 +75,7 @@ export default function VisaApplications() {
             setApplications(applications)
         } catch (error) {
             const errorMessage = error?.data?.message || 'Unable to load visa applications.'
-            notification.error({ message: errorMessage, placement: 'topRight' })
+            notificationApi.error({ title: "Failed to load visa applications", placement: "topRight" });
             setApplications([])
         } finally {
             setIsFetchingApplications(false)
@@ -99,7 +102,7 @@ export default function VisaApplications() {
             setArchivedApplications(applications)
         } catch (error) {
             const errorMessage = error?.data?.message || 'Unable to load archived visa applications.'
-            notification.error({ message: errorMessage, placement: 'topRight' })
+            notificationApi.error({ title: "Failed to load archived visa applications", placement: "topRight" });
             setArchivedApplications([])
         } finally {
             setIsFetchingApplications(false)
@@ -239,7 +242,7 @@ export default function VisaApplications() {
 
 
         doc.save(`Visa_Applications_Report_${new Date().toLocaleDateString()}.pdf`);
-        notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
+        notificationApi.success({ title: "Report exported to PDF successfully.", placement: "topRight" });
     };
 
 
@@ -251,7 +254,7 @@ export default function VisaApplications() {
             setApplications((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error archiving visa application:", error)
-            notification.error({ message: "Visa application archived unsuccessfully", placement: "topRight" })
+            notificationApi.error({ title: "Failed to archive visa application", placement: "topRight" })
         }
     }
 
@@ -264,7 +267,7 @@ export default function VisaApplications() {
             setArchivedApplications((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error restoring visa application:", error)
-            notification.error({ message: "Visa application restore unsuccessfully", placement: "topRight" })
+            notificationApi.error({ title: "Failed to restore visa application", placement: "topRight" })
         }
 
     }
@@ -429,6 +432,7 @@ export default function VisaApplications() {
                 }
             }}
         >
+            {notificationContextHolder}
             <div className="visa-applications-container">
                 <h1 className="page-header">Visa Applications</h1>
 

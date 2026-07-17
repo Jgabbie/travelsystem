@@ -68,6 +68,9 @@ export default function ViewPassportApplication() {
     const [descriptionColumn, setDescriptionColumn] = useState(2);
     const [hasProcessedRejection, setHasProcessedRejection] = useState(false);
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
 
     const shouldHideDeadline = PASSPORT_DEADLINE_STOP_STATUSES.has(
         String(application?.status || "").trim()
@@ -88,7 +91,7 @@ export default function ViewPassportApplication() {
             }, {});
             setCurrentStep(statusMap[response.status] ?? 0);
         } catch (error) {
-            notification.error({ message: "Failed to load application details.", placement: "topRight" });
+            notificationApi.error({ title: "Failed to load application details.", placement: "topRight" });
             navigate(-1);
         } finally {
             setLoading(false);
@@ -125,7 +128,7 @@ export default function ViewPassportApplication() {
 
             if (slots.length === 0) {
                 setIsSubmittingSlots(false);
-                notification.error({ message: "Please select date and time for at least one option.", placement: "topRight" });
+                notificationApi.error({ title: "Please select date and time for at least one option.", placement: "topRight" });
                 return;
             }
 
@@ -141,7 +144,7 @@ export default function ViewPassportApplication() {
             setIsSuggestedDatesSentModalOpen(true);
         } catch (error) {
             setIsSubmittingSlots(false);
-            notification.error({ message: "Failed to submit appointment options.", placement: "topRight" });
+            notificationApi.error({ title: "Failed to submit appointment options.", placement: "topRight" });
         }
     };
 
@@ -151,7 +154,7 @@ export default function ViewPassportApplication() {
         if (isUpdatingStatus) return;
 
         if (!documentKey) {
-            notification.warning({ message: "Please select a document to resubmit.", placement: "topRight" });
+            notificationApi.warning({ title: "Please select a document to resubmit.", placement: "topRight" });
             return;
         }
 
@@ -164,7 +167,7 @@ export default function ViewPassportApplication() {
 
             setIsResubmitDocumentsSentModalOpen(true);
         } catch (error) {
-            notification.error({ message: "Failed to update status", placement: "topRight" });
+            notificationApi.error({ title: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -261,8 +264,8 @@ export default function ViewPassportApplication() {
                         { status: 'Rejected' },
                         { withCredentials: true }
                     );
-                    notification.warning({
-                        message: 'Application Rejected',
+                    notificationApi.warning({
+                        title: 'Application Rejected',
                         description: 'Application has been auto-rejected due to missed deadline.',
                         placement: 'topRight'
                     });
@@ -448,9 +451,9 @@ export default function ViewPassportApplication() {
             // You should update this endpoint to PATCH/PUT to your backend for real update
             await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: newStatus });
             await fetchApplication();
-            notification.success({ message: `Status updated to ${newStatus}`, placement: "topRight" });
+            notificationApi.success({ title: `Status updated to ${newStatus}`, placement: "topRight" });
         } catch (err) {
-            notification.error({ message: "Failed to update status", placement: "topRight" });
+            notificationApi.error({ title: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -463,9 +466,9 @@ export default function ViewPassportApplication() {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: "Rejected" });
             await fetchApplication();
-            notification.success({ message: "Application marked as DFA Rejected", placement: "topRight" });
+            notificationApi.success({ title: "Application marked as DFA Rejected", placement: "topRight" });
         } catch (err) {
-            notification.error({ message: "Failed to update status", placement: "topRight" });
+            notificationApi.error({ title: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -478,9 +481,9 @@ export default function ViewPassportApplication() {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: "DFA Approved" });
             await fetchApplication();
-            notification.success({ message: "Application marked as DFA Approved", placement: "topRight" });
+            notificationApi.success({ title: "Application marked as DFA Approved", placement: "topRight" });
         } catch (err) {
-            notification.error({ message: "Failed to update status", placement: "topRight" });
+            notificationApi.error({ title: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -520,6 +523,8 @@ export default function ViewPassportApplication() {
     return (
         <ConfigProvider
             theme={{ token: { colorPrimary: "#305797" } }}>
+
+            {notificationContextHolder}
             {loading || isSubmittingSlots || isUpdatingStatus ? (
                 <div
                     style={{

@@ -54,6 +54,9 @@ export default function UserManagement() {
   const [statusFilter, setStatusFilter] = useState("");
   const [showArchived, setShowArchived] = useState(false);
 
+  const [notificationApi, notificationContextHolder] =
+    notification.useNotification();
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -97,7 +100,7 @@ export default function UserManagement() {
       }));
       setUsers(formattedData);
     } catch {
-      notification.error({ message: "Failed to load users", placement: "topRight" });
+      notificationApi.error({ title: "Failed to load users", placement: "topRight" });
     } finally {
       setLoading(false);
     }
@@ -125,7 +128,7 @@ export default function UserManagement() {
       }));
       setArchivedUsers(formattedData);
     } catch {
-      notification.error({ message: "Failed to load archived users", placement: "topRight" });
+      notificationApi.error({ title: "Failed to load archived users", placement: "topRight" });
     } finally {
       setLoading(false);
     }
@@ -194,7 +197,7 @@ export default function UserManagement() {
     });
 
     doc.save(`User_Report_${new Date().toLocaleDateString()}.pdf`);
-    notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
+    notificationApi.success({ title: "Report exported to PDF successfully.", placement: "topRight" });
   };
 
 
@@ -205,7 +208,7 @@ export default function UserManagement() {
       setIsDeleteModalOpen(false);
       setIsUserDeletedModalOpen(true);
       getUsers();
-    } catch { notification.error({ message: "Archive failed", placement: "topRight" }); }
+    } catch { notificationApi.error({ title: "Archive failed", placement: "topRight" }); }
   };
 
 
@@ -214,11 +217,11 @@ export default function UserManagement() {
     try {
       await apiFetch.post(`/user/archived-users/${key}/restore`, {}, { withCredentials: true });
       setIsUserRestoredModalOpen(true);
-      notification.success({ message: "User restored successfully", placement: "topRight" });
+      notificationApi.success({ title: "User restored successfully", placement: "topRight" });
       setArchivedUsers((prev) => prev.filter((item) => item.key !== key));
 
     } catch (error) {
-      notification.error({ message: error?.response?.data?.message || "Email of the user is already in use", placement: "topRight" });
+      notificationApi.error({ title: error?.response?.data?.message || "Email of the user is already in use", placement: "topRight" });
     }
   };
 
@@ -289,8 +292,8 @@ export default function UserManagement() {
         { withCredentials: true }
       );
 
-      notification.success({
-        message: "User updated",
+      notificationApi.success({
+        title: "User updated",
         placement: "topRight",
       });
 
@@ -321,8 +324,8 @@ export default function UserManagement() {
         return;
       }
 
-      notification.error({
-        message: errorMessage,
+      notificationApi.error({
+        title: "Failed to update user",
         placement: "topRight",
       });
     }
@@ -466,10 +469,50 @@ export default function UserManagement() {
   };
 
 
+  const tabItems = [
+    {
+      key: "customers",
+      label: "Customers",
+      children: (
+        <Table
+          className="usermanagement-table"
+          loading={loading}
+          columns={showArchived ? archivedColumns : columns}
+          dataSource={customers}
+          scroll={{ x: "max-content" }}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: false,
+          }}
+        />
+      ),
+    },
+    {
+      key: "staff",
+      label: "Staff (Admin & Employee)",
+      children: (
+        <Table
+          className="usermanagement-table"
+          loading={loading}
+          columns={showArchived ? archivedColumns : columns}
+          dataSource={staff}
+          scroll={{ x: "max-content" }}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: false,
+          }}
+        />
+      ),
+    },
+  ];
+
+
 
 
   return (
     <ConfigProvider theme={{ token: { colorPrimary: "#305797" } }}>
+
+      {notificationContextHolder}
       <div className="user-management-container">
         <h1 className="page-header">User Management</h1>
 
@@ -603,31 +646,11 @@ export default function UserManagement() {
 
         <Card style={{ marginTop: 20 }}>
           <Form form={form} component={false}>
-            <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)}>
-              <Tabs.TabPane tab="Customers" key="customers">
-                <Table
-                  className="usermanagement-table"
-                  loading={loading}
-                  columns={showArchived ? archivedColumns : columns}
-                  dataSource={customers}
-                  scroll={{ x: "max-content" }}
-                  pagination={{
-                    pageSize: 10,
-                    showSizeChanger: false
-                  }}
-                />
-              </Tabs.TabPane>
-
-              <Tabs.TabPane tab="Staff (Admin & Employee)" key="staff">
-                <Table
-                  className='usermanagement-table'
-                  loading={loading}
-                  columns={showArchived ? archivedColumns : columns}
-                  dataSource={staff}
-                  pagination={{ pageSize: 10, showSizeChanger: false }}
-                />
-              </Tabs.TabPane>
-            </Tabs>
+            <Tabs
+              activeKey={activeTab}
+              onChange={setActiveTab}
+              items={tabItems}
+            />
           </Form>
         </Card>
 

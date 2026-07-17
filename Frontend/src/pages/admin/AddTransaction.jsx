@@ -43,6 +43,9 @@ export default function AddTransaction() {
     const isEmployee = auth?.role === "Employee";
     const basePath = isEmployee ? "/employee" : "";
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const [invoiceNumber, setInvoiceNumber] = useState("PREVIEW");
     const [transactionDate, setTransactionDate] = useState(dayjs());
     const [price, setPrice] = useState(0);
@@ -99,8 +102,8 @@ export default function AddTransaction() {
     const removeItem = (id) => {
         setItems((currentItems) => {
             if (currentItems.length === 1) {
-                notification.warning({
-                    message: "At least one item row is required.",
+                notificationApi.warning({
+                    title: "At least one item row is required.",
                     placement: "topRight",
                 });
 
@@ -154,8 +157,8 @@ export default function AddTransaction() {
 
     const openReceiptPreview = () => {
         if (!validateForm()) {
-            notification.error({
-                message: "Please complete the transaction details correctly.",
+            notificationApi.error({
+                title: "Please complete the transaction details correctly.",
                 placement: "topRight",
             });
             return;
@@ -193,16 +196,17 @@ export default function AddTransaction() {
                 transactionPayload,
             });
 
-            notification.success({
-                message: "Transaction added successfully!",
+            notificationApi.success({
+                title: "Transaction added successfully!",
                 placement: "topRight",
             });
             setIsPreviewOpen(false);
             navigate(`${basePath}/transactions`);
         } catch (error) {
             console.error("Failed to add transaction:", error);
-            notification.error({
-                message:
+            notificationApi.error({
+                title: "Failed to add transaction.",
+                description:
                     error?.response?.data?.message ||
                     error?.data?.message ||
                     error?.message ||
@@ -222,6 +226,8 @@ export default function AddTransaction() {
                 },
             }}
         >
+
+            {notificationContextHolder}
             {saving ? (
                 <div className="loading-container">
                     <Spin size="large" description="Saving transaction..." />

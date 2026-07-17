@@ -374,10 +374,9 @@ export default function RenewPassport() {
                                             </label>
 
                                             <Select
-                                                allowSearch
+                                                showSearch
                                                 allowClear
                                                 className={`passport-select ${error.location ? 'input-error' : ''}`}
-                                                inputReadOnly
                                                 placeholder="Choose a DFA site"
                                                 value={location}
                                                 searchValue={locationSearch}

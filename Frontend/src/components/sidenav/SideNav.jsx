@@ -462,6 +462,7 @@ export default function SideNav() {
 
   const renderNavItem = ({ to, label, icon, count = 0, onClick, exact = false }) => (
     <NavLink
+      key={to}
       to={to}
       end={exact}
       className={({ isActive }) => `nav-item${isActive ? " active" : ""}`}

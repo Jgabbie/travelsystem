@@ -81,7 +81,7 @@ export default function ChooseDateIntModal({
                 </h3>
 
                 <div style={{ marginBottom: 12 }} className="choose-date-filters">
-                    <Space className="choose-date-space" direction="horizontal" size="small" wrap>
+                    <Space className="choose-date-space" orientation="horizontal" size="small" wrap>
                         <Input.Search
                             placeholder="Search dates (e.g. Mar, Apr)"
                             allowClear

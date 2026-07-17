@@ -101,6 +101,9 @@ export default function UserBookingInvoice() {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const initialBooking = location.state?.booking || null;
     const [booking, setBooking] = useState(initialBooking);
     const [transactions, setTransactions] = useState([]);
@@ -199,7 +202,7 @@ export default function UserBookingInvoice() {
                 }
 
             } catch (err) {
-                notification.error({ message: "Failed to load booking details.", placement: 'topRight' });
+                notificationApi.error({ title: "Failed to load booking details.", placement: 'topRight' });
                 console.error("Primary fetch error:", err);
             } finally {
 
@@ -388,13 +391,13 @@ export default function UserBookingInvoice() {
     const beforeDocumentUpload = (file) => {
         const isImage = file.type === "image/jpeg" || file.type === "image/png";
         if (!isImage) {
-            notification.error({ message: "Only JPG/PNG files are allowed", placement: 'topRight' });
+            notificationApi.error({ title: "Invalid File Type", message: "Only JPG/PNG files are allowed", placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
         const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            notification.error({ message: "Image must be smaller than 2MB", placement: 'topRight' });
+            notificationApi.error({ title: "File Too Large", message: "Image must be smaller than 2MB", placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
         return false;
@@ -403,13 +406,13 @@ export default function UserBookingInvoice() {
     const beforeVisaUpload = (file) => {
         const isAllowed = file.type === "image/jpeg" || file.type === "image/png" || file.type === "application/pdf";
         if (!isAllowed) {
-            notification.error({ message: "Only JPG/PNG/PDF files are allowed for visa.", placement: 'topRight' });
+            notificationApi.error({ title: "Invalid File Type", message: "Only JPG/PNG/PDF files are allowed for visa.", placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
         const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            notification.error({ message: "File must be smaller than 2MB", placement: 'topRight' });
+            notificationApi.error({ title: "File Too Large", message: "File must be smaller than 2MB", placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
         return false;
@@ -439,7 +442,7 @@ export default function UserBookingInvoice() {
     //handle traveler document resubmission
     const handleSubmitTravelerResubmission = async (index) => {
         if (!bookingId) {
-            notification.error({ message: "Booking ID not found.", placement: 'topRight' });
+            notificationApi.error({ title: "Booking ID not found.", placement: 'topRight' });
             return;
         }
 
@@ -453,7 +456,8 @@ export default function UserBookingInvoice() {
             (requiresVisa && visaList.length > 0);
 
         if (!hasDocumentToUpload) {
-            notification.warning({
+            notificationApi.warning({
+                title: "No Documents to Upload",
                 message: requiresVisa
                     ? "Please upload passport/ID, 2x2 photo, or visa file."
                     : "Please upload passport/ID or 2x2 photo.",
@@ -522,9 +526,9 @@ export default function UserBookingInvoice() {
                 next[index] = [];
                 return next;
             });
-            notification.success({ message: "Documents submitted successfully.", placement: 'topRight' });
+            notificationApi.success({ title: "Documents submitted successfully.", placement: 'topRight' });
         } catch (error) {
-            notification.error({ message: error?.data?.message || "Unable to submit documents.", placement: 'topRight' });
+            notificationApi.error({ title: "Failed to submit documents.", message: error?.data?.message || "Unable to submit documents.", placement: 'topRight' });
         } finally {
             setSubmittingTravelerIndex(null);
         }
@@ -538,7 +542,7 @@ export default function UserBookingInvoice() {
 
             setCurrentStep(prev => prev + 1);
         } catch (error) {
-            notification.error({ message: "Please complete required fields.", placement: 'topRight' });
+            notificationApi.error({ title: "Required Fields Missing", message: "Please complete required fields.", placement: 'topRight' });
         }
     };
 
@@ -688,15 +692,16 @@ export default function UserBookingInvoice() {
 
             URL.revokeObjectURL(url);
 
-            notification.success({
-                message:
-                    "Booking Registration PDF downloaded successfully.",
+            notificationApi.success({
+                title: "PDF Downloaded Successfully",
+                message: "Booking Registration PDF downloaded successfully.",
                 placement: "topRight"
             });
         } catch (err) {
             console.error("PDF generation error:", err);
 
-            notification.error({
+            notificationApi.error({
+                title: "Failed to download PDF",
                 message:
                     "Failed to download PDF: " +
                     (err?.message || "Unknown error"),
@@ -738,13 +743,13 @@ export default function UserBookingInvoice() {
     const beforeUpload = (file) => {
         const isImage = file.type === 'image/jpeg' || file.type === 'image/png';
         if (!isImage) {
-            notification.error({ message: 'Only JPG/PNG files are allowed', placement: 'topRight' });
+            notificationApi.error({ title: "Invalid File Type", message: 'Only JPG/PNG files are allowed', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
         const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            notification.error({ message: 'Image must be smaller than 2MB', placement: 'topRight' });
+            notificationApi.error({ title: "File Size Exceeded", message: 'Image must be smaller than 2MB', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
         return false;
@@ -755,12 +760,12 @@ export default function UserBookingInvoice() {
     const proceedBooking = async () => {
 
         if (!method) {
-            notification.warning({ message: "Please select a payment method.", placement: 'topRight' });
+            notificationApi.warning({ title: "No Payment Method Selected", message: "Please select a payment method.", placement: 'topRight' });
             return;
         }
 
         if (method === 'manual' && fileList.length === 0) {
-            notification.warning({ message: "Please upload proof of payment.", placement: 'topRight' });
+            notificationApi.warning({ title: "Proof of Payment Required", message: "Please upload proof of payment.", placement: 'topRight' });
             return;
         }
 
@@ -771,7 +776,7 @@ export default function UserBookingInvoice() {
                 const file = fileList?.[0]?.originFileObj;
 
                 if (!file) {
-                    notification.error({ message: "Invalid file.", placement: 'topRight' });
+                    notificationApi.error({ title: "Invalid File", message: "Invalid file.", placement: 'topRight' });
                     setLoading(false);
                     return;
                 }
@@ -792,7 +797,7 @@ export default function UserBookingInvoice() {
                 const imageUrl = uploadRes?.url;
 
                 if (!imageUrl) {
-                    notification.error({ message: "Image upload failed.", placement: 'topRight' });
+                    notificationApi.error({ title: "Image Upload Failed", placement: 'topRight' });
                     setLoading(false);
                     return;
                 }
@@ -1388,15 +1393,12 @@ export default function UserBookingInvoice() {
 
             URL.revokeObjectURL(invoiceUrl);
 
-            notification.success({
-                message: "Booking invoice downloaded successfully.",
-                placement: "topRight"
-            });
+            notificationApi.success({ title: "Booking Invoice Downloaded", message: "Booking invoice downloaded successfully.", placement: "topRight" });
         } catch (error) {
             console.error("Booking invoice download error:", error);
 
-            notification.error({
-                message: "Failed to download the booking invoice.",
+            notificationApi.error({
+                title: "Failed to download the booking invoice.",
                 placement: "topRight"
             });
         } finally {
@@ -1414,7 +1416,7 @@ export default function UserBookingInvoice() {
                 }
             }}
         >
-
+            {notificationContextHolder}
             {loading ? (
                 <div
                     style={{

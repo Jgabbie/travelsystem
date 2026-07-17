@@ -88,6 +88,9 @@ export default function UploadBookingInvoice() {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const [booking, setBooking] = useState(location.state?.booking || null);
     const [loading, setLoading] = useState(false);
     const [downloading, setDownloading] = useState(false);
@@ -141,7 +144,7 @@ export default function UploadBookingInvoice() {
                 }
                 setTransactions(fetchedTransactions);
             } catch (error) {
-                notification.error({ message: "Unable to load booking details", placement: "topRight" });
+                notificationApi.error({ title: "Unable to load booking details", placement: "topRight" });
             } finally {
                 setLoading(false);
             }
@@ -166,7 +169,7 @@ export default function UploadBookingInvoice() {
 
             setCurrentStep(prev => prev + 1);
         } catch (error) {
-            notification.error({ message: "Please complete required fields.", placement: "topRight" });
+            notificationApi.error({ title: "Please complete required fields.", placement: "topRight" });
         }
     };
 
@@ -314,18 +317,15 @@ export default function UploadBookingInvoice() {
 
             URL.revokeObjectURL(url);
 
-            notification.success({
-                message:
-                    "Booking Registration PDF downloaded successfully.",
+            notificationApi.success({
+                title: "Booking Registration PDF downloaded successfully.",
                 placement: "topRight"
             });
         } catch (err) {
             console.error("PDF generation error:", err);
 
-            notification.error({
-                message:
-                    "Failed to download PDF: " +
-                    (err?.message || "Unknown error"),
+            notificationApi.error({
+                title: "Failed to download PDF: ",
                 placement: "topRight"
             });
         } finally {
@@ -338,7 +338,7 @@ export default function UploadBookingInvoice() {
     //handle request document resubmission
     const handleRequestDocumentsResubmission = async (travelerIndex = null) => {
         if (!bookingId) {
-            notification.error({ message: "Booking ID not found.", placement: "topRight" });
+            notificationApi.error({ title: "Booking ID not found.", placement: "topRight" });
             return;
         }
 
@@ -349,9 +349,9 @@ export default function UploadBookingInvoice() {
             );
             const updatedBooking = response?.booking || booking;
             setBooking(updatedBooking);
-            notification.success({ message: "Document resubmission request sent to customer.", placement: "topRight" });
+            notificationApi.success({ title: "Document resubmission request sent to customer.", placement: "topRight" });
         } catch (error) {
-            notification.error({ message: error?.data?.message || "Unable to request resubmission.", placement: "topRight" });
+            notificationApi.error({ title: error?.data?.message || "Unable to request resubmission.", placement: "topRight" });
         } finally {
             setIsRequestingResubmission(false);
         }
@@ -853,15 +853,15 @@ export default function UploadBookingInvoice() {
                 URL.revokeObjectURL(invoiceUrl);
             }, 1000);
 
-            notification.success({
-                message: "Booking invoice downloaded successfully.",
+            notificationApi.success({
+                title: "Booking invoice downloaded successfully.",
                 placement: "topRight"
             });
         } catch (error) {
             console.error("Invoice download error:", error);
 
-            notification.error({
-                message: "Failed to download booking invoice.",
+            notificationApi.error({
+                title: "Failed to download booking invoice.",
                 description: error?.message || "Please try again.",
                 placement: "topRight"
             });
@@ -887,6 +887,7 @@ export default function UploadBookingInvoice() {
                 }
             }}
         >
+            {notificationContextHolder}
             {loading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '75vh' }}>
                     <Spin description="Loading Booking Details..." size="large" />

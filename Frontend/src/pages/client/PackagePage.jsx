@@ -28,6 +28,9 @@ export default function PackagePage() {
 
     const navigate = useNavigate();
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
 
     //login state
     const [isLoginVisible, setIsLoginVisible] = useState(false);
@@ -416,12 +419,12 @@ export default function PackagePage() {
 
         const targetPackage = packageItem
         if (!targetPackage) {
-            notification.error({ message: 'Unable to add wishlist item. Package is missing.', placement: 'topRight' })
+            notificationApi.error({ title: 'Unable to add wishlist item. Package is missing.', placement: 'topRight' })
             return
         }
 
         if (wishlistedIds.has(String(targetPackage))) {
-            notification.info({ message: 'This package is already in your wishlist.', placement: 'topRight' })
+            notificationApi.info({ title: 'This package is already in your wishlist.', placement: 'topRight' })
             return
         }
 
@@ -437,7 +440,7 @@ export default function PackagePage() {
         } catch (error) {
             const errorMessage =
                 error?.data?.message || 'Unable to add to wishlist. Please try again.'
-            notification.error({ message: errorMessage, placement: 'topRight' })
+            notificationApi.error({ title: errorMessage, placement: 'topRight' })
         }
     }
 
@@ -503,16 +506,16 @@ export default function PackagePage() {
         }
 
         if (!hasValidBooking && !isEditingReview) {
-            notification.error({
-                message: 'You can only rate packages you have booked and fully paid for.',
+            notificationApi.error({
+                title: 'You can only rate packages you have booked and fully paid for.',
                 placement: 'topRight'
             })
             return
         }
 
         if (!reviewForm.rating || !reviewForm.comment.trim()) {
-            notification.warning({
-                message: 'Please provide a rating and comment.',
+            notificationApi.warning({
+                title: 'Please provide a rating and comment.',
                 placement: 'topRight'
             })
             return
@@ -521,8 +524,8 @@ export default function PackagePage() {
         const reviewId = userReview?.id
 
         if (isEditingReview && !reviewId) {
-            notification.error({
-                message: 'Unable to find the review to update. Please refresh the page.',
+            notificationApi.error({
+                title: 'Unable to find the review to update. Please refresh the page.',
                 placement: 'topRight'
             })
             return
@@ -559,8 +562,8 @@ export default function PackagePage() {
         } catch (error) {
             console.error('Unable to save review:', error)
 
-            notification.error({
-                message:
+            notificationApi.error({
+                title:
                     error?.data?.message ||
                     error?.response?.data?.message ||
                     'Unable to save review',
@@ -582,8 +585,8 @@ export default function PackagePage() {
         const reviewId = userReview?.id
 
         if (!reviewId) {
-            notification.error({
-                message: 'No review to delete.',
+            notificationApi.error({
+                title: 'No review to delete.',
                 placement: 'topRight'
             })
             return
@@ -606,8 +609,8 @@ export default function PackagePage() {
         } catch (error) {
             console.error('Unable to delete review:', error)
 
-            notification.error({
-                message:
+            notificationApi.error({
+                title:
                     error?.data?.message ||
                     error?.response?.data?.message ||
                     'Unable to delete review',
@@ -627,7 +630,7 @@ export default function PackagePage() {
         }
 
         if (!userReview?.id) {
-            notification.error({ message: 'No review to delete.', placement: 'topRight' })
+            notificationApi.error({ title: 'No review to delete.', placement: 'topRight' })
             return
         }
 
@@ -710,7 +713,7 @@ export default function PackagePage() {
                 }
             }}
         >
-
+            {notificationContextHolder}
             <div>
                 <Spin spinning={packageLoading} description="Loading package details..." size="large">
                     <div className="packagepage-container">
@@ -935,7 +938,7 @@ export default function PackagePage() {
 
 
                                 {showReviews ? (
-                                    <Card className="package-reviews-card" bordered={false}>
+                                    <Card className="package-reviews-card" variant='borderless'>
                                         <div className="package-reviews">
                                             <div className="package-review-summary">
                                                 <div>

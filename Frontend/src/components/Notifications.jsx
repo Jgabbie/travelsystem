@@ -11,6 +11,9 @@ export default function Notifications() {
     const [notifications, setNotifications] = useState([])
     const [popoverOpen, setPopoverOpen] = useState(false)
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const notificationActionButtonStyle = {
         background: '#305797',
         borderColor: '#305797',
@@ -106,8 +109,8 @@ export default function Notifications() {
         try {
             const unread = notifications.filter((n) => !n.isRead)
             if (unread.length === 0) {
-                notification.info({
-                    message: 'No Unread Notifications',
+                notificationApi.info({
+                    title: 'No Unread Notifications',
                     description: 'All your notifications are already marked as read.'
                 })
                 return
@@ -118,10 +121,10 @@ export default function Notifications() {
             })))
 
             setNotifications((prev) => prev.map((item) => ({ ...item, isRead: true })))
-            notification.success({ message: 'All Notifications Marked as Read' })
+            notificationApi.success({ title: 'All Notifications Marked as Read' })
         } catch (error) {
             console.error('Failed to mark all as read:', error)
-            notification.error({ message: 'Failed to Mark All as Read' })
+            notificationApi.error({ title: 'Failed to Mark All as Read' })
         }
     }
 
@@ -181,6 +184,8 @@ export default function Notifications() {
 
     return (
         <>
+            {notificationContextHolder}
+
             <Popover
                 content={notificationMenu}
                 trigger="click"
@@ -204,7 +209,7 @@ export default function Notifications() {
             <Drawer
                 title={`All Notifications (${notifications.length})`}
                 placement="right"
-                width={420}
+                size={420}
                 onClose={closeDrawer}
                 open={drawerOpen}
             >

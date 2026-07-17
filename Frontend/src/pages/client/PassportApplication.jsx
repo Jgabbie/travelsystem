@@ -41,16 +41,16 @@ const getStatusColor = (status) => {
 
 //steps for passport application process
 const PASSPORT_STEPS = [
-    { title: 'Application Submitted', description: 'Application Submitted' },
-    { title: 'Application Approved', description: 'Application Approved' },
-    { title: 'Payment Completed', description: 'Payment Completed' },
-    { title: 'Documents Uploaded', description: 'Documents Uploaded' },
-    { title: 'Documents Approved', description: 'Documents Approved' },
-    { title: 'Documents Received', description: 'Documents Received' },
-    { title: 'Documents Submitted', description: 'Documents Submitted' },
-    { title: 'Processing by DFA', description: 'Processing by DFA' },
-    { title: 'DFA Approved', description: 'DFA Approved' },
-    { title: 'Passport Released', description: 'Passport Released' },
+    { title: 'Application Submitted', content: 'Application Submitted' },
+    { title: 'Application Approved', content: 'Application Approved' },
+    { title: 'Payment Completed', content: 'Payment Completed' },
+    { title: 'Documents Uploaded', content: 'Documents Uploaded' },
+    { title: 'Documents Approved', content: 'Documents Approved' },
+    { title: 'Documents Received', content: 'Documents Received' },
+    { title: 'Documents Submitted', content: 'Documents Submitted' },
+    { title: 'Processing by DFA', content: 'Processing by DFA' },
+    { title: 'DFA Approved', content: 'DFA Approved' },
+    { title: 'Passport Released', content: 'Passport Released' },
 ];
 
 export default function PassportApplication() {
@@ -59,6 +59,9 @@ export default function PassportApplication() {
     const navigate = useNavigate();
 
     const id = applicationId; // Use applicationId from location state instead of URL params
+
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
 
     const [loading, setLoading] = useState(true);
     const [application, setApplication] = useState(null);
@@ -114,7 +117,7 @@ export default function PassportApplication() {
                 const res = await apiFetch.get(fetchPassportApplication);
                 setApplication(res);
             } catch (err) {
-                notification.error({ message: 'Failed to load passport application details', placement: 'topRight' });
+                notificationApi.error({ title: 'Failed to load passport application details', placement: 'topRight' });
             } finally {
                 setLoading(false);
             }
@@ -147,7 +150,7 @@ export default function PassportApplication() {
                 const res = await apiFetch.get('/user/data')
                 setApplication(prev => ({ ...prev, email: res.userData.email }));
             } catch (err) {
-                notification.error({ message: 'Failed to load user data', placement: 'topRight' });
+                notificationApi.error({ title: 'Failed to load user data', placement: 'topRight' });
             } finally {
                 setLoading(false);
             }
@@ -380,7 +383,7 @@ export default function PassportApplication() {
     //submit payment function
     const handleSubmitPayment = async () => {
         if (method === 'manual' && fileList.length === 0) {
-            notification.warning({ message: 'Please upload a receipt first.', placement: 'topRight' });
+            notificationApi.warning({ title: 'Please upload a receipt first.', placement: 'topRight' });
             return;
         }
 
@@ -415,7 +418,7 @@ export default function PassportApplication() {
 
 
                 navigate(paymentRes.redirectUrl);
-                notification.success({ message: "Manual payment submitted successfully. Awaiting verification.", placement: 'topRight' });
+                notificationApi.success({ title: "Manual payment submitted successfully. Awaiting verification.", placement: 'topRight' });
                 setPaymentCompleted(true);
 
             } else if (method === 'paymongo') {
@@ -423,7 +426,7 @@ export default function PassportApplication() {
 
 
                 if (!application) {
-                    notification.error({ message: "Application not found.", placement: 'topRight' });
+                    notificationApi.error({ title: "Application not found.", placement: 'topRight' });
                     return;
                 }
 
@@ -452,7 +455,7 @@ export default function PassportApplication() {
 
         } catch (err) {
             console.error(err);
-            notification.error({ message: "Payment failed", placement: 'topRight' });
+            notificationApi.error({ title: "Payment failed", placement: 'topRight' });
         } finally {
             setPaymentLoading(false);
         }
@@ -509,7 +512,7 @@ export default function PassportApplication() {
             window.open(src, '_blank', 'noopener,noreferrer');
             return;
         }
-        notification.error({ message: 'Preview unavailable', placement: 'topRight' });
+        notificationApi.error({ title: 'Preview unavailable', placement: 'topRight' });
     };
 
 
@@ -527,7 +530,7 @@ export default function PassportApplication() {
     const beforeRequirementUpload = (file) => {
         const isLt3M = file.size / 1024 / 1024 < 3;
         if (!isLt3M) {
-            notification.error({ message: 'Image/PDF must be smaller than 3MB!', placement: 'topRight' });
+            notificationApi.error({ title: 'Image/PDF must be smaller than 3MB!', placement: 'topRight' });
         }
         return isLt3M || Upload.LIST_IGNORE;
     };
@@ -536,22 +539,22 @@ export default function PassportApplication() {
     //handle submission of uploaded documents
     const handleSubmit = async () => {
         if (uploading) {
-            notification.warning({ message: "Please wait until uploads finish", placement: 'topRight' });
+            notificationApi.warning({ title: "Please wait until uploads finish", placement: 'topRight' });
             return;
         }
 
         if (!resubmissionRequested) {
             if (!birthCertList[0] || !applicationFormList[0] || !govIdList[0]) {
-                notification.warning({ message: "Please upload the required documents before submitting.", placement: 'topRight' });
+                notificationApi.warning({ title: "Please upload the required documents before submitting.", placement: 'topRight' });
                 return;
             }
         } else {
             if (requestedResubmissionTargets.length === 0) {
-                notification.warning({ message: "No document is currently marked for resubmission.", placement: 'topRight' });
+                notificationApi.warning({ title: "No document is currently marked for resubmission.", placement: 'topRight' });
                 return;
             }
             if (!requestedResubmissionTargets.some(hasSelectedFileForTarget)) {
-                notification.warning({ message: "Please upload the requested document before submitting.", placement: 'topRight' });
+                notificationApi.warning({ title: "Please upload the requested document before submitting.", placement: 'topRight' });
                 return;
             }
         }
@@ -577,7 +580,7 @@ export default function PassportApplication() {
             }
 
             if (!formData.has("files")) {
-                notification.warning({ message: "Please upload the required documents before submitting.", placement: 'topRight' });
+                notificationApi.warning({ title: "Please upload the required documents before submitting.", placement: 'topRight' });
                 return;
             }
 
@@ -611,7 +614,7 @@ export default function PassportApplication() {
             setIsDocumentsUploadedModalOpen(true);
         } catch (err) {
             console.error(err);
-            notification.error({ message: "Failed to submit documents", placement: 'topRight' });
+            notificationApi.error({ title: "Failed to submit documents", placement: 'topRight' });
         } finally {
             setUploading(false);
         }
@@ -621,7 +624,7 @@ export default function PassportApplication() {
     //handle confirmation of suggested appointment schedule
     const handleConfirmSuggested = async () => {
         if (!application?.suggestedAppointmentSchedules || selectedSuggestedIndex === null) {
-            notification.warning({ message: 'Please select an appointment option first.', placement: 'topRight' });
+            notificationApi.warning({ title: 'Please select an appointment option first.', placement: 'topRight' });
             return;
         }
 
@@ -630,7 +633,7 @@ export default function PassportApplication() {
 
         if (selectedSuggestedIndex === 'others') {
             if (!customDateTime.date || !customDateTime.time) {
-                notification.warning({ message: 'Please fill in all custom date and time fields.', placement: 'topRight' });
+                notificationApi.warning({ title: 'Please fill in all custom date and time fields.', placement: 'topRight' });
                 return;
             }
 
@@ -641,7 +644,7 @@ export default function PassportApplication() {
             const selected = application.suggestedAppointmentSchedules[selectedSuggestedIndex];
 
             if (!selected?.date || !selected?.time) {
-                notification.error({ message: 'Selected option is missing date or time.', placement: 'topRight' });
+                notificationApi.error({ title: 'Selected option is missing date or time.', placement: 'topRight' });
                 return;
             }
 
@@ -665,7 +668,7 @@ export default function PassportApplication() {
             setApplication(refreshed);
             setIsDateSelectedModalOpen(true);
         } catch (error) {
-            notification.error({ message: 'Failed to confirm appointment schedule.', placement: 'topRight' });
+            notificationApi.error({ title: 'Failed to confirm appointment schedule.', placement: 'topRight' });
         } finally {
             setConfirmingSuggested(false);
         }
@@ -715,6 +718,7 @@ export default function PassportApplication() {
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>
+            {notificationContextHolder}
             {loading || uploading ? (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
                     <Spin size="large" description={uploading ? "Uploading Documents..." : "Loading..."} />
@@ -1613,9 +1617,9 @@ export default function PassportApplication() {
                                                                         </span>
                                                                     </div>
                                                                 ),
-                                                                description: (
+                                                                content: (
                                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                                        <span style={{ fontSize: 13, color: '#888', whiteSpace: 'nowrap' }}>{step.description}</span>
+                                                                        <span style={{ fontSize: 13, color: '#888', whiteSpace: 'nowrap' }}>{step.content}</span>
                                                                         <span style={{ fontSize: 12, color: '#555' }}>
                                                                             {currentStep === idx && stepSetDate && (
                                                                                 <>Set on: {stepSetDate.format('MMM D, YYYY')} {daysAgo !== null ? `• ${daysAgo} days ago` : ''}</>

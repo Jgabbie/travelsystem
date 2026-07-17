@@ -23,7 +23,8 @@ export default function DestinationsPackages() {
     const [wishlistedIds, setWishlistedIds] = useState(() => new Set())
     const [wishlistEntryMap, setWishlistEntryMap] = useState(() => new Map())
 
-
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
 
     const { auth } = useAuth()
 
@@ -147,7 +148,7 @@ export default function DestinationsPackages() {
         event?.stopPropagation()
 
         if (!auth) {
-            notification.info({ message: 'Please log in to manage your wishlist.', placement: 'topRight' })
+            notificationApi.info({ title: 'Please log in to manage your wishlist.', placement: 'topRight' })
             return
         }
 
@@ -157,7 +158,7 @@ export default function DestinationsPackages() {
         if (isWishlisted) {
             const wishlistId = await resolveWishlistEntryId(packageKey)
             if (!wishlistId) {
-                notification.error({ message: 'Unable to remove wishlist item.', placement: 'topRight' })
+                notificationApi.error({ title: 'Unable to remove wishlist item.', placement: 'topRight' })
                 return
             }
 
@@ -173,11 +174,11 @@ export default function DestinationsPackages() {
                     next.delete(packageKey)
                     return next
                 })
-                notification.success({ message: 'Removed from wishlist', placement: 'topRight' })
+                notificationApi.success({ title: 'Removed from wishlist', placement: 'topRight' })
             } catch (error) {
                 const errorMessage =
                     error?.data?.message || 'Unable to remove wishlist item.'
-                notification.error({ message: errorMessage, placement: 'topRight' })
+                notificationApi.error({ title: errorMessage, placement: 'topRight' })
             }
 
             return
@@ -185,12 +186,12 @@ export default function DestinationsPackages() {
 
         try {
             await apiFetch.post('/wishlist/add', { packageId: packageKey })
-            notification.success({ message: 'Added to wishlist', placement: 'topRight' })
+            notificationApi.success({ title: 'Added to wishlist', placement: 'topRight' })
             await fetchWishlist()
         } catch (error) {
             const errorMessage =
                 error?.data?.message || 'Unable to add to wishlist. Please try again.'
-            notification.error({ message: errorMessage, placement: 'topRight' })
+            notificationApi.error({ title: errorMessage, placement: 'topRight' })
         }
     }, [auth, fetchWishlist, resolveWishlistEntryId, wishlistedIds])
 
@@ -352,6 +353,7 @@ export default function DestinationsPackages() {
                 }
             }}
         >
+            {notificationContextHolder}
             <div className='destinations-container'>
                 <div className="destinations-hero-section">
                     <div className="destinations-hero-overlay"></div>
@@ -556,7 +558,7 @@ export default function DestinationsPackages() {
 
                     <section className="destinations-results">
                         <div className="destinations-results-header">
-                            <h3 classname="destinations-results-title">Available Packages</h3>
+                            <h3 className="destinations-results-title">Available Packages</h3>
                             <Text type="secondary" className="destinations-results-count">{filteredPackages.length} found</Text>
                         </div>
 

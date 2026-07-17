@@ -26,6 +26,8 @@ export default function QuotationsPaymentProcess() {
     const [searchParams] = useSearchParams();
     const cancelRequestedRef = useRef(false);
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
 
     const [paymentType, setPaymentType] = useState(() => {
         try {
@@ -188,13 +190,13 @@ export default function QuotationsPaymentProcess() {
     const beforeUpload = (file) => {
         const isImage = file.type === 'image/jpeg' || file.type === 'image/png';
         if (!isImage) {
-            notification.error({ message: 'Only JPG/PNG files are allowed', placement: 'topRight' });
+            notificationApi.error({ title: 'Only JPG/PNG files are allowed', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
         const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            notification.error({ message: 'Image must be smaller than 2MB', placement: 'topRight' });
+            notificationApi.error({ title: 'Image must be smaller than 2MB', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
         return false;
@@ -339,17 +341,17 @@ export default function QuotationsPaymentProcess() {
 
         setIsProceedModalOpen(false);
         if (!paymentType) {
-            notification.warning({ message: "Please select a payment type.", placement: 'topRight' });
+            notificationApi.warning({ title: "Please select a payment type.", placement: 'topRight' });
             return;
         }
 
         if (!method) {
-            notification.warning({ message: "Please select a payment method.", placement: 'topRight' });
+            notificationApi.warning({ title: "Please select a payment method.", placement: 'topRight' });
             return;
         }
 
         if (method === 'manual' && fileList.length === 0) {
-            notification.warning({ message: "Please upload proof of payment.", placement: 'topRight' });
+            notificationApi.warning({ title: "Please upload proof of payment.", placement: 'topRight' });
             return;
         }
 
@@ -412,7 +414,7 @@ export default function QuotationsPaymentProcess() {
                 // Expiry check (extra safety)
                 if (dayjs().isAfter(dayjs(expiresAt))) {
                     setLoading(false);
-                    notification.error({ message: "Booking session expired. Please try again.", placement: 'topRight' });
+                    notificationApi.error({ title: "Booking session expired. Please try again.", placement: 'topRight' });
                     return;
                 }
 
@@ -431,7 +433,7 @@ export default function QuotationsPaymentProcess() {
                 const file = fileList?.[0]?.originFileObj;
 
                 if (!file) {
-                    notification.error({ message: "Invalid file.", placement: 'topRight' });
+                    notificationApi.error({ title: "Invalid file.", placement: 'topRight' });
                     setLoading(false);
                     return;
                 }
@@ -790,6 +792,7 @@ export default function QuotationsPaymentProcess() {
                     }
                 }}
             >
+                {notificationContextHolder}
                 <div className="payment-process-container">
                     {loading && (
                         <div className="payment-loading-overlay">

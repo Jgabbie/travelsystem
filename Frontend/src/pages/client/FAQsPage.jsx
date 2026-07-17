@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import '../../style/client/faqspage.css'
 
 const { Text } = Typography
-const { Panel } = Collapse
+
 
 
 // faq data for the page
@@ -86,6 +86,19 @@ export default function FAQsPage() {
         })
     }, [activeCategory, searchTerm])
 
+    const collapseItems = useMemo(() => {
+        return filteredFaqs.map((item) => ({
+            key: `${item.category}-${item.question}`,
+            label: item.question,
+            className: 'faq-question',
+            children: (
+                <p className="faq-answer">
+                    &gt; {item.answer}
+                </p>
+            )
+        }))
+    }, [filteredFaqs])
+
 
 
     return (
@@ -158,13 +171,11 @@ export default function FAQsPage() {
                             </Button>
                         </div>
                     ) : (
-                        <Collapse accordion className="faq-collapse">
-                            {filteredFaqs.map((item, index) => (
-                                <Panel className='faq-question' header={item.question} key={`${item.question}-${index}`}>
-                                    <p className='faq-answer'> &gt; {item.answer}</p>
-                                </Panel>
-                            ))}
-                        </Collapse>
+                        <Collapse
+                            accordion
+                            className="faq-collapse"
+                            items={collapseItems}
+                        />
                     )}
                 </div>
 

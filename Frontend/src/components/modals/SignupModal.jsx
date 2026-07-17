@@ -582,7 +582,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                     rootClassName="signup-terms-modal-root"
                     className="signup-terms-modal"
                     closable={false}
-                    maskClosable={false}
+                    mask={{ closable: false }}
                     footer={
                         <div className="signup-terms-footer">
                             <Button

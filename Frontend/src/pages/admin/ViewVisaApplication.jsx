@@ -59,6 +59,9 @@ export default function ViewVisaApplication() {
     const [deliveryDate, setDeliveryDate] = useState(null);
     const [isSubmittingDeliveryDetails, setIsSubmittingDeliveryDetails] = useState(false);
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
 
     // adjust description column based on window width
     useEffect(() => {
@@ -108,7 +111,7 @@ export default function ViewVisaApplication() {
                 setApplication(appData); // fallback if no serviceId
             }
         } catch (err) {
-            notification.error({ message: "Failed to load application details.", placement: "topRight" });
+            notificationApi.error({ title: "Failed to load application details", placement: "topRight" });
             navigate(-1);
         } finally {
             setLoading(false);
@@ -133,7 +136,7 @@ export default function ViewVisaApplication() {
 
             if (slots.length === 0) {
                 setIsSubmittingSlots(false);
-                notification.error({ message: "Please select date and time for at least one option.", placement: "topRight" });
+                notificationApi.error({ title: "Failed to submit appointment options", placement: "topRight" });
                 return;
             }
 
@@ -149,7 +152,7 @@ export default function ViewVisaApplication() {
             setIsSuggestedDatesSentModalOpen(true);
         } catch (error) {
             setIsSubmittingSlots(false);
-            notification.error({ message: "Failed to submit appointment options.", placement: "topRight" });
+            notificationApi.error({ title: "Failed to submit appointment options", placement: "topRight" });
         }
     };
 
@@ -356,9 +359,9 @@ export default function ViewVisaApplication() {
             // You should update this endpoint to PATCH/PUT to your backend for real update
             await apiFetch.put(`/visa/applications/${applicationItem}/status`, { status: newStatus });
             await fetchApplicationAndService();
-            notification.success({ message: `Status updated to ${newStatus}`, placement: "topRight" });
+            notificationApi.success({ title: `Status updated to ${newStatus}`, placement: "topRight" });
         } catch (err) {
-            notification.error({ message: "Failed to update status", placement: "topRight" });
+            notificationApi.error({ title: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -374,7 +377,7 @@ export default function ViewVisaApplication() {
             : Object.keys(application?.submittedDocuments || application?.documents || {});
 
         if (documentKeys.length === 0) {
-            notification.warning({ message: "Please select a document to resubmit.", placement: "topRight" });
+            notificationApi.warning({ title: "No documents selected", placement: "topRight" });
             return;
         }
 
@@ -387,7 +390,7 @@ export default function ViewVisaApplication() {
 
             setIsResubmitDocumentsSentModalOpen(true);
         } catch (error) {
-            notification.error({ message: "Failed to update status", placement: "topRight" });
+            notificationApi.error({ title: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -398,12 +401,12 @@ export default function ViewVisaApplication() {
     const handleSubmitDeliveryDetails = async () => {
         const parsedFee = Number(deliveryFee);
         if (!Number.isFinite(parsedFee) || parsedFee <= 0) {
-            notification.error({ message: "Please enter a valid delivery fee.", placement: "topRight" });
+            notificationApi.error({ title: "Invalid delivery fee", placement: "topRight" });
             return;
         }
 
         if (!deliveryDate) {
-            notification.error({ message: "Please select a delivery date.", placement: "topRight" });
+            notificationApi.error({ title: "No delivery date selected", placement: "topRight" });
             return;
         }
 
@@ -415,9 +418,9 @@ export default function ViewVisaApplication() {
             });
             setApplication((prev) => ({ ...prev, ...response.application }));
             setIsSubmitDeliveryDetailsModalOpen(true);
-            notification.success({ message: "Delivery details sent to applicant.", placement: "topRight" });
+            notificationApi.success({ title: "Delivery details sent to applicant", placement: "topRight" });
         } catch (error) {
-            notification.error({ message: error?.message || "Failed to send delivery details.", placement: "topRight" });
+            notificationApi.error({ title: "Failed to send delivery details", placement: "topRight" });
         } finally {
             setIsSubmittingDeliveryDetails(false);
         }
@@ -430,9 +433,9 @@ export default function ViewVisaApplication() {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/visa/applications/${applicationItem}/status`, { status: "Rejected" });
             await fetchApplicationAndService();
-            notification.success({ message: "Application marked as Embassy Rejected", placement: "topRight" });
+            notificationApi.success({ title: "Application marked as Embassy Rejected", placement: "topRight" });
         } catch (err) {
-            notification.error({ message: "Failed to update status", placement: "topRight" });
+            notificationApi.error({ title: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -445,9 +448,9 @@ export default function ViewVisaApplication() {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/visa/applications/${applicationItem}/status`, { status: "Embassy Approved" });
             await fetchApplicationAndService();
-            notification.success({ message: "Application marked as Embassy Approved", placement: "topRight" });
+            notificationApi.success({ title: "Application marked as Embassy Approved", placement: "topRight" });
         } catch (err) {
-            notification.error({ message: "Failed to update status", placement: "topRight" });
+            notificationApi.error({ title: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -529,6 +532,8 @@ export default function ViewVisaApplication() {
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: "#305797" } }}>
+
+            {notificationContextHolder}
             {isBusy ? (
                 <div
                     style={{

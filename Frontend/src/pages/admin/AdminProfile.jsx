@@ -29,6 +29,9 @@ export default function AdminProfile() {
     const [recentActions, setRecentActions] = useState([])
     const [pendingApprovals, setPendingApprovals] = useState([])
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
 
     //proper casing function
     const toProperCase = (value) =>
@@ -127,11 +130,11 @@ export default function AdminProfile() {
                     phone: data.userData.phone
                 })
             } else {
-                notification.error({ message: 'Failed to fetch user data', placement: 'topRight' })
+                notificationApi.error({ title: 'Failed to fetch user data', placement: 'topRight' })
             }
         } catch (error) {
             console.error('Error fetching user data:', error)
-            notification.error({ message: 'Error loading profile', placement: 'topRight' })
+            notificationApi.error({ title: 'Error loading profile', placement: 'topRight' })
         } finally {
             setLoading(false)
         }
@@ -234,11 +237,11 @@ export default function AdminProfile() {
         const file = event.target.files?.[0]
         if (!file) return
         if (!file.type.startsWith('image/')) {
-            notification.error({ message: 'Please select a valid image file.', placement: 'topRight' })
+            notificationApi.error({ title: 'Please select a valid image file.', placement: 'topRight' })
             return
         }
         if (file.size > 2 * 1024 * 1024) {
-            notification.error({ message: 'Image must be 2MB or less.', placement: 'topRight' })
+            notificationApi.error({ title: 'Image must be 2MB or less.', placement: 'topRight' })
             return
         }
 
@@ -259,7 +262,7 @@ export default function AdminProfile() {
         setError(nextErrors)
         const hasErrors = Object.values(nextErrors).some(Boolean)
         if (hasErrors) {
-            notification.error({ message: 'Please fix the highlighted fields before saving.', placement: 'topRight' })
+            notificationApi.error({ title: 'Please fix the highlighted fields before saving.', placement: 'topRight' })
             return
         }
         try {
@@ -287,11 +290,11 @@ export default function AdminProfile() {
                 ''
             )
             setEditing(false)
-            notification.success({ message: 'Profile updated successfully!', placement: 'topRight' })
+            notificationApi.success({ title: 'Profile updated successfully!', placement: 'topRight' })
         } catch (error) {
             console.error('Error updating profile:', error)
             const apiMessage = error?.data?.message
-            notification.error({ message: apiMessage || 'Error updating profile', placement: 'topRight' })
+            notificationApi.error({ title: apiMessage || 'Error updating profile', placement: 'topRight' })
         } finally {
             setSaving(false)
         }
@@ -308,7 +311,7 @@ export default function AdminProfile() {
                 }
             }}
         >
-
+            {notificationContextHolder}
             {loading ? (
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
                     <Spin size="large" description="Loading profile..." />

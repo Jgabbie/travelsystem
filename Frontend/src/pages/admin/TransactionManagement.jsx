@@ -42,6 +42,9 @@ export default function TransactionManagement() {
   const isEmployee = auth?.role === 'Employee';
   const basePath = isEmployee ? '/employee' : '';
 
+  const [notificationApi, notificationContextHolder] =
+    notification.useNotification();
+
   const [form] = Form.useForm();
   const receiptRef = useRef();
   const [searchText, setSearchText] = useState("");
@@ -121,7 +124,7 @@ export default function TransactionManagement() {
 
     } catch (error) {
       console.error("Error fetching transactions:", error);
-      notification.error({ message: "Unable to load transactions.", placement: "topRight" });
+      notificationApi.error({ title: "Unable to load transactions.", placement: "topRight" });
     } finally {
       setLoading(false);
     }
@@ -137,7 +140,7 @@ export default function TransactionManagement() {
       setArchivedData(transactions);
     } catch (error) {
       console.error("Error fetching archived transactions:", error);
-      notification.error({ message: "Unable to load archived transactions.", placement: "topRight" });
+      notificationApi.error({ title: "Unable to load archived transactions.", placement: "topRight" });
     } finally {
       setLoading(false);
     }
@@ -195,12 +198,12 @@ export default function TransactionManagement() {
   const handleDownloadPDF = async () => {
     const element = receiptRef.current;
     if (!element) {
-      notification.error({ message: "Receipt content not found!", placement: "topRight" });
+      notificationApi.error({ title: "Receipt content not found!", placement: "topRight" });
       return;
     }
 
     try {
-      notification.open({ message: "Generating PDF...", key: "pdf", placement: "topRight", duration: 0 });
+      notificationApi.info({ title: "Generating PDF...", key: "pdf", placement: "topRight" });
 
       const images = Array.from(element.querySelectorAll("img"));
       await Promise.all(
@@ -265,10 +268,10 @@ export default function TransactionManagement() {
 
       pdf.save(`Receipt-${selectedTransaction?.ref || 'download'}_${date}.pdf`);
 
-      notification.success({ message: "Downloaded successfully!", key: "pdf", placement: "topRight" });
+      notificationApi.success({ title: "Downloaded successfully!", key: "pdf", placement: "topRight" });
     } catch (error) {
       console.error("PDF Generation Error:", error);
-      notification.error({ message: "Failed to generate PDF.", key: "pdf", placement: "topRight" });
+      notificationApi.error({ title: "Failed to generate PDF.", key: "pdf", placement: "topRight" });
     }
   };
 
@@ -374,7 +377,7 @@ export default function TransactionManagement() {
     }
 
     doc.save(`Transaction_Report_${new Date().toLocaleDateString()}.pdf`);
-    notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
+    notificationApi.success({ title: "Report exported to PDF successfully.", placement: "topRight" });
   };
 
 
@@ -424,7 +427,7 @@ export default function TransactionManagement() {
       setProofTransaction(null);
     } catch (error) {
       console.error(error)
-      notification.error({ message: "Failed to update proof status.", description: error?.message || "Please try again.", placement: "topRight" });
+      notificationApi.error({ title: "Failed to update proof status.", placement: "topRight" });
     } finally {
       setIsProofDecisionLoading(false);
     }
@@ -438,7 +441,7 @@ export default function TransactionManagement() {
       setData((prev) => prev.filter((item) => item.key !== key));
       setIsTransactionDeletedModalOpen(true);
     } catch (error) {
-      notification.error({ message: "Failed to archive transaction", placement: "topRight" });
+      notificationApi.error({ title: "Failed to archive transaction", placement: "topRight" });
     }
   };
 
@@ -450,7 +453,7 @@ export default function TransactionManagement() {
       setIsTransactionRestoredModalOpen(true);
       setArchivedData((prev) => prev.filter((item) => item.key !== key));
     } catch (error) {
-      notification.error({ message: error?.response?.data?.message || "Failed to restore transaction", placement: "topRight" });
+      notificationApi.error({ title: "Failed to restore transaction", placement: "topRight" });
     }
 
   };
@@ -490,7 +493,7 @@ export default function TransactionManagement() {
       setEditingTransaction(null);
       editForm.resetFields();
     } catch {
-      notification.error({ message: "Please fix validation errors", placement: "topRight" });
+      notificationApi.error({ title: "Please fix validation errors", placement: "topRight" });
     }
   };
 
@@ -642,7 +645,7 @@ export default function TransactionManagement() {
         }
       }}
     >
-
+      {notificationContextHolder}
       {isProofDecisionloading ? (
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
           <Spin size="large" description={isProofDecision === "Accept" ? "Accepting proof..." : "Rejecting proof..."} />

@@ -12,6 +12,9 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [notificationApi, notificationContextHolder] =
+    notification.useNotification();
+
   const isEmployeeDashboard = location.pathname.startsWith("/employee");
 
   const navigateToManagementPage = (route) => {
@@ -220,7 +223,7 @@ export default function AdminDashboard() {
         setStats(response);
       } catch (error) {
         console.error("Failed to load dashboard stats:", error);
-        notification.error({ message: 'Unable to load dashboard stats.', placement: 'topRight' });
+        notificationApi.error({ title: 'Unable to load dashboard stats.', placement: 'topRight' });
       } finally {
         setLoading(false);
       }
@@ -240,7 +243,7 @@ export default function AdminDashboard() {
 
       } catch (error) {
         console.error("Failed to load transactions:", error);
-        notification.error({ message: 'Unable to load transactions.', placement: 'topRight' });
+        notificationApi.error({ title: 'Unable to load transactions.', placement: 'topRight' });
       }
     };
 
@@ -252,7 +255,7 @@ export default function AdminDashboard() {
 
       } catch (error) {
         console.error("Failed to load bookings:", error);
-        notification.error({ message: 'Unable to load bookings.', placement: 'topRight' });
+        notificationApi.error({ title: 'Unable to load bookings.', placement: 'topRight' });
       }
     }
     const fetchPopularPackages = async () => {
@@ -430,143 +433,207 @@ export default function AdminDashboard() {
 
 
   return (
-    <div className="admin-dashboard">
-      <h1 className="page-header">Dashboard</h1>
+    <>
+      {notificationContextHolder}
+      <div className="admin-dashboard">
 
-      <div className="dashboard-section">
-        <Row className="dashboard-stats-row" gutter={[16, 16]}>
-          <Col xs={24} sm={12} md={12} lg={6}>
-            <Card
-              className="dash-card" {...getStatCardNavigationProps("transactions")}>
-              <div className="dash-card-content-vertical">
-                <p>Total Transactions</p>
-                <div className="dash-text">
-                  <DollarCircleOutlined className="dash-icon" />
-                  <h2 className="dash-card-head">{loading ? "..." : stats.totalTransactions}</h2>
+
+        <h1 className="page-header">Dashboard</h1>
+
+        <div className="dashboard-section">
+          <Row className="dashboard-stats-row" gutter={[16, 16]}>
+            <Col xs={24} sm={12} md={12} lg={6}>
+              <Card
+                className="dash-card" {...getStatCardNavigationProps("transactions")}>
+                <div className="dash-card-content-vertical">
+                  <p>Total Transactions</p>
+                  <div className="dash-text">
+                    <DollarCircleOutlined className="dash-icon" />
+                    <h2 className="dash-card-head">{loading ? "..." : stats.totalTransactions}</h2>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </Col>
+              </Card>
+            </Col>
 
-          <Col xs={24} sm={12} md={12} lg={6}>
-            <Card className="dash-card" {...getStatCardNavigationProps("bookings")}>
-              <div className="dash-card-content-vertical">
-                <p>Total Bookings</p>
-                <div className="dash-text">
-                  <ShoppingCartOutlined className="dash-icon" />
-                  <h2 className="dash-card-head">{loading ? "..." : stats.totalBookings}</h2>
+            <Col xs={24} sm={12} md={12} lg={6}>
+              <Card className="dash-card" {...getStatCardNavigationProps("bookings")}>
+                <div className="dash-card-content-vertical">
+                  <p>Total Bookings</p>
+                  <div className="dash-text">
+                    <ShoppingCartOutlined className="dash-icon" />
+                    <h2 className="dash-card-head">{loading ? "..." : stats.totalBookings}</h2>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </Col>
+              </Card>
+            </Col>
 
-          <Col xs={24} sm={12} md={12} lg={6}>
-            <Card className="dash-card" {...getStatCardNavigationProps("users", !isEmployeeDashboard)}>
-              <div className="dash-card-content-vertical">
-                <p>Total Users</p>
-                <div className="dash-text">
-                  <UserOutlined className="dash-icon" />
-                  <h2 className="dash-card-head">{loading ? "..." : stats.totalUsers}</h2>
+            <Col xs={24} sm={12} md={12} lg={6}>
+              <Card className="dash-card" {...getStatCardNavigationProps("users", !isEmployeeDashboard)}>
+                <div className="dash-card-content-vertical">
+                  <p>Total Users</p>
+                  <div className="dash-text">
+                    <UserOutlined className="dash-icon" />
+                    <h2 className="dash-card-head">{loading ? "..." : stats.totalUsers}</h2>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </Col>
+              </Card>
+            </Col>
 
-          <Col xs={24} sm={12} md={12} lg={6}>
-            <Card className="dash-card" {...getStatCardNavigationProps("packages")}>
-              <div className="dash-card-content-vertical">
-                <p>Total Packages</p>
-                <div className="dash-text">
-                  <AppstoreOutlined className="dash-icon" />
-                  <h2 className="dash-card-head">{loading ? "..." : stats.totalPackages}</h2>
+            <Col xs={24} sm={12} md={12} lg={6}>
+              <Card className="dash-card" {...getStatCardNavigationProps("packages")}>
+                <div className="dash-card-content-vertical">
+                  <p>Total Packages</p>
+                  <div className="dash-text">
+                    <AppstoreOutlined className="dash-icon" />
+                    <h2 className="dash-card-head">{loading ? "..." : stats.totalPackages}</h2>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </Col>
-        </Row>
-      </div>
+              </Card>
+            </Col>
+          </Row>
+        </div>
 
-      <div className="dashboard-charts">
-        <Card className="dashboard-chart-card">
-          <div className="dashboard-chart-header">
-            <h2>Revenue Overview</h2>
-            <p>Monthly revenue for the year</p>
-          </div>
-
-          <div
-            className="dashboard-chart-body dashboard-revenue-chart is-tall"
-            ref={barRef}
-          >
-            {barWidth > 0 && (
-              <BarChart
-                xAxis={[
-                  {
-                    data: months,
-                    scaleType: "band"
-                  }
-                ]}
-                series={[
-                  {
-                    data: monthlyRevenue,
-                    color: themeColor,
-                    valueFormatter: (value) =>
-                      `₱${Number(value || 0).toLocaleString()}`
-                  }
-                ]}
-                width={Math.min(1200, barWidth)}
-                height={revenueChartHeight}
-              />
-            )}
-          </div>
-        </Card>
-
-        <div className="dashboard-chart-row">
+        <div className="dashboard-charts">
           <Card className="dashboard-chart-card">
             <div className="dashboard-chart-header">
-              <h2>Booking Types</h2>
-              <p>
-                Share by booking types (Domestic or International)
-              </p>
+              <h2>Revenue Overview</h2>
+              <p>Monthly revenue for the year</p>
             </div>
 
             <div
-              className="dashboard-chart-body dashboard-pie-chart"
-              ref={pieRef}
+              className="dashboard-chart-body dashboard-revenue-chart is-tall"
+              ref={barRef}
             >
-              {pieWidth > 0 && (
-                <PieChart
+              {barWidth > 0 && (
+                <BarChart
+                  xAxis={[
+                    {
+                      data: months,
+                      scaleType: "band"
+                    }
+                  ]}
                   series={[
                     {
-                      data: paymentSplit,
-                      innerRadius: bookingTypeInnerRadius,
-                      outerRadius: bookingTypeOuterRadius,
-                      paddingAngle: 2,
-                      cornerRadius: 4,
-                      highlightScope: {
-                        faded: "global",
-                        highlighted: "item"
-                      },
-                      faded: {
+                      data: monthlyRevenue,
+                      color: themeColor,
+                      valueFormatter: (value) =>
+                        `₱${Number(value || 0).toLocaleString()}`
+                    }
+                  ]}
+                  width={Math.min(1200, barWidth)}
+                  height={revenueChartHeight}
+                />
+              )}
+            </div>
+          </Card>
+
+          <div className="dashboard-chart-row">
+            <Card className="dashboard-chart-card">
+              <div className="dashboard-chart-header">
+                <h2>Booking Types</h2>
+                <p>
+                  Share by booking types (Domestic or International)
+                </p>
+              </div>
+
+              <div
+                className="dashboard-chart-body dashboard-pie-chart"
+                ref={pieRef}
+              >
+                {pieWidth > 0 && (
+                  <PieChart
+                    series={[
+                      {
+                        data: paymentSplit,
                         innerRadius: bookingTypeInnerRadius,
-                        additionalRadius: -4
+                        outerRadius: bookingTypeOuterRadius,
+                        paddingAngle: 2,
+                        cornerRadius: 4,
+                        highlightScope: {
+                          faded: "global",
+                          highlighted: "item"
+                        },
+                        faded: {
+                          innerRadius: bookingTypeInnerRadius,
+                          additionalRadius: -4
+                        }
                       }
+                    ]}
+                    colors={[
+                      themeColor,
+                      "#4b74b8",
+                      "#89a5d6"
+                    ]}
+                    width={Math.min(560, pieWidth)}
+                    height={standardChartHeight}
+                    slotProps={{
+                      legend: {
+                        direction: "row",
+                        position: {
+                          vertical: "bottom",
+                          horizontal: "middle"
+                        }
+                      }
+                    }}
+                  />
+                )}
+              </div>
+            </Card>
+
+            <Card className="dashboard-chart-card">
+              <div className="dashboard-chart-header">
+                <h2>Booking Trend</h2>
+                <p>Monthly booking volume</p>
+              </div>
+
+              <div className="dashboard-chart-body dashboard-line-chart">
+                <ChartContainer
+                  series={[
+                    {
+                      type: "line",
+                      data: bookingTrend,
+                      area: true,
+                      color: themeColor,
+                      showMark: false
                     }
                   ]}
-                  colors={[
-                    themeColor,
-                    "#4b74b8",
-                    "#89a5d6"
+                  xAxis={[
+                    {
+                      scaleType: "point",
+                      data: months
+                    }
                   ]}
-                  width={Math.min(560, pieWidth)}
-                  height={standardChartHeight}
+                >
+                  <AreaPlot />
+                  <LinePlot />
+                  <ChartsXAxis />
+                  <ChartsYAxis />
+                  <ChartsTooltip />
+                </ChartContainer>
+              </div>
+            </Card>
+          </div>
+        </div>
+
+
+
+
+
+        <div className="dashboard-chart-row" style={{ marginTop: 20 }}>
+          <Card className="dashboard-chart-card">
+            <div className="dashboard-chart-header">
+              <h2>Booking Status Breakdown</h2>
+              <p>Pending / Not Paid / Fully Paid / Cancelled</p>
+            </div>
+            <div className="dashboard-chart-body" style={{ minHeight: 260 }}>
+              {pieWidth > 0 && (
+                <PieChart
+                  series={[{ data: bookingStatusSeries, innerRadius: 40, outerRadius: 80, paddingAngle: 2 }]}
+                  colors={[themeColor, "#4b74b8", "#89a5d6", "#d9534f"]}
+                  width={Math.min(420, pieWidth)}
+                  height={260}
                   slotProps={{
-                    legend: {
-                      direction: "row",
-                      position: {
-                        vertical: "bottom",
-                        horizontal: "middle"
-                      }
-                    }
+                    legend: { direction: "row", position: { vertical: "bottom", horizontal: "middle" } }
                   }}
                 />
               )}
@@ -575,155 +642,48 @@ export default function AdminDashboard() {
 
           <Card className="dashboard-chart-card">
             <div className="dashboard-chart-header">
-              <h2>Booking Trend</h2>
-              <p>Monthly booking volume</p>
+              <h2>Booking Conversion Rate</h2>
+              <p>Completed bookings vs quotation requests</p>
             </div>
-
-            <div className="dashboard-chart-body dashboard-line-chart">
-              <ChartContainer
-                series={[
-                  {
-                    type: "line",
-                    data: bookingTrend,
-                    area: true,
-                    color: themeColor,
-                    showMark: false
-                  }
-                ]}
-                xAxis={[
-                  {
-                    scaleType: "point",
-                    data: months
-                  }
-                ]}
-              >
-                <AreaPlot />
-                <LinePlot />
-                <ChartsXAxis />
-                <ChartsYAxis />
-                <ChartsTooltip />
-              </ChartContainer>
+            <div className="dashboard-chart-body" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: 260 }}>
+              <h2 style={{ fontSize: 28, margin: 0 }}>{conversionRate.toFixed(2)}%</h2>
+              <p style={{ margin: '8px 0 0' }}>{completedBookingsCount} completed bookings</p>
+              <p style={{ margin: 0 }}>{totalQuotationRequests} quotation requests</p>
             </div>
           </Card>
         </div>
-      </div>
 
+        <div className="dashboard-section-packages-cards">
+          <h2>Top 3 Most Booked Packages</h2>
 
-
-
-
-      <div className="dashboard-chart-row" style={{ marginTop: 20 }}>
-        <Card className="dashboard-chart-card">
-          <div className="dashboard-chart-header">
-            <h2>Booking Status Breakdown</h2>
-            <p>Pending / Not Paid / Fully Paid / Cancelled</p>
-          </div>
-          <div className="dashboard-chart-body" style={{ minHeight: 260 }}>
-            {pieWidth > 0 && (
-              <PieChart
-                series={[{ data: bookingStatusSeries, innerRadius: 40, outerRadius: 80, paddingAngle: 2 }]}
-                colors={[themeColor, "#4b74b8", "#89a5d6", "#d9534f"]}
-                width={Math.min(420, pieWidth)}
-                height={260}
-                slotProps={{
-                  legend: { direction: "row", position: { vertical: "bottom", horizontal: "middle" } }
-                }}
-              />
-            )}
-          </div>
-        </Card>
-
-        <Card className="dashboard-chart-card">
-          <div className="dashboard-chart-header">
-            <h2>Booking Conversion Rate</h2>
-            <p>Completed bookings vs quotation requests</p>
-          </div>
-          <div className="dashboard-chart-body" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: 260 }}>
-            <h2 style={{ fontSize: 28, margin: 0 }}>{conversionRate.toFixed(2)}%</h2>
-            <p style={{ margin: '8px 0 0' }}>{completedBookingsCount} completed bookings</p>
-            <p style={{ margin: 0 }}>{totalQuotationRequests} quotation requests</p>
-          </div>
-        </Card>
-      </div>
-
-      <div className="dashboard-section-packages-cards">
-        <h2>Top 3 Most Booked Packages</h2>
-
-        {displayTopPackages && displayTopPackages.length > 0 ? (
-          <Row gutter={[16, 16]}>
-            {displayTopPackages.map((pkg, idx) => {
-              const imgs = pkg.packageImage || pkg.images || [];
-              const first = Array.isArray(imgs) ? imgs[0] : imgs;
-              const imageUrl = first && typeof first === 'string' ? first : (first && (first.url || first.path || first.src)) || null;
-
-              return (
-                <Col xs={24} sm={24} md={8} key={pkg.packageName + idx}>
-                  <Card
-                    className={`top-package-card ${imageUrl ? 'has-image' : ''}`}
-                    style={{
-                      height: 300,
-                      backgroundImage: imageUrl ? `linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.30)), url(${imageUrl})` : undefined,
-                      backgroundSize: imageUrl ? 'cover' : undefined,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-                      backgroundPosition: imageUrl ? 'center' : undefined,
-                      color: imageUrl ? '#ffffff' : undefined
-                    }}
-                  >
-                    <div className="top-package-content">
-                      <h3 className="top-package-card-name">
-                        {idx + 1}. {pkg.packageName}
-                      </h3>
-                      <p className="top-package-card-bookings">
-                        {pkg.count} bookings
-                      </p>
-                      <div className="top-package-card-number">#{idx + 1}</div>
-                    </div>
-                  </Card>
-                </Col>
-              );
-            })}
-          </Row>
-        ) : (
-          <Card
-            style={{
-              padding: '40px 20px',
-              textAlign: 'center',
-              backgroundColor: '#fafafa',
-              border: '1px dashed #d9d9d9',
-              borderRadius: '8px',
-              fontFamily: 'Montserrat'
-            }}
-          >
-            <AppstoreOutlined style={{ fontSize: '48px', color: '#bfbfbf', marginBottom: '16px' }} />
-            <p style={{ color: '#8c8c8c', fontSize: '14px', margin: 0, fontFamily: 'Montserrat' }}>No booking data available yet</p>
-            <p style={{ color: '#bfbfbf', fontSize: '12px', marginTop: '8px', fontFamily: 'Montserrat' }}>Packages will appear here once bookings are made</p>
-          </Card>
-        )}
-
-        <div style={{ marginTop: 24 }}>
-          <h2>Top 3 Most Booked Durations</h2>
-          {topDurationEntries.length > 0 ? (
+          {displayTopPackages && displayTopPackages.length > 0 ? (
             <Row gutter={[16, 16]}>
-              {topDurationEntries.map((entry, idx) => {
-                const durationNumber = Number(entry.label.split(' ')[0]);
-                const imageUrl = durationImageMap[durationNumber] || null;
+              {displayTopPackages.map((pkg, idx) => {
+                const imgs = pkg.packageImage || pkg.images || [];
+                const first = Array.isArray(imgs) ? imgs[0] : imgs;
+                const imageUrl = first && typeof first === 'string' ? first : (first && (first.url || first.path || first.src)) || null;
+
                 return (
-                  <Col xs={24} sm={12} md={8} key={entry.label}>
+                  <Col xs={24} sm={24} md={8} key={pkg.packageName + idx}>
                     <Card
+                      className={`top-package-card ${imageUrl ? 'has-image' : ''}`}
                       style={{
-                        height: 170,
+                        height: 300,
+                        backgroundImage: imageUrl ? `linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.30)), url(${imageUrl})` : undefined,
                         backgroundSize: imageUrl ? 'cover' : undefined,
-                        backgroundPosition: imageUrl ? 'center' : undefined,
                         boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-                        border: '2px solid #d9d9d9',
-                        borderRadius: 8,
+                        backgroundPosition: imageUrl ? 'center' : undefined,
                         color: imageUrl ? '#ffffff' : undefined
                       }}
                     >
-                      <div className="top-duration-content">
-                        <h3 className="top-duration-name">{entry.label}</h3>
-                        <p className="top-duration-count">{entry.count} bookings</p>
-                        <div className="top-duration-rank">#{idx + 1}</div>
+                      <div className="top-package-content">
+                        <h3 className="top-package-card-name">
+                          {idx + 1}. {pkg.packageName}
+                        </h3>
+                        <p className="top-package-card-bookings">
+                          {pkg.count} bookings
+                        </p>
+                        <div className="top-package-card-number">#{idx + 1}</div>
                       </div>
                     </Card>
                   </Col>
@@ -741,14 +701,62 @@ export default function AdminDashboard() {
                 fontFamily: 'Montserrat'
               }}
             >
-              <ShoppingCartOutlined style={{ fontSize: '48px', color: '#bfbfbf', marginBottom: '16px' }} />
-              <p style={{ color: '#8c8c8c', fontSize: '14px', margin: 0, fontFamily: 'Montserrat' }}>No duration data available yet</p>
-              <p style={{ color: '#bfbfbf', fontSize: '12px', marginTop: '8px', fontFamily: 'Montserrat' }}>Duration trends will appear here once bookings are made</p>
+              <AppstoreOutlined style={{ fontSize: '48px', color: '#bfbfbf', marginBottom: '16px' }} />
+              <p style={{ color: '#8c8c8c', fontSize: '14px', margin: 0, fontFamily: 'Montserrat' }}>No booking data available yet</p>
+              <p style={{ color: '#bfbfbf', fontSize: '12px', marginTop: '8px', fontFamily: 'Montserrat' }}>Packages will appear here once bookings are made</p>
             </Card>
           )}
-        </div>
-      </div>
 
-    </div>
+          <div style={{ marginTop: 24 }}>
+            <h2>Top 3 Most Booked Durations</h2>
+            {topDurationEntries.length > 0 ? (
+              <Row gutter={[16, 16]}>
+                {topDurationEntries.map((entry, idx) => {
+                  const durationNumber = Number(entry.label.split(' ')[0]);
+                  const imageUrl = durationImageMap[durationNumber] || null;
+                  return (
+                    <Col xs={24} sm={12} md={8} key={entry.label}>
+                      <Card
+                        style={{
+                          height: 170,
+                          backgroundSize: imageUrl ? 'cover' : undefined,
+                          backgroundPosition: imageUrl ? 'center' : undefined,
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                          border: '2px solid #d9d9d9',
+                          borderRadius: 8,
+                          color: imageUrl ? '#ffffff' : undefined
+                        }}
+                      >
+                        <div className="top-duration-content">
+                          <h3 className="top-duration-name">{entry.label}</h3>
+                          <p className="top-duration-count">{entry.count} bookings</p>
+                          <div className="top-duration-rank">#{idx + 1}</div>
+                        </div>
+                      </Card>
+                    </Col>
+                  );
+                })}
+              </Row>
+            ) : (
+              <Card
+                style={{
+                  padding: '40px 20px',
+                  textAlign: 'center',
+                  backgroundColor: '#fafafa',
+                  border: '1px dashed #d9d9d9',
+                  borderRadius: '8px',
+                  fontFamily: 'Montserrat'
+                }}
+              >
+                <ShoppingCartOutlined style={{ fontSize: '48px', color: '#bfbfbf', marginBottom: '16px' }} />
+                <p style={{ color: '#8c8c8c', fontSize: '14px', margin: 0, fontFamily: 'Montserrat' }}>No duration data available yet</p>
+                <p style={{ color: '#bfbfbf', fontSize: '12px', marginTop: '8px', fontFamily: 'Montserrat' }}>Duration trends will appear here once bookings are made</p>
+              </Card>
+            )}
+          </div>
+        </div>
+
+      </div>
+    </>
   );
 }

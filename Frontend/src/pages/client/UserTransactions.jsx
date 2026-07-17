@@ -15,6 +15,9 @@ export default function UserTransactions() {
     const [loading, setLoading] = useState(false)
     const { auth } = useContext(AuthContext)
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const [searchText, setSearchText] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [transactionDateFilter, setTransactionDateFilter] = useState(null);
@@ -32,8 +35,8 @@ export default function UserTransactions() {
             setLoading(true)
             try {
                 const response = await apiFetch.get('/transaction/user-transactions')
-                const transactions = response.map(t => ({
-                    key: t.id,
+                const transactions = response.map((t) => ({
+                    key: t._id || t.id || t.reference,
                     reference: t.reference,
                     invoiceNumber: t.invoiceNumber,
                     applicationType: t.applicationType || '--',
@@ -48,7 +51,7 @@ export default function UserTransactions() {
                 }));
                 setTransactions(transactions)
             } catch (error) {
-                notification.error({ message: 'Unable to load transactions', placement: 'topRight' })
+                notificationApi.error({ title: 'Unable to load transactions', placement: 'topRight' });
                 setTransactions([])
             } finally {
                 setLoading(false)
@@ -142,7 +145,7 @@ export default function UserTransactions() {
                             icon={<FileOutlined />}
                             onClick={() => {
                                 if (!record.proofImage) {
-                                    notification.warning({ message: 'No proof image available for this transaction.', placement: 'topRight' });
+                                    notificationApi.warning({ title: 'No proof image available for this transaction.', placement: 'topRight' });
                                     return;
                                 }
                                 setSelectedTransaction(record);
@@ -163,12 +166,12 @@ export default function UserTransactions() {
     const handleDownloadPDF = async () => {
         const element = receiptRef.current;
         if (!element) {
-            notification.error({ message: "Receipt content not found!", placement: 'topRight' });
+            notificationApi.error({ title: "Receipt content not found!", placement: 'topRight' });
             return;
         }
 
         try {
-            notification.open({ message: "Generating PDF...", key: "pdf", placement: 'topRight', duration: 0 });
+            notificationApi.open({ title: "Generating PDF...", key: "pdf", placement: 'topRight', duration: 0 });
 
             const images = Array.from(element.querySelectorAll("img"));
             await Promise.all(
@@ -288,10 +291,10 @@ export default function UserTransactions() {
 
             pdf.save(`Receipt-${selectedTransaction?.reference || 'download'}.pdf`);
 
-            notification.success({ message: "Downloaded successfully!", key: "pdf", placement: 'topRight' });
+            notificationApi.success({ title: "Downloaded successfully!", placement: 'topRight' });
         } catch (error) {
             console.error("PDF Generation Error:", error);
-            notification.error({ message: "Failed to generate PDF.", key: "pdf", placement: 'topRight' });
+            notificationApi.error({ title: "Failed to generate PDF.", placement: 'topRight' });
         }
     };
 
@@ -306,6 +309,8 @@ export default function UserTransactions() {
                 }
             }}
         >
+            {notificationContextHolder}
+
             <div className="user-transactions-page">
                 <div className="user-transactions-container">
                     <div className="user-transactions-header">
@@ -371,6 +376,7 @@ export default function UserTransactions() {
 
                     <div className="user-transactions-table">
                         <Table
+                            rowKey={(record) => record.key}
                             columns={columns}
                             dataSource={filteredData}
                             loading={loading}

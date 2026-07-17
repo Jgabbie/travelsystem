@@ -12,6 +12,9 @@ export default function UserBookings() {
     const [loading, setLoading] = useState(false)
     const [loadingCancel, setLoadingCancel] = useState(false)
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const [policyModalOpen, setPolicyModalOpen] = useState(false)
     const [cancelModalOpen, setCancelModalOpen] = useState(false)
     const [cancellationRequestedModalOpen, setCancellationRequestedModalOpen] = useState(false)
@@ -52,7 +55,7 @@ export default function UserBookings() {
 
                 setBookings(bookings)
             } catch (error) {
-                notification.error({ message: 'Unable to load bookings', placement: 'topRight' })
+                notificationApi.error({ title: 'Unable to load bookings', placement: 'topRight' })
                 setBookings([])
             } finally {
                 setLoading(false)
@@ -134,8 +137,8 @@ export default function UserBookings() {
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
-            notification.error({
-                message: 'Please select a valid image file.',
+            notificationApi.error({
+                title: 'Please select a valid image file.',
                 placement: 'topRight'
             });
 
@@ -144,8 +147,8 @@ export default function UserBookings() {
         }
 
         if (file.size > 2 * 1024 * 1024) {
-            notification.error({
-                message: 'Image must be 2MB or less.',
+            notificationApi.error({
+                title: 'Image must be 2MB or less.',
                 placement: 'topRight'
             });
 
@@ -168,8 +171,8 @@ export default function UserBookings() {
 
         // Validate before closing the modal or showing the loading screen
         if (!cancelTargetKey) {
-            notification.error({
-                message: 'Booking could not be identified',
+            notificationApi.error({
+                title: 'Booking could not be identified',
                 description: 'Please close the cancellation form and try again.',
                 placement: 'topRight'
             });
@@ -177,24 +180,24 @@ export default function UserBookings() {
         }
 
         if (!cancelReason) {
-            notification.warning({
-                message: 'Please select a cancellation reason',
+            notificationApi.warning({
+                title: 'Please select a cancellation reason',
                 placement: 'topRight'
             });
             return;
         }
 
         if (cancelReason === 'Other' && !cancelOtherReason.trim()) {
-            notification.warning({
-                message: 'Please provide a cancellation reason',
+            notificationApi.warning({
+                title: 'Please provide a cancellation reason',
                 placement: 'topRight'
             });
             return;
         }
 
         if (!cancelImages.length || !cancelImages[0]) {
-            notification.warning({
-                message: 'Please upload a supporting file',
+            notificationApi.warning({
+                title: 'Please upload a supporting file',
                 placement: 'topRight'
             });
             return;
@@ -256,8 +259,8 @@ export default function UserBookings() {
         } catch (error) {
             console.error('Cancellation request error:', error);
 
-            notification.error({
-                message: 'Unable to submit cancellation request',
+            notificationApi.error({
+                title: 'Unable to submit cancellation request',
                 description:
                     error?.response?.data?.message ||
                     error?.message ||
@@ -363,6 +366,7 @@ export default function UserBookings() {
                 }
             }}
         >
+            {notificationContextHolder}
             {loadingCancel ? (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
                     <Spin size="large" description="Cancelling booking..." />

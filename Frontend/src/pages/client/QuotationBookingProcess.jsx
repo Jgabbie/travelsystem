@@ -224,6 +224,9 @@ export default function QuotationBookingProcess() {
     const pdfStepRef = useRef(null);
     const allowHistoryExitRef = useRef(false);
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
     const [isGoBackModalOpen, setIsGoBackModalOpen] = useState(false);
     const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
@@ -686,12 +689,12 @@ export default function QuotationBookingProcess() {
                 const missingPhotos = photoFileLists.some(list => !list || list.length === 0);
 
                 if (missingPhotos) {
-                    notification.error({ message: "Please upload 2x2 photo for all travelers.", placement: 'topRight' });
+                    notificationApi.error({ title: "Please upload 2x2 photo for all travelers.", placement: 'topRight' });
                     return;
                 }
 
                 if (missingUploads) {
-                    notification.error({ message: `Please upload ${travelDocumentShortLabel} for all travelers.`, placement: 'topRight' });
+                    notificationApi.error({ title: `Please upload ${travelDocumentShortLabel} for all travelers.`, placement: 'topRight' });
                     return;
                 }
             }
@@ -799,10 +802,10 @@ export default function QuotationBookingProcess() {
                 const errorMessage = firstError.errors?.[0]
                     ? firstError.errors[0]
                     : 'Please complete all required fields before proceeding.'
-                notification.error({ message: errorMessage, placement: 'topRight' });
+                notificationApi.error({ title: errorMessage, placement: 'topRight' });
                 return;
             }
-            notification.error({ message: "Please complete all required fields before proceeding. Check the console for details.", placement: 'topRight' });
+            notificationApi.error({ title: "Please complete all required fields before proceeding. Check the console for details.", placement: 'topRight' });
         }
     };
 
@@ -829,13 +832,13 @@ export default function QuotationBookingProcess() {
             file.type === 'application/pdf'
 
         if (!isValidType) {
-            notification.error({ message: 'Only JPG, PNG, or PDF', placement: 'topRight' });
+            notificationApi.error({ title: 'Only JPG, PNG, or PDF', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
         const isValidSize = file.size / 1024 / 1024 < 5;
         if (!isValidSize) {
-            notification.error({ message: 'File must be smaller than 5MB', placement: 'topRight' });
+            notificationApi.error({ title: 'File must be smaller than 5MB', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
@@ -862,12 +865,12 @@ export default function QuotationBookingProcess() {
             setCurrentStep(previousStep);
             setIsGeneratingPdf(false);
 
-            notification.success({ message: "Registration details saved. Proceeding to payment...", placement: 'topRight' });
+            notificationApi.success({ title: "Registration details saved. Proceeding to payment...", placement: 'topRight' });
             navigate('/quotation-payment-process');
 
         } catch (error) {
             setIsGeneratingPdf(false);
-            notification.error({ message: "Please review the terms and conditions.", placement: 'topRight' });
+            notificationApi.error({ title: "Please review the terms and conditions.", placement: 'topRight' });
         }
     };
 
@@ -1011,6 +1014,7 @@ export default function QuotationBookingProcess() {
                 token: { colorPrimary: '#305797' }
             }}
         >
+            {notificationContextHolder}
             <div className='bookingprocess-container'>
 
                 <Space style={{ marginLeft: "auto" }}>
@@ -1345,7 +1349,7 @@ export default function QuotationBookingProcess() {
                                                     onBlur={() => {
                                                         const v = String(form.getFieldValue(['travelers', index, 'firstName']) || '').trim();
                                                         if (v.length < 2) {
-                                                            notification.error({ message: 'First name must be at least 2 characters', placement: 'topRight' });
+                                                            notificationApi.error({ title: 'First name must be at least 2 characters', placement: 'topRight' });
                                                         }
                                                     }}
                                                 />
@@ -1371,7 +1375,7 @@ export default function QuotationBookingProcess() {
                                                     onBlur={() => {
                                                         const v = String(form.getFieldValue(['travelers', index, 'lastName']) || '').trim();
                                                         if (v.length < 2) {
-                                                            notification.error({ message: 'Last name must be at least 2 characters', placement: 'topRight' });
+                                                            notificationApi.error({ title: 'Last name must be at least 2 characters', placement: 'topRight' });
                                                         }
                                                     }}
                                                 />
@@ -1415,7 +1419,7 @@ export default function QuotationBookingProcess() {
                                                                 : ageBounds.minAge === 3 && ageBounds.maxAge === 11
                                                                     ? '3-11'
                                                                     : '12+'
-                                                            notification.error({ message: `Please select a ${ageLabel} year old birthdate for ${travelerType.toLowerCase()}.`, placement: 'topRight' })
+                                                            notificationApi.error({ title: `Please select a ${ageLabel} year old birthdate for ${travelerType.toLowerCase()}.`, placement: 'topRight' })
                                                             return
                                                         }
 

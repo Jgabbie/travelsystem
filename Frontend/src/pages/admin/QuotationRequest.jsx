@@ -22,6 +22,9 @@ export default function QuotationRequest() {
     const { quotationId } = location.state || {};
     const id = quotationId;
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const [quotation, setQuotation] = useState(null);
     const [adminName, setAdminName] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -478,7 +481,7 @@ export default function QuotationRequest() {
     // handle file selection for upload
     const handleFileSelect = (file) => {
         if (file.type !== "application/pdf") {
-            notification.error({ message: "Only PDF files are allowed.", placement: "topRight" });
+            notificationApi.error({ title: "Only PDF files are allowed.", placement: "topRight" });
             return Upload.LIST_IGNORE;
         }
 
@@ -493,12 +496,12 @@ export default function QuotationRequest() {
     const handleSend = async () => {
         const isValid = validateForm();
         if (!isValid) {
-            notification.error({ message: "Please complete required fields.", placement: "topRight" });
+            notificationApi.error({ title: "Please complete required fields.", placement: "topRight" });
             return;
         }
 
         if (!selectedFile) {
-            notification.warning({ message: "Please select a PDF first.", placement: "topRight" });
+            notificationApi.warning({ title: "Please select a PDF first.", placement: "topRight" });
             return;
         }
 
@@ -542,7 +545,7 @@ export default function QuotationRequest() {
 
             await apiFetch.put(`/quotation/${id}/upload-travel-details`, { travelDetails });
 
-            notification.success({ message: `${selectedFile.name} uploaded successfully!`, placement: "topRight" });
+            notificationApi.success({ title: `${selectedFile.name} uploaded successfully!`, placement: "topRight" });
 
             setFormData({
                 roomType: '',
@@ -567,7 +570,7 @@ export default function QuotationRequest() {
             setPreviewURL(null);
         } catch (error) {
             console.error("Upload error:", error);
-            notification.error({ message: "Failed to upload PDF.", placement: "topRight" });
+            notificationApi.error({ title: "Failed to upload PDF.", placement: "topRight" });
         } finally {
             setUploading(false);
         }
@@ -654,10 +657,10 @@ export default function QuotationRequest() {
             await apiFetch.put(`/quotation/${id}/upload-travel-details`, { travelDetails });
 
             setIsQuotationSentModalOpen(true);
-            notification.success({ message: "Quotation has been sent successfully!", placement: "topRight" });
+            notificationApi.success({ title: "Quotation has been sent successfully!", placement: "topRight" });
         } catch (err) {
             console.error(err);
-            notification.error({ message: "Quotation did not send", placement: "topRight" });
+            notificationApi.error({ title: "Quotation did not send", placement: "topRight" });
         } finally {
             setUploading(false);
         }
@@ -670,7 +673,7 @@ export default function QuotationRequest() {
             const isValid = validateForm();
 
             if (!isValid) {
-                notification.error({ message: "Please complete required fields.", placement: "topRight" });
+                notificationApi.error({ title: "Please complete required fields.", placement: "topRight" });
                 return;
             }
         }
@@ -762,6 +765,9 @@ export default function QuotationRequest() {
                 }
             }}
         >
+            {notificationContextHolder}
+
+
             {loading || !quotation ? (
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80vh" }}>
                     <Spin description={"Loading quotation..."} size="large" />

@@ -11,6 +11,9 @@ export default function UserPreference() {
     const { checkAuth } = useAuth();
     const [moodOptions, setMoodOptions] = useState([]);
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const tourOptions = useMemo(
         () => [
             'Domestic',
@@ -67,7 +70,7 @@ export default function UserPreference() {
             await apiFetch.post('/preferences/save', selections, { withCredentials: true });
             await apiFetch.post('/user/login-once', {}, { withCredentials: true });
             await checkAuth();
-            notification.success({ message: 'Preferences saved', placement: 'topRight' });
+            notificationApi.success({ title: 'Preferences saved', placement: 'topRight' });
             console.log('Preferences saved:', selections);
             // Set flag in localStorage to show modal on homepage
             localStorage.setItem('showNextStepsModal', 'true');
@@ -76,7 +79,7 @@ export default function UserPreference() {
             navigate('/home');
         } catch (error) {
             const errorMsg = error?.data?.message || 'Unable to save preferences.';
-            notification.error({ message: errorMsg, placement: 'topRight' });
+            notificationApi.error({ title: 'Error Saving Preferences', placement: 'topRight' });
         } finally {
             setIsLoading(false);
         }
@@ -95,6 +98,7 @@ export default function UserPreference() {
                 }
             }}
         >
+            {notificationContextHolder}
             {isLoading && (
                 <Spin fullscreen size="large" className="app-loading-spin" style={{ zIndex: 2000 }} />
             )}

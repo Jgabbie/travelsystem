@@ -17,6 +17,9 @@ export default function UserQuotationRequest() {
     const id = quotationId;
     const { setQuotationBookingData } = useQuotationBooking();
 
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
     const navigate = useNavigate();
 
     const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
@@ -110,7 +113,7 @@ export default function UserQuotationRequest() {
 
             navigate("/quotation-booking-process");
         } catch (error) {
-            notification.error({ message: "Unable to accept quotation", placement: 'topRight' });
+            notificationApi.error({ title: "Unable to accept quotation", placement: 'topRight' });
         }
     };
 
@@ -118,7 +121,7 @@ export default function UserQuotationRequest() {
     //handle request revision
     const handleRevise = () => {
         if (notes === "" || notes.trim() === "" || notes.length > 50) {
-            notification.error({ message: "Please provide notes for revision.", placement: 'topRight' });
+            notificationApi.error({ title: "Please provide notes for revision.", placement: 'topRight' });
             return;
         }
         setActionLoading(true);
@@ -126,11 +129,11 @@ export default function UserQuotationRequest() {
             notes
         }).then(res => {
             setIsRevisionModalOpen(true);
-            notification.success({ message: "Revision requested successfully.", placement: 'topRight' });
+            notificationApi.success({ title: "Revision requested successfully.", placement: 'topRight' });
             setNotes("");
         }).catch(err => {
             console.error(err.data.error || err.message);
-            notification.error({ message: "Failed to request revision.", placement: 'topRight' });
+            notificationApi.error({ title: "Failed to request revision.", placement: 'topRight' });
         }).finally(() => {
             setActionLoading(false);
         });
@@ -158,7 +161,8 @@ export default function UserQuotationRequest() {
                 }
             }}
         >
-            <Spin spinning={loading || actionLoading} tip={loading ? "Loading quotation..." : "Processing..."} size="large">
+            {notificationContextHolder}
+            <Spin spinning={loading || actionLoading} description={loading ? "Loading quotation..." : "Processing..."} size="large">
                 {loading && !quotation ? (
                     <div style={{
                         display: "flex",
