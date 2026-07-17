@@ -525,57 +525,74 @@ export default function UserTransactions() {
                 title={`Proof of Payment - ${selectedTransaction?.reference || ""}`}
                 open={isProofModalOpen}
                 onCancel={() => setIsProofModalOpen(false)}
-                className="transaction-view-modal"
-                width={720}
-                centered={true}
-                footer={
-                    selectedTransaction && selectedTransaction.proofImage ? (
-                        <Space>
-                            <Button
-                                className='user-transactions-downloadproof-button'
-                                type="primary"
-                                style={{ marginTop: 8 }}
-                                onClick={async () => {
-                                    try {
-                                        const response = await fetch(selectedTransaction.proofImage, { mode: 'cors' });
-                                        const blob = await response.blob();
-                                        const url = window.URL.createObjectURL(blob);
-                                        const link = document.createElement('a');
-                                        link.href = url;
-                                        link.download = selectedTransaction.proofFileName || 'proof-of-payment';
-                                        document.body.appendChild(link);
-                                        link.click();
-                                        document.body.removeChild(link);
-                                        window.URL.revokeObjectURL(url);
-                                    } catch (err) {
-                                        window.open(selectedTransaction.proofImage, '_blank');
-                                    }
-                                }}
-                            >
-                                Download Image
-                            </Button>
-                        </Space>
-                    ) : (
-                        <Button onClick={() => setIsProofModalOpen(false)}>Close</Button>
-                    )
-                }
+                className="transaction-proof-modal"
+                width={520}
+                centered
+                footer={null}
             >
                 {selectedTransaction ? (
-                    <div className="receipt-container">
+                    <>
+                        <div className="transaction-proof-content">
+                            {selectedTransaction.proofImage ? (
+                                <div className="transaction-proof-preview">
+                                    <Image
+                                        src={selectedTransaction.proofImage}
+                                        alt={
+                                            selectedTransaction.proofFileName ||
+                                            "Proof of payment"
+                                        }
+                                        className="transaction-proof-image"
+                                    />
+                                </div>
+                            ) : (
+                                <p>No proof image available.</p>
+                            )}
+                        </div>
 
-                        {selectedTransaction.proofImage ? (
-                            <div className="upload-preview-box" style={{ maxHeight: 520 }}>
-                                <Image
-                                    src={selectedTransaction.proofImage}
-                                    alt={selectedTransaction.proofFileName || "Proof of payment"}
-                                    className="upload-preview-image"
-                                    style={{ width: "100%", height: "auto" }}
-                                />
-                            </div>
-                        ) : (
-                            <p>No proof image available.</p>
-                        )}
-                    </div>
+                        <Space className="transaction-proof-actions">
+                            {selectedTransaction.proofImage ? (
+                                <Button
+                                    className="user-transactions-downloadproof-button"
+                                    type="primary"
+                                    onClick={async () => {
+                                        try {
+                                            const response = await fetch(
+                                                selectedTransaction.proofImage,
+                                                { mode: "cors" }
+                                            );
+
+                                            const blob = await response.blob();
+                                            const url = window.URL.createObjectURL(blob);
+                                            const link = document.createElement("a");
+
+                                            const date = dayjs().format("YYYY-MM-DD");
+
+                                            link.href = url;
+                                            link.download =
+                                                selectedTransaction.proofFileName ||
+                                                `Proof_of_Payment_${selectedTransaction.reference}_${date}`;
+
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                            window.URL.revokeObjectURL(url);
+                                        } catch (err) {
+                                            window.open(
+                                                selectedTransaction.proofImage,
+                                                "_blank"
+                                            );
+                                        }
+                                    }}
+                                >
+                                    Download Image
+                                </Button>
+                            ) : (
+                                <Button onClick={() => setIsProofModalOpen(false)}>
+                                    Close
+                                </Button>
+                            )}
+                        </Space>
+                    </>
                 ) : (
                     <p>No transaction selected.</p>
                 )}
