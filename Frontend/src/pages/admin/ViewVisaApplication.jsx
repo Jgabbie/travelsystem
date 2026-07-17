@@ -1,13 +1,30 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, Switch, Modal, Checkbox, DatePicker, TimePicker, Input, InputNumber, notification } from "antd";
-import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled, PictureOutlined, EyeOutlined } from "@ant-design/icons";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { Descriptions, Tag, Steps, Button, Spin, Typography, Image, ConfigProvider, Switch, Modal, Checkbox, DatePicker, TimePicker, InputNumber, notification } from "antd";
+import { ArrowLeftOutlined, FilePdfOutlined, CheckCircleFilled, EyeOutlined } from "@ant-design/icons";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../../style/admin/viewvisaapplication.css"
 import apiFetch from "../../config/fetchConfig";
 import dayjs from "dayjs";
 import { normalizeVisaProcessSteps } from "../../utils/visaDeadlineUtils";
 
 const { Title } = Typography;
+
+const VISA_STATUS_COLORS = {
+    Pending: 'orange',
+    Approved: 'green',
+    Rejected: 'red',
+    'Application Submitted': 'blue',
+    'Application Approved': 'green',
+    'Payment Completed': 'green',
+    'Documents Uploaded': 'gold',
+    'Documents Approved': 'green',
+    'Documents Received': 'cyan',
+    'Documents Submitted': 'purple',
+    'Processing by Embassy': 'geekblue',
+    'Processing by Emabassy': 'geekblue',
+    'Embassy Approved': 'green',
+    'Passport Released': 'green',
+};
 
 const VISA_DEADLINE_STOP_STATUSES = new Set([
     "Documents Approved",
@@ -146,8 +163,6 @@ export default function ViewVisaApplication() {
     );
 
     const processStepEntries = useMemo(() => normalizeVisaProcessSteps(application?.processSteps), [application?.processSteps]);
-
-    const terminalStatuses = new Set(['processing by embassy', 'embassy approved', 'passport released']);
 
     const statusSetDate = application?.statusUpdatedAt
         ? dayjs(application.statusUpdatedAt)
@@ -621,9 +636,9 @@ export default function ViewVisaApplication() {
                                         )}
 
                                         {statusText && String(statusText).toLowerCase() === "application submitted" && (
-                                            <div className="viewvisaapplication-appointment-card">
+                                            <div className="viewvisaapplication-appointment-card" style={{ marginTop: 16, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
                                                 <h3 style={{ marginTop: 0 }}>Suggested Appointment Options</h3>
-                                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                                <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 20 }}>
                                                     {alternateSlots.map((slot, idx) => (
                                                         <div key={idx} className="viewvisaapplication-appointment-row" style={{ display: "flex", gap: 12, alignItems: "center" }}>
                                                             <span style={{ minWidth: 20 }}>{idx + 1}.</span>
@@ -675,11 +690,6 @@ export default function ViewVisaApplication() {
                                                         const label = getRequirementLabel(key, entryIndex);
 
                                                         const isPdf = (url) => typeof url === 'string' && url.toLowerCase().endsWith('.pdf');
-                                                        const getDownloadUrl = (originalUrl) => {
-                                                            if (!originalUrl.includes('cloudinary.com')) return originalUrl;
-                                                            return originalUrl.replace('/upload/', '/upload/fl_attachment/');
-                                                        };
-
                                                         const renderFilePreview = (url, identifier, documentKey) => {
                                                             const isPdfFile = isPdf(url);
 
@@ -810,7 +820,9 @@ export default function ViewVisaApplication() {
                                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                                                 <span>Status</span>
                                                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                                                    <Tag color="blue">{statusText || "N/A"}</Tag>
+                                                    <Tag color={VISA_STATUS_COLORS[statusText] || "default"}>
+                                                        {statusText || "N/A"}
+                                                    </Tag>
                                                     {penaltyStateLabel && (
                                                         <Tag color={application?.reachedSecondDeadline ? 'red' : 'volcano'}>{penaltyStateLabel}</Tag>
                                                     )}
@@ -843,10 +855,6 @@ export default function ViewVisaApplication() {
                                                         const stepDescription = step.description;
 
                                                         const stepIsCurrent = currentStep === idx;
-
-                                                        const isTerminalStep = terminalStatuses.has(
-                                                            String(stepTitle || '').toLowerCase()
-                                                        );
 
                                                         const stepInfo = getProcessStepInfoForTitle(application, stepTitle);
                                                         const stepSetDate = stepInfo?.setDate ? dayjs(stepInfo.setDate) : null;

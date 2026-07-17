@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, Switch, Checkbox, DatePicker, TimePicker, Modal, notification } from "antd";
-import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled, EyeOutlined } from "@ant-design/icons";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { Descriptions, Tag, Steps, Button, Spin, Typography, ConfigProvider, Switch, Checkbox, DatePicker, TimePicker, Modal, notification } from "antd";
+import { ArrowLeftOutlined, CheckCircleFilled, EyeOutlined } from "@ant-design/icons";
+import { useNavigate, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/viewpassportapplication.css";
 import dayjs from "dayjs";
@@ -21,6 +21,22 @@ const statusSteps = [
     { title: "DFA Approved", summary: "DFA Approved" },
     { title: "Passport Released", summary: "Passport Released" },
 ];
+
+const PASSPORT_STATUS_COLORS = {
+    Pending: "orange",
+    Approved: "green",
+    Rejected: "red",
+    "Application Submitted": "blue",
+    "Application Approved": "green",
+    "Payment Completed": "green",
+    "Documents Uploaded": "gold",
+    "Documents Approved": "green",
+    "Documents Received": "cyan",
+    "Documents Submitted": "purple",
+    "Processing by DFA": "geekblue",
+    "DFA Approved": "green",
+    "Passport Released": "green",
+};
 
 const PASSPORT_DEADLINE_STOP_STATUSES = new Set([
     "Documents Approved",
@@ -141,7 +157,7 @@ export default function ViewPassportApplication() {
 
         try {
             setIsUpdatingStatus(true);
-            const response = await apiFetch.put(`/passport/applications/${applicationId}/resubmit-documents`, {
+            await apiFetch.put(`/passport/applications/${applicationId}/resubmit-documents`, {
                 documentKey
             });
             await fetchApplication();
@@ -324,14 +340,6 @@ export default function ViewPassportApplication() {
     const renderReadOnlyFile = (url, label) => {
         // Check if the URL contains '.pdf' (case insensitive)
         const isPdf = typeof url === 'string' && url.toLowerCase().split(/[?#]/)[0].endsWith('.pdf');
-
-        const handleDownload = () => {
-            if (!url) return;
-            const downloadUrl = url.includes('cloudinary.com')
-                ? url.replace('/upload/', '/upload/fl_attachment/')
-                : url;
-            window.location.href = downloadUrl;
-        };
 
         if (!url) return <div style={{ fontSize: 13, color: '#6b7280' }}>No file</div>;
 
@@ -615,7 +623,7 @@ export default function ViewPassportApplication() {
                                         <div>
                                             <div style={{ minWidth: 280, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff', marginTop: 16 }}>
                                                 <h3 style={{ marginTop: 0 }}>Suggested Appointment Options</h3>
-                                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                                <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 20 }}>
                                                     {alternateSlots.map((slot, idx) => (
                                                         <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center" }}>
                                                             <span style={{ minWidth: 20 }}>{idx + 1}.</span>
@@ -750,7 +758,9 @@ export default function ViewPassportApplication() {
                                         <p className="app-detail-kicker" style={{ marginBottom: 6 }}>Overview</p>
                                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                                             <span>Status</span>
-                                            <Tag color="blue">{application?.status || "N/A"}</Tag>
+                                            <Tag color={PASSPORT_STATUS_COLORS[application?.status] || "default"}>
+                                                {application?.status || "N/A"}
+                                            </Tag>
                                             {penaltyStateLabel && (
                                                 <Tag color={application?.reachedSecondDeadline ? 'red' : 'volcano'}>{penaltyStateLabel}</Tag>
                                             )}
