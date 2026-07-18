@@ -224,8 +224,15 @@
 }
 
 .notification-panel-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
     font-weight: 700;
     color: #305797;
+}
+
+.notification-panel-button {
+    font-family: "Montserrat", sans-serif;
+    font-size: 10px;
 }
 
 .notification-list {
@@ -254,19 +261,23 @@
 }
 
 .notification-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 11px;
     font-weight: 600;
     color: #1f2937;
 }
 
 .notification-meta {
     text-align: justify;
-    font-size: 12px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 10px;
     color: #6b7280;
     margin-top: 2px;
 }
 
 .notification-time {
-    font-size: 11px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 10px;
     color: #94a3b8;
     margin-top: 6px;
 }

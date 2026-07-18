@@ -26,6 +26,7 @@
 
 /* Normal quotation preview */
 .mrc-form-page.mrc-quotation-page {
+    font-family: Arial, sans-serif !important;
     position: relative;
     box-sizing: border-box;
     padding-bottom: 65px !important;
@@ -36,6 +37,7 @@
 
 /* Footer */
 .mrc-quotation-footer {
+    font-family: Arial, sans-serif;
     position: absolute;
     left: 18px;
     right: 18px;
@@ -48,7 +50,6 @@
     margin: 0;
     border-top: 1px solid #d9d9d9;
     box-sizing: border-box;
-    font-family: "Montserrat", sans-serif;
     font-size: 10px;
     font-weight: 500;
     line-height: 1;
@@ -58,11 +59,13 @@
 }
 
 .mrc-quotation-footer-company {
+    font-family: Arial, sans-serif;
     display: block;
     text-align: left;
 }
 
 .mrc-quotation-footer-page {
+    font-family: Arial, sans-serif;
     display: block;
     margin-left: auto;
     text-align: right;
@@ -197,6 +200,7 @@
 
 .mrc-quotation-value input,
 .mrc-quotation-value .ant-input {
+    font-family: Arial, sans-serif !important;
     font-size: 10px;
     line-height: 1.2;
     padding: 0;
@@ -206,6 +210,7 @@
 }
 
 .mrc-quotation-value .mrc-currency-input {
+    font-family: Arial, sans-serif !important;
     padding: 0;
     border: 0;
     box-shadow: none;
@@ -214,6 +219,7 @@
 }
 
 .mrc-quotation-value .mrc-currency-input .ant-input {
+    font-family: Arial, sans-serif !important;
     padding: 0;
     height: 22px;
 }

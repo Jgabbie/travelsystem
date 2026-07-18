@@ -65,6 +65,7 @@
 }
 
 .user-invoice-value {
+    font-family: "Montserrat", sans-serif !important;
     font-size: 16px;
     font-weight: 600;
     color: #1f2937;
@@ -144,6 +145,7 @@
 }
 
 .user-invoice-amount {
+    font-family: "Montserrat", sans-serif;
     font-size: 20px;
     font-weight: 700;
     color: #0f172a;
@@ -164,6 +166,11 @@
     margin-bottom: 12px;
 }
 
+.user-invoice-travler-secondary {
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px !important;
+}
+
 .user-invoice-section-header {
     font-family: "Montserrat", sans-serif;
     font-size: 16px;
@@ -177,6 +184,14 @@
     flex-direction: row;
     flex-wrap: wrap;
     font-size: 13px;
+}
+
+.user-invoice-file-link {
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: underline;
+    color: #305797;
 }
 
 .display-invoice-wrapper {
@@ -224,6 +239,7 @@
 }
 
 .user-invoice-booking-form-stepper-text {
+    font-family: "Montserrat", sans-serif;
     font-size: 14px;
     color: #555;
     text-align: left;
@@ -398,7 +414,15 @@
     height: auto !important;
 }
 
+.steps-text {
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+}
 
+.user-invoice-card .ant-tag {
+    font-family: "Montserrat", sans-serif !important;
+    font-size: 12px !important;
+}
 
 
 @media (max-width: 1024px) {

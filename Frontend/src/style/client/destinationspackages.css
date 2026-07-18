@@ -55,7 +55,8 @@
 }
 
 .destinations-label {
-    font-size: 13px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 12px;
     font-weight: 600;
     color: #1f2a44;
 }
@@ -121,13 +122,15 @@
 }
 
 .filter-range-separator {
-    font-size: 12px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 10px;
     color: #305797;
     font-weight: 600;
 }
 
 .filter-hint {
-    font-size: 12px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 10px;
     color: #6b7280;
 }
 

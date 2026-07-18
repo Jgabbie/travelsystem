@@ -787,7 +787,7 @@
     background-color: #00bf63;
     color: #fff;
     border-radius: 16px;
-    width: 180px;
+    width: 200px;
     height: 40px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
@@ -935,6 +935,10 @@
     margin-bottom: 10px;
 }
 
+.booking-steps {
+    font-family: "Montserrat", sans-serif;
+    font-size: 12px !important;
+}
 
 @media (max-width: 1300px) {
     .booking-section .upload-card {

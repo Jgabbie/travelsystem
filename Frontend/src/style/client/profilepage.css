@@ -553,6 +553,23 @@
     flex-shrink: 0;
 }
 
+.preference-block h3 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+}
+
+.preference-block p {
+    font-family: "Montserrat", sans-serif;
+    font-size: 12px;
+    color: #596273;
+}
+
+.profile-booking-status.ant-tag {
+    font-family: "Montserrat", sans-serif !important;
+    font-size: 9px;
+    font-weight: 600;
+}
+
 @media (max-width: 1200px) {
     .profile-container {
         flex-direction: column;

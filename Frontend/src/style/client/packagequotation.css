@@ -44,9 +44,10 @@
 }
 
 .quotation-section-subtitle {
+    font-family: "Montserrat", sans-serif;
     margin: 0;
     color: #4e5b72;
-    font-size: 14px;
+    font-size: 13px;
     max-width: 600px;
 }
 
@@ -105,7 +106,9 @@
 
 .info-description {
     margin: 0;
-    font-size: 0.95rem;
+    font-family: "Montserrat", sans-serif;
+    text-align: justify;
+    font-size: 14px;
     color: #555;
     line-height: 1.5;
 }
@@ -170,6 +173,7 @@
 }
 
 .section-label {
+    font-family: "Montserrat", sans-serif;
     display: block;
     font-weight: 600;
     margin-bottom: 12px;
@@ -276,6 +280,7 @@
 }
 
 .quotation-field label {
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
     color: #1f2a44;

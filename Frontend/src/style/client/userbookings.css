@@ -104,7 +104,8 @@
 }
 
 .user-bookings-label {
-    font-size: 13px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 12px;
     font-weight: 600;
     color: #ffffff;
 }

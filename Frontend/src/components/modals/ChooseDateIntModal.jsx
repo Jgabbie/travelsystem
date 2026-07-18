@@ -108,7 +108,7 @@ export default function ChooseDateIntModal({
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <Switch checked={showAvailableOnly} onChange={(v) => setShowAvailableOnly(v)} />
-                            <span style={{ fontSize: 12 }}>Show available only</span>
+                            <span className='show-avail-text' >Show available only</span>
                         </div>
 
                         <Button type="primary" className="choose-date-clear" onClick={onClearFilters}>Clear</Button>

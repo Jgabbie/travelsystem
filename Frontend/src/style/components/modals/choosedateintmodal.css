@@ -48,6 +48,11 @@
     margin: 0;
 }
 
+.show-avail-text {
+    font-family: "Montserrat", sans-serif;
+    font-size: 11px;
+}
+
 /* budget cards */
 .budget-cards-container {
     display: grid;
@@ -181,6 +186,7 @@
 }
 
 .left-content-text {
+    font-family: "Montserrat", sans-serif;
     font-size: 12px;
 }
 

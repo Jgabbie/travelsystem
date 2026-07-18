@@ -66,10 +66,18 @@
 }
 
 .payment-section-subtitle {
+    font-family: "Montserrat", sans-serif;
     margin: 0;
     color: #4e5b72;
-    font-size: 14px;
+    font-size: 13px;
     max-width: 520px;
+}
+
+.payment-amount-to-pay {
+    color: #b91c1c;
+    font-family: "Montserrat", sans-serif;
+    font-size: 21px;
+    font-weight: 600;
 }
 
 

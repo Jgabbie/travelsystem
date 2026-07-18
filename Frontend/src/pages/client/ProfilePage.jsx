@@ -1315,7 +1315,7 @@ export default function ProfilePage() {
                                                             <p className="profile-booking-meta">{booking?.bookingDate || 'Recently'}</p>
                                                         </div>
 
-                                                        <Tag color={
+                                                        <Tag className='profile-booking-status' color={
                                                             booking?.status === 'Fully Paid' ? 'green' :
                                                                 booking?.status === 'Cancelled' ? 'blue' :
                                                                     booking?.status === 'Not Paid' ? 'red' :

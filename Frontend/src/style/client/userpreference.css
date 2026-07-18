@@ -141,6 +141,7 @@
 
 
 .preference-chip {
+    font-family: "Montserrat", sans-serif;
     border: 1px solid rgba(48, 87, 151, 0.2);
     background: #f7f9ff;
     color: var(--pref-ink);

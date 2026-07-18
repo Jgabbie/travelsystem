@@ -137,6 +137,7 @@ export default function Notifications() {
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                     <Button
+                        className='notification-panel-button'
                         size="small"
                         shape="round"
                         style={notificationActionButtonStyle}
@@ -145,6 +146,7 @@ export default function Notifications() {
                         Mark all as read
                     </Button>
                     <Button
+                        className='notification-panel-button'
                         size="small"
                         shape="round"
                         style={notificationSecondaryButtonStyle}

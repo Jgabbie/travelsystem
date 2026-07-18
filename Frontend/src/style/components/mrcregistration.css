@@ -669,6 +669,7 @@
 }
 
 .mrc-registration-header {
+    font-family: Arial, sans-serif;
     width: 100%;
     border: 1px solid #000;
     color: #000;
@@ -698,10 +699,12 @@
 }
 
 .mrc-registration-form {
+    font-family: Arial, sans-serif;
     width: 100%;
 }
 
 .mrc-registration-form .ant-form-item {
+    font-family: Arial, sans-serif !important;
     margin: 0;
 }
 
@@ -743,6 +746,7 @@
 }
 
 .mrc-registration-label {
+    font-family: Arial, sans-serif;
     display: block;
     margin-bottom: 2px;
     color: #000;
@@ -755,6 +759,7 @@
 .mrc-registration-page .mrc-registration-value-input.ant-input,
 .mrc-registration-page .mrc-registration-value-input.ant-input:hover,
 .mrc-registration-page .mrc-registration-value-input.ant-input:focus {
+    font-family: Arial, sans-serif;
     width: 100%;
     min-height: 20px;
     height: 20px;
@@ -815,6 +820,7 @@
 }
 
 .mrc-registration-passenger-table th {
+    font-family: Arial, sans-serif;
     height: 25px;
     background: #add8e6;
     font-weight: 700;
@@ -873,6 +879,7 @@
 .mrc-registration-page .mrc-registration-passenger-input.ant-input,
 .mrc-registration-page .mrc-registration-passenger-input.ant-input:hover,
 .mrc-registration-page .mrc-registration-passenger-input.ant-input:focus {
+    font-family: Arial, sans-serif;
     width: 100%;
     height: 23px;
     min-height: 23px;
@@ -905,6 +912,7 @@
 
 .mrc-registration-room-guide,
 .mrc-registration-declaration {
+    font-family: Arial, sans-serif;
     min-width: 0;
 }
 
@@ -927,6 +935,7 @@
 }
 
 .mrc-registration-room-note {
+    font-family: Arial, sans-serif;
     margin-top: 2px !important;
     margin-bottom: 10px !important;
     font-style: italic;
@@ -1031,6 +1040,7 @@
 .mrc-registration-page .mrc-registration-yes-no-input.ant-input,
 .mrc-registration-page .mrc-registration-yes-no-input.ant-input:hover,
 .mrc-registration-page .mrc-registration-yes-no-input.ant-input:focus {
+    font-family: Arial, sans-serif;
     flex: 0 0 38px;
     width: 38px;
     min-width: 38px;
@@ -1156,6 +1166,7 @@
 
 .mrc-registration-emergency-table th,
 .mrc-registration-emergency-table td {
+    font-family: Arial, sans-serif;
     border: 1px solid #000;
     padding: 4px;
     color: #000;
@@ -1178,6 +1189,7 @@
 .mrc-registration-emergency-table .ant-input,
 .mrc-registration-emergency-table .ant-input:hover,
 .mrc-registration-emergency-table .ant-input:focus {
+    font-family: Arial, sans-serif;
     height: 20px;
     min-height: 20px;
     padding: 0;

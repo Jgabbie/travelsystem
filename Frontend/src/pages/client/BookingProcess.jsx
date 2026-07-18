@@ -1985,6 +1985,7 @@ export default function BookingProcess() {
                         </div>
 
                         <Steps
+                            className='booking-steps'
                             current={currentStep}
                             items={[
                                 { title: 'Traveler Info' },

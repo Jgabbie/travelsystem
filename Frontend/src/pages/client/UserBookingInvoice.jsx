@@ -1770,7 +1770,7 @@ export default function UserBookingInvoice() {
                                             {/* Displaying balance here for clarity during checkout */}
                                             <div style={{ textAlign: 'right' }}>
                                                 <AntText type="secondary">Amount to Pay:</AntText>
-                                                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#b91c1c' }}>
+                                                <div className="payment-amount-to-pay">
                                                     {disablePayment ? "Pending Payments..." : amountToPayNow
                                                         ? formatCurrency.format(amountToPayNow)
                                                         : "Calculating..."}
@@ -1919,7 +1919,7 @@ export default function UserBookingInvoice() {
                                                         </h2>
 
                                                         <div style={{ marginBottom: 8 }}>
-                                                            <AntText type="secondary">Please confirm the traveler's details below. Update any incorrect information before finalizing.</AntText>
+                                                            <p className="user-invoice-travler-secondary" >Please confirm the traveler's details below. Update any incorrect information before finalizing.</p>
                                                         </div>
 
                                                         <div className="user-invoice-traveler-section">
@@ -1974,7 +1974,7 @@ export default function UserBookingInvoice() {
                                                                                         : traveler.passportFile}
                                                                                     target="_blank"
                                                                                     rel="noopener noreferrer"
-                                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                                    className="user-invoice-file-link"
                                                                                 >
                                                                                     View Passport
                                                                                 </a>
@@ -1994,7 +1994,7 @@ export default function UserBookingInvoice() {
                                                                                         : traveler.photoFile}
                                                                                     target="_blank"
                                                                                     rel="noopener noreferrer"
-                                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                                    className="user-invoice-file-link"
                                                                                 >
                                                                                     View Photo
                                                                                 </a>
@@ -2010,7 +2010,7 @@ export default function UserBookingInvoice() {
                                                                                 href={traveler.visaFile}
                                                                                 target="_blank"
                                                                                 rel="noopener noreferrer"
-                                                                                style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                                className="user-invoice-file-link"
                                                                             >
                                                                                 View Visa
                                                                             </a>
@@ -2200,6 +2200,7 @@ export default function UserBookingInvoice() {
                                             { title: 'General Package Disclaimer' },
                                             { title: 'Terms & Conditions' }
                                         ]}
+                                        className="steps-text"
                                         style={{ marginBottom: '30px' }}
                                     />
 

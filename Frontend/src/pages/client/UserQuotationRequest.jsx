@@ -193,7 +193,7 @@ export default function UserQuotationRequest() {
                                     <div>
                                         <h2>Booking Quotation Request</h2>
                                         <p>
-                                            Review your the details of your booking quotation request here. You can view the latest quotation PDF, check the revision history, and provide feedback for any necessary revisions.
+                                            Review the details of your booking quotation request here. You can view the latest quotation PDF, check the revision history, and provide feedback for any necessary revisions.
                                         </p>
                                     </div>
                                 </div>

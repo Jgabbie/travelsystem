@@ -64,3 +64,25 @@ body .ant-select.css-dev-only-do-not-override-1d8anct.ant-select-focused .ant-se
   border-color: #305797 !important;
   box-shadow: 0 0 0 2px rgba(48, 87, 151, 0.15) !important;
 }
+
+
+.ant-notification {
+  font-family: "Montserrat", sans-serif;
+}
+
+.ant-notification-notice {
+  font-family: "Montserrat", sans-serif;
+}
+
+.ant-notification-notice-message {
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 600;
+}
+
+.ant-notification-notice-description {
+  font-family: "Montserrat", sans-serif !important;
+}
+
+.ant-notification-notice-btn .ant-btn {
+  font-family: "Montserrat", sans-serif !important;
+}
