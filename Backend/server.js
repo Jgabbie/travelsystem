@@ -9,6 +9,8 @@ import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 
 
+import paymentMethodRoutes from "./routes/paymentmethodRoutes.js";
+import dfaLocationRoutes from "./routes/dfalocationRoutes.js";
 import packageTagRoutes from "./routes/packageTagRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -125,6 +127,8 @@ app.use("/api/upload", uploadRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/recommendations', recommendationsRoutes);
 app.use("/api/package-tags", packageTagRoutes);
+app.use("/api/dfa-locations", dfaLocationRoutes);
+app.use("/api/payment-methods", paymentMethodRoutes);
 
 //might remove later
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

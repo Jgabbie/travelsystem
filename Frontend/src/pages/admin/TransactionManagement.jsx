@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, Modal, ConfigProvider, Image, Spin, notification } from "antd";
-import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined, CheckCircleFilled, InboxOutlined, TransactionOutlined } from "@ant-design/icons";
+import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, Modal, ConfigProvider, Image, Spin, notification, Upload, Empty, message } from "antd";
+import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined, CheckCircleFilled, InboxOutlined, TransactionOutlined, UploadOutlined, SettingOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import jsPDF from 'jspdf';
@@ -69,6 +69,14 @@ export default function TransactionManagement() {
   const [showArchived, setShowArchived] = useState(false)
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
   const [isTransactionRestoredModalOpen, setIsTransactionRestoredModalOpen] = useState(false);
+  const [isManageMethodModalOpen, setIsManageMethodModalOpen] = useState(false);
+
+  const [manageMethodForm] = Form.useForm();
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [savingMethod, setSavingMethod] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [editingMethod, setEditingMethod] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
@@ -113,6 +121,25 @@ export default function TransactionManagement() {
         ],
   }));
 
+
+  const fetchPaymentMethods = async () => {
+    try {
+      const response = await apiFetch.get("/payment-methods/get-methods");
+
+      setPaymentMethods(response);
+    } catch (error) {
+
+      console.error(error);
+      console.error(error.response);
+
+      notificationApi.error({
+        title: "Unable to load payment methods.",
+        placement: "topRight",
+      });
+    }
+  };
+
+
   const fetchTransactions = async () => {
     setLoading(true);
     try {
@@ -148,6 +175,7 @@ export default function TransactionManagement() {
 
   useEffect(() => {
     fetchTransactions();
+    fetchPaymentMethods();
   }, []);
 
 
@@ -637,6 +665,146 @@ export default function TransactionManagement() {
     : selectedTransaction?.price || formatCurrency(selectedTransaction?.amountRaw);
 
 
+  const handleMethodImageChange = ({ file }) => {
+    if (!file) return;
+
+    setSelectedImage(file);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target.result);
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+
+  const savePaymentMethod = async () => {
+    try {
+      const values = await manageMethodForm.validateFields();
+
+      setSavingMethod(true);
+
+      const formData = new FormData();
+
+      formData.append("paymentType", values.paymentType);
+      formData.append("number", values.number);
+      formData.append("accountName", values.accountName);
+      formData.append("additionalInfo", values.additionalInfo || "");
+
+      if (selectedImage) {
+        formData.append("image", selectedImage);
+      }
+
+      if (editingMethod) {
+        await apiFetch.put(
+          `/payment-methods/${editingMethod._id}/update-methods`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        notificationApi.success({
+          title: "Payment method updated.",
+          placement: "topRight",
+        });
+
+      } else {
+
+        await apiFetch.post(
+          "/payment-methods/create-methods",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        notificationApi.success({
+          title: "Payment method added.",
+          placement: "topRight",
+        });
+
+      }
+
+      notificationApi.success({
+        title: "Payment method added successfully.",
+        placement: "topRight",
+      });
+
+      manageMethodForm.resetFields();
+      setSelectedImage(null);
+      setImagePreview("");
+      setIsManageMethodModalOpen(false);
+
+    } catch (err) {
+      console.error(err);
+
+      notificationApi.error({
+        title: "Unable to save payment method.",
+        placement: "topRight",
+      });
+    } finally {
+      setSavingMethod(false);
+    }
+  };
+
+
+  const editPaymentMethod = (method) => {
+    setEditingMethod(method);
+
+    manageMethodForm.setFieldsValue({
+      paymentType: method.paymentType,
+      number: method.number,
+      accountName: method.accountName,
+      additionalInfo: method.additionalInfo,
+    });
+
+    setImagePreview(method.image);
+
+    setIsManageMethodModalOpen(true);
+  };
+
+
+  const deletePaymentMethod = async (id) => {
+    try {
+
+      await apiFetch.delete(`/payment-methods/${id}/delete-methods`);
+
+      notificationApi.success({
+        title: "Payment method removed.",
+        placement: "topRight",
+      });
+
+      fetchPaymentMethods();
+
+    } catch (error) {
+
+      notificationApi.error({
+        title: "Unable to remove payment method.",
+        placement: "topRight",
+      });
+
+    }
+  };
+
+
+  const closeManageMethodModal = () => {
+    manageMethodForm.resetFields();
+
+    setSelectedImage(null);
+    setImagePreview("");
+    setEditingMethod(null);
+
+    setIsManageMethodModalOpen(false);
+  };
+
+
+
   return (
     <ConfigProvider
       theme={{
@@ -769,14 +937,24 @@ export default function TransactionManagement() {
 
               <div className="transaction-actions-buttons">
                 {!showArchived && (
-                  <Button
-                    className='transactionmanagement-add-button'
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => navigate(`${basePath}/transactions/add`)}
-                  >
-                    Add Transaction
-                  </Button>
+                  <>
+                    <Button
+                      className='transactionmanagement-add-button'
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={() => navigate(`${basePath}/transactions/add`)}
+                    >
+                      Add Transaction
+                    </Button>
+                    <Button
+                      className='transactionmanagement-add-button'
+                      type="primary"
+                      icon={<SettingOutlined />}
+                      onClick={() => setIsManageMethodModalOpen(true)}
+                    >
+                      Manage Method
+                    </Button>
+                  </>
                 )}
                 <Button
                   className='transactionmanagement-export-button'
@@ -1481,6 +1659,290 @@ export default function TransactionManagement() {
               </div>
 
             </div>
+          </Modal>
+
+
+
+
+
+
+          <Modal
+            title={editingMethod ? "Edit Payment Method" : "Manage Payment Methods"}
+            open={isManageMethodModalOpen}
+            onCancel={closeManageMethodModal}
+            footer={null}
+            centered
+            width={950}
+          >
+            <Row gutter={24}>
+              {/* LEFT SIDE - FORM */}
+              <Col span={10}>
+                <Form
+                  layout="vertical"
+                  form={manageMethodForm}
+                >
+                  <Form.Item
+                    label="Payment Type"
+                    name="paymentType"
+                    normalize={(value) => value?.trimStart()}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Payment type is required",
+                      },
+                      {
+                        max: 50,
+                        message: "Maximum of 50 characters.",
+                      },
+                      {
+                        pattern: /^[A-Za-z0-9&.\-\s]+$/,
+                        message: "Only letters, numbers, spaces, &, . and - are allowed.",
+                      },
+                    ]}
+                  >
+                    <Input
+                      placeholder="GCash, Maya, BDO, BPI..."
+                      maxLength={50}
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Account Number"
+                    name="number"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Account number is required",
+                      },
+                      {
+                        pattern: /^[0-9]+$/,
+                        message: "Only numbers are allowed.",
+                      },
+                      {
+                        max: 30,
+                        message: "Maximum of 30 digits.",
+                      },
+                    ]}
+                  >
+                    <Input
+                      maxLength={30}
+                      inputMode="numeric"
+                      onChange={(e) => {
+                        e.target.value = e.target.value.replace(/\D/g, "");
+                      }}
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Account Name"
+                    name="accountName"
+                    normalize={(value) => value?.trimStart()}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Account name is required",
+                      },
+                      {
+                        max: 100,
+                        message: "Maximum of 100 characters.",
+                      },
+                      {
+                        pattern: /^[A-Za-z0-9\s.,&'-]+$/,
+                        message: "Contains invalid characters.",
+                      },
+                    ]}
+                  >
+                    <Input
+                      maxLength={100}
+                      placeholder="Juan Dela Cruz"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Additional Information"
+                    name="additionalInfo"
+                    rules={[
+                      {
+                        max: 255,
+                        message: "Maximum of 255 characters.",
+                      },
+                    ]}
+                  >
+                    <Input.TextArea
+                      rows={3}
+                      placeholder="Optional"
+                      maxLength={255}
+                      showCount
+                    />
+                  </Form.Item>
+
+                  <Form.Item label="QR / Logo">
+                    <Upload
+                      beforeUpload={(file) => {
+                        const isImage = file.type.startsWith("image/");
+
+                        if (!isImage) {
+                          message.error("Only image files are allowed.");
+                          return Upload.LIST_IGNORE;
+                        }
+
+                        const isLt5M = file.size / 1024 / 1024 < 5;
+
+                        if (!isLt5M) {
+                          message.error("Image must be smaller than 5 MB.");
+                          return Upload.LIST_IGNORE;
+                        }
+
+                        return false;
+                      }}
+                      maxCount={1}
+                      accept="image/png,image/jpeg,image/jpg,image/webp"
+                      showUploadList={false}
+                      onChange={handleMethodImageChange}
+                    >
+                      <Button
+                        icon={<UploadOutlined />}
+                        style={{ width: "100%" }}
+                      >
+                        Upload Image (Optional)
+                      </Button>
+                    </Upload>
+
+                    {imagePreview && (
+                      <div
+                        style={{
+                          marginTop: 15,
+                          textAlign: "center",
+                        }}
+                      >
+                        <Image
+                          src={imagePreview}
+                          width={180}
+                        />
+                      </div>
+                    )}
+                  </Form.Item>
+
+                  <Space style={{ width: "100%", justifyContent: "flex-end" }}>
+                    <Button
+                      type="primary"
+                      onClick={closeManageMethodModal}
+                      className="transactionmanagement-modal-cancel-button"
+                    >
+                      Cancel
+                    </Button>
+
+                    <Button
+                      type="primary"
+                      loading={savingMethod}
+                      onClick={savePaymentMethod}
+                      className="transactionmanagement-modal-save-button"
+                    >
+                      {editingMethod ? "Update" : "Save"}
+                    </Button>
+                  </Space>
+                </Form>
+              </Col>
+
+              {/* RIGHT SIDE - LIST */}
+
+              <Col span={14}>
+                <div
+                  style={{
+                    maxHeight: 520,
+                    overflowY: "auto",
+                    paddingRight: 8,
+                  }}
+                >
+                  <h2>Payment Methods</h2>
+                  {paymentMethods.length === 0 ? (
+                    <Empty description="No payment methods yet." />
+                  ) : (
+                    paymentMethods.map((method) => (
+                      <Card
+                        key={method._id}
+                        size="small"
+                        style={{
+                          marginBottom: 12,
+                          borderRadius: 10,
+                        }}
+                      >
+                        <Row
+                          align="middle"
+                          gutter={12}
+                        >
+                          <Col span={5}>
+                            <Image
+                              src={method.image}
+                              width={70}
+                              height={70}
+                              style={{
+                                objectFit: "contain",
+                                borderRadius: 6,
+                              }}
+                            />
+                          </Col>
+
+                          <Col span={12}>
+                            <div
+                              style={{
+                                fontWeight: 600,
+                                fontSize: 15,
+                              }}
+                            >
+                              {method.paymentType}
+                            </div>
+
+                            <div>{method.number}</div>
+
+                            <div>{method.accountName}</div>
+
+                            {method.additionalInfo && (
+                              <div
+                                style={{
+                                  color: "#888",
+                                  marginTop: 4,
+                                  fontSize: 12,
+                                }}
+                              >
+                                {method.additionalInfo}
+                              </div>
+                            )}
+                          </Col>
+
+                          <Col
+                            span={7}
+                            style={{
+                              textAlign: "right",
+                            }}
+                          >
+                            <Space direction="vertical">
+                              <Button
+                                type="primary"
+                                block
+                                onClick={() => editPaymentMethod(method)}
+                                className="transactionmanagement-modal-save-button"
+                              >
+                                Edit
+                              </Button>
+
+                              <Button
+                                type="primary"
+                                block
+                                onClick={() => deletePaymentMethod(method._id)}
+                                className="transactionmanagement-modal-cancel-button"
+                              >
+                                Remove
+                              </Button>
+                            </Space>
+                          </Col>
+                        </Row>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </Col>
+            </Row>
           </Modal>
 
         </div >

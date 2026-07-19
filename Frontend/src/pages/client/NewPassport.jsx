@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Select, Button, ConfigProvider, DatePicker, TimePicker, Modal } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
@@ -8,52 +8,6 @@ import LoginModal from '../../components/modals/LoginModal'
 import '../../style/client/passport.css'
 import apiFetch from '../../config/fetchConfig'
 
-// list of DFA locations for the dropdown
-const dfaLocations = [
-    'DFA Aseana (Paranaque)',
-    'DFA NCR Central (Robinsons Galleria Ortigas)',
-    'DFA NCR East (SM Megamall)',
-    'DFA NCR North (Robinsons Novaliches)',
-    'DFA NCR Northeast (Ali Mall Cubao)',
-    'DFA NCR South (Festival Mall Muntinlupa)',
-    'DFA NCR West (SM City Manila)',
-    'DFA Angeles (SM City Clark)',
-    'DFA Antipolo (SM Center Antipolo)',
-    'DFA Baguio (SM City Baguio)',
-    'DFA Balanga (The Bunker Bataan)',
-    'DFA Calasiao (Robinsons Calasiao)',
-    'DFA Candon (Candon City Arena)',
-    'DFA Dasmarinas (SM City Dasmarinas)',
-    'DFA Ilocos Norte (Robinsons Place San Nicolas)',
-    'DFA La Union (CSI Mall San Fernando)',
-    'DFA Legazpi (Pacific Mall Legazpi)',
-    'DFA Lipa (Robinsons Lipa)',
-    'DFA Lucena (Pacific Mall Lucena)',
-    'DFA Malolos (Xentro Mall Malolos)',
-    'DFA Olongapo (SM City Olongapo Central)',
-    'DFA Pampanga (Robinsons Starmills San Fernando)',
-    'DFA Paniqui (WalterMart Paniqui)',
-    'DFA Puerto Princesa (Robinsons Place Palawan)',
-    'DFA San Pablo (SM City San Pablo)',
-    'DFA Santiago (Robinsons Place Santiago)',
-    'DFA Tuguegarao (Regional Government Center)',
-    'DFA Antique (CityMall Antique)',
-    'DFA Bacolod (Robinsons Place Bacolod)',
-    'DFA Cebu (Robinsons Galleria Cebu)',
-    'DFA Dumaguete (Robinsons Place Dumaguete)',
-    'DFA Iloilo (Robinsons Place Iloilo)',
-    'DFA Tacloban (Robinsons North Tacloban)',
-    'DFA Tagbilaran (Alturas Mall)',
-    'DFA Butuan (Robinsons Place Butuan)',
-    'DFA Cagayan de Oro (SM CDO Downtown Premier)',
-    'DFA Clarin (Clarin Town Center)',
-    'DFA Davao (SM City Davao)',
-    'DFA General Santos (Robinsons Place General Santos)',
-    'DFA Kidapawan',
-    'DFA Pagadian (C3 Mall)',
-    'DFA Tagum (Robinsons Place Tagum)',
-    'DFA Zamboanga (Go-Velayo Building)'
-];
 
 const steps = [
     {
@@ -113,6 +67,8 @@ export default function NewPassport() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [location, setLocation] = useState(undefined)
     const [locationSearch, setLocationSearch] = useState('');
+    const [dfaLocations, setDfaLocations] = useState([]);
+    const [loadingLocations, setLoadingLocations] = useState(false);
     const [preferredDate, setPreferredDate] = useState(null)
     const [preferredTime, setPreferredTime] = useState(null)
     const { auth } = useAuth()
@@ -125,6 +81,21 @@ export default function NewPassport() {
         preferredDate: '',
         preferredTime: ''
     });
+
+    // get DFA Locations
+    const getDFALocations = async () => {
+        try {
+            setLoadingLocations(true);
+
+            const response = await apiFetch.get("/dfa-locations/get-dfalocation");
+
+            setDfaLocations(response);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoadingLocations(false);
+        }
+    };
 
 
     // form submission handler
@@ -203,6 +174,9 @@ export default function NewPassport() {
         return hours;
     }
 
+    useEffect(() => {
+        getDFALocations();
+    }, []);
 
 
 
@@ -380,6 +354,7 @@ export default function NewPassport() {
                                                 placeholder="Choose a DFA site"
                                                 value={location}
                                                 searchValue={locationSearch}
+                                                loading={loadingLocations}
                                                 onSearch={(value) => {
                                                     setLocationSearch(value.slice(0, 30));
                                                 }}
@@ -397,8 +372,8 @@ export default function NewPassport() {
                                                         .includes(input.toLowerCase())
                                                 }
                                                 options={dfaLocations.map((item) => ({
-                                                    value: item,
-                                                    label: item,
+                                                    value: item.location,
+                                                    label: item.location,
                                                 }))}
                                             />
 

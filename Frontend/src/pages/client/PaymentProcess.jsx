@@ -28,6 +28,7 @@ export default function PaymentProcess() {
     const [searchParams] = useSearchParams();
     const cancelRequestedRef = useRef(false);
 
+
     const [notificationApi, notificationContextHolder] =
         notification.useNotification();
 
@@ -75,6 +76,25 @@ export default function PaymentProcess() {
         }
     });
 
+
+    const [paymentMethods, setPaymentMethods] = useState([]);
+
+    useEffect(() => {
+        const fetchPaymentMethods = async () => {
+            try {
+                const data = await apiFetch.get("/payment-methods/get-methods");
+                setPaymentMethods(data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchPaymentMethods();
+    }, []);
+
+
+    const methodsWithImage = paymentMethods.filter(method => method.image);
+    const methodsWithoutImage = paymentMethods.filter(method => !method.image);
 
     //browser back button
     useEffect(() => {
@@ -1029,79 +1049,72 @@ export default function PaymentProcess() {
                             </div>
 
 
-
                             {method === 'manual' && (
+                                <div className="bank-accounts-section">
+                                    <h4 className="section-subtitle">Available Payment Methods</h4>
 
-                                <div className="manual-transfer-details">
-                                    <div className="bank-accounts-section">
-                                        <h4 className="section-subtitle">Available Bank Accounts</h4>
+                                    {/* QR PAYMENT METHODS */}
+                                    {methodsWithImage.length > 0 && (
                                         <div className="bank-grid">
-                                            <div className="bank-item">
-                                                <span className="bank-name">GCASH</span>
-                                                <span className="account-number">09690554806</span>
-                                                <span className="account-holder">MA****R C.</span>
-                                                <img
-                                                    src="/images/QRCode_GCash_Maricar.jpg"
-                                                    alt="GCash QR Maricar"
-                                                    style={{ width: 300, height: 'auto', marginTop: 8 }}
-                                                />
-                                            </div>
-                                            <div className="bank-item">
-                                                <span className="bank-name">GCASH</span>
-                                                <span className="account-number">09688880405</span>
-                                                <span className="account-holder">RH*N C.</span>
-                                                <img
-                                                    src="/images/QRCode_GCash_Rhon.jpg"
-                                                    alt="GCash QR Rhon"
-                                                    style={{ width: 300, height: 'auto', marginTop: 8 }}
-                                                />
-                                            </div>
-                                        </div>
+                                            {methodsWithImage.map((method) => (
+                                                <div
+                                                    className="bank-item"
+                                                    key={method._id}
+                                                >
+                                                    <div className="bank-info">
+                                                        <span className="bank-name">{method.paymentType}</span>
+                                                        <span className="account-number">{method.number}</span>
+                                                        <span className="account-holder">{method.accountName}</span>
+                                                    </div>
 
-                                        <div className="bank-item" style={{ height: 120, marginBottom: 12 }}>
-                                            <span className="bank-name">BDO</span>
-                                            <span className="account-number">006838032692</span>
-                                            <span className="account-holder">M&RC TRAVEL AND TOURS</span>
-                                        </div>
-                                    </div>
+                                                    {method.additionalInfo && (
+                                                        <span className="additional-info">
+                                                            {method.additionalInfo}
+                                                        </span>
+                                                    )}
 
-                                    <div className="upload-section">
-                                        <h4 className="section-subtitle">Upload Proof of Payment</h4>
-                                        <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
-                                        <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
-
-                                        <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
-
-                                        <Upload
-                                            listType="picture"
-                                            maxCount={1}
-                                            fileList={fileList}
-                                            onChange={handleUploadChange}
-                                            beforeUpload={beforeUpload}
-                                            accept=".jpg,.jpeg,.png"
-                                        >
-                                            <Button icon={<UploadOutlined />} type='primary' className="payment-process-upload-button">
-                                                Select Receipt Image
-                                            </Button>
-                                        </Upload>
-
-                                        {fileList.length > 0 && (
-                                            <div className="upload-preview-container">
-                                                <h4 className="section-subtitle">Preview</h4>
-
-                                                <div className="upload-preview-box">
                                                     <img
-                                                        src={fileList[0].preview}
-                                                        alt="Receipt Preview"
-                                                        className="upload-preview-image"
+                                                        src={method.image}
+                                                        alt={`${method.paymentType} QR`}
+                                                        className="bank-qr-image"
                                                     />
                                                 </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                                            ))}
+                                        </div>
+                                    )}
 
+                                    {/* NON-QR PAYMENT METHODS */}
+                                    {methodsWithoutImage.length > 0 && (
+                                        <div className="bank-list">
+                                            {methodsWithoutImage.map((method) => (
+                                                <div
+                                                    className="bank-row"
+                                                    key={method._id}
+                                                >
+                                                    <div>
+                                                        <div className="bank-info">
+                                                            <div className="bank-name">{method.paymentType}</div>
+                                                            <div className="account-number">{method.number}</div>
+                                                            <div className="account-holder">{method.accountName}</div>
+                                                        </div>
+
+
+                                                        {method.additionalInfo && (
+                                                            <div className="additional-info">
+                                                                {method.additionalInfo}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             )}
+
+
+
+
                         </div>
 
                         <div className="payment-process-actions" style={{ paddingRight: 40, display: 'flex', justifyContent: 'flex-end', gap: 12, marginBottom: 20 }}>

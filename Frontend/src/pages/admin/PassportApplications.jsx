@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Space, ConfigProvider, Input, Select, DatePicker, Modal, notification } from "antd";
-import { FileTextOutlined, TeamOutlined, InboxOutlined, DeleteOutlined, CheckCircleFilled, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined } from "@ant-design/icons";
+import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Space, ConfigProvider, Input, Select, DatePicker, Modal, notification, Form, Popconfirm, message } from "antd";
+import { FileTextOutlined, TeamOutlined, InboxOutlined, DeleteOutlined, CheckCircleFilled, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined, EditOutlined, PlusOutlined, EnvironmentOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -46,6 +46,13 @@ export default function PassportApplications() {
     const [isPassportApplicationArchivedModalOpen, setIsPassportApplicationArchivedModalOpen] = useState(false);
     const [isPassportApplicationRestoredModalOpen, setIsPassportApplicationRestoredModalOpen] = useState(false);
     const [archivingApplication, setArchivingApplication] = useState(null);
+
+
+    const [isManageDFAModalOpen, setIsManageDFAModalOpen] = useState(false);
+    const [dfaLocations, setDfaLocations] = useState([]);
+    const [newLocation, setNewLocation] = useState("");
+    const [editingLocation, setEditingLocation] = useState(null);
+    const [editingValue, setEditingValue] = useState("");
 
     const [notificationApi, notificationContextHolder] =
         notification.useNotification();
@@ -405,6 +412,82 @@ export default function PassportApplications() {
     ];
 
 
+    const getDFALocations = async () => {
+        try {
+            const response = await apiFetch.get("/dfa-locations/get-dfalocation");
+            setDfaLocations(response);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const addDFALocation = async () => {
+        if (!newLocation.trim()) return;
+
+        if (!newLocation.trim()) {
+            message.error("Location is required.");
+            return;
+        }
+
+        if (newLocation.trim().length < 3) {
+            message.error("Location must be at least 3 characters long.");
+            return;
+        }
+
+        try {
+            await apiFetch.post("/dfa-locations/create-dfalocation", {
+                location: newLocation
+            });
+
+            setNewLocation("");
+            getDFALocations();
+
+            notificationApi.success({
+                title: "DFA location added."
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const updateDFALocation = async () => {
+        if (!editingLocation) return;
+
+        try {
+            await apiFetch.put(`/dfa-locations/${editingLocation}/update-dfalocation`, {
+                location: editingValue
+            });
+
+            setEditingLocation(null);
+            setEditingValue("");
+
+            getDFALocations();
+
+            notificationApi.success({
+                title: "DFA location updated."
+            });
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const deleteDFALocation = async (id) => {
+        try {
+            await apiFetch.delete(`/dfa-locations/${id}/delete-dfalocation`);
+
+            getDFALocations();
+
+            notificationApi.success({
+                title: "DFA location deleted."
+            });
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+
 
 
     return (
@@ -515,6 +598,17 @@ export default function PassportApplications() {
                         </div>
 
                         <div className="passportapplications-actions-buttons">
+                            <Button
+                                className='passportapplications-export'
+                                type="primary"
+                                icon={<EnvironmentOutlined />}
+                                onClick={() => {
+                                    getDFALocations();
+                                    setIsManageDFAModalOpen(true);
+                                }}
+                            >
+                                Manage DFA
+                            </Button>
                             <Button
                                 className='passportapplications-export'
                                 type="primary"
@@ -718,6 +812,137 @@ export default function PassportApplications() {
                     </div>
 
                 </div>
+            </Modal>
+
+
+            <Modal
+                open={isManageDFAModalOpen}
+                title="Manage DFA Locations"
+                footer={null}
+                width={700}
+                onCancel={() => {
+                    setIsManageDFAModalOpen(false);
+                    setEditingLocation(null);
+                }}
+            >
+
+                <Space.Compact style={{ width: "100%", marginBottom: 20 }}>
+                    <Input
+                        placeholder="New DFA Location"
+                        value={newLocation}
+                        maxLength={100}
+                        onChange={(e) => {
+                            let value = e.target.value;
+
+                            value = value.replace(/^\s+/, "");
+
+                            value = value.replace(/\s{2,}/g, " ");
+
+                            value = value.replace(/[^A-Za-z0-9\s.,()&'/-]/g, "");
+
+                            setNewLocation(value);
+                        }}
+                    />
+
+                    <Button
+                        icon={<PlusOutlined />}
+                        type="primary"
+                        onClick={addDFALocation}
+                    >
+                        Add
+                    </Button>
+                </Space.Compact>
+
+                <Table
+                    rowKey="_id"
+                    pagination={false}
+                    dataSource={dfaLocations}
+                    scroll={{ y: 320 }}
+                    columns={[
+                        {
+                            title: "Location",
+                            render: (_, record) => {
+
+                                if (editingLocation === record._id) {
+                                    return (
+                                        <Input
+                                            value={editingValue}
+                                            onChange={(e) =>
+                                                setEditingValue(e.target.value)
+                                            }
+                                        />
+                                    );
+                                }
+
+                                return record.location;
+                            }
+                        },
+                        {
+                            title: "Actions",
+                            width: 220,
+                            render: (_, record) => {
+
+                                if (editingLocation === record._id) {
+                                    return (
+                                        <Space>
+                                            <Button
+                                                type="primary"
+                                                onClick={updateDFALocation}
+                                                className="passportapplications-modal-save-button"
+                                            >
+                                                Save
+                                            </Button>
+
+                                            <Button
+                                                type="primary"
+                                                onClick={() => {
+                                                    setEditingLocation(null);
+                                                }}
+                                                className="passportapplications-modal-cancel-button"
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </Space>
+                                    );
+                                }
+
+                                return (
+                                    <Space>
+
+                                        <Button
+                                            type="primary"
+                                            icon={<EditOutlined />}
+                                            onClick={() => {
+                                                setEditingLocation(record._id);
+                                                setEditingValue(record.location);
+                                            }}
+                                            className="passportapplications-modal-save-button"
+                                        >
+                                            Edit
+                                        </Button>
+
+                                        <Popconfirm
+                                            title="Delete this location?"
+                                            onConfirm={() =>
+                                                deleteDFALocation(record._id)
+                                            }
+                                        >
+                                            <Button
+                                                type="primary"
+                                                icon={<DeleteOutlined />}
+                                                className="passportapplications-modal-cancel-button"
+                                            >
+                                                Delete
+                                            </Button>
+                                        </Popconfirm>
+
+                                    </Space>
+                                );
+                            }
+                        }
+                    ]}
+                />
+
             </Modal>
 
 

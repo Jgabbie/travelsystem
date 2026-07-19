@@ -205,6 +205,19 @@
   box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.transactionmanagement-modal-save-button {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 16px;
+  width: 85px;
+  height: 35px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
 
 .transactionmanagement-accept-button {
   font-family: "Montserrat", sans-serif;
@@ -258,6 +271,19 @@
   box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.transactionmanagement-modal-cancel-button {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #992A46;
+  color: #fff;
+  border-radius: 16px;
+  width: 110px;
+  height: 35px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
 .transactionmanagement-archive-button:hover,
 .transactionmanagement-export-button:hover,
 .transactionmanagement-add-button:hover,
@@ -265,7 +291,8 @@
 .transactionmanagement-edit-button:hover,
 .transactionmanagement-viewproof-button:hover,
 .transactionmanagement-download-button:hover,
-.transactionmanagement-save-button:hover {
+.transactionmanagement-save-button:hover,
+.transactionmanagement-modal-save-button:hover {
   background-color: #244575 !important;
   color: #fff !important;
 }
@@ -277,6 +304,7 @@
 
 .transactionmanagement-remove-button:hover,
 .transactionmanagement-cancel-button:hover,
+.transactionmanagement-modal-cancel-button:hover,
 .transactionmanagement-reject-button:hover {
   background-color: #7D2239 !important;
   color: #fff !important;

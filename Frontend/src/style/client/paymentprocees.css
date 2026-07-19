@@ -421,6 +421,10 @@
     margin-top: 8px;
 }
 
+.bank-accounts-section {
+    margin-top: 24px;
+}
+
 .section-subtitle {
     font-size: 14px;
     font-weight: 700;
@@ -430,18 +434,23 @@
 
 .bank-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 24px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
 }
 
 .bank-item {
-    background: white;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    display: flex;
-    flex-direction: column;
+    border: 1px solid #d9d9d9;
+    border-radius: 10px;
+    padding: 18px;
+}
+
+.bank-qr-image {
+    display: block;
+    margin: 16px auto 0;
+    width: 260px;
+    max-width: 100%;
+    height: auto;
 }
 
 .bank-item-noqr {
@@ -454,6 +463,18 @@
     text-align: center;
 }
 
+.bank-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.bank-row {
+    border: 1px solid #d9d9d9;
+    border-radius: 10px;
+    padding: 18px;
+}
+
 /* Center images inside bank-item while keeping text left-aligned */
 .bank-item img {
     align-self: center;
@@ -464,6 +485,13 @@
 
 .bank-item div {
     align-items: center;
+}
+
+.bank-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
 }
 
 .bank-name {
@@ -483,6 +511,9 @@
     color: #64748b;
     text-transform: uppercase;
 }
+
+
+
 
 .upload-section {
     border-top: 1px solid #e2e8f0;
