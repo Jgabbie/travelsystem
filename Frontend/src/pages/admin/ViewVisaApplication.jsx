@@ -116,7 +116,7 @@ export default function ViewVisaApplication() {
         } finally {
             setLoading(false);
         }
-    }, [applicationItem, navigate]);
+    }, [applicationItem, navigate, notificationApi]);
 
     useEffect(() => {
         fetchApplicationAndService();

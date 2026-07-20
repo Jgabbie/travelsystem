@@ -38,7 +38,7 @@ export default function PackagePage() {
 
 
     //modal states
-    const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false)
+    const [, setIsWishlistModalOpen] = useState(false)
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [isArrangementModalOpen, setIsArrangementModalOpen] = useState(false)
@@ -74,7 +74,7 @@ export default function PackagePage() {
         comment: ''
     });
     const [hasValidBooking, setHasValidBooking] = useState(false);
-    const [bookingCheckLoading, setBookingCheckLoading] = useState(false);
+    const [, setBookingCheckLoading] = useState(false);
     const reviewFormRef = useRef(null);
 
 

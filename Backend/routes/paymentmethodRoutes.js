@@ -5,13 +5,14 @@ import {
     getMethods,
     updateMethod,
     deleteMethod,
-} from "../controllers/paymentMethodController.js";
+} from "../controllers/paymentmethodController.js";
+
+import { upload } from "../middleware/uploadFile.js";
+
 
 const router = express.Router();
 
-const upload = multer({
-    dest: "uploads/payment-methods",
-});
+
 
 router.get("/get-methods", getMethods);
 

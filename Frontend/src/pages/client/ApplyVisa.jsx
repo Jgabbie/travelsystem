@@ -92,17 +92,16 @@ export default function ApplyVisa() {
 
 
     //get the requirements, reminders, additional requirements, and steps for the selected service
-    const requirements = selectedService?.visaRequirements || []
     const reminders = selectedService?.visaReminders || []
     const additionalRequirements = selectedService?.visaAdditionalRequirements || []
     const steps = selectedService?.visaProcessSteps || []
 
 
     //filter the requirements into required and optional lists
-    const requiredRequirements = useMemo(
-        () => requirements.filter((item) => item.isReq === 'Required'),
-        [requirements]
-    )
+    const requiredRequirements = useMemo(() => {
+        const requirements = selectedService?.visaRequirements || [];
+        return requirements.filter(item => item.isReq === 'Required');
+    }, [selectedService]);
 
 
     //handle opening external links in a new tab with proper security
@@ -114,14 +113,19 @@ export default function ApplyVisa() {
 
 
     //check if there are any additional requirements to display
-    const hasAdditionalRequirements = useMemo(
-        () => additionalRequirements.some((group) =>
-            group.customer?.trim?.() || (group.requirements || []).some((req) =>
-                req.requirement?.trim?.() || req.description?.trim?.() || req.isReq
+    const hasAdditionalRequirements = useMemo(() => {
+        const additionalRequirements =
+            selectedService?.visaAdditionalRequirements || [];
+
+        return additionalRequirements.some(group =>
+            group.customer?.trim?.() ||
+            (group.requirements || []).some(req =>
+                req.requirement?.trim?.() ||
+                req.description?.trim?.() ||
+                req.isReq
             )
-        ),
-        [additionalRequirements]
-    )
+        );
+    }, [selectedService]);
 
 
     //submit the visa application request to the backend

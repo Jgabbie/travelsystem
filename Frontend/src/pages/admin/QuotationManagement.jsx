@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, Modal, ConfigProvider, DatePicker, Tabs, notification } from "antd";
+import React, { useEffect, useState, useCallback } from "react";
+import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, Modal, ConfigProvider, DatePicker, notification } from "antd";
 import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, FilePdfOutlined, CheckCircleFilled, InboxOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom'
 import jsPDF from 'jspdf';
@@ -67,7 +67,7 @@ export default function QuotationManagement() {
 
 
     //fetch quotations
-    const fetchQuotations = async () => {
+    const fetchQuotations = useCallback(async () => {
         setLoading(true);
         try {
             const response = await apiFetch.get("/quotation/all-quotations")
@@ -88,11 +88,11 @@ export default function QuotationManagement() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchQuotations();
-    }, []);
+    }, [fetchQuotations]);
 
 
     //fetch archived quotations function

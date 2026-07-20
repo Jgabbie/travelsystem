@@ -24,7 +24,7 @@ export default function UserTransactions() {
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [isProofModalOpen, setIsProofModalOpen] = useState(false);
-    const [selectedProofImage, setSelectedProofImage] = useState(null);
+    const [, setSelectedProofImage] = useState(null);
     const receiptWatermarkText = selectedTransaction?.status === 'Successful' ? 'PAID' : 'NOT PAID';
     const receiptWatermarkClass = selectedTransaction?.status === 'Successful' ? 'receipt-watermark--paid' : 'receipt-watermark--unpaid';
 
@@ -59,7 +59,7 @@ export default function UserTransactions() {
         }
 
         fetchTransactions()
-    }, [])
+    }, [notificationApi])
 
 
     //filter transactions based on search text, status, and date

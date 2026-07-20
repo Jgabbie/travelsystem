@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback, useMemo } from 'react';
 import '../../style/components/mrcregistration.css';
 import '../../style/components/mrcquotation.css';
 
@@ -13,8 +13,15 @@ export default function QuotationFormIntineraries({
     pdfMode = false
 }) {
 
-    const inclusions = quotationData.inclusions || [];
-    const exclusions = quotationData.exclusions || [];
+    const inclusions = useMemo(
+        () => quotationData.inclusions ?? [],
+        [quotationData.inclusions]
+    );
+
+    const exclusions = useMemo(
+        () => quotationData.exclusions ?? [],
+        [quotationData.exclusions]
+    );
 
     const buildItineraryObject = (items) => {
         return (items || []).reduce((acc, entry, idx) => {
@@ -60,8 +67,8 @@ export default function QuotationFormIntineraries({
         return item.activity || item.optionalActivity || item.item || '';
     };
 
-    const normalizeList = (items) =>
-        (items || []).map((item) => getItemText(item)).filter((text) => text.trim());
+    const normalizeList = useCallback((items) =>
+        (items || []).map((item) => getItemText(item)).filter((text) => text.trim()), []);
 
     useEffect(() => {
         if (!setFormData) return;
@@ -87,7 +94,7 @@ export default function QuotationFormIntineraries({
 
             return next;
         });
-    }, [setFormData, inclusions, exclusions, editableItinerary]);
+    }, [setFormData, inclusions, exclusions, editableItinerary, normalizeList]);
 
     useEffect(() => {
         if (!setFormData) return;

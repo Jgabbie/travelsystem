@@ -10,8 +10,8 @@ import SignupModal from '../../components/modals/SignupModal'
 
 export default function PassAndVisaService() {
     const [search, setSearch] = useState('')
-    const [visaType, setVisaType] = useState('All')
-    const [processing, setProcessing] = useState('All')
+    const [visaType] = useState('All')
+    const [processing] = useState('All')
     const [services, setServices] = useState([])
     const [loginModalVisible, setLoginModalVisible] = useState(false)
     const [signupModalVisible, setSignupModalVisible] = useState(false)

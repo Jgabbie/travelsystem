@@ -1,14 +1,49 @@
 
 import PaymentMethod from '../models/paymentmethods.js';
+import cloudinary from "../config/cloudinary.js";
+import streamifier from "streamifier";
+
+
+const uploadBufferToCloudinary = (file, folder) =>
+    new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            {
+                folder,
+                resource_type: "image",
+            },
+            (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            }
+        );
+
+        streamifier.createReadStream(file.buffer).pipe(stream);
+    });
+
 
 const createMethod = async (req, res) => {
+
+
+
     try {
+
+        let image = "";
+
+        if (req.file) {
+            const result = await uploadBufferToCloudinary(
+                req.file,
+                "payment-methods"
+            );
+
+            image = result.secure_url;
+        }
+
         const method = await PaymentMethod.create({
             paymentType: req.body.paymentType,
             number: req.body.number,
             accountName: req.body.accountName,
             additionalInfo: req.body.additionalInfo,
-            image: req.file?.path || "",
+            image
         });
 
         res.status(201).json(method);
@@ -42,7 +77,12 @@ const updateMethod = async (req, res) => {
         };
 
         if (req.file) {
-            updateData.image = req.file.path;
+            const result = await uploadBufferToCloudinary(
+                req.file,
+                "payment-methods"
+            );
+
+            updateData.image = result.secure_url;
         }
 
         const method = await PaymentMethod.findByIdAndUpdate(

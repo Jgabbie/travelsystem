@@ -70,7 +70,7 @@ export default function UserQuotationRequest() {
 
         }
         fetchQuotationDetails();
-    }, []);
+    }, [id]);
 
 
     //handle accept quotation

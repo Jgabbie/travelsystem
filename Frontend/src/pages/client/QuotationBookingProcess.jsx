@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { Button, notification, Upload, Form, Steps, ConfigProvider, Modal, Input, Select, DatePicker, Space } from 'antd'
 import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -188,34 +188,6 @@ const normalizeTravelDate = (value) => {
             : start.format('YYYY-MM-DD'),
     };
 };
-
-
-// Format the travel date for display
-const formatTravelDate = (value) => {
-    const normalized = normalizeTravelDate(value);
-
-    if (normalized) {
-        const start = dayjs(normalized.startDate);
-        const end = dayjs(normalized.endDate);
-
-        if (start.isValid() && end.isValid()) {
-            if (start.isSame(end, 'day')) {
-                return start.format('MMM D, YYYY');
-            }
-
-            return `${start.format('MMM D, YYYY')} - ${end.format(
-                'MMM D, YYYY'
-            )}`;
-        }
-    }
-
-    if (typeof value === 'string' && value.trim()) {
-        return value.trim();
-    }
-
-    return 'N/A';
-};
-
 
 export default function QuotationBookingProcess() {
     const [form] = Form.useForm();
@@ -491,12 +463,15 @@ export default function QuotationBookingProcess() {
 
 
 
-    //room options
-    const groupRoomOptions = [
-        { value: 'TWIN', label: 'TWIN' },
-        { value: 'DOUBLE', label: 'DOUBLE' },
-        { value: 'TRIPLE', label: 'TRIPLE' }
-    ]
+    //room options for solo and group bookings
+    const groupRoomOptions = useMemo(
+        () => [
+            { value: "TWIN", label: "TWIN" },
+            { value: "DOUBLE", label: "DOUBLE" },
+            { value: "TRIPLE", label: "TRIPLE" },
+        ],
+        []
+    );
 
 
     //if solo booking, only allow single rooms. if group booking, allow twin, double, and triple rooms. if mixed or unspecified, allow all room types
@@ -557,7 +532,7 @@ export default function QuotationBookingProcess() {
 
     //state for current step in booking process and PDF generation status for controlling the multi-step form and handling PDF generation state
     const [currentStep, setCurrentStep] = useState(0);
-    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const [, setIsGeneratingPdf] = useState(false);
 
 
     //reset file upload states when traveler count changes to ensure correct number of file inputs and previews for each traveler based on updated traveler count, and to clear out any files or previews that may no longer be relevant after a change in traveler count
@@ -645,7 +620,7 @@ export default function QuotationBookingProcess() {
 
         form.setFieldsValue({ travelers: nextTravelers })
         setQuotationBookingData(prev => ({ ...prev, travelers: nextTravelers }))
-    }, [bookingType, form, setQuotationBookingData])
+    }, [bookingType, form, setQuotationBookingData, groupRoomOptions])
 
 
     //if child or infant traveler type are present, force N/A
@@ -1231,7 +1206,7 @@ export default function QuotationBookingProcess() {
                                                             key={`${day.key}-image-${index}`}
                                                             className='itinerary-day-image'
                                                             src={src}
-                                                            alt={`${day.label} image ${index + 1}`}
+                                                            alt={`${day.label} ${index + 1}`}
                                                         />
                                                     ))}
                                                 </div>

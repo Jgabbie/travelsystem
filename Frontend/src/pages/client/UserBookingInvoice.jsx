@@ -107,7 +107,10 @@ export default function UserBookingInvoice() {
     const initialBooking = location.state?.booking || null;
     const [booking, setBooking] = useState(initialBooking);
     const [transactions, setTransactions] = useState([]);
-    const bookingDetails = booking?.bookingDetails || {};
+    const bookingDetails = useMemo(
+        () => booking?.bookingDetails ?? {},
+        [booking]
+    );
     const [method, setMethod] = useState(null);
     const [invoiceNumber, setInvoiceNumber] = useState("");
     const [fileList, setFileList] = useState([]);
@@ -232,7 +235,7 @@ export default function UserBookingInvoice() {
         };
 
         fetchAllData();
-    }, [reference]);
+    }, [reference, notificationApi]);
 
 
     //payment status computation
@@ -310,12 +313,28 @@ export default function UserBookingInvoice() {
 
 
     //documents
-    const travelersWithDocs = bookingDetails?.travelers?.length
-        ? bookingDetails.travelers
-        : booking?.travelers || []
-    const passportFiles = booking.passportFiles || [];
-    const photoFiles = booking.photoFiles || [];
-    const visaFiles = booking.visaFiles || [];
+    const travelersWithDocs = useMemo(
+        () =>
+            bookingDetails?.travelers?.length
+                ? bookingDetails.travelers
+                : booking?.travelers ?? [],
+        [bookingDetails, booking]
+    );
+
+    const passportFiles = useMemo(
+        () => booking?.passportFiles ?? [],
+        [booking]
+    );
+
+    const photoFiles = useMemo(
+        () => booking?.photoFiles ?? [],
+        [booking]
+    );
+
+    const visaFiles = useMemo(
+        () => booking?.visaFiles ?? [],
+        [booking]
+    );
     const resubmissionTravelerIndexes = useMemo(() => {
         const normalizedIndexes = new Set();
 
@@ -353,7 +372,6 @@ export default function UserBookingInvoice() {
         travelersWithDocs,
         passportFiles,
         photoFiles,
-        visaFiles
     ]);
 
 
@@ -881,7 +899,7 @@ export default function UserBookingInvoice() {
     const [currentUnpaidInstallment, setCurrentUnpaidInstallment] = useState(null);
     const paymentFrequency = bookingDetails?.paymentDetails?.frequency || "Monthly";
 
-    const invoice = {
+    const invoice = useMemo(() => ({
         company: {
             name: "M&RC Travel and Tours",
             address: "2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1",
@@ -905,17 +923,52 @@ export default function UserBookingInvoice() {
         },
         items: [
             travelerCountAdult
-                ? { date: issueDate, activity: 'Adult', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: bookingType === "Solo Booking" ? totalPrice : adultRate }
+                ? {
+                    date: issueDate,
+                    activity: "Adult",
+                    description: packageName || "Tour Package",
+                    qty: travelerCountAdult,
+                    rate: bookingType === "Solo Booking"
+                        ? totalPrice
+                        : adultRate
+                }
                 : null,
             travelerCountChild
-                ? { date: issueDate, activity: 'Child', description: packageName || 'Tour Package', qty: travelerCountChild, rate: childRate }
+                ? {
+                    date: issueDate,
+                    activity: "Child",
+                    description: packageName || "Tour Package",
+                    qty: travelerCountChild,
+                    rate: childRate
+                }
                 : null,
             travelerCountInfant
-                ? { date: issueDate, activity: 'Infant', description: packageName || 'Tour Package', qty: travelerCountInfant, rate: infantRate }
-                : null,
+                ? {
+                    date: issueDate,
+                    activity: "Infant",
+                    description: packageName || "Tour Package",
+                    qty: travelerCountInfant,
+                    rate: infantRate
+                }
+                : null
         ].filter(Boolean),
-        notes: 'Thank you for booking with M&RC Travel and Tours. Safe travels!'
-    };
+        notes: "Thank you for booking with M&RC Travel and Tours. Safe travels!"
+    }), [
+        invoiceNumber,
+        issueDate,
+        customerName,
+        customerPhone,
+        packageName,
+        travelDate,
+        travelerCountAdult,
+        travelerCountChild,
+        travelerCountInfant,
+        bookingType,
+        totalPrice,
+        adultRate,
+        childRate,
+        infantRate
+    ]);
 
     const installmentData = useMemo(() => {
         return runInstallmentLogic(invoice, bookingDetails, paidAmount, issueDate);
@@ -1904,6 +1957,37 @@ export default function UserBookingInvoice() {
                                                     ))}
                                                 </div>
                                             )}
+
+                                            <div style={{ marginTop: 24 }}>
+                                                <h4 className="section-subtitle">Upload Proof of Payment</h4>
+
+                                                <Upload
+                                                    accept=".jpg,.jpeg,.png"
+                                                    beforeUpload={beforeUpload}
+                                                    fileList={fileList}
+                                                    onChange={handleUploadChange}
+                                                    maxCount={1}
+                                                    listType="picture"
+                                                >
+                                                    <Button
+                                                        type="primary"
+                                                        className="user-invoice-checkout-button"
+                                                        icon={<UploadOutlined />}
+                                                    >
+                                                        Upload Payment Proof
+                                                    </Button>
+                                                </Upload>
+
+                                                <p
+                                                    style={{
+                                                        marginTop: 8,
+                                                        fontSize: 12,
+                                                        color: "#666"
+                                                    }}
+                                                >
+                                                    Accepted formats: JPG, JPEG, PNG (Max 2MB)
+                                                </p>
+                                            </div>
                                         </div>
                                     )}
 

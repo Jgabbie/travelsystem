@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, Spin, Upload, Button, ConfigProvider, Tag, Input, Modal, notification } from "antd";
 import { UploadOutlined, SendOutlined, ArrowLeftOutlined, ArrowRightOutlined, CheckCircleFilled } from "@ant-design/icons";
@@ -103,7 +103,7 @@ export default function QuotationRequest() {
 
 
     //format travel dates
-    const formatTravelDates = (value) => {
+    const formatTravelDates = useCallback((value) => {
         if (!value) return 'N/A';
 
         if (Array.isArray(value)) {
@@ -122,7 +122,7 @@ export default function QuotationRequest() {
         }
 
         return formatDateValue(value);
-    };
+    }, []);
 
 
     //format travelers
@@ -144,7 +144,7 @@ export default function QuotationRequest() {
 
 
     //parse traveler counts
-    const parseTravelerCounts = (value) => {
+    const parseTravelerCounts = useCallback((value) => {
         if (!value) return { adult: 0, child: 0, infant: 0, total: 0 };
 
         if (typeof value === 'number') {
@@ -174,11 +174,11 @@ export default function QuotationRequest() {
         const infant = infantMatch ? Number(infantMatch[1]) : 0;
 
         return { adult, child, infant, total: adult + child + infant };
-    };
+    }, []);
 
 
     //calculate total price function
-    const calculateTotalPrice = (data) => {
+    const calculateTotalPrice = useCallback((data) => {
         const totalRate = parseFloat(data.totalRate) || 0;
         const totalChildRate = parseFloat(data.totalChildRate) || 0;
         const totalInfantRate = parseFloat(data.totalInfantRate) || 0;
@@ -187,8 +187,7 @@ export default function QuotationRequest() {
         return (totalRate * counts.adult)
             + (totalChildRate * counts.child)
             + (totalInfantRate * counts.infant);
-    };
-
+    }, [parseTravelerCounts]);
 
     //normalize bullet points
     const normalizeBullets = (value) => {
@@ -301,7 +300,7 @@ export default function QuotationRequest() {
 
             return next;
         });
-    }, [quotation, travelDates, hotel, airline, inclusions, exclusions, itinerary, itineraryNotes]);
+    }, [quotation, travelDates, hotel, airline, inclusions, exclusions, itinerary, itineraryNotes, travelers, formatTravelDates]);
 
 
     //computed value
@@ -311,7 +310,7 @@ export default function QuotationRequest() {
         if (computedValue && formData.totalPrice !== computedValue) {
             setFormData((prev) => ({ ...prev, totalPrice: computedValue }));
         }
-    }, [formData.totalRate, formData.totalChildRate, formData.totalInfantRate, formData.travelers]);
+    }, [formData.totalRate, formData.totalChildRate, formData.totalInfantRate, formData.travelers, calculateTotalPrice, formData]);
 
     const [editableItinerary, setEditableItinerary] = useState(
         Object.entries(quotationData.itinerary || {}).map(([dayKey, activities], index) => ({

@@ -29,7 +29,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const [timer, setTimer] = useState(0)
     const [errorOTP, setErrorOTP] = useState("")
     const [getOTP, setOTP] = useState("")
-    const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false)
+    const [, setIsVerifiedModalOpen] = useState(false)
 
 
     //start timer 60 seconds for OTP

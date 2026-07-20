@@ -9,7 +9,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
 
     const navigate = useNavigate();
 
-    const [email, setEmail] = useState("")
+    const [, setEmail] = useState("")
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -100,7 +100,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
             if (!/[A-Z]/.test(value)) return "Password must contain at least one uppercase letter.";
             if (!/[a-z]/.test(value)) return "Password must contain at least one lowercase letter.";
             if (!/[0-9]/.test(value)) return "Password must contain at least one number.";
-            if (!/[!@#$%^&*(),.?\":{}|<>]/.test(value)) return "Password must contain at least one special character.";
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return "Password must contain at least one special character.";
 
         }
         if (field === "confirmPassword") {
@@ -384,8 +384,11 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                 <div className="signup-input-group-modal">
                                     <label className='signup-labels-modal'>Username <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input status={hasFieldError(error.username) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("username", e.target.value)} autoComplete='off' onKeyDown={(e) => {
-                                        if (!/^[A-Za-z0-9]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
-                                            e.preventDefault()
+                                        if (
+                                            !/^[A-Za-z0-9]+$/.test(e.key) ||
+                                            e.key === " "
+                                        ) {
+                                            e.preventDefault();
                                         }
                                     }} value={values.username} type="text" id="username" className='signup-input-fields-modal' name="username" required />
                                 </div>
@@ -515,12 +518,12 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                         }}
                                     >
                                         <p className='signup-terms-text-modal'>I agree to the</p>
-                                        <a
+                                        <Button
                                             className='signup-terms-link-modal'
                                             onClick={() => setIsTermsModalOpen(true)}
                                         >
                                             Terms and Conditions
-                                        </a>
+                                        </Button>
 
                                         <span style={{ color: "#ff0000" }}> *</span>
                                     </Checkbox>

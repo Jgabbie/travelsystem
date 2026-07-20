@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { notification, Spin, ConfigProvider, Modal } from 'antd';
-import { CompassOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
+import { notification, Spin, ConfigProvider } from 'antd';
 import apiFetch from '../../../config/fetchConfig';
 import { useAuth } from '../../../hooks/useAuth';
 import '../../../style/client/userpreference.css';
@@ -45,8 +44,6 @@ export default function UserPreference() {
         pace: []
     });
 
-    const [showNextStepsModal, setShowNextStepsModal] = useState(false);
-
     const toggleSelection = (key, value, limit) => {
         setSelections((prev) => {
             const current = prev[key];
@@ -78,16 +75,10 @@ export default function UserPreference() {
             // Redirect to home page
             navigate('/home');
         } catch (error) {
-            const errorMsg = error?.data?.message || 'Unable to save preferences.';
             notificationApi.error({ title: 'Error Saving Preferences', placement: 'topRight' });
         } finally {
             setIsLoading(false);
         }
-    };
-
-    const handleModalOption = (path) => {
-        setShowNextStepsModal(false);
-        navigate(path);
     };
 
     return (

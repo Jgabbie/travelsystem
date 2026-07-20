@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Input, Button, notification, Spin, Card, Space, ConfigProvider } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined, CheckCircleFilled } from '@ant-design/icons';
 import '../../style/client/profilepage.css'
@@ -98,16 +98,8 @@ export default function AdminProfile() {
     }
 
 
-    //fetch user data, recent actions, and pending approvals on component mount
-    useEffect(() => {
-        fetchUserData()
-        fetchRecentActions()
-        fetchPendingApprovals()
-    }, [])
-
-
     //fetch user data
-    const fetchUserData = async () => {
+    const fetchUserData = useCallback(async () => {
         try {
             setLoading(true)
             const data = await apiFetch.get('/user/data', {
@@ -138,7 +130,7 @@ export default function AdminProfile() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [notificationApi])
 
 
     //fetch recent actions function
@@ -201,6 +193,13 @@ export default function AdminProfile() {
             setPendingApprovals([])
         }
     }
+
+    //fetch user data, recent actions, and pending approvals on component mount
+    useEffect(() => {
+        fetchUserData()
+        fetchRecentActions()
+        fetchPendingApprovals()
+    }, [fetchUserData])
 
 
     //handle edit, cancel, image change, and save functions

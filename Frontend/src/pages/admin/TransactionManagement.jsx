@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, Modal, ConfigProvider, Image, Spin, notification, Upload, Empty, message } from "antd";
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined, CheckCircleFilled, InboxOutlined, TransactionOutlined, UploadOutlined, SettingOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -122,7 +122,7 @@ export default function TransactionManagement() {
   }));
 
 
-  const fetchPaymentMethods = async () => {
+  const fetchPaymentMethods = useCallback(async () => {
     try {
       const response = await apiFetch.get("/payment-methods/get-methods");
 
@@ -137,10 +137,10 @@ export default function TransactionManagement() {
         placement: "topRight",
       });
     }
-  };
+  }, [notificationApi]);
 
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
       const response = await apiFetch.get("/transaction/all-transactions");
@@ -155,7 +155,7 @@ export default function TransactionManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [notificationApi]);
 
 
   //fetch archived transactions function
@@ -176,7 +176,7 @@ export default function TransactionManagement() {
   useEffect(() => {
     fetchTransactions();
     fetchPaymentMethods();
-  }, []);
+  }, [fetchTransactions, fetchPaymentMethods]);
 
 
   //filter functions
@@ -495,9 +495,6 @@ export default function TransactionManagement() {
       }
 
       const values = await editForm.validateFields();
-
-      // package, date, price and method removed from modal — preserve existing values
-      const existingMethodRaw = editingTransaction?.methodRaw || editingTransaction?.method || undefined;
 
       const payload = {
         status: values.status,

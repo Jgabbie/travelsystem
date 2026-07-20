@@ -1076,6 +1076,37 @@ export default function QuotationsPaymentProcess() {
                                             ))}
                                         </div>
                                     )}
+
+                                    <div style={{ marginTop: 24 }}>
+                                        <h4 className="section-subtitle">Upload Proof of Payment</h4>
+
+                                        <Upload
+                                            accept=".jpg,.jpeg,.png"
+                                            beforeUpload={beforeUpload}
+                                            onChange={handleUploadChange}
+                                            fileList={fileList}
+                                            maxCount={1}
+                                            listType="picture"
+                                        >
+                                            <Button
+                                                type="primary"
+                                                className="payment-process-upload-button"
+                                                icon={<UploadOutlined />}
+                                            >
+                                                Upload Payment Proof
+                                            </Button>
+                                        </Upload>
+
+                                        <p
+                                            style={{
+                                                marginTop: 8,
+                                                fontSize: 12,
+                                                color: "#666",
+                                            }}
+                                        >
+                                            Accepted formats: JPG, JPEG, PNG (Max 2MB)
+                                        </p>
+                                    </div>
                                 </div>
                             )}
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Spin, notification, Upload, Button, Tag, ConfigProvider, Radio, Modal, Image, Input, Space, DatePicker, TimePicker, Descriptions } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, CheckCircleFilled, EyeOutlined } from '@ant-design/icons';
@@ -28,8 +28,8 @@ export default function VisaApplication() {
     const [process, setProcess] = useState([]);
 
     const [method, setMethod] = useState(null); // default selected payment method
-    const [fileList, setFileList] = useState([]);
-    const [paymentCompleted, setPaymentCompleted] = useState(false);
+    const [fileList] = useState([]);
+    const [, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
 
     const [pendingManualPayment, setPendingManualPayment] = useState(false);
@@ -40,8 +40,8 @@ export default function VisaApplication() {
     const [selectedSuggestedIndex, setSelectedSuggestedIndex] = useState(null);
     const [customDateTime, setCustomDateTime] = useState({ date: null, time: null });
     const [confirmingSuggested, setConfirmingSuggested] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [selectedTime, setSelectedTime] = useState(null);
+    const [, setSelectedDate] = useState(null);
+    const [, setSelectedTime] = useState(null);
 
     const [releaseOption, setReleaseOption] = useState(null);
     const [deliveryAddress, setDeliveryAddress] = useState("");
@@ -119,20 +119,6 @@ export default function VisaApplication() {
 
     const resubmissionRequested = requestedResubmissionTargets.length > 0;
 
-    const terminalStatuses = new Set([
-        'embassy approved',
-        'passport released',
-        'delivery fee fully paid',
-        'rejected'
-    ]);
-
-    const appointmentDate = application?.preferredDate
-        ? dayjs(application.preferredDate)
-        : application?.suggestedAppointmentScheduleChosen && application.suggestedAppointmentScheduleChosen.date
-            ? dayjs(application.suggestedAppointmentScheduleChosen.date)
-            : null;
-
-
     //get the date when the current status was set, or fallback to other relevant dates
     const getStatusSetDate = (app) => {
         if (!app) return null;
@@ -196,24 +182,6 @@ export default function VisaApplication() {
 
     const statusSetDate = getStatusSetDate(application);
     const managerName = getManagerName(application);
-    const deadlineDays = application?.statusDeadlineDays ?? null;
-    let statusDeadlineDate = !terminalStatuses.has(String(statusText || '').toLowerCase())
-        ? (application?.statusDeadlineDate
-            ? dayjs(application.statusDeadlineDate)
-            : statusSetDate && Number.isFinite(deadlineDays)
-                ? statusSetDate.add(deadlineDays, 'day').startOf('day')
-                : appointmentDate && Number.isFinite(deadlineDays)
-                    ? appointmentDate.add(deadlineDays, 'day').startOf('day')
-                    : null)
-        : null;
-
-    if (
-        isPenaltyEligible &&
-        application?.secondChance &&
-        application?.secondDeadline
-    ) {
-        statusDeadlineDate = dayjs(application.secondDeadline);
-    }
 
     const penaltyStateLabel = !isPenaltyEligible
         ? null
@@ -227,7 +195,7 @@ export default function VisaApplication() {
 
 
     //check for manual payments
-    const checkPendingManualPayment = async () => {
+    const checkPendingManualPayment = useCallback(async () => {
         try {
             const transactionsRes = await apiFetch.get(`/transaction/application/${id}`);
             const transactions = Array.isArray(transactionsRes) ? transactionsRes : (transactionsRes?.transactions || []);
@@ -261,7 +229,7 @@ export default function VisaApplication() {
         } catch (err) {
             console.error('Could not fetch transactions:', err);
         }
-    };
+    }, [id]);
 
 
     //fetch application details and requirements when the component mounts or when the id changes
@@ -298,7 +266,7 @@ export default function VisaApplication() {
         };
         fetchApplication();
         checkPendingManualPayment();
-    }, [id]);
+    }, [id, fetchVisaApplication, checkPendingManualPayment, notificationApi,]);
 
 
     // find the current status in the process steps and determine the color for the step indicator
@@ -518,23 +486,6 @@ export default function VisaApplication() {
         } finally {
             setUploading(false);
         }
-    };
-
-
-    // dynamically update the file list when the user uploads or removes files, ensuring only one file is kept at a time
-    const handleUploadChange = ({ fileList: newFileList }) => {
-        if (newFileList.length > 1) {
-            newFileList = [newFileList[newFileList.length - 1]];
-        }
-
-        newFileList = newFileList.map(file => {
-            if (!file.preview && file.originFileObj) {
-                file.preview = URL.createObjectURL(file.originFileObj);
-            }
-            return file;
-        });
-
-        setFileList(newFileList);
     };
 
 
@@ -1104,9 +1055,8 @@ export default function VisaApplication() {
 
                                                                 <Input.TextArea
                                                                     placeholder="Enter your complete address"
-                                                                    style={{ resize: 'none' }}
+                                                                    style={{ resize: 'none', marginBottom: 12 }}
                                                                     rows={4}
-                                                                    style={{ marginBottom: 12 }}
                                                                     maxLength={100}
                                                                     value={deliveryAddress}
                                                                     onChange={(e) => {
@@ -1407,7 +1357,7 @@ export default function VisaApplication() {
                                                                 value={method}
                                                                 className="payment-methods-cards"
                                                                 style={{ width: '100%', display: 'flex', gap: '16px' }}
-                                                                disabled={application?.secondChance && application?.onPenalty || pendingManualPayment}
+                                                                disabled={(application?.secondChance && application?.onPenalty) || pendingManualPayment}
                                                             >
                                                                 <Radio.Button
                                                                     value="paymongo"

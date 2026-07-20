@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Card, Col, ConfigProvider, Divider, Row, Space, Spin, Form, Tag, Typography, Steps, notification } from "antd";
+import { Button, Card, Col, ConfigProvider, Row, Space, Spin, Form, Tag, Typography, Steps, notification } from "antd";
 import { ArrowLeftOutlined, ArrowRightOutlined, DownloadOutlined } from "@ant-design/icons";
 import { Document, Image, Page, PDFViewer, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
 import dayjs from "dayjs";
@@ -96,7 +96,10 @@ export default function UploadBookingInvoice() {
     const [downloading, setDownloading] = useState(false);
     const [isDownloadingInvoice, setIsDownloadingInvoice] = useState(false);
 
-    const bookingDetails = booking?.bookingDetails || {};
+    const bookingDetails = useMemo(
+        () => booking?.bookingDetails ?? {},
+        [booking]
+    );
     const [invoiceNumber, setInvoiceNumber] = useState("");
     const [transactions, setTransactions] = useState([]);
     const [isRequestingResubmission, setIsRequestingResubmission] = useState(false);
@@ -127,8 +130,6 @@ export default function UploadBookingInvoice() {
         ? `${window.location.origin}/images/Logo.png`
         : "/images/Logo.png";
 
-    const documentsResubmissionRequired = Boolean(booking?.documentsResubmissionRequired);
-
     //fetch booking details
     useEffect(() => {
         if (!reference) return;
@@ -151,7 +152,7 @@ export default function UploadBookingInvoice() {
         };
 
         fetchBooking();
-    }, [reference]);
+    }, [reference, notificationApi]);
 
 
     //documents
@@ -491,11 +492,11 @@ export default function UploadBookingInvoice() {
         };
 
         fetchInvoiceNumber();
-    }, [booking]);
+    }, [booking, reference]);
 
 
     //prepare invoice data
-    const invoice = {
+    const invoice = useMemo(() => ({
         company: {
             name: "M&RC Travel and Tours",
             address: "2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1",
@@ -519,17 +520,52 @@ export default function UploadBookingInvoice() {
         },
         items: [
             travelerCountAdult
-                ? { date: issueDate, activity: 'Adult', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: bookingType === "Solo Booking" ? totalPrice : adultRate }
+                ? {
+                    date: issueDate,
+                    activity: "Adult",
+                    description: packageName || "Tour Package",
+                    qty: travelerCountAdult,
+                    rate: bookingType === "Solo Booking"
+                        ? totalPrice
+                        : adultRate
+                }
                 : null,
             travelerCountChild
-                ? { date: issueDate, activity: 'Child', description: packageName || 'Tour Package', qty: travelerCountChild, rate: childRate }
+                ? {
+                    date: issueDate,
+                    activity: "Child",
+                    description: packageName || "Tour Package",
+                    qty: travelerCountChild,
+                    rate: childRate
+                }
                 : null,
             travelerCountInfant
-                ? { date: issueDate, activity: 'Infant', description: packageName || 'Tour Package', qty: travelerCountInfant, rate: infantRate }
+                ? {
+                    date: issueDate,
+                    activity: "Infant",
+                    description: packageName || "Tour Package",
+                    qty: travelerCountInfant,
+                    rate: infantRate
+                }
                 : null,
         ].filter(Boolean),
-        notes: 'Thank you for booking with M&RC Travel and Tours. Safe travels!'
-    };
+        notes: "Thank you for booking with M&RC Travel and Tours. Safe travels!"
+    }), [
+        invoiceNumber,
+        issueDate,
+        bookingDetails,
+        booking,
+        packageName,
+        travelDate,
+        travelerCountAdult,
+        travelerCountChild,
+        travelerCountInfant,
+        bookingType,
+        totalPrice,
+        adultRate,
+        childRate,
+        infantRate
+    ]);
 
 
     //calculate totals
@@ -560,11 +596,6 @@ export default function UploadBookingInvoice() {
 
     const totalPriceWithPenalty = totalPrice + persistedPenalty;
     const remainingBalance = Math.max(totalPriceWithPenalty - paidAmount, 0);
-
-
-    const paymentStatusWithPenalty = remainingBalance <= 0
-        ? { label: "Fully Paid", color: "green" }
-        : { label: "Balance Due", color: "orange" };
 
     invoice.invoice.dueDate = lastInstallmentDate
         ? dayjs(lastInstallmentDate).format("MMMM D, YYYY")

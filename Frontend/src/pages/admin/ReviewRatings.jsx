@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Input, Select, DatePicker, Modal, ConfigProvider, Space, notification } from "antd";
 import { StarOutlined, MessageOutlined, FundOutlined, ClockCircleOutlined, CheckCircleOutlined, DeleteOutlined, SearchOutlined, FilePdfOutlined, CheckCircleFilled, InboxOutlined, EyeOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -54,7 +54,7 @@ export default function ReviewRatings() {
     const { auth } = useAuth();
 
     // fetch all ratings function
-    const fetchRatings = async () => {
+    const fetchRatings = useCallback(async () => {
         setLoading(true);
         try {
             const response = await apiFetch.get("/rating/all-ratings");
@@ -80,7 +80,7 @@ export default function ReviewRatings() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [notificationApi]);
 
 
     //fetch archived ratings function
@@ -114,7 +114,7 @@ export default function ReviewRatings() {
 
     useEffect(() => {
         fetchRatings();
-    }, []);
+    }, [fetchRatings]);
 
 
     // filtering functions

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, ConfigProvider, Space, Select, Input, DatePicker, Modal, notification } from "antd";
-import { FileTextOutlined, ClockCircleOutlined, IdcardOutlined, InboxOutlined, CheckCircleFilled, CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined, DeleteOutlined } from "@ant-design/icons";
+import { FileTextOutlined, ClockCircleOutlined, IdcardOutlined, InboxOutlined, CheckCircleFilled, CheckCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import dayjs from "dayjs";
@@ -56,7 +56,7 @@ export default function VisaApplications() {
 
 
     //fetch visa applications 
-    const loadApplications = async () => {
+    const loadApplications = useCallback(async () => {
         try {
             setIsFetchingApplications(true);
             const response = await apiFetch.get('/visa/applications')
@@ -74,13 +74,12 @@ export default function VisaApplications() {
 
             setApplications(applications)
         } catch (error) {
-            const errorMessage = error?.data?.message || 'Unable to load visa applications.'
             notificationApi.error({ title: "Failed to load visa applications", placement: "topRight" });
             setApplications([])
         } finally {
             setIsFetchingApplications(false)
         }
-    }
+    }, [notificationApi]);
 
 
     //fetch archived visa applications
@@ -101,7 +100,6 @@ export default function VisaApplications() {
 
             setArchivedApplications(applications)
         } catch (error) {
-            const errorMessage = error?.data?.message || 'Unable to load archived visa applications.'
             notificationApi.error({ title: "Failed to load archived visa applications", placement: "topRight" });
             setArchivedApplications([])
         } finally {
@@ -111,7 +109,7 @@ export default function VisaApplications() {
 
     useEffect(() => {
         loadApplications()
-    }, [])
+    }, [loadApplications]);
 
 
     //filter functions

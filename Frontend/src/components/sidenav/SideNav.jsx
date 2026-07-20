@@ -15,7 +15,7 @@ import {
   TransactionOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { NavLink } from "react-router-dom";
 import "../../style/components/sidenav.css";
 import apiFetch from "../../config/fetchConfig";
@@ -71,14 +71,14 @@ export default function SideNav() {
     return Number.isNaN(time) ? null : time;
   };
 
-  const getLatestValue = (items, field) => {
+  const getLatestValue = useCallback((items, field) => {
     const values = items
       .map((item) => getDateValue(item?.[field]))
       .filter((value) => value !== null);
     if (!values.length) return null;
     values.sort((a, b) => a - b);
     return values[values.length - 1];
-  };
+  }, []);
 
   useEffect(() => {
     const updateLayout = () => {
@@ -371,6 +371,7 @@ export default function SideNav() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [
+    getLatestValue,
     lastSeenBookingKey,
     lastSeenCancellationKey,
     lastSeenUserKey,

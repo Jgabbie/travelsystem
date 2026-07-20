@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Modal, Button, ConfigProvider, Radio, Select, Upload, Space, notification, Spin } from 'antd';
+import { Modal, Button, ConfigProvider, Radio, Select, Upload, notification, Spin } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from '@react-pdf/renderer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -332,8 +332,6 @@ export default function PaymentProcess() {
 
     const startTravelDate = dayjs(bookingData?.travelDate?.startDate).format("MMM D, YYYY") || 'TBD';
     const endTravelDate = dayjs(bookingData?.travelDate?.endDate).add(4, 'day').format("MMM D, YYYY") || 'TBD';
-
-    const travelDate = startTravelDate === 'TBD' ? 'TBD' : `${startTravelDate} - ${endTravelDate}`;
 
     const name = bookingData?.leadFullName || 'Customer';
     const email = bookingData?.leadEmail || 'Email'
@@ -1109,6 +1107,37 @@ export default function PaymentProcess() {
                                             ))}
                                         </div>
                                     )}
+
+                                    <div style={{ marginTop: 24 }}>
+                                        <h4 className="section-subtitle">Upload Proof of Payment</h4>
+
+                                        <Upload
+                                            accept=".jpg,.jpeg,.png"
+                                            beforeUpload={beforeUpload}
+                                            fileList={fileList}
+                                            onChange={handleUploadChange}
+                                            maxCount={1}
+                                            listType="picture"
+
+                                        >
+                                            <Button
+                                                type="primary"
+                                                className="payment-process-upload-button"
+                                                icon={<UploadOutlined />}>
+                                                Upload Payment Proof
+                                            </Button>
+                                        </Upload>
+
+                                        <p
+                                            style={{
+                                                marginTop: 8,
+                                                fontSize: 12,
+                                                color: "#666"
+                                            }}
+                                        >
+                                            Accepted formats: JPG, JPEG, PNG (Max 2MB)
+                                        </p>
+                                    </div>
                                 </div>
                             )}
 

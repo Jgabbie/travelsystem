@@ -64,7 +64,6 @@ export default function AdminDashboard() {
 
   const [barWidth, setBarWidth] = useState(0);
   const [pieWidth, setPieWidth] = useState(0);
-  const [statusPieWidth, setStatusPieWidth] = useState(0);
 
   const barRef = useRef(null);
   const pieRef = useRef(null);
@@ -230,7 +229,7 @@ export default function AdminDashboard() {
     };
 
     fetchStats();
-  }, []);
+  }, [notificationApi]);
 
 
   //fetch transactions, bookings, popular packages, and quotations
@@ -280,7 +279,7 @@ export default function AdminDashboard() {
     fetchBookings();
     fetchPopularPackages();
     fetchQuotations();
-  }, []);
+  }, [notificationApi]);
 
 
   // booking status breakdown
@@ -335,9 +334,6 @@ export default function AdminDashboard() {
   const bookingTypeInnerRadius = isCompactTablet ? 36 : 42;
   const bookingTypeOuterRadius = isCompactTablet ? 76 : 90;
 
-  const statusInnerRadius = isCompactTablet ? 34 : 40;
-  const statusOuterRadius = isCompactTablet ? 68 : 80;
-
   useEffect(() => {
     const handleViewportResize = () => {
       setViewportWidth(window.innerWidth);
@@ -368,7 +364,6 @@ export default function AdminDashboard() {
 
     updateWidth(barRef.current, setBarWidth, fallback);
     updateWidth(pieRef.current, setPieWidth, fallback);
-    updateWidth(statusPieRef.current, setStatusPieWidth, fallback);
 
     if (typeof ResizeObserver === "undefined") {
       const handleResize = () => {
@@ -378,7 +373,6 @@ export default function AdminDashboard() {
         updateWidth(pieRef.current, setPieWidth, nextFallback);
         updateWidth(
           statusPieRef.current,
-          setStatusPieWidth,
           nextFallback
         );
       };
@@ -404,10 +398,6 @@ export default function AdminDashboard() {
 
         if (entry.target === pieRef.current) {
           setPieWidth(width);
-        }
-
-        if (entry.target === statusPieRef.current) {
-          setStatusPieWidth(width);
         }
       });
     });

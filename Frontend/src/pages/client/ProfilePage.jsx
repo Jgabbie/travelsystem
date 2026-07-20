@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Input, Button, notification, Card, Space, Rate, DatePicker, Select, ConfigProvider, Tag, Modal, Spin } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined, CheckCircleFilled, DeleteOutlined, StarFilled } from '@ant-design/icons';
 import dayjs from 'dayjs'
@@ -6,6 +6,12 @@ import apiFetch from '../../config/fetchConfig';
 import '../../style/client/profilepage.css'
 import '../../style/client/userpreference.css';
 
+
+//tour type options
+const tourOptions = [
+    'Domestic',
+    'International'
+];
 
 export default function ProfilePage() {
     const [userData, setUserData] = useState(null)
@@ -185,13 +191,6 @@ export default function ProfilePage() {
 
     //mood options
     const [moodOptions, setMoodOptions] = useState([]);
-
-
-    //tour type options
-    const tourOptions = [
-        'Domestic',
-        'International'
-    ];
 
 
     //user preferences
@@ -438,7 +437,7 @@ export default function ProfilePage() {
 
 
     //get user data
-    const fetchUserData = async () => {
+    const fetchUserData = useCallback(async () => {
         try {
             const response = await apiFetch.get('/user/data', {
                 withCredentials: true
@@ -473,7 +472,7 @@ export default function ProfilePage() {
             console.error('Error fetching user data:', error)
             notificationApi.error({ title: 'Error fetching profile', placement: 'topRight' })
         }
-    }
+    }, [notificationApi])
 
 
     //get user bookings
@@ -598,7 +597,7 @@ export default function ProfilePage() {
         };
 
         init();
-    }, []);
+    }, [fetchUserData]);
 
 
     //edit handler

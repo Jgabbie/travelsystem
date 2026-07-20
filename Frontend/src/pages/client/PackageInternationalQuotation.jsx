@@ -58,7 +58,7 @@ export default function PackageInternationalQuotation() {
         } finally {
             setLoading(false)
         }
-    }, [packageItem])
+    }, [packageItem, notificationApi])
 
 
     const { hotels, airlines, fixedItinerary, days, basePrice, dateRanges, inclusions, exclusions, images } = useMemo(() => ({
@@ -87,26 +87,37 @@ export default function PackageInternationalQuotation() {
         [fixedItinerary, days]
     )
 
-    const itineraryImagesByDay = packageData?.packageItineraryImages || {}
-
     const fixedItineraryEntries = useMemo(() => {
-        if (!fixedItinerary || typeof fixedItinerary !== 'object') return []
+        if (!fixedItinerary || typeof fixedItinerary !== 'object') return [];
+
+        const itineraryImagesByDay =
+            packageData?.packageItineraryImages || {};
+
         return Object.keys(fixedItinerary)
             .sort((a, b) => Number(a.replace('day', '')) - Number(b.replace('day', '')))
             .map((dayKey) => {
-                const dayItems = fixedItinerary[dayKey] || []
+                const dayItems = fixedItinerary[dayKey] || [];
+
                 const dayImages = [
-                    ...(Array.isArray(itineraryImagesByDay[dayKey]) ? itineraryImagesByDay[dayKey] : []),
-                    ...dayItems.flatMap((item) => (Array.isArray(item?.itineraryImages) ? item.itineraryImages : []))
-                ].filter(Boolean).slice(0, 3)
+                    ...(Array.isArray(itineraryImagesByDay[dayKey])
+                        ? itineraryImagesByDay[dayKey]
+                        : []),
+                    ...dayItems.flatMap((item) =>
+                        Array.isArray(item?.itineraryImages)
+                            ? item.itineraryImages
+                            : []
+                    ),
+                ]
+                    .filter(Boolean)
+                    .slice(0, 3);
 
                 return {
                     label: dayKey.replace('day', 'Day '),
                     items: dayItems,
-                    images: dayImages
-                }
-            })
-    }, [fixedItinerary, itineraryImagesByDay])
+                    images: dayImages,
+                };
+            });
+    }, [fixedItinerary, packageData]);
 
     const [error, setError] = useState({})
 
@@ -122,7 +133,7 @@ export default function PackageInternationalQuotation() {
 
     const [isBookingSuccessOpen, setIsBookingSuccessOpen] = useState(false)
     const [packageCategory, setPackageCategory] = useState('All in Package');
-    const [travelers, setTravelers] = useState(1)
+    const [, setTravelers] = useState(1)
     const [travelerType, setTravelerType] = useState('solo')
     const [adultCount, setAdultCount] = useState(2)
     const [childCount, setChildCount] = useState(0)

@@ -193,7 +193,7 @@ export default function DestinationsPackages() {
                 error?.data?.message || 'Unable to add to wishlist. Please try again.'
             notificationApi.error({ title: errorMessage, placement: 'topRight' })
         }
-    }, [auth, fetchWishlist, resolveWishlistEntryId, wishlistedIds])
+    }, [auth, fetchWishlist, resolveWishlistEntryId, wishlistedIds, notificationApi])
 
 
     //gets the values from the search bar from the landing page and sets the filters based on the configuration of the user
@@ -271,7 +271,7 @@ export default function DestinationsPackages() {
     // ensure current daysValue doesn't exceed available max
     useEffect(() => {
         if (daysValue > maxDuration) setDaysValue(maxDuration)
-    }, [maxDuration])
+    }, [maxDuration, daysValue])
 
 
     // search term appear first, followed by packages that pass the active filters.

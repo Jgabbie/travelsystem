@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Input, Button, Select, message } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
 import '../../style/components/modals/addusermodal.css';
@@ -73,7 +73,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             .join(" ");
 
     //INPUT VALIDATION -----------------------------------------------------
-    const validate = (field, value, currentValues = values) => {
+    const validate = useCallback((field, value, currentValues = values) => {
         if (field === "role") {
             if (value === "") return "Role is required.";
         }
@@ -116,7 +116,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             if (value !== currentValues.password) return "Passwords do not match";
         }
         return "";
-    };
+    }, [values]);
 
     //CHECK FOR DUPLICATE USERNAME -----------------------------------------
     useEffect(() => {
@@ -139,7 +139,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                     username: message
                 }));
             });
-    }, [values.username])
+    }, [values.username, validate]);
 
     //CHECK FOR DUPLICATE EMAIL -----------------------------------------
     useEffect(() => {
@@ -162,7 +162,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                     email: message
                 }));
             });
-    }, [values.email]);
+    }, [values.email, validate]);
 
     //HANDLES CHANGES IN ALL FIELDS EXCEPT ROLE -----------------------------
     const valueHandler = (field, value) => {

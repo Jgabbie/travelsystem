@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback, useMemo } from 'react';
 import '../../style/components/mrcregistration.css';
 import '../../style/components/mrcquotation.css';
 
@@ -12,8 +12,15 @@ export default function QuotationFormInEx({
 }) {
 
 
-    const inclusions = quotationData.inclusions || [];
-    const exclusions = quotationData.exclusions || [];
+    const inclusions = useMemo(
+        () => quotationData.inclusions || [],
+        [quotationData.inclusions]
+    );
+
+    const exclusions = useMemo(
+        () => quotationData.exclusions || [],
+        [quotationData.exclusions]
+    );
 
     const getItemText = (item) => {
         if (typeof item === 'string') return item;
@@ -21,8 +28,8 @@ export default function QuotationFormInEx({
         return item.activity || item.optionalActivity || item.item || '';
     };
 
-    const normalizeList = (items) =>
-        (items || []).map((item) => getItemText(item)).filter((text) => text.trim());
+    const normalizeList = useCallback((items) =>
+        (items || []).map((item) => getItemText(item)).filter((text) => text.trim()), []);
 
     const ensureArray = (value) => {
         if (Array.isArray(value)) return value;
@@ -51,7 +58,7 @@ export default function QuotationFormInEx({
 
             return next;
         });
-    }, [setFormData, inclusions, exclusions]);
+    }, [setFormData, inclusions, exclusions, normalizeList]);
 
     useEffect(() => {
         if (!setFormData) return;

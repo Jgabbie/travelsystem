@@ -271,10 +271,16 @@ body {
     font-weight: 600;
     text-decoration: underline;
     cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    padding-left: 4px;
 }
 
 .signup-terms-link-modal:hover {
-    color: #992A46;
+    background: none !important;
+    border: none !important;
+    color: #992A46 !important;
 }
 
 .signup-terms-modal-root .ant-modal-wrap {

@@ -54,10 +54,6 @@ export default function Wishlist() {
                 setWishlistItems(wishlist)
                 setAverageRatings(ratingMap)
             } catch (error) {
-                const errorMessage =
-                    error?.data?.message ||
-                    'Unable to load wishlist.'
-
                 notificationApi.error({
                     title: 'Error Loading Wishlist',
                     placement: 'topRight'
@@ -71,7 +67,7 @@ export default function Wishlist() {
         }
 
         loadWishlist()
-    }, [])
+    }, [notificationApi])
 
 
     // memoized wishlist packages for filtering and rendering
@@ -155,8 +151,6 @@ export default function Wishlist() {
             )
             notificationApi.success({ title: 'Removed from Wishlist', placement: 'topRight' })
         } catch (error) {
-            const errorMessage =
-                error?.data?.message || 'Unable to remove wishlist item.'
             notificationApi.error({ title: 'Error Removing Item', placement: 'topRight' })
         }
     }

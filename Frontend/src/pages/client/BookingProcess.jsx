@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { Button, notification, Upload, Form, Steps, ConfigProvider, Spin, Modal, Input, Select, DatePicker } from 'antd'
 import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -337,11 +337,14 @@ export default function BookingProcess() {
 
 
     //room options for solo and group bookings
-    const groupRoomOptions = [
-        { value: 'TWIN', label: 'TWIN' },
-        { value: 'DOUBLE', label: 'DOUBLE' },
-        { value: 'TRIPLE', label: 'TRIPLE' }
-    ]
+    const groupRoomOptions = useMemo(
+        () => [
+            { value: "TWIN", label: "TWIN" },
+            { value: "DOUBLE", label: "DOUBLE" },
+            { value: "TRIPLE", label: "TRIPLE" },
+        ],
+        []
+    );
 
 
     //room options based on booking type
@@ -409,7 +412,7 @@ export default function BookingProcess() {
             ...prev,
             bookingType: selectedSoloGrouped === 'solo' ? 'Solo Booking' : selectedSoloGrouped === 'group' ? 'Group Booking' : null
         }));
-    }, [selectedSoloGrouped]);
+    }, [selectedSoloGrouped, setBookingData]);
 
 
     //adjust travelers array in form and booking data when uploadTravelerCount changes
@@ -490,7 +493,7 @@ export default function BookingProcess() {
 
         form.setFieldsValue({ travelers: nextTravelers })
         setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
-    }, [bookingType, form, setBookingData])
+    }, [bookingType, form, setBookingData, groupRoomOptions])
 
 
     //if child or infant traveler type is selected, ensure their room type is set to 'N/A'
@@ -1308,7 +1311,7 @@ export default function BookingProcess() {
                                                             key={`${day.key}-image-${index}`}
                                                             className='itinerary-day-image'
                                                             src={src}
-                                                            alt={`${day.label} image ${index + 1}`}
+                                                            alt={`${day.label} ${index + 1}`}
                                                         />
                                                     ))}
                                                 </div>

@@ -62,7 +62,7 @@ export default function UserBookings() {
             }
         }
         fetchBookings()
-    }, [])
+    }, [notificationApi])
 
 
     //filter bookings based on search and filters

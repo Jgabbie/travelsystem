@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Steps, Spin, notification, Upload, Tag, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space, Modal, Descriptions } from 'antd';
+import { Steps, Spin, notification, Upload, Tag, ConfigProvider, Button, Radio, DatePicker, TimePicker, Space, Modal, Descriptions } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined, DeleteOutlined, CheckCircleFilled, EyeOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/passportapplication.css';
@@ -71,7 +71,7 @@ export default function PassportApplication() {
     const [applicationFormList, setApplicationFormList] = useState([]);
 
     const [method, setMethod] = useState(null); // default selected payment method  
-    const [fileList, setFileList] = useState([]);
+    const [fileList] = useState([]);
     const [paymentCompleted, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
 
@@ -81,8 +81,8 @@ export default function PassportApplication() {
     const [selectedSuggestedIndex, setSelectedSuggestedIndex] = useState(null);
     const [customDateTime, setCustomDateTime] = useState({ date: null, time: null });
     const [confirmingSuggested, setConfirmingSuggested] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [selectedTime, setSelectedTime] = useState(null);
+    const [setSelectedDate] = useState(null);
+    const [setSelectedTime] = useState(null);
 
     const [isConfirmDocumentsOpen, setIsConfirmDocumentsOpen] = useState(false);
     const [isSelectDateModalOpen, setIsSelectDateModalOpen] = useState(false);
@@ -179,7 +179,7 @@ export default function PassportApplication() {
         getUserEmail();
         fetchApplication();
         checkPendingManualPayment();
-    }, [id]);
+    }, [id, notificationApi, fetchPassportApplication]);
 
 
     //resubmission logic for requested documents
@@ -266,21 +266,6 @@ export default function PassportApplication() {
         };
     };
 
-
-    // compute status set date and deadline for client view
-    const statusDeadlineDaysMap = {
-        'Payment Completed': 5,
-    };
-
-
-    // compute appointment date based on preferredDate or suggestedAppointmentScheduleChosen
-    const appointmentDate = application?.preferredDate
-        ? dayjs(application.preferredDate)
-        : application?.suggestedAppointmentScheduleChosen && application.suggestedAppointmentScheduleChosen.date
-            ? dayjs(application.suggestedAppointmentScheduleChosen.date)
-            : null;
-
-
     // get the most recent date when the current status was set
     const getStatusSetDate = (app) => {
         if (!app) return null;
@@ -359,20 +344,6 @@ export default function PassportApplication() {
 
 
     const currentStatusSetDate = getStatusSetDate(application);
-    const deadlineDays = application?.statusDeadlineDays ?? statusDeadlineDaysMap[application?.status] ?? null;
-    let statusDeadlineDate = application?.statusDeadlineDate
-        ? dayjs(application.statusDeadlineDate)
-        : appointmentDate && Number.isFinite(deadlineDays)
-            ? appointmentDate.subtract(deadlineDays, 'day').startOf('day')
-            : null;
-
-    if (
-        isPenaltyEligible &&
-        application?.secondChance &&
-        application?.secondDeadline
-    ) {
-        statusDeadlineDate = dayjs(application.secondDeadline);
-    }
 
     const penaltyStateLabel = !isPenaltyEligible
         ? null
@@ -383,23 +354,6 @@ export default function PassportApplication() {
                 : application?.onPenalty
                     ? 'On Penalty'
                     : null;
-
-    //for payment
-    const handleUploadChange = ({ fileList: newFileList }) => {
-        if (newFileList.length > 1) {
-            newFileList = [newFileList[newFileList.length - 1]];
-        }
-
-        newFileList = newFileList.map(file => {
-            if (!file.preview && file.originFileObj) {
-                file.preview = URL.createObjectURL(file.originFileObj);
-            }
-            return file;
-        });
-
-        setFileList(newFileList);
-    };
-
 
     //submit payment function
     const handleSubmitPayment = async () => {

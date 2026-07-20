@@ -96,7 +96,7 @@ export default function ViewPassportApplication() {
         } finally {
             setLoading(false);
         }
-    }, [applicationId, navigate]);
+    }, [applicationId, navigate, notificationApi]);
 
     useEffect(() => {
         const updateDescriptionColumn = () => {
@@ -276,7 +276,7 @@ export default function ViewPassportApplication() {
             };
             updateStatus();
         }
-    }, [statusDeadlineDate, application, hasProcessedRejection, applicationId]);
+    }, [statusDeadlineDate, application, hasProcessedRejection, applicationId, notificationApi]);
 
 
     //get when a particular step/status was set from statusHistory (fallback none)

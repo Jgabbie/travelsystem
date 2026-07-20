@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Input, Select, Button, Form, Modal, Tag, Space, Row, Col, Statistic, Card, ConfigProvider, Avatar, notification, Tabs } from "antd";
 import {
   SearchOutlined,
@@ -46,7 +46,7 @@ export default function UserManagement() {
   const [archivedUsers, setArchivedUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [targetRole, setTargetRole] = useState("Customer");
+  const [targetRole] = useState("Customer");
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchText, setSearchText] = useState("");
@@ -78,7 +78,7 @@ export default function UserManagement() {
 
 
   //fetch users function
-  const getUsers = async () => {
+  const getUsers = useCallback(async () => {
     setLoading(true);
     try {
       const response = await apiFetch.get('/user/getUsers', { withCredentials: true });
@@ -104,7 +104,7 @@ export default function UserManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [notificationApi]);
 
 
   //fetch archived users function
@@ -134,7 +134,9 @@ export default function UserManagement() {
     }
   };
 
-  useEffect(() => { getUsers(); }, []);
+  useEffect(() => {
+    getUsers();
+  }, [getUsers]);
 
 
   // generate pdf function

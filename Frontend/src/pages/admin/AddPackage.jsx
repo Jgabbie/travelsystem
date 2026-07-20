@@ -138,7 +138,7 @@ export default function AddPackage() {
 
       notificationApi.error({ title: errorMsg, placement: 'topRight' });
     }
-  }, [backEndErrors]);
+  }, [backEndErrors, notificationApi]);
 
 
   //validations
@@ -912,7 +912,7 @@ export default function AddPackage() {
     };
 
     getPackage();
-  }, [packageItem]);
+  }, [packageItem, isEdit]);
 
 
   //generate package code if not in edit mode
@@ -988,7 +988,7 @@ export default function AddPackage() {
     };
 
     loadPackageTags();
-  }, []);
+  }, [notificationApi]);
 
 
   //handle tag changes and save new tags to backend
@@ -1196,7 +1196,7 @@ export default function AddPackage() {
 
                     if (allowedKeys.includes(e.key)) return;
 
-                    if (/^[A-Za-z0-9\s.,@#&()\-\/]$/.test(e.key)) return;
+                    if (/^[A-Za-z0-9\s.,@#&()\-/]$/.test(e.key)) return;
 
                     e.preventDefault();
                   }}

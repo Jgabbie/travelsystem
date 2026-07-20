@@ -394,7 +394,6 @@
     height: 35px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
-    margin-top: 20px;
 }
 
 .payment-process-upload-button:hover {

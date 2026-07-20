@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Form, Input, Select } from 'antd';
 import dayjs from 'dayjs';
 import '../../style/components/mrcregistration.css';
@@ -14,7 +14,7 @@ export default function BookingRegistrationDietQuote({
     const dietaryRequest = Form.useWatch('dietaryRequest', form);
     const medicalRequest = Form.useWatch('medicalRequest', form);
 
-    const formatTravelDate = () => {
+    const formatTravelDate = useCallback(() => {
         const travelDate = summary?.travelDate;
 
         if (!travelDate) return '____________________';
@@ -78,7 +78,7 @@ export default function BookingRegistrationDietQuote({
         }
 
         return '____________________';
-    };
+    }, [summary?.travelDate]);
 
     const handleRequestChange = (requestField, detailsField, value) => {
         form.setFieldsValue({
@@ -92,7 +92,7 @@ export default function BookingRegistrationDietQuote({
             tourPackageTitle: summary?.packageName || '',
             packageTravelDate: formatTravelDate(),
         });
-    }, [form, summary?.packageName, summary?.travelDate]);
+    }, [form, summary?.packageName, summary?.travelDate, formatTravelDate]);
 
     useEffect(() => {
         const fetchUserData = async () => {

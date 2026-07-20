@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, notification, Modal, ConfigProvider } from "antd";
 import { SearchOutlined, InboxOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, CheckCircleFilled, BookOutlined } from "@ant-design/icons";
@@ -98,7 +98,7 @@ export default function BookingManagement() {
 
 
   //fetch bookings
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     setLoading(true);
     try {
       const response = await apiFetch.get("/booking/all-bookings");
@@ -109,7 +109,7 @@ export default function BookingManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [notificationApi]);
 
 
   //fetch archived bookings
@@ -128,7 +128,7 @@ export default function BookingManagement() {
 
   useEffect(() => {
     fetchBookings();
-  }, []);
+  }, [fetchBookings]);
 
 
   const currentData = showArchived ? archivedData : data;
@@ -292,7 +292,6 @@ export default function BookingManagement() {
   //edit function
   const edit = (record) => {
     setEditingBooking(record);
-    const bookingDetails = record.bookingDetails || {};
     editForm.setFieldsValue({
       status: record.status
     });
@@ -347,39 +346,13 @@ export default function BookingManagement() {
 
       const values = await editForm.validateFields();
 
-      // bookingDate & pkg inputs removed — use existing booking values
-      const bookingDate = editingBooking?.bookingDateRaw || editingBooking?.bookingDetails?.bookingDate || null;
-
-      const travelDate = values.travelDate
-        ? (dayjs.isDayjs(values.travelDate) ? values.travelDate.format("YYYY-MM-DD") : values.travelDate)
-        : (editingBooking?.travelDateRaw || editingBooking?.bookingDetails?.travelDate || null);
-
-      // derive travelers from existing booking if form inputs are not present
-      const existingTravelersObj = (Array.isArray(editingBooking?.travelers) && editingBooking.travelers[0])
-        || (Array.isArray(editingBooking?.bookingDetails?.travelers) && editingBooking.bookingDetails.travelers[0])
-        || (editingBooking?.bookingDetails?.travelers && typeof editingBooking.bookingDetails.travelers === 'object' && editingBooking.bookingDetails.travelers)
-        || {};
-
-      const adult = Number(values.adult ?? existingTravelersObj.adult ?? existingTravelersObj.total ?? 0);
-      const child = Number(values.child ?? existingTravelersObj.child ?? 0);
-      const infant = Number(values.infant ?? existingTravelersObj.infant ?? 0);
-      const qtyValue = adult + child + infant;
       const statusValue = values.status || undefined;
-
-      const travelersPayload = Array.isArray(editingBooking?.travelers) && editingBooking.travelers.length
-        ? editingBooking.travelers
-        : (Array.isArray(editingBooking?.bookingDetails?.travelers) && editingBooking.bookingDetails.travelers.length
-          ? editingBooking.bookingDetails.travelers
-          : [{ adult, child, infant }]);
-
-      const packageName = editingBooking?.pkg || editingBooking?.bookingDetails?.packageName || null;
 
       const payload = {
         status: statusValue,
       };
 
       const saved = await apiFetch.put(`/booking/${editingBooking.key}`, payload);
-      const savedDetails = saved.bookingDetails || {};
       const statusRaw = saved.status || values.status || "pending";
       const statusFormatted = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
 
