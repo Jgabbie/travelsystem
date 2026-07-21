@@ -1017,7 +1017,6 @@ export default function ViewVisaApplication() {
             {/* SUBMIT DELIVERY DETAILS MODAL */}
             <Modal
                 open={isSubmitDeliveryDetailsModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 centered={true}
@@ -1025,20 +1024,20 @@ export default function ViewVisaApplication() {
                     setIsSubmitDeliveryDetailsModalOpen(false);
                 }}
             >
-                <div className='signup-success-container'>
-                    <h1 className='signup-success-heading'>Submit Delivery Details!</h1>
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Submit Delivery Details!</h1>
 
                     <div>
                         <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
-                    <p className='signup-success-text'>The delivery details have been submitted.</p>
+                    <p className='modal-text'>The delivery details have been submitted.</p>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                         <Button
                             type='primary'
-                            className='logout-confirm-btn'
+                            className='modal-button'
                             onClick={() => {
                                 setIsSubmitDeliveryDetailsModalOpen(false);
                             }}
