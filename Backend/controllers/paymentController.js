@@ -2126,11 +2126,19 @@ const handlePayMongoWebhook = async (req, res) => {
             console.log('Created transaction for visa penalty fee:', metadata.applicationId);
 
             const updatedVisa = await VisaModel.findOneAndUpdate(
-                { _id: metadata.applicationId }, // filter object
+                { _id: metadata.applicationId },
                 {
-                    $set: { status: ["Payment Completed"], currentStepIndex: 1 } // replace array & update progress
+                    $set: {
+                        status: "Payment Completed",
+                        currentStepIndex: 1,
+
+                        // Clear penalty state
+                        onPenalty: false,
+                        secondChance: true,
+                        reachedSecondDeadline: false,
+                    }
                 },
-                { returnDocument: 'after' } // return the updated document
+                { new: true }
             );
 
             if (!updatedVisa) {
@@ -2217,8 +2225,13 @@ const handlePayMongoWebhook = async (req, res) => {
 
             const updatedApp = await PassportModel.findOneAndUpdate(
                 { _id: metadata.applicationId },
-                { status: "Payment Completed" },
-                { returnDocument: 'after' }
+                {
+                    status: "Payment Completed",
+                    onPenalty: false,
+                    secondChance: true,
+                    reachedSecondDeadline: false,
+                },
+                { new: true }
             );
 
             if (!updatedApp) {
