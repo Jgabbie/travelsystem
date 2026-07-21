@@ -6,13 +6,14 @@ import {
     deleteLocation
 } from "../controllers/dfaLocationController.js";
 
+
+const router = express.Router();
+
 import authorizeRoles from "../middleware/authorizeRoles.js";
 import userAuth from "../middleware/userAuth.js";
 
 router.use(userAuth);
 const staffOnly = authorizeRoles('Admin', 'Employee');
-
-const router = express.Router();
 
 router.get("/get-dfalocation", getLocations);
 router.post("/create-dfalocation", staffOnly, createLocation);
