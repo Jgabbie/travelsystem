@@ -1,6 +1,8 @@
 import crypto from 'crypto';
 import baseTransporter from '../config/nodemailer.js';
 import { buildBrandedEmail } from '../utils/emailTemplate.js';
+import { setVisaSecondChance } from './visaController.js'
+import { setPassportSecondChance } from './passportController.js'
 import dayjs from 'dayjs';
 import TokenCheckoutModel from "../models/tokencheckout.js";
 import TokenCheckoutPassportModel from "../models/tokencheckoutpassport.js";
@@ -2125,21 +2127,23 @@ const handlePayMongoWebhook = async (req, res) => {
 
             console.log('Created transaction for visa penalty fee:', metadata.applicationId);
 
-            const updatedVisa = await VisaModel.findOneAndUpdate(
-                { _id: metadata.applicationId },
-                {
-                    $set: {
-                        status: "Payment Completed",
-                        currentStepIndex: 1,
+            const visaApplication = await VisaModel.findById(metadata.applicationId);
 
-                        // Clear penalty state
-                        onPenalty: false,
-                        secondChance: true,
-                        reachedSecondDeadline: false,
-                    }
-                },
-                { new: true }
-            );
+            if (!visaApplication) {
+                console.warn(`No visa application found with applicationId ${metadata.applicationId}`);
+            } else {
+                visaApplication.status = "Payment Completed";
+                visaApplication.currentStepIndex = 1;
+
+                visaApplication.onPenalty = true;
+                visaApplication.reachedSecondDeadline = false;
+
+                setVisaSecondChance(visaApplication);
+
+                await visaApplication.save();
+
+                console.log("Visa payment status updated:", visaApplication.status);
+            }
 
             if (!updatedVisa) {
                 console.warn(`No visa application found with applicationId ${metadata.applicationId}`);
@@ -2223,16 +2227,23 @@ const handlePayMongoWebhook = async (req, res) => {
 
             console.log('Created transaction for passport application:', metadata.applicationId);
 
-            const updatedApp = await PassportModel.findOneAndUpdate(
-                { _id: metadata.applicationId },
-                {
-                    status: "Payment Completed",
-                    onPenalty: false,
-                    secondChance: true,
-                    reachedSecondDeadline: false,
-                },
-                { new: true }
-            );
+            const passportApplication = await PassportModel.findById(metadata.applicationId);
+
+            if (!passportApplication) {
+                console.warn(`No passport application found with applicationId ${metadata.applicationId}`);
+            } else {
+                passportApplication.status = "Payment Completed";
+                passportApplication.currentStepIndex = 1;
+
+                passportApplication.onPenalty = true;
+                passportApplication.reachedSecondDeadline = false;
+
+                setPassportSecondChance(passportApplication);
+
+                await passportApplication.save();
+
+                console.log("Updated status:", passportApplication.status);
+            }
 
             if (!updatedApp) {
                 console.warn(`No passport application found with applicationId ${metadata.applicationId}`);
