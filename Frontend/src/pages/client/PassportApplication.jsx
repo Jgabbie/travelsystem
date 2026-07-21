@@ -409,6 +409,7 @@ export default function PassportApplication() {
                 const payload = {
                     applicationId: application._id,
                     applicationNumber: application.applicationNumber,
+                    totalPrice: isPenaltyPayment ? 1500 : 2000,
                 };
 
 
