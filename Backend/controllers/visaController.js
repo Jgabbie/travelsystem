@@ -995,13 +995,6 @@ const processVisaDeadlineAction = async (application) => {
 
     const deadlineInfo = getVisaDeadlineInfo(application);
 
-    console.log("deadlineInfo", {
-        status: deadlineInfo?.status,
-        deadline: deadlineInfo?.deadlineDate?.format("YYYY-MM-DD"),
-        remaining: deadlineInfo?.daysRemaining,
-        overdue: deadlineInfo?.isOverdue
-    });
-
     if (!deadlineInfo) {
         return {
             application,
