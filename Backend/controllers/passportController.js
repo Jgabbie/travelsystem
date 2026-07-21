@@ -152,7 +152,7 @@ const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
             daysRemaining,
             warningAlreadySent,
             shouldSendWarning: false,
-            isOverdue: daysRemaining < 0,
+            isOverdue: daysRemaining <= 0,
         };
     }
 
@@ -182,7 +182,7 @@ const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
             daysRemaining,
             warningAlreadySent,
             shouldSendWarning: false,
-            isOverdue: daysRemaining < 0,
+            isOverdue: daysRemaining <= 0,
         };
     }
 
@@ -239,7 +239,7 @@ const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
             daysRemaining,
             warningAlreadySent,
             shouldSendWarning: daysRemaining === 1 && !warningAlreadySent,
-            isOverdue: daysRemaining < 0,
+            isOverdue: daysRemaining <= 0,
         };
     }
 
@@ -282,7 +282,7 @@ const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
         daysRemaining,
         warningAlreadySent,
         shouldSendWarning: daysRemaining === 1 && !warningAlreadySent,
-        isOverdue: daysRemaining < 0,
+        isOverdue: daysRemaining <= 0,
     };
 };
 
@@ -396,7 +396,6 @@ const sendPassportPenaltyNotification = async (application, deadlineInfo) => {
         to: user.email,
         subject: `Passport Application On Penalty: ${applicationNumber}`,
         html: `
-            <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                 <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
                     <p style="color:#555; font-size:16px;">Hello <b>${displayName}</b>,</p>
@@ -409,15 +408,7 @@ const sendPassportPenaltyNotification = async (application, deadlineInfo) => {
                         Login to Your Account
                     </a>
 
-                    <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-                    <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                        <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                        <p>M&RC Travel and Tours</p>
-                        <p>info1@mrctravels.com</p>
-                        <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                    </div>
                 </div>
-            </div>
         `,
     });
 
@@ -495,7 +486,6 @@ const rejectPassportApplicationForDeadline = async (application, deadlineInfo, r
                 to: user.email,
                 subject: `Passport Application Automatically Rejected: ${application.applicationNumber || 'Application'}`,
                 html: `
-                    <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                             
                             <p style="color:#555; font-size:16px;">Hello <b>${user.firstname || user.username || 'Customer'}</b>,</p>
@@ -507,15 +497,7 @@ const rejectPassportApplicationForDeadline = async (application, deadlineInfo, r
                                 Login to Your Account
                             </a>
 
-                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                                <p>M&RC Travel and Tours</p>
-                                <p>info1@mrctravels.com</p>
-                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                            </div>
                         </div>
-                    </div>
                 `,
             });
         } catch (emailError) {
@@ -552,7 +534,10 @@ const markPassportApplicationOnPenalty = async (application, deadlineInfo = null
         return { penalized: false, application };
     }
 
-    const penaltyDeadlineDate = getPassportPenaltyDeadlineDate(application);
+    const penaltyDeadlineDate =
+        resolvedDeadlineInfo.deadlineDate
+            .add(PENALTY_PAYMENT_WINDOW_DAYS, "day")
+            .startOf("day");
     const deadlineKey = penaltyDeadlineDate ? penaltyDeadlineDate.format('YYYY-MM-DD') : null;
 
     application.onPenalty = true;
@@ -771,7 +756,6 @@ const sendPassportDeadlineWarning = async (application) => {
         to: user.email,
         subject: `Passport Deadline Reminder: ${statusLabel} due ${deadlineLabel}`,
         html: `
-            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                 <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
                     <p style="color:#555; font-size:16px;">Hello <b>${displayName}</b>,</p>
@@ -784,15 +768,7 @@ const sendPassportDeadlineWarning = async (application) => {
                         Login to Your Account
                     </a>
 
-                    <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-                    <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                        <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                        <p>M&RC Travel and Tours</p>
-                        <p>info1@mrctravels.com</p>
-                        <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                    </div>
                 </div>
-            </div>
         `,
     });
 

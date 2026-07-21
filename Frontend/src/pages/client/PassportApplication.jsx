@@ -71,7 +71,7 @@ export default function PassportApplication() {
     const [applicationFormList, setApplicationFormList] = useState([]);
 
     const [method, setMethod] = useState(null); // default selected payment method  
-    const [fileList] = useState([]);
+    const [fileList, setFileList] = useState([]);
     const [paymentCompleted, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
 
@@ -1073,6 +1073,26 @@ export default function PassportApplication() {
                                                                 ))}
                                                             </div>
                                                         )}
+
+                                                        <div style={{ marginTop: 20 }}>
+                                                            <h4>Upload Payment Proof</h4>
+
+                                                            <Upload
+                                                                fileList={fileList}
+                                                                maxCount={1}
+                                                                accept="image/*,.pdf"
+                                                                beforeUpload={() => false}
+                                                                onChange={({ fileList }) => setFileList(fileList)}
+                                                            >
+                                                                <Button
+                                                                    type='primary'
+                                                                    className='passportapplication-uploadreceipt-button'
+                                                                    icon={<UploadOutlined />}
+                                                                >
+                                                                    Upload Receipt
+                                                                </Button>
+                                                            </Upload>
+                                                        </div>
                                                     </div>
                                                 )}
 
@@ -1093,7 +1113,7 @@ export default function PassportApplication() {
                                         {/* PAYMENT PENALTY*/}
                                         {application?.status && application?.onPenalty === true && application?.status.toLowerCase() !== 'rejected' && (
                                             <div style={{ marginBottom: 32, marginTop: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
-                                                <h3 style={{ marginTop: 0 }}>Payment {pendingManualPayment && <Tag color="orange">Pending Payment</Tag>}</h3>
+                                                <h3 style={{ marginTop: 0 }}>Penalty Payment {pendingManualPayment && <Tag color="orange">Pending Payment</Tag>}</h3>
 
                                                 {pendingManualPayment ? (
                                                     <div style={{ padding: '16px', backgroundColor: '#fffbe6', border: '1px solid #ffe58f', borderRadius: '8px', marginBottom: '16px' }}>
@@ -1217,6 +1237,26 @@ export default function PassportApplication() {
                                                                 ))}
                                                             </div>
                                                         )}
+
+
+                                                        <div style={{ marginTop: 20 }}>
+                                                            <h4>Upload Proof of Payment</h4>
+
+                                                            <Upload
+                                                                fileList={fileList}
+                                                                maxCount={1}
+                                                                accept="image/*,.pdf"
+                                                                beforeUpload={() => false}
+                                                                onChange={({ fileList }) => setFileList(fileList)}
+                                                            >
+                                                                <Button
+                                                                    type='primary'
+                                                                    className='passportapplication-uploadreceipt-button'
+                                                                    icon={<UploadOutlined />}>
+                                                                    Upload Receipt
+                                                                </Button>
+                                                            </Upload>
+                                                        </div>
                                                     </div>
                                                 )}
 
@@ -1227,7 +1267,7 @@ export default function PassportApplication() {
                                                     onClick={handleSubmitPayment}
                                                     disabled={paymentLoading || (method === 'manual' && fileList.length === 0) || application?.secondChance || pendingManualPayment}
                                                 >
-                                                    {application?.secondChance ? 'Grace Period Active' : (pendingManualPayment ? 'Payment Pending Verification' : (method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'))}
+                                                    {application?.secondChance ? 'Penalty Paid' : (pendingManualPayment ? 'Payment Pending Verification' : (method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'))}
                                                 </Button>
 
                                             </div>

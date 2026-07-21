@@ -459,14 +459,7 @@ const createManualPaymentDeposit = async (req, res) => {
                 to: user.email,
                 subject: `Installment Payment ${reference} Successful`,
                 html: `
-                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-
-                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
-
-                            <h2 style="color:#305797; margin-bottom:10px;">
-                                Installment Payment Successful!
-                            </h2>
 
                             <p style="color:#555; font-size:16px;">
                                 Hello <b>${user.username}</b>,
@@ -489,17 +482,7 @@ const createManualPaymentDeposit = async (req, res) => {
                                 If you did not make this payment, please ignore this email.
                             </p>
 
-                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-
-                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                                <p>M&RC Travel and Tours</p>
-                                <p>info1@mrctravels.com</p>
-                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                            </div>
-
                         </div>
-                    </div>
                     `
             });
         } catch (emailError) {
@@ -578,14 +561,7 @@ const createManualPaymentPassportPenalty = async (req, res) => {
                 to: user.email,
                 subject: `Passport Penalty Fee Payment Submitted`,
                 html: `
-                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-
-                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
-
-                            <h2 style="color:#305797; margin-bottom:10px;">
-                                Passport Penalty Fee Payment Submitted!
-                            </h2>
 
                             <p style="color:#555; font-size:16px;">
                                 Hello <b>${user.username}</b>,
@@ -608,17 +584,7 @@ const createManualPaymentPassportPenalty = async (req, res) => {
                                 If you did not make this payment, please ignore this email.
                             </p>
 
-                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-
-                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                                <p>M&RC Travel and Tours</p>
-                                <p>info1@mrctravels.com</p>
-                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                            </div>
-
                         </div>
-                    </div>
                     `
             });
         } catch (emailError) {
@@ -695,14 +661,7 @@ const createManualPaymentVisaPenalty = async (req, res) => {
                 to: user.email,
                 subject: `Visa Penalty Fee Payment Submitted`,
                 html: `
-                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-
-                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
-
-                            <h2 style="color:#305797; margin-bottom:10px;">
-                                Visa Penalty Fee Payment Submitted!
-                            </h2>
 
                             <p style="color:#555; font-size:16px;">
                                 Hello <b>${user.username}</b>,
@@ -725,17 +684,7 @@ const createManualPaymentVisaPenalty = async (req, res) => {
                                 If you did not make this payment, please ignore this email.
                             </p>
 
-                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-
-                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                                <p>M&RC Travel and Tours</p>
-                                <p>info1@mrctravels.com</p>
-                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                            </div>
-
                         </div>
-                    </div>
                     `
             });
         } catch (emailError) {
@@ -1421,7 +1370,7 @@ const createCheckoutSessionPassportPenalty = async (req, res) => {
                             //     currency: "PHP",
                             // }
                         ],
-                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
+                        payment_method_types: ["qrph"], // start with card first
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
@@ -2205,14 +2154,7 @@ const handlePayMongoWebhook = async (req, res) => {
                     to: user.email,
                     subject: `Visa Payment Successful`,
                     html: `
-                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-
-                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
-
-                            <h2 style="color:#305797; margin-bottom:10px;">
-                                Visa Penalty Fee Payment Successful!
-                            </h2>
 
                             <p style="color:#555; font-size:16px;">
                                 Hello <b>${user.username}</b>,
@@ -2235,17 +2177,7 @@ const handlePayMongoWebhook = async (req, res) => {
                                 If you did not make this payment, please ignore this email.
                             </p>
 
-                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-
-                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                                <p>M&RC Travel and Tours</p>
-                                <p>info1@mrctravels.com</p>
-                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                            </div>
-
                         </div>
-                    </div>
                     `
                 });
             } catch (emailError) {
@@ -2311,14 +2243,7 @@ const handlePayMongoWebhook = async (req, res) => {
                     to: user.email,
                     subject: `Passport Penalty Fee Payment Successful`,
                     html: `
-                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-
-                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
-
-                            <h2 style="color:#305797; margin-bottom:10px;">
-                                Passport Penalty Fee Payment Successful!
-                            </h2>
 
                             <p style="color:#555; font-size:16px;">
                                 Hello <b>${user.username}</b>,
@@ -2341,17 +2266,8 @@ const handlePayMongoWebhook = async (req, res) => {
                                 If you did not make this payment, please ignore this email.
                             </p>
 
-                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-
-                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                                <p>M&RC Travel and Tours</p>
-                                <p>info1@mrctravels.com</p>
-                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                            </div>
 
                         </div>
-                    </div>
                     `
                 });
             } catch (emailError) {
@@ -2413,14 +2329,7 @@ const handlePayMongoWebhook = async (req, res) => {
                     to: user.email,
                     subject: `Delivery Fee Payment Successful`,
                     html: `
-                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-
-                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
-
-                            <h2 style="color:#305797; margin-bottom:10px;">
-                                Delivery Fee Payment Successful!
-                            </h2>
 
                             <p style="color:#555; font-size:16px;">
                                 Hello <b>${user.username}</b>,
@@ -2443,17 +2352,7 @@ const handlePayMongoWebhook = async (req, res) => {
                                 If you did not make this payment, please ignore this email.
                             </p>
 
-                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-
-                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                                <p>M&RC Travel and Tours</p>
-                                <p>info1@mrctravels.com</p>
-                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
-                            </div>
-
                         </div>
-                    </div>
                     `
                 });
             } catch (emailError) {

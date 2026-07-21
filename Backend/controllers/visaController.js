@@ -272,10 +272,12 @@ const getVisaStoredDeadlineDate = (application, status) => {
 
     if (processStep?.deadlineDate) {
         const deadlineDate = normalizeVisaDate(processStep.deadlineDate);
+
         if (deadlineDate) {
             return deadlineDate;
         }
     }
+
 
     if (String(application.status || '').trim() === normalizedStatus && application.statusDeadlineDate) {
         const deadlineDate = normalizeVisaDate(application.statusDeadlineDate);
@@ -293,9 +295,12 @@ const getVisaPenaltyDeadlineDate = (application) => {
     if (!application) return null;
 
     const storedDeadline = normalizeVisaDate(application.penaltyDeadline);
+
+
     if (storedDeadline) {
         return storedDeadline;
     }
+
 
     const anchorDate = normalizeVisaDate(application.updatedAt) || normalizeVisaDate(application.createdAt);
     return anchorDate ? anchorDate.add(PENALTY_PAYMENT_WINDOW_DAYS, 'day').startOf('day') : null;
@@ -402,7 +407,7 @@ const getVisaDeadlineInfo = (
             daysRemaining,
             warningAlreadySent,
             shouldSendWarning: false,
-            isOverdue: daysRemaining < 0,
+            isOverdue: daysRemaining <= 0,
         };
     }
 
@@ -429,7 +434,7 @@ const getVisaDeadlineInfo = (
             daysRemaining,
             warningAlreadySent,
             shouldSendWarning: false,
-            isOverdue: daysRemaining < 0,
+            isOverdue: daysRemaining <= 0,
         };
     }
 
@@ -463,7 +468,7 @@ const getVisaDeadlineInfo = (
             daysRemaining,
             warningAlreadySent: false,
             shouldSendWarning: false,
-            isOverdue: daysRemaining < 0,
+            isOverdue: daysRemaining <= 0,
         };
     }
 
@@ -489,7 +494,7 @@ const getVisaDeadlineInfo = (
             daysRemaining,
             warningAlreadySent,
             shouldSendWarning: daysRemaining === 1 && !warningAlreadySent,
-            isOverdue: daysRemaining < 0,
+            isOverdue: daysRemaining <= 0,
         };
     }
 
@@ -541,7 +546,7 @@ const getVisaDeadlineInfo = (
         shouldSendWarning:
             daysRemaining === 1 &&
             !warningAlreadySent,
-        isOverdue: daysRemaining < 0,
+        isOverdue: daysRemaining <= 0,
     };
 };
 
@@ -989,6 +994,13 @@ const processVisaDeadlineAction = async (application) => {
     }
 
     const deadlineInfo = getVisaDeadlineInfo(application);
+
+    console.log("deadlineInfo", {
+        status: deadlineInfo?.status,
+        deadline: deadlineInfo?.deadlineDate?.format("YYYY-MM-DD"),
+        remaining: deadlineInfo?.daysRemaining,
+        overdue: deadlineInfo?.isOverdue
+    });
 
     if (!deadlineInfo) {
         return {

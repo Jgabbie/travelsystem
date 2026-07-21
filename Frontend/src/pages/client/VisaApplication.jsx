@@ -28,7 +28,7 @@ export default function VisaApplication() {
     const [process, setProcess] = useState([]);
 
     const [method, setMethod] = useState(null); // default selected payment method
-    const [fileList] = useState([]);
+    const [fileList, setFileList] = useState([]);
     const [, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
 
@@ -892,7 +892,7 @@ export default function VisaApplication() {
                                     )}
 
                                 {/* APPLICATION DENIED */}
-                                {(statusValue?.trim().toLowerCase() === 'rejected' || isPenaltyPayment) && (
+                                {(statusValue?.trim().toLowerCase() === 'rejected') && (
                                     <div style={{ marginBottom: 24, borderLeft: '4px solid #ff4d4f', backgroundColor: '#fff1f0', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
                                         <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#ff4d4f' }}>APPLICATION DENIED</h2>
                                         <p style={{ margin: 0, fontSize: 14 }}>
@@ -1309,6 +1309,26 @@ export default function VisaApplication() {
                                                                         ))}
                                                                     </div>
                                                                 )}
+
+                                                                <div style={{ marginTop: 20 }}>
+                                                                    <h4>Upload Proof of Payment</h4>
+
+                                                                    <Upload
+                                                                        fileList={fileList}
+                                                                        maxCount={1}
+                                                                        accept="image/*,.pdf"
+                                                                        beforeUpload={() => false}
+                                                                        onChange={({ fileList }) => setFileList(fileList)}
+                                                                    >
+                                                                        <Button
+                                                                            type='primary'
+                                                                            className='visaapplication-upload-button'
+                                                                            icon={<UploadOutlined />}
+                                                                        >
+                                                                            Upload Receipt
+                                                                        </Button>
+                                                                    </Upload>
+                                                                </div>
                                                             </div>
                                                         )}
 
@@ -1330,7 +1350,7 @@ export default function VisaApplication() {
                                                 {/* PENALTY FEE */}
                                                 {statusValue && statusValue.toLowerCase() !== 'rejected' && application?.onPenalty === true && (
                                                     <div style={{ marginBottom: 32, marginTop: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
-                                                        <h3 style={{ marginTop: 0 }}>Payment {application?.onPenalty && pendingManualPayment && <Tag color="orange">Pending Payment</Tag>}</h3>
+                                                        <h3 style={{ marginTop: 0 }}>Penalty Payment {application?.onPenalty && pendingManualPayment && <Tag color="orange">Pending Payment</Tag>}</h3>
                                                         {application?.onPenalty && (
                                                             <p style={{ marginTop: 0, color: '#305797', fontWeight: 600 }}>
                                                                 Penalty Amount due: PHP 1500.00
@@ -1458,6 +1478,27 @@ export default function VisaApplication() {
                                                                         ))}
                                                                     </div>
                                                                 )}
+
+
+                                                                <div style={{ marginTop: 20 }}>
+                                                                    <h4>Upload Proof of Payment</h4>
+
+                                                                    <Upload
+                                                                        fileList={fileList}
+                                                                        maxCount={1}
+                                                                        accept="image/*,.pdf"
+                                                                        beforeUpload={() => false}
+                                                                        onChange={({ fileList }) => setFileList(fileList)}
+                                                                    >
+                                                                        <Button
+                                                                            type='primary'
+                                                                            className='visaapplication-upload-button'
+                                                                            icon={<UploadOutlined />}
+                                                                        >
+                                                                            Upload Receipt
+                                                                        </Button>
+                                                                    </Upload>
+                                                                </div>
                                                             </div>
                                                         )}
 
@@ -1609,6 +1650,26 @@ export default function VisaApplication() {
                                                                         ))}
                                                                     </div>
                                                                 )}
+
+                                                                <div style={{ marginTop: 20 }}>
+                                                                    <h4>Upload Proof of Payment</h4>
+
+                                                                    <Upload
+                                                                        fileList={fileList}
+                                                                        maxCount={1}
+                                                                        accept="image/*,.pdf"
+                                                                        beforeUpload={() => false}
+                                                                        onChange={({ fileList }) => setFileList(fileList)}
+                                                                    >
+                                                                        <Button
+                                                                            type='primary'
+                                                                            className='visaapplication-upload-button'
+                                                                            icon={<UploadOutlined />}
+                                                                        >
+                                                                            Upload Receipt
+                                                                        </Button>
+                                                                    </Upload>
+                                                                </div>
                                                             </div>
                                                         )}
 
