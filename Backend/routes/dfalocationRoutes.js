@@ -4,7 +4,7 @@ import {
     createLocation,
     updateLocation,
     deleteLocation
-} from "../controllers/dfaLocationController.js";
+} from "../controllers/dfalocationController.js";
 
 
 const router = express.Router();
