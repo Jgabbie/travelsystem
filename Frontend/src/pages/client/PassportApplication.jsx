@@ -686,8 +686,7 @@ export default function PassportApplication() {
     const status = application?.status?.toLowerCase();
 
     const shouldShow =
-        status === 'payment completed' ||
-        application?.secondChance === true;
+        (status === 'payment completed' || application?.secondChance === true) && application?.onPenalty !== true || application?.secondDeadline !== "";
 
 
 
