@@ -1928,8 +1928,8 @@ const handlePayMongoWebhook = async (req, res) => {
             const amount = Math.round(net / 100) * 100;
 
             const transactionReference = generateTransactionReference();
-
             const { invoiceNumber: invoiceNumberVisa } = await generateTransactionInvoiceNumber();
+
             await TransactionModel.create({
                 userId: user._id,
                 applicationId: metadata.applicationId,
@@ -2019,8 +2019,8 @@ const handlePayMongoWebhook = async (req, res) => {
             const amount = Math.round(net / 100) * 100;
 
             const transactionReference = generateTransactionReference();
-
             const { invoiceNumber: invoiceNumberPassport } = await generateTransactionInvoiceNumber();
+
             const transaction = await TransactionModel.create({
                 userId: user._id,
                 applicationId: metadata.applicationId,

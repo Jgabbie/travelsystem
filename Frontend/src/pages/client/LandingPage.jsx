@@ -690,7 +690,7 @@ export default function LandingPage() {
                                 className="packages-button"
                                 onClick={() => navigate('/destinations-packages')}
                             >
-                                BROWSE TOUR PACKAGES
+                                BROWSE PACKAGES
                             </Button>
                         </div>
                     </div>
