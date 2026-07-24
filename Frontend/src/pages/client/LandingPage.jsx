@@ -609,18 +609,17 @@ export default function LandingPage() {
     }, [navigate]);
 
 
-    //disable back button
     useEffect(() => {
-        window.history.pushState({ noBack: true }, "", window.location.href);
+        window.history.pushState(null, "", window.location.href);
 
-        const onPopState = () => {
-            window.history.pushState({ noBack: true }, "", window.location.href);
+        const handlePopState = () => {
+            window.history.go(1);
         };
 
-        window.addEventListener("popstate", onPopState);
+        window.addEventListener("popstate", handlePopState);
 
         return () => {
-            window.removeEventListener("popstate", onPopState);
+            window.removeEventListener("popstate", handlePopState);
         };
     }, []);
 

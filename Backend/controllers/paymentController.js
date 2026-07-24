@@ -1036,7 +1036,7 @@ const createCheckoutSessionDeliveryFee = async (req, res) => {
 
 
         const successUrl = `${FRONTEND_URL}/user-applications/success/visa?token=${token}`;
-        const cancelUrl = `${FRONTEND_URL}/user-applications?status=cancel`;
+        const cancelUrl = `${FRONTEND_URL}/home?payment=cancelled`;
 
         const convenienceFeeCents = Math.round(totalPrice * 0.035 * 100) + 1500; // 3.5% + 15 PHP in cents
         const baseAmountCents = Math.round(totalPrice * 100);
@@ -1133,7 +1133,7 @@ const createCheckoutSessionPassport = async (req, res) => {
 
 
         const successUrl = `${FRONTEND_URL}/user-applications/success/visa?token=${token}`;
-        const cancelUrl = `${FRONTEND_URL}/user-applications?status=cancel`;
+        const cancelUrl = `${FRONTEND_URL}/home?payment=cancelled`;
 
         const convenienceFeeCents = Math.round(totalPrice * 0.035 * 100) + 1500; // 3.5% + 15 PHP in cents
         const baseAmountCents = Math.round(totalPrice * 100);
@@ -1230,7 +1230,7 @@ const createCheckoutSessionVisa = async (req, res) => {
 
 
         const successUrl = `${FRONTEND_URL}/user-applications/success/visa?token=${token}`;
-        const cancelUrl = `${FRONTEND_URL}/user-applications?status=cancel`;
+        const cancelUrl = `${FRONTEND_URL}/home?payment=cancelled`;
 
         const convenienceFeeCents = Math.round(totalPrice * 0.035 * 100) + 1500; // 3.5% + 15 PHP in cents
         const baseAmountCents = Math.round(totalPrice * 100);
@@ -1329,7 +1329,7 @@ const createCheckoutSessionPassportPenalty = async (req, res) => {
 
 
         const successUrl = `${FRONTEND_URL}/user-applications/success/passport?token=${token}`;
-        const cancelUrl = `${FRONTEND_URL}/user-applications?status=cancel`;
+        const cancelUrl = `${FRONTEND_URL}/home?payment=cancelled`;
 
         const baseAmountCents = Math.round(penaltyAmount * 100);
         const convenienceFeeCents = Math.round(baseAmountCents * 0.035); // 3.5% convenience fee
@@ -1428,7 +1428,7 @@ const createCheckoutSessionVisaPenalty = async (req, res) => {
 
 
         const successUrl = `${FRONTEND_URL}/user-applications/success/visa?token=${token}`;
-        const cancelUrl = `${FRONTEND_URL}/user-applications?status=cancel`;
+        const cancelUrl = `${FRONTEND_URL}/home?payment=cancelled`;
 
         const baseAmountCents = Math.round(penaltyAmount * 100);
         const convenienceFeeCents = Math.round(baseAmountCents * 0.035); // 3.5% convenience fee
