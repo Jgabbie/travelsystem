@@ -45,7 +45,7 @@ export default function LandingPage() {
     const [popularSlideIndex, setPopularSlideIndex] = useState(0)
     const [popularCardsPerView, setPopularCardsPerView] = useState(3)
 
-
+    const [openPaymentCancelledModal, setOpenPaymentCancelledModal] = useState(false);
 
     //handle contact form values
     const [contactValues, setContactValues] = useState({
@@ -552,6 +552,18 @@ export default function LandingPage() {
             setForYouSlideIndex(0)
         }
     }, [forYouSlides.length])
+
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get("payment") === "cancelled") {
+            setOpenPaymentCancelledModal(true);
+
+            // Remove the query parameter so it won't show again on refresh
+            window.history.replaceState({}, "", window.location.pathname);
+        }
+    }, []);
 
 
     //format package price
@@ -1765,6 +1777,31 @@ export default function LandingPage() {
                             <div className="card-cta">View Profile →</div>
                         </div>
                     </div>
+                </div>
+            </Modal>
+
+
+            <Modal
+                open={openPaymentCancelledModal}
+                footer={null}
+                closable={false}
+                centered
+            >
+                <div className="emailverify-container-modal">
+                    <h1 className="emailverify-heading-modal">
+                        Payment Cancelled
+                    </h1>
+
+                    <p className="emailverify-secondary-heading-modal">
+                        Your payment was cancelled. No charges were made to your account.
+                    </p>
+
+                    <Button
+                        type="primary"
+                        onClick={() => setOpenPaymentCancelledModal(false)}
+                    >
+                        OK
+                    </Button>
                 </div>
             </Modal>
 

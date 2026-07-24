@@ -1524,12 +1524,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
         const bookingReference = paymentPayload.bookingReference;
         const packageId = paymentPayload.packageId;
         const successUrl = `${FRONTEND_URL}/booking-payment/success?token=${token}`;
-        const cancelUrl = `${FRONTEND_URL}/user-booking-invoice/${bookingReference}?status=cancel`;
-
-        console.log({
-            successUrl,
-            cancelUrl,
-        });
+        const cancelUrl = `${FRONTEND_URL}/?payment=cancelled`;
 
 
         const packageDoc = await PackageModel.findById(packageId).select('packageName');
