@@ -45,6 +45,11 @@ router.post(
     bookingController.verifyTokenCheckout
 );
 
+router.get(
+    '/check-payment-status',
+    bookingController.checkPaymentStatus
+);
+
 router.post(
     '/:id/resubmit-documents',
     bookingController.resubmitBookingDocuments

@@ -1027,6 +1027,50 @@ const verifyTokenCheckout = async (req, res) => {
     }
 }
 
+
+const checkPaymentStatus = async (req, res) => {
+    const { token } = req.query;
+
+    try {
+        if (!token) {
+            return res.status(400).json({
+                paid: false,
+                message: 'Token is required'
+            });
+        }
+
+        const tokenCheckout = await TokenCheckoutModel.findOne({ token });
+
+        if (!tokenCheckout) {
+            return res.status(404).json({
+                paid: false,
+                message: 'Invalid token'
+            });
+        }
+
+        const bookingId = tokenCheckout.bookingId;
+
+        // Look for any successful transaction for this booking
+        const successfulTransaction = await TransactionModel.findOne({
+            bookingId,
+            status: 'Successful'
+        }).lean();
+
+        return res.status(200).json({
+            paid: Boolean(successfulTransaction),
+            bookingId,
+            reference: successfulTransaction?.reference || null
+        });
+
+    } catch (error) {
+        console.error('Error checking payment status:', error);
+        return res.status(500).json({
+            paid: false,
+            message: 'Server error'
+        });
+    }
+};
+
 export {
     createBooking,
     getUserBookings,
@@ -1043,6 +1087,7 @@ export {
     restoreArchivedCancellation,
     getBookingByReference,
     verifyTokenCheckout,
+    checkPaymentStatus,
     approveCancellation,
     disApproveCancellation,
     requestDocumentResubmission,
