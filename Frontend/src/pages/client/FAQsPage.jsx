@@ -1,61 +1,11 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { Button, Collapse, ConfigProvider, Input, Typography } from 'antd'
 import { FacebookFilled, InstagramFilled, SearchOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
+import apiFetch from '../../config/fetchConfig';
 import '../../style/client/faqspage.css'
 
 const { Text } = Typography
-
-
-
-// faq data for the page
-const faqData = [
-    {
-        category: 'Bookings',
-        question: 'How do I book a tour package?',
-        answer: 'Go to Destinations, choose a package, then follow the booking steps. You will receive a booking reference after submission.'
-    },
-    {
-        category: 'Bookings',
-        question: 'Can I cancel a booking?',
-        answer: 'Yes. Open My Bookings, choose a booking, and submit a cancellation request with the required proof.'
-    },
-    {
-        category: 'Payments',
-        question: 'What payment methods are supported?',
-        answer: 'Payments are processed through the available options shown during checkout. If you need help, contact support.'
-    },
-    {
-        category: 'Quotations',
-        question: 'How do I request a quotation?',
-        answer: 'Use the quotation request page to submit your travel details. Our team will send a quote once reviewed.'
-    },
-    {
-        category: 'Account',
-        question: 'How do I reset my password?',
-        answer: 'Use the Reset Password page and follow the instructions sent to your email.'
-    },
-    {
-        category: 'Services',
-        question: 'Do you offer visa and passport services?',
-        answer: 'Yes. Visit the Services page for passport and visa assistance options.'
-    },
-    {
-        category: 'Services',
-        question: 'What documents do I need to prepare?',
-        answer: 'Refer to the requirements section above for a general list. Specific services may have additional requirements.'
-    },
-    {
-        category: 'Services',
-        question: 'How long does the process take?',
-        answer: 'Processing times vary by the DFA office and Embassy and the type of service you are applying for. After submission, you will receive updates on your application status.'
-    },
-    {
-        category: 'Services',
-        question: 'Can I reschedule my appointment?',
-        answer: 'Rescheduling policies depend on the DFA office. If you need to change your appointment, please contact the DFA office directly.'
-    }
-]
 
 
 
@@ -63,20 +13,21 @@ export default function FAQsPage() {
     const navigate = useNavigate()
     const [searchTerm, setSearchTerm] = useState('')
     const [activeCategory, setActiveCategory] = useState('All')
+    const [faqs, setFaqs] = useState([]);
 
 
     // chatbot modal handlers
     const categories = useMemo(() => {
-        const unique = new Set(faqData.map((item) => item.category))
-        return ['All', ...Array.from(unique)]
-    }, [])
+        const unique = new Set(faqs.map((item) => item.category));
+        return ["All", ...Array.from(unique)];
+    }, [faqs]);
 
 
     // filter the faq data based on search term and active category
     const filteredFaqs = useMemo(() => {
         const term = searchTerm.trim().toLowerCase()
 
-        return faqData.filter((item) => {
+        return faqs.filter((item) => {
             const matchesTerm =
                 !term ||
                 item.question.toLowerCase().includes(term) ||
@@ -84,11 +35,12 @@ export default function FAQsPage() {
             const matchesCategory = activeCategory === 'All' || item.category === activeCategory
             return matchesTerm && matchesCategory
         })
-    }, [activeCategory, searchTerm])
+    }, [activeCategory, searchTerm, faqs])
+
 
     const collapseItems = useMemo(() => {
         return filteredFaqs.map((item) => ({
-            key: `${item.category}-${item.question}`,
+            key: item._id,
             label: item.question,
             className: 'faq-question',
             children: (
@@ -99,6 +51,22 @@ export default function FAQsPage() {
         }))
     }, [filteredFaqs])
 
+
+    useEffect(() => {
+        const getFAQs = async () => {
+            try {
+                const response = await apiFetch.get("/faqs/get-faqs");
+                setFaqs(response);
+            } catch (error) {
+                console.error("Status:", error.response?.status);
+                console.error("Data:", error.response?.data);
+                console.error("Message:", error.message);
+                console.error(error);
+            }
+        };
+
+        getFAQs();
+    }, []);
 
 
     return (

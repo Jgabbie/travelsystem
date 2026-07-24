@@ -295,6 +295,19 @@
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.visaservices-removefaq-button {
+    font-family: "Montserrat", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: #992A46;
+    color: #fff;
+    border-radius: 16px;
+    width: 100px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
 .visaservices-add-button {
     font-family: "Montserrat", sans-serif;
     font-size: 12px;
@@ -308,14 +321,31 @@
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-.visaservices-remove-button:hover {
+.visaservices-addfaq-button,
+.visaservices-editfaq-button {
+    font-family: "Montserrat", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 16px;
+    width: 100px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.visaservices-remove-button:hover,
+.visaservices-removefaq-button:hover {
     background-color: #7D2239 !important;
     color: #fff !important;
 }
 
 .visaservices-edit-button:hover,
 .visaservices-view-button:hover,
-.visaservices-add-button:hover {
+.visaservices-add-button:hover,
+.visaservices-addfaq-button:hover,
+.visaservices-editfaq-button:hover {
     background-color: #244575 !important;
     color: #fff !important;
 }
@@ -472,6 +502,52 @@
     border: 1px solid #e5e7eb;
     border-radius: 10px;
 }
+
+
+.visaservices-empty-faqs {
+    padding: 8px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+
+.visaservices-empty-faqs .ant-empty-description {
+    color: #8c8c8c;
+    font-size: 12px;
+}
+
+.visaservices-faq-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.visaservices-faq-table th,
+.visaservices-faq-table td {
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    vertical-align: top;
+    text-align: left;
+    border-radius: 8px;
+}
+
+.visaservices-faq-table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    color: #333;
+}
+
+.visaservices-faq-table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.visaservices-faq-table tbody tr:hover {
+    background-color: #f0f7ff;
+}
+
+
 
 @media (max-width: 900px) {
     .visa-card-layout {

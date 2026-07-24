@@ -71,7 +71,16 @@ export default function TransactionManagement() {
   const [isTransactionRestoredModalOpen, setIsTransactionRestoredModalOpen] = useState(false);
   const [isManageMethodModalOpen, setIsManageMethodModalOpen] = useState(false);
 
-  const [manageMethodForm] = Form.useForm();
+  const initialMethod = {
+    paymentType: "",
+    number: "",
+    accountName: "",
+    additionalInfo: "",
+  };
+
+  const [methodData, setMethodData] = useState(initialMethod);
+  const [methodErrors, setMethodErrors] = useState({});
+
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [savingMethod, setSavingMethod] = useState(false);
@@ -676,18 +685,45 @@ export default function TransactionManagement() {
   };
 
 
+  const validateMethod = () => {
+    const errors = {};
+
+    if (!methodData.paymentType.trim()) {
+      errors.paymentType = "Payment type is required";
+    }
+
+    if (!methodData.number.trim()) {
+      errors.number = "Account number is required";
+    } else if (!/^\d+$/.test(methodData.number)) {
+      errors.number = "Only numbers are allowed.";
+    }
+
+    if (!methodData.accountName.trim()) {
+      errors.accountName = "Account name is required";
+    }
+
+    if (Object.keys(errors).length) {
+      setMethodErrors(errors);
+      return false;
+    }
+
+    setMethodErrors({});
+    return true;
+  };
+
+
   const savePaymentMethod = async () => {
     try {
-      const values = await manageMethodForm.validateFields();
+      if (!validateMethod()) return;
 
       setSavingMethod(true);
 
       const formData = new FormData();
 
-      formData.append("paymentType", values.paymentType);
-      formData.append("number", values.number);
-      formData.append("accountName", values.accountName);
-      formData.append("additionalInfo", values.additionalInfo || "");
+      formData.append("paymentType", methodData.paymentType);
+      formData.append("number", methodData.number);
+      formData.append("accountName", methodData.accountName);
+      formData.append("additionalInfo", methodData.additionalInfo);
 
       if (selectedImage) {
         formData.append("image", selectedImage);
@@ -733,7 +769,8 @@ export default function TransactionManagement() {
         placement: "topRight",
       });
 
-      manageMethodForm.resetFields();
+      setMethodData(initialMethod);
+      setMethodErrors({});
       setSelectedImage(null);
       setImagePreview("");
       setIsManageMethodModalOpen(false);
@@ -754,11 +791,11 @@ export default function TransactionManagement() {
   const editPaymentMethod = (method) => {
     setEditingMethod(method);
 
-    manageMethodForm.setFieldsValue({
-      paymentType: method.paymentType,
-      number: method.number,
-      accountName: method.accountName,
-      additionalInfo: method.additionalInfo,
+    setMethodData({
+      paymentType: method.paymentType || "",
+      number: method.number || "",
+      accountName: method.accountName || "",
+      additionalInfo: method.additionalInfo || "",
     });
 
     setImagePreview(method.image);
@@ -791,7 +828,8 @@ export default function TransactionManagement() {
 
 
   const closeManageMethodModal = () => {
-    manageMethodForm.resetFields();
+    setMethodData(initialMethod);
+    setMethodErrors({});
 
     setSelectedImage(null);
     setImagePreview("");
@@ -1674,171 +1712,177 @@ export default function TransactionManagement() {
             <Row gutter={24}>
               {/* LEFT SIDE - FORM */}
               <Col span={10}>
-                <Form
-                  layout="vertical"
-                  form={manageMethodForm}
-                >
-                  <Form.Item
-                    label="Payment Type"
-                    name="paymentType"
-                    normalize={(value) => value?.trimStart()}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Payment type is required",
-                      },
-                      {
-                        max: 50,
-                        message: "Maximum of 50 characters.",
-                      },
-                      {
-                        pattern: /^[A-Za-z0-9&.\-\s]+$/,
-                        message: "Only letters, numbers, spaces, &, . and - are allowed.",
-                      },
-                    ]}
+
+                <div style={{ marginBottom: 10 }}>
+                  <label className="transactionmanagement-label">Payment Type</label>
+                  <Input
+                    placeholder="GCash, Maya, BDO, BPI..."
+                    maxLength={50}
+                    value={methodData.paymentType}
+                    onChange={(e) => {
+                      const value = e.target.value
+                        .replace(/[^A-Za-z0-9&.\-\s]/g, "")
+                        .replace(/\s{2,}/g, " ")
+                        .replace(/^\s+/, "");
+
+                      setMethodData((prev) => ({
+                        ...prev,
+                        paymentType: value,
+                      }));
+                    }}
+                  />
+                  {methodErrors.paymentType && (
+                    <div style={{ color: "red", fontSize: 12 }}>
+                      {methodErrors.paymentType}
+                    </div>
+                  )}
+                </div>
+
+
+                <div style={{ marginBottom: 10 }}>
+                  <label className="transactionmanagement-label">Account Number</label>
+                  <Input
+                    placeholder="0123456789"
+                    maxLength={30}
+                    inputMode="numeric"
+                    value={methodData.number}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+
+                      setMethodData((prev) => ({
+                        ...prev,
+                        number: value,
+                      }));
+                    }}
+                  />
+                  {methodErrors.number && (
+                    <div style={{ color: "red", fontSize: 12 }}>
+                      {methodErrors.number}
+                    </div>
+                  )}
+                </div>
+
+
+
+                <div style={{ marginBottom: 10 }}>
+                  <label className="transactionmanagement-label">Account Name</label>
+                  <Input
+                    maxLength={100}
+                    placeholder="Juan Dela Cruz"
+                    value={methodData.accountName}
+                    onChange={(e) => {
+                      const value = e.target.value
+                        .replace(/[^A-Za-z0-9\s.,&'-]/g, "")
+                        .replace(/\s{2,}/g, " ")
+                        .replace(/^\s+/, "");
+
+                      setMethodData((prev) => ({
+                        ...prev,
+                        accountName: value,
+                      }));
+                    }}
+                  />
+                  {methodErrors.accountName && (
+                    <div style={{ color: "red", fontSize: 12 }}>
+                      {methodErrors.accountName}
+                    </div>
+                  )}
+                </div>
+
+
+
+                <div style={{ marginBottom: 10 }}>
+                  <label className="transactionmanagement-label">Additional Info</label>
+                  <Input.TextArea
+                    rows={3}
+                    placeholder="Optional"
+                    maxLength={150}
+                    showCount
+                    value={methodData.additionalInfo}
+                    onChange={(e) => {
+                      const value = e.target.value
+                        .replace(/^\s+/, "")
+                        .replace(/\s{2,}/g, " ");
+
+                      setMethodData((prev) => ({
+                        ...prev,
+                        additionalInfo: value,
+                      }));
+                    }}
+                  />
+                  {methodErrors.additionalInfo && (
+                    <div style={{ color: "red", fontSize: 12 }}>
+                      {methodErrors.additionalInfo}
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ marginBottom: 10 }}>
+                  <Upload
+                    beforeUpload={(file) => {
+                      const isImage = file.type.startsWith("image/");
+
+                      if (!isImage) {
+                        message.error("Only image files are allowed.");
+                        return Upload.LIST_IGNORE;
+                      }
+
+                      const isLt5M = file.size / 1024 / 1024 < 5;
+
+                      if (!isLt5M) {
+                        message.error("Image must be smaller than 5 MB.");
+                        return Upload.LIST_IGNORE;
+                      }
+
+                      return false;
+                    }}
+                    maxCount={1}
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    showUploadList={false}
+                    onChange={handleMethodImageChange}
                   >
-                    <Input
-                      placeholder="GCash, Maya, BDO, BPI..."
-                      maxLength={50}
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    label="Account Number"
-                    name="number"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Account number is required",
-                      },
-                      {
-                        pattern: /^[0-9]+$/,
-                        message: "Only numbers are allowed.",
-                      },
-                      {
-                        max: 30,
-                        message: "Maximum of 30 digits.",
-                      },
-                    ]}
-                  >
-                    <Input
-                      maxLength={30}
-                      inputMode="numeric"
-                      onChange={(e) => {
-                        e.target.value = e.target.value.replace(/\D/g, "");
-                      }}
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    label="Account Name"
-                    name="accountName"
-                    normalize={(value) => value?.trimStart()}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Account name is required",
-                      },
-                      {
-                        max: 100,
-                        message: "Maximum of 100 characters.",
-                      },
-                      {
-                        pattern: /^[A-Za-z0-9\s.,&'-]+$/,
-                        message: "Contains invalid characters.",
-                      },
-                    ]}
-                  >
-                    <Input
-                      maxLength={100}
-                      placeholder="Juan Dela Cruz"
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    label="Additional Information"
-                    name="additionalInfo"
-                    rules={[
-                      {
-                        max: 255,
-                        message: "Maximum of 255 characters.",
-                      },
-                    ]}
-                  >
-                    <Input.TextArea
-                      rows={3}
-                      placeholder="Optional"
-                      maxLength={255}
-                      showCount
-                    />
-                  </Form.Item>
-
-                  <Form.Item label="QR / Logo">
-                    <Upload
-                      beforeUpload={(file) => {
-                        const isImage = file.type.startsWith("image/");
-
-                        if (!isImage) {
-                          message.error("Only image files are allowed.");
-                          return Upload.LIST_IGNORE;
-                        }
-
-                        const isLt5M = file.size / 1024 / 1024 < 5;
-
-                        if (!isLt5M) {
-                          message.error("Image must be smaller than 5 MB.");
-                          return Upload.LIST_IGNORE;
-                        }
-
-                        return false;
-                      }}
-                      maxCount={1}
-                      accept="image/png,image/jpeg,image/jpg,image/webp"
-                      showUploadList={false}
-                      onChange={handleMethodImageChange}
-                    >
-                      <Button
-                        icon={<UploadOutlined />}
-                        style={{ width: "100%" }}
-                      >
-                        Upload Image (Optional)
-                      </Button>
-                    </Upload>
-
-                    {imagePreview && (
-                      <div
-                        style={{
-                          marginTop: 15,
-                          textAlign: "center",
-                        }}
-                      >
-                        <Image
-                          src={imagePreview}
-                          width={180}
-                        />
-                      </div>
-                    )}
-                  </Form.Item>
-
-                  <Space style={{ width: "100%", justifyContent: "flex-end" }}>
                     <Button
-                      type="primary"
-                      onClick={closeManageMethodModal}
-                      className="transactionmanagement-modal-cancel-button"
+                      icon={<UploadOutlined />}
+                      style={{ width: "100%" }}
                     >
-                      Cancel
+                      Upload Image (Optional)
                     </Button>
+                  </Upload>
 
-                    <Button
-                      type="primary"
-                      loading={savingMethod}
-                      onClick={savePaymentMethod}
-                      className="transactionmanagement-modal-save-button"
+                  {imagePreview && (
+                    <div
+                      style={{
+                        marginTop: 15,
+                        textAlign: "center",
+                      }}
                     >
-                      {editingMethod ? "Update" : "Save"}
-                    </Button>
-                  </Space>
-                </Form>
+                      <Image
+                        src={imagePreview}
+                        width={180}
+                      />
+                    </div>
+                  )}
+                </div>
+
+
+                <Space style={{ width: "100%", justifyContent: "flex-end" }}>
+                  <Button
+                    type="primary"
+                    onClick={closeManageMethodModal}
+                    className="transactionmanagement-modal-cancel-button"
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    type="primary"
+                    loading={savingMethod}
+                    onClick={savePaymentMethod}
+                    className="transactionmanagement-modal-save-button"
+                  >
+                    {editingMethod ? "Update" : "Save"}
+                  </Button>
+                </Space>
               </Col>
 
               {/* RIGHT SIDE - LIST */}
@@ -1944,7 +1988,8 @@ export default function TransactionManagement() {
 
         </div >
 
-      )}
+      )
+      }
 
     </ConfigProvider >
   );

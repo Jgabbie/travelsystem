@@ -1,4 +1,4 @@
-import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, ConfigProvider, Spin, notification } from "antd";
+import { Input, Button, Card, Row, Col, Select, Statistic, Empty, Modal, ConfigProvider, Spin, notification } from "antd";
 import { PlusOutlined, IdcardOutlined, SearchOutlined, AppstoreOutlined, EditOutlined, CheckCircleOutlined, DeleteOutlined, EyeOutlined, CheckCircleFilled, InboxOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -26,12 +26,32 @@ export default function VisaServices() {
     const [serviceToDelete, setServiceToDelete] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    const [isFAQModalOpen, setIsFAQModalOpen] = useState(false);
+    const [faqs, setFaqs] = useState([]);
+    const [editingFAQ, setEditingFAQ] = useState(null);
+
+    const [faqForm, setFaqForm] = useState({
+        question: "",
+        answer: "",
+        category: ""
+    });
+
     const formatListItem = (item) => {
         if (typeof item === "string") return item;
         if (item && typeof item === "object") {
             return item.title || item.req || item.description || item.desc || "";
         }
         return "";
+    };
+
+
+    const getFAQs = async () => {
+        try {
+            const response = await apiFetch.get("/faqs/get-faqs");
+            setFaqs(response);
+        } catch (err) {
+            console.error(err);
+        }
     };
 
 
@@ -78,6 +98,7 @@ export default function VisaServices() {
 
     useEffect(() => {
         getServices();
+        getFAQs();
     }, []);
 
 
@@ -105,7 +126,7 @@ export default function VisaServices() {
         } catch (error) {
             console.error("Failed to delete visa service:", error);
             notification.error({
-                message: "Failed to archive visa service",
+                title: "Failed to archive visa service",
                 placement: "topRight",
             });
         }
@@ -121,7 +142,7 @@ export default function VisaServices() {
         } catch (error) {
             console.error("Failed to restore visa service:", error)
             notification.error({
-                message: "Failed to restore visa service",
+                title: "Failed to restore visa service",
                 placement: "topRight",
             });
         }
@@ -142,6 +163,76 @@ export default function VisaServices() {
     });
 
     const totalServices = servicesData.length;
+
+
+    const handleSaveFAQ = async () => {
+        try {
+
+            if (editingFAQ) {
+                await apiFetch.put(`/faqs/${editingFAQ._id}/update-faq`, faqForm);
+
+                notification.success({
+                    title: "FAQ updated successfully."
+                });
+
+            } else {
+
+                await apiFetch.post("/faqs/create-faq", faqForm);
+
+                notification.success({
+                    title: "FAQ added successfully."
+                });
+            }
+
+            setFaqForm({
+                question: "",
+                answer: "",
+                category: ""
+            });
+
+            setEditingFAQ(null);
+            getFAQs();
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+
+    const handleEditFAQ = (faq) => {
+        setEditingFAQ(faq);
+
+        setFaqForm({
+            question: faq.question,
+            answer: faq.answer,
+            category: faq.category
+        });
+    };
+
+
+    const handleDeleteFAQ = async (id) => {
+
+        try {
+
+            await apiFetch.delete(`/faqs/${id}/delete-faq`);
+
+            notification.success({
+                title: "FAQ deleted."
+            });
+
+            getFAQs();
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+
+
+
+
+
+
 
 
 
@@ -212,6 +303,14 @@ export default function VisaServices() {
                         </div>
 
                         <div className="visaservices-actions-buttons">
+                            <Button
+                                className="visaservices-add-button"
+                                type="primary"
+                                icon={<EditOutlined />}
+                                onClick={() => setIsFAQModalOpen(true)}
+                            >
+                                Manage FAQs
+                            </Button>
                             <Button
                                 className="visaservices-add-button"
                                 type="primary"
@@ -559,7 +658,166 @@ export default function VisaServices() {
                 </Modal>
 
 
+                <Modal
+                    title="Manage FAQs"
+                    open={isFAQModalOpen}
+                    width={900}
+                    footer={null}
+                    onCancel={() => {
+                        setIsFAQModalOpen(false);
+                        setEditingFAQ(null);
 
+                        setFaqForm({
+                            question: "",
+                            answer: "",
+                            category: ""
+                        });
+                    }}
+                >
+
+                    <div style={{ marginBottom: 10 }}>
+                        <label className="visaservices-label">Question</label>
+                        <Input
+                            maxLength={120}
+                            showCount
+                            placeholder="Question"
+                            value={faqForm.question}
+                            onChange={(e) => {
+                                const value = e.target.value
+                                    .replace(/[^a-zA-Z0-9\s.,?!'()-]/g, "")
+                                    .replace(/\s{2,}/g, " ")
+                                    .replace(/^\s+/, "");
+
+                                setFaqForm({
+                                    ...faqForm,
+                                    question: value
+                                });
+                            }}
+                            style={{ marginBottom: 10 }}
+                        />
+                    </div>
+
+                    <div style={{ marginBottom: 10 }}>
+                        <label className="visaservices-label">Answer</label>
+                        <Input.TextArea
+                            rows={4}
+                            maxLength={250}
+                            showCount
+                            placeholder="Answer"
+                            value={faqForm.answer}
+                            onChange={(e) => {
+                                const value = e.target.value
+                                    .replace(/[^a-zA-Z0-9\s.,?!'"():;/-]/g, "")
+                                    .replace(/\s{2,}/g, " ")
+                                    .replace(/^\s+/, "");
+
+                                setFaqForm({
+                                    ...faqForm,
+                                    answer: value
+                                });
+                            }}
+                            style={{ marginBottom: 10 }}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="visaservices-label">Category</label>
+                        <Select
+                            placeholder="Select Category"
+                            value={faqForm.category || undefined}
+                            onChange={(value) =>
+                                setFaqForm({
+                                    ...faqForm,
+                                    category: value
+                                })
+                            }
+                            style={{ width: "100%", marginBottom: 20 }}
+                            options={[
+                                {
+                                    value: "Bookings",
+                                    label: "Bookings"
+                                },
+                                {
+                                    value: "Payments",
+                                    label: "Payments"
+                                },
+                                {
+                                    value: "Quotations",
+                                    label: "Quotations"
+                                },
+                                {
+                                    value: "Student Visa",
+                                    label: "Student Visa"
+                                },
+                                {
+                                    value: "Account",
+                                    label: "Account"
+                                },
+                                {
+                                    value: "Services",
+                                    label: "Services"
+                                }
+                            ]}
+                        />
+                    </div>
+
+
+                    <Button
+                        type="primary"
+                        className="visaservices-addfaq-button"
+                        onClick={handleSaveFAQ}
+                        style={{ marginBottom: 20 }}
+                    >
+                        {editingFAQ ? "Update FAQ" : "Add FAQ"}
+                    </Button>
+
+                    <table className="visaservices-faq-table" style={{ width: "100%" }}>
+                        <thead>
+                            <tr>
+                                <th>Question</th>
+                                <th>Answer</th>
+                                <th>Category</th>
+                                <th width="150">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {faqs.length > 0 ? (
+                                faqs.map((faq) => (
+                                    <tr key={faq.id}>
+                                        <td>{faq.question}</td>
+                                        <td>{faq.answer}</td>
+                                        <td>{faq.category}</td>
+                                        <td>
+                                            <Button
+                                                className="visaservices-editfaq-button"
+                                                icon={<EditOutlined />}
+                                                onClick={() => handleEditFAQ(faq)}
+                                            />
+
+                                            <Button
+                                                className="visaservices-removefaq-button"
+                                                icon={<DeleteOutlined />}
+                                                style={{ marginLeft: 8 }}
+                                                onClick={() => handleDeleteFAQ(faq.id)}
+                                            />
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={4} style={{ textAlign: "center", padding: "24px" }}>
+                                        <Empty
+                                            className="visaservices-empty-faqs"
+                                            description="No FAQs found"
+                                        />
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+
+                </Modal>
 
 
 
