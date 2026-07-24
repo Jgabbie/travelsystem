@@ -374,7 +374,9 @@ export default function AdminProfile() {
                                         >
                                             Change Photo
                                         </Button>
-                                        <p className="profile-avatar-help">PNG/JPG up to 2MB.</p>
+                                        <p className="profile-avatar-help">
+                                            PNG, JPG, JPEG or WebP, maximum file size of 2MB.
+                                        </p>
 
                                     </div>
                                 )}

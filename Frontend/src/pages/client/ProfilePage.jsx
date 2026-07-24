@@ -842,7 +842,7 @@ export default function ProfilePage() {
                                             </Button>
 
                                             <p className="profile-avatar-help">
-                                                PNG or JPG, maximum file size of 2MB.
+                                                PNG, JPG, JPEG or WebP, maximum file size of 2MB.
                                             </p>
                                         </div>
                                     )}
