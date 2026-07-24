@@ -210,11 +210,15 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const resendOTP = async (e) => {
         e.preventDefault()
         setErrorOTP("")
+
         notificationApi.success({
             message: "OTP Resent",
             description: "The OTP has been sent to your email again.",
             placement: "topRight",
         });
+
+        setOTP("");
+
         try {
             await apiFetch.post('/auth/send-verify-otp', { email: email })
             setTimer(60)
