@@ -609,6 +609,24 @@ export default function LandingPage() {
     }, [navigate]);
 
 
+    //disable back button
+    useEffect(() => {
+        // Push current page into history
+        window.history.pushState(null, "", window.location.href);
+
+        const handleBackButton = () => {
+            // Push it again to prevent going back
+            window.history.pushState(null, "", window.location.href);
+        };
+
+        window.addEventListener("popstate", handleBackButton);
+
+        return () => {
+            window.removeEventListener("popstate", handleBackButton);
+        };
+    }, []);
+
+
     //format package price
     const formatPackagePrice = (price) => {
         const numericPrice = Number(price)
