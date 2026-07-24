@@ -147,7 +147,7 @@ export default function ResetPassword() {
             return "Email is required."
         }
         if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)) {
-            return "Invalid email address."
+            return "Invalid Email Address."
         }
         return ""
     }

@@ -85,7 +85,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
         }
         if (field === "email") {
             if (value === "") return "Email is required.";
-            if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) return "Invalid Email.";
+            if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) return "Invalid Email Address.";
         }
         if (field === "phone") {
             if (value === "") return "Phone number is required.";
