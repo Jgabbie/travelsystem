@@ -65,6 +65,17 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     }
 
 
+    const validateOTP = (value) => {
+        if (value === "") {
+            return "OTP is required."
+        }
+        if (!/^\d{6}$/.test(value)) {
+            return "OTP must be a 6-digit number."
+        }
+        return ""
+    }
+
+
     //login function
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -150,6 +161,13 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     //submit OTP function, verify OTP and login user
     const submitOTP = async (e) => {
         e.preventDefault();
+
+        const otpError = validateOTP(getOTP);
+        if (otpError) {
+            setErrorOTP(otpError);
+            return;
+        }
+
         setIsLoading(true);
 
         try {

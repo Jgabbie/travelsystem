@@ -115,6 +115,7 @@ export default function ResetPassword() {
         });
 
         setOTP("")
+        setErrorOTP("")
 
         try {
             await apiFetch.post('/auth/send-reset-otp', { email: getEmail })
