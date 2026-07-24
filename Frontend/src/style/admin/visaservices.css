@@ -518,6 +518,15 @@
     font-size: 12px;
 }
 
+
+.visaservices-faq-table-wrapper {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+}
+
+
 .visaservices-faq-table {
     width: 100%;
     border-collapse: collapse;
@@ -546,6 +555,8 @@
 .visaservices-faq-table tbody tr:hover {
     background-color: #f0f7ff;
 }
+
+
 
 
 

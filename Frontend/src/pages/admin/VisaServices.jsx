@@ -771,51 +771,54 @@ export default function VisaServices() {
                         {editingFAQ ? "Update FAQ" : "Add FAQ"}
                     </Button>
 
-                    <table className="visaservices-faq-table" style={{ width: "100%" }}>
-                        <thead>
-                            <tr>
-                                <th>Question</th>
-                                <th>Answer</th>
-                                <th>Category</th>
-                                <th width="150">Actions</th>
-                            </tr>
-                        </thead>
+                    <div className="visaservices-faq-table-wrapper">
+                        <table className="visaservices-faq-table" style={{ width: "100%" }}>
+                            <thead>
+                                <tr>
+                                    <th>Question</th>
+                                    <th>Answer</th>
+                                    <th>Category</th>
+                                    <th width="150">Actions</th>
+                                </tr>
+                            </thead>
 
-                        <tbody>
-                            {faqs.length > 0 ? (
-                                faqs.map((faq) => (
-                                    <tr key={faq.id}>
-                                        <td>{faq.question}</td>
-                                        <td>{faq.answer}</td>
-                                        <td>{faq.category}</td>
-                                        <td>
-                                            <Button
-                                                className="visaservices-editfaq-button"
-                                                icon={<EditOutlined />}
-                                                onClick={() => handleEditFAQ(faq)}
-                                            />
+                            <tbody>
+                                {faqs.length > 0 ? (
+                                    faqs.map((faq) => (
+                                        <tr key={faq._id}>
+                                            <td>{faq.question}</td>
+                                            <td>{faq.answer}</td>
+                                            <td>{faq.category}</td>
+                                            <td>
+                                                <Button
+                                                    className="visaservices-editfaq-button"
+                                                    icon={<EditOutlined />}
+                                                    onClick={() => handleEditFAQ(faq)}
+                                                />
 
-                                            <Button
-                                                className="visaservices-removefaq-button"
-                                                icon={<DeleteOutlined />}
-                                                style={{ marginLeft: 8 }}
-                                                onClick={() => handleDeleteFAQ(faq.id)}
+                                                <Button
+                                                    className="visaservices-removefaq-button"
+                                                    icon={<DeleteOutlined />}
+                                                    style={{ marginLeft: 8 }}
+                                                    onClick={() => handleDeleteFAQ(faq._id)}
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={4} style={{ textAlign: "center", padding: "24px" }}>
+                                            <Empty
+                                                className="visaservices-empty-faqs"
+                                                description="No FAQs found"
                                             />
                                         </td>
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={4} style={{ textAlign: "center", padding: "24px" }}>
-                                        <Empty
-                                            className="visaservices-empty-faqs"
-                                            description="No FAQs found"
-                                        />
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
 
                 </Modal>
 

@@ -179,6 +179,57 @@ export default function QuotationsPaymentProcess() {
     }, [hasQuotationBookingData, navigate, searchParams]);
 
 
+    // check if the payment is already successful
+    useEffect(() => {
+        const checkIfAlreadyPaid = async () => {
+            try {
+                const savedState = sessionStorage.getItem(PAYMENT_STATE_KEY);
+
+                if (!savedState) return;
+
+                const parsed = JSON.parse(savedState);
+                const paymentToken = parsed?.pendingBooking?.paymentToken;
+
+                if (!paymentToken) return;
+
+                const response = await apiFetch.get(
+                    `/booking/check-payment-status?token=${paymentToken}`
+                );
+
+                // If webhook already marked it as paid,
+                // go directly to success page
+                if (response?.paid) {
+                    sessionStorage.removeItem("returningFromPayMongo");
+
+                    navigate(
+                        `/booking-payment/success?token=${paymentToken}`,
+                        { replace: true }
+                    );
+                }
+
+            } catch (error) {
+                console.error('Payment status check failed:', error);
+            }
+        };
+
+        // Run when page becomes visible again
+        const returning = sessionStorage.getItem("returningFromPayMongo");
+
+        if (!returning) return;
+
+        checkIfAlreadyPaid();
+
+        // Also run when user returns from another tab/app
+        const handleFocus = () => checkIfAlreadyPaid();
+        window.addEventListener('focus', handleFocus);
+
+
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+        };
+    }, [navigate]);
+
+
     //convert base64 to file object
     const base64ToFile = (base64Data, fileName, fileType) => {
         const arr = base64Data.split(',');
@@ -506,6 +557,7 @@ export default function QuotationsPaymentProcess() {
             setLoading(false);
 
             if (checkoutUrl) {
+                sessionStorage.setItem("returningFromPayMongo", "true");
                 window.location.href = checkoutUrl;
             } else {
                 console.error("PayMongo Response Structure:", paymongoResponse);
