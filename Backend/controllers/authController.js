@@ -1025,7 +1025,7 @@ const sendResetOtp = async (req, res) => {
         const hashedOtp = await bcrypt.hash(otp, 10);
 
         user.resetOtp = hashedOtp;
-        user.resetOtpExpireAt = Date.now() + 5 * 60 * 1000;
+        user.resetOtpExpireAt = Date.now() + 70 * 1000;
         user.resetOtpAttempts = 0;
         user.resetOtpBlockedUntil = 0;
 
@@ -1044,7 +1044,7 @@ const sendResetOtp = async (req, res) => {
                     </div>
 
                     <p style="margin:0 0 10px;">
-                        This OTP will expire in <strong>5 minutes</strong>.
+                        This OTP will expire in <strong>1 minute</strong>.
                     </p>
 
                     <p style="margin:0; font-size:13px; color:#64748b;">
