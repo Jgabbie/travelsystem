@@ -1077,14 +1077,42 @@ const checkResetOtp = async (req, res) => {
         return res.status(409).json({ message: "Email is not registered" })
     }
 
+    if (
+        user.resetOtpBlockedUntil &&
+        user.resetOtpBlockedUntil > Date.now()
+    ) {
+        return res.status(429).json({
+            message: "Too many OTP attempts. Please try again in 5 minutes."
+        });
+    }
+
     if (user.resetOtpExpireAt < Date.now()) {
         return res.status(409).json({ message: "OTP expired" })
     }
 
     const isValidOtp = await bcrypt.compare(otp, user.resetOtp)
+
     if (!isValidOtp) {
-        return res.status(409).json({ message: "Invalid OTP" })
+
+        user.resetOtpAttempts =
+            (user.resetOtpAttempts || 0) + 1;
+
+        if (user.resetOtpAttempts >= 3) {
+            user.resetOtpBlockedUntil =
+                Date.now() + 5 * 60 * 1000;
+
+            user.resetOtpAttempts = 0;
+        }
+
+        await user.save();
+
+        return res.status(409).json({
+            message: "Invalid OTP"
+        });
     }
+
+    user.resetOtpAttempts = 0;
+    user.resetOtpBlockedUntil = 0;
 
     const resetToken = jwt.sign({ id: user._id, scope: "password-reset" }, process.env.JWT_SECRET_RESET_KEY, { expiresIn: '5m' })
 

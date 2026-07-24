@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { Input, Button, Modal, Spin, ConfigProvider } from 'antd';
+import { Input, Button, Modal, Spin, ConfigProvider, Notification } from 'antd';
 import apiFetch from '../config/fetchConfig';
 import '../style/components/resetpasswordpage.css'
 import '../style/components/newpasswordpage.css'
@@ -15,6 +15,7 @@ export default function ResetPassword() {
     const [errorOTP, setErrorOTP] = useState("")
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [notificationApi, notificationContextHolder] = notification.useNotification();
 
     //otp modal timer effect
     useEffect(() => {
@@ -81,6 +82,21 @@ export default function ResetPassword() {
                 setErrorOTP(errorMsg)
             }
         } catch (err) {
+            if (err.status === 429) {
+                notificationApi.error({
+                    message: "Too many failed attempts",
+                    description:
+                        "Too many OTP attempts. Please try again in 5 minutes.",
+                    placement: "topRight",
+                });
+
+                setErrorOTP(
+                    "Too many OTP attempts. Please try again in 5 minutes."
+                );
+                return;
+            }
+
+
             const errorMsg = err.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             setErrorOTP(errorMsg)
@@ -92,6 +108,13 @@ export default function ResetPassword() {
     //resent OTP function
     const resendOTP = async (e) => {
         e.preventDefault()
+        notificationApi.success({
+            message: "OTP Resent",
+            description: "A new OTP has been sent.",
+        });
+
+        setOTP("")
+
         try {
             await apiFetch.post('/auth/send-reset-otp', { email: getEmail })
             setTimer(60)
@@ -229,6 +252,8 @@ export default function ResetPassword() {
             }}
         >
             <>
+                {notificationContextHolder}
+
                 {isLoading && (
                     <div className="resetpassword-loading-overlay">
                         <div className="resetpassword-loading-content">
