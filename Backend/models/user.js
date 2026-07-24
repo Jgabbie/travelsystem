@@ -22,11 +22,13 @@ const UserSchema = new mongoose.Schema({
     resetOtpAttempts: { type: Number, default: 0 },
     resetOtpBlockedUntil: { type: Number, default: 0 },
     otpAttempts: { type: Number, default: 0 },
-    otpBlockedUntil: { type: Number, default: 0 },
+    otpBlockedUntil: { type: Number, default: null },
     refreshToken: { type: String, default: '' },
     lastActivityAt: { type: Number, default: 0 },
     loginOnce: { type: Boolean, default: false },
-    isArchived: { type: Boolean, default: false }
+    isArchived: { type: Boolean, default: false },
+    loginAttempts: { type: Number, default: 0 },
+    loginBlockedUntil: { type: Date, default: null },
 }, { timestamps: true });
 
 const UserModel = mongoose.model("users", UserSchema);

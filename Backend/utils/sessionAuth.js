@@ -45,7 +45,7 @@
 // };
 
 
-const SESSION_IDLE_TIMEOUT_MS = 6 * 60 * 60 * 1000;
+const SESSION_IDLE_TIMEOUT_MS = 15 * 60 * 1000;;
 const ACCESS_TOKEN_MAX_AGE = 2 * 60 * 60 * 1000;
 const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 

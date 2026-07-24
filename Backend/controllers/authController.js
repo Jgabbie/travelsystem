@@ -268,10 +268,32 @@ const loginUser = async (req, res) => {
             return res.status(401).json({ message: "Invalid Username or Password" })
         }
 
+        if (user.loginBlockedUntil && user.loginBlockedUntil > Date.now()) {
+            return res.status(429).json({
+                message: "Too many failed login attempts. Try again in 5 minutes."
+            });
+        }
+
+
+
         const matchPass = await bcrypt.compare(password, user.hashedPassword)
         if (!matchPass) {
-            await logAction("LOGIN_FAILED", user._id, { Username: username });
-            return res.status(401).json({ message: "Invalid Username or Password" })
+            user.loginAttempts += 1;
+
+            if (user.loginAttempts >= 3) {
+                user.loginBlockedUntil = Date.now() + 5 * 60 * 1000; // 5 minutes
+                user.loginAttempts = 0;
+            }
+
+            await user.save();
+
+            await logAction("LOGIN_FAILED", user._id, {
+                Username: username
+            });
+
+            return res.status(401).json({
+                message: "Invalid Username or Password"
+            });
         }
 
         if (!user.isAccountVerified) {
@@ -284,6 +306,8 @@ const loginUser = async (req, res) => {
         const rawOtp = String(Math.floor(100000 + Math.random() * 900000));
         const hashedOtp = await bcrypt.hash(rawOtp, 10);
 
+        user.loginAttempts = 0;
+        user.loginBlockedUntil = null;
         user.verifyOtp = hashedOtp;
         user.verifyOtpExpireAt = Date.now() + 70 * 1000;
         user.otpAttempts = 0;
@@ -370,7 +394,7 @@ const allowLogin = async (req, res) => {
     if (!matchOtp) {
         user.otpAttempts += 1;
 
-        if (user.otpAttempts >= 5) {
+        if (user.otpAttempts >= 3) {
             user.otpBlockedUntil = Date.now() + 5 * 60 * 1000
             user.otpAttempts = 0
         }

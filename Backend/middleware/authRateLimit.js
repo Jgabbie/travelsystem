@@ -18,25 +18,25 @@ const createLimiter = ({
 
 export const loginLimiter = createLimiter({
     windowMs: 15 * 60 * 1000,
-    limit: 10,
+    limit: 3,
     message: "Too many login attempts. Please try again later."
 });
 
 export const otpRequestLimiter = createLimiter({
     windowMs: 10 * 60 * 1000,
-    limit: 5,
+    limit: 3,
     message: "Too many OTP requests. Please try again later."
 });
 
 export const otpVerificationLimiter = createLimiter({
     windowMs: 10 * 60 * 1000,
-    limit: 10,
+    limit: 3,
     message: "Too many verification attempts. Please try again later."
 });
 
 export const signupLimiter = createLimiter({
     windowMs: 60 * 60 * 1000,
-    limit: 10,
+    limit: 3,
     message: "Too many signup attempts. Please try again later."
 });
 

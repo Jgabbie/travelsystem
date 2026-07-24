@@ -69,6 +69,22 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const handleLogin = async (e) => {
         e.preventDefault();
 
+
+        if (values.username === "" || values.password === "") {
+            setError("Please fill in all required fields.");
+            return;
+        }
+
+        if (values.username.length < 8) {
+            setError("Username must be at least 8 characters.");
+            return;
+        }
+
+        if (values.password.length < 8) {
+            setError("Password must be at least 8 characters.");
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -105,6 +121,18 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                     return
                 }
             }
+
+            if (err.status === 429) {
+                setError("Too many failed login attempts. Please try again in 5 minutes.");
+                notificationApi.error({
+                    message: 'Too Many Login Attempts',
+                    description: "Please try again in 5 minutes.",
+                    placement: 'topRight',
+                });
+                return;
+            }
+
+
             const errorMsg = err.data?.message || 'Login failed';
             console.error("Error: ", errorMsg)
             setError(errorMsg)
@@ -163,7 +191,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
             if (err.status === 429) {
                 notificationApi.error({
                     message: 'Too many failed attempts',
-                    description: 'Please try again later.',
+                    description: 'Too many OTP attempts. Please try again in 5 minutes.',
                     placement: 'topRight',
                 });
                 clearForm();
@@ -274,7 +302,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                                     <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleLogin}>
                                         <div className='login-div-input-fields-modal'>
                                             <label className='login-labels-modal' htmlFor="username">Username <span style={{ color: "#ff0000" }}>*</span></label>
-                                            <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
+                                            <Input status={error ? "error" : ""} maxLength={20} minLength={8} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
                                                 if (e.key === " " || e.key === "Backspace") {
                                                     return;
                                                 }
@@ -287,7 +315,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
 
                                         <div className='login-div-input-fields-modal'>
                                             <label className='login-labels-modal' htmlFor="password">Password <span style={{ color: "#ff0000" }}>*</span></label>
-                                            <Input.Password status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' onKeyDown={(e) => {
+                                            <Input.Password status={error ? "error" : ""} maxLength={20} minLength={8} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' onKeyDown={(e) => {
                                                 if (e.key === " " && e.key !== "Backspace") {
                                                     e.preventDefault()
                                                 }
