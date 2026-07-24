@@ -62,7 +62,7 @@ const createBooking = async (req, res) => {
     const amount = bookingPayload.amount || 0
     const passportFiles = bookingPayload.passportFiles || []
     const photoFiles = bookingPayload.photoFiles || []
-    const expiresAt = dayjs().add(2, 'minutes').toDate() // 5 minutes from now
+    const expiresAt = dayjs().add(1, 'minutes').toDate() // 1 minute from now
 
     //find package by name to get its id, then create booking with that package id
     try {
