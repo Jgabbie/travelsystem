@@ -987,7 +987,7 @@ export default function TransactionManagement() {
                       icon={<SettingOutlined />}
                       onClick={() => setIsManageMethodModalOpen(true)}
                     >
-                      Manage Method
+                      Methods
                     </Button>
                   </>
                 )}
