@@ -386,6 +386,13 @@ body {
     border-radius: 0;
 }
 
+.signup-terms-error-modal {
+    height: 12px;
+    font-size: 10px;
+    color: #ff0000 !important;
+    text-align: left;
+}
+
 .signup-terms-modal .signup-terms-footer {
     display: flex;
     flex-direction: row;
