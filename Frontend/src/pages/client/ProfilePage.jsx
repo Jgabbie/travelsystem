@@ -198,6 +198,12 @@ export default function ProfilePage() {
         moods: [],
         tours: []
     });
+
+    const [originalPreferences, setOriginalPreferences] = useState({
+        moods: [],
+        tours: []
+    });
+
     const [editingPreferences, setEditingPreferences] = useState(false);
 
     // Removes invalid, duplicated, or outdated saved selections
@@ -577,7 +583,7 @@ export default function ProfilePage() {
                     tours: []
                 };
 
-                setPreferences({
+                const cleanedPreferences = {
                     moods: cleanSavedSelections(
                         savedPreferences.moods,
                         availableMoods,
@@ -588,7 +594,10 @@ export default function ProfilePage() {
                         tourOptions,
                         2
                     )
-                });
+                };
+
+                setPreferences(cleanedPreferences);
+                setOriginalPreferences(cleanedPreferences);
             } catch (error) {
                 console.error('Error loading profile:', error);
             } finally {
@@ -1227,7 +1236,14 @@ export default function ProfilePage() {
                                                 <Button
                                                     type="primary"
                                                     style={{ marginLeft: '10px' }}
-                                                    onClick={() => setEditingPreferences(false)}
+                                                    onClick={() => {
+                                                        setPreferences({
+                                                            moods: [...originalPreferences.moods],
+                                                            tours: [...originalPreferences.tours]
+                                                        });
+
+                                                        setEditingPreferences(false);
+                                                    }}
                                                     icon={<CloseOutlined />}
                                                     className="profile-cancel-button"
                                                 >
