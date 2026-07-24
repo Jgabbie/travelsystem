@@ -238,6 +238,43 @@ export default function UserBookingInvoice() {
     }, [reference, notificationApi]);
 
 
+    useEffect(() => {
+        const returning = sessionStorage.getItem("returningFromPayMongo");
+
+        if (!returning) return;
+        if (!booking?.paymentToken) return;
+
+        const checkIfAlreadyPaid = async () => {
+            try {
+                const response = await apiFetch.get(
+                    `/booking/check-payment-status?token=${booking.paymentToken}`
+                );
+
+                if (response?.paid) {
+                    sessionStorage.removeItem("returningFromPayMongo");
+
+                    navigate(
+                        `/booking-payment/success?token=${booking.paymentToken}`,
+                        { replace: true }
+                    );
+                }
+            } catch (err) {
+                console.error("Payment status check failed:", err);
+            }
+        };
+
+        checkIfAlreadyPaid();
+
+        const handleFocus = () => checkIfAlreadyPaid();
+
+        window.addEventListener("focus", handleFocus);
+
+        return () => {
+            window.removeEventListener("focus", handleFocus);
+        };
+    }, [booking, navigate]);
+
+
     //payment status computation
     const formatCurrency = useMemo(
         () => new Intl.NumberFormat("en-PH", {

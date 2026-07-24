@@ -268,7 +268,7 @@ export default function PackageInternationalQuotation() {
         if (selectedDateSlots && totalTravelers > selectedDateSlots) {
             newErrors.travelers = `The selected date only has ${selectedDateSlots} slot${selectedDateSlots === 1 ? '' : 's'} left.`
         }
-        if (packageCategory === 'Land Arrangement') {
+        if (packageCategory !== 'Land Arrangement') {
             if (!preferredAirlines || preferredAirlines === 'Other' || !preferredAirlines.trim()) newErrors.preferredAirlines = 'Please provide your preferred airlines';
         }
         if (!preferredHotels || preferredHotels === 'Other' || !preferredHotels.trim()) {

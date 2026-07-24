@@ -71,9 +71,9 @@
 }
 
 .transaction-actions-field--search {
-  min-width: 220px;
+  min-width: 200px;
   flex: 1 1 300px;
-  max-width: 260px;
+  max-width: 220px;
 }
 
 .transaction-actions-buttons {
