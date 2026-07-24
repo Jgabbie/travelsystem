@@ -45,7 +45,7 @@ export default function SuccessfulBooking() {
                 clearQuotationBookingData();
                 clearBookingData();
 
-                sessionStorage.removeItem(PAYMENT_STATE_KEY);
+                sessionStorage.removeItem("booking_payment_state");
                 sessionStorage.removeItem("returningFromPayMongo");
             })
             .catch(err => {
