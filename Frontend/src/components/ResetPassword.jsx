@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { Input, Button, Modal, Spin, ConfigProvider, Notification } from 'antd';
+import { Input, Button, Modal, Spin, ConfigProvider, notification } from 'antd';
 import apiFetch from '../config/fetchConfig';
 import '../style/components/resetpasswordpage.css'
 import '../style/components/newpasswordpage.css'
@@ -108,6 +108,7 @@ export default function ResetPassword() {
     //resent OTP function
     const resendOTP = async (e) => {
         e.preventDefault()
+
         notificationApi.success({
             message: "OTP Resent",
             description: "A new OTP has been sent.",
