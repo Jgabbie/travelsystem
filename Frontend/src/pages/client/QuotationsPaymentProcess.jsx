@@ -558,6 +558,7 @@ export default function QuotationsPaymentProcess() {
 
             if (checkoutUrl) {
                 sessionStorage.setItem("returningFromPayMongo", "true");
+                sessionStorage.setItem("paymentCancelled", "true");
                 window.location.href = checkoutUrl;
             } else {
                 console.error("PayMongo Response Structure:", paymongoResponse);

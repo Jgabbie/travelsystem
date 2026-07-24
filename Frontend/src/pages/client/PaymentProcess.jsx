@@ -571,8 +571,9 @@ export default function PaymentProcess() {
             setLoading(false);
 
             if (checkoutUrl) {
-                window.location.href = checkoutUrl;
                 sessionStorage.setItem("returningFromPayMongo", "true");
+                sessionStorage.setItem("paymentCancelled", "true");
+                window.location.href = checkoutUrl;
             } else {
                 console.error("PayMongo Response Structure:", paymongoResponse);
                 throw new Error("Failed to create PayMongo checkout session - URL missing");

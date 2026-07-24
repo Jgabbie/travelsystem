@@ -4,6 +4,7 @@ import { SearchOutlined, FacebookFilled, InstagramFilled, LeftOutlined, RightOut
 import { useNavigate } from 'react-router-dom';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/landingpage.css'
+import '../../style/components/modals/modaldesign.css'
 import { useAuth } from '../../hooks/useAuth';
 
 
@@ -557,10 +558,15 @@ export default function LandingPage() {
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
 
-        if (params.get("payment") === "cancelled") {
+        if (
+            params.get("payment") === "cancelled" &&
+            sessionStorage.getItem("paymentCancelled") === "true"
+        ) {
             setOpenPaymentCancelledModal(true);
 
-            // Remove the query parameter so it won't show again on refresh
+            sessionStorage.removeItem("paymentCancelled");
+            sessionStorage.removeItem("returningFromPayMongo");
+
             window.history.replaceState({}, "", window.location.pathname);
         }
     }, []);
@@ -1787,16 +1793,17 @@ export default function LandingPage() {
                 closable={false}
                 centered
             >
-                <div className="emailverify-container-modal">
-                    <h1 className="emailverify-heading-modal">
+                <div className='modal-container'>
+                    <h1 className="modal-heading">
                         Payment Cancelled
                     </h1>
 
-                    <p className="emailverify-secondary-heading-modal">
+                    <p className="modal-text">
                         Your payment was cancelled. No charges were made to your account.
                     </p>
 
                     <Button
+                        className='modal-button'
                         type="primary"
                         onClick={() => setOpenPaymentCancelledModal(false)}
                     >
