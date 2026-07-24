@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Button, Modal, Input, Spin, ConfigProvider, notification } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../style/components/modals/loginmodal.css';
+import "../../style/components/modals/modaldesign.css";
 import '../../style/components/modals/emailverifymodal.css';
 import { useAuth } from '../../hooks/useAuth';
 import apiFetch from '../../config/fetchConfig';
@@ -23,6 +24,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
+    const [isOTPResentModalOpen, setIsOTPResentModalOpen] = useState(false)
     const [isVerifyEmailModalVisible, setIsVerifyEmailModalVisible] = useState(false)
     const [email, setEmail] = useState('');
 
@@ -194,6 +196,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                     description: 'Too many OTP attempts. Please try again in 5 minutes.',
                     placement: 'topRight',
                 });
+                setErrorOTP("Too many OTP attempts. Please try again in 5 minutes.");
                 clearForm();
                 return;
             }
@@ -209,6 +212,8 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     //resend OTP function, send OTP to email again
     const resendOTP = async (e) => {
         e.preventDefault()
+        setErrorOTP("")
+        setIsOTPResentModalOpen(true)
         try {
             await apiFetch.post('/auth/send-verify-otp', { email: email })
             setTimer(60)
@@ -399,6 +404,42 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                                 >
                                     Continue
                                 </Button>
+                            </div>
+                        </Modal>
+
+
+
+                        <Modal
+                            open={isOTPResentModalOpen}
+                            closable={{ 'aria-label': 'Custom Close Button' }}
+                            footer={null}
+                            centered={true}
+                            onCancel={() => {
+                                setIsOTPResentModalOpen(false);
+                            }}
+                        >
+                            <div className='modal-container'>
+                                <h1 className='modal-heading'>OTP Resend Successfully!</h1>
+
+                                <div>
+                                    <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+                                </div>
+
+                                <p className='modal-text'>The OTP has been resent.</p>
+
+                                <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                    <Button
+                                        type='primary'
+                                        className='modal-button'
+                                        onClick={() => {
+                                            setIsOTPResentModalOpen(false);
+                                        }}
+                                    >
+                                        Continue
+                                    </Button>
+                                </div>
+
                             </div>
                         </Modal>
 
