@@ -67,9 +67,7 @@ const createVerificationLink = async (email, token) => {
     }
 
     const rawToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = await bcrypt.hash(rawToken, 10);
-
-    user.emailVerifyOtp = hashedToken;
+    user.emailVerifyOtp = hashToken(rawToken);
     user.emailVerifyExpireAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
     const clientUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
