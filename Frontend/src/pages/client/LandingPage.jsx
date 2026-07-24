@@ -556,20 +556,41 @@ export default function LandingPage() {
 
 
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
+        const checkCancelledPayment = async () => {
+            const params = new URLSearchParams(window.location.search);
 
-        if (
-            params.get("payment") === "cancelled" &&
-            sessionStorage.getItem("paymentCancelled") === "true"
-        ) {
-            setOpenPaymentCancelledModal(true);
+            if (params.get("payment") !== "cancelled") return;
 
-            sessionStorage.removeItem("paymentCancelled");
-            sessionStorage.removeItem("returningFromPayMongo");
+            const paymentToken = sessionStorage.getItem("paymentToken");
 
-            window.history.replaceState({}, "", window.location.pathname);
-        }
-    }, []);
+            if (!paymentToken) {
+                setOpenPaymentCancelledModal(true);
+                return;
+            }
+
+            try {
+                const response = await apiFetch.get(
+                    `/booking/check-payment-status?token=${paymentToken}`
+                );
+
+                if (response?.paid) {
+                    navigate(`/booking-payment/success?token=${paymentToken}`, {
+                        replace: true,
+                    });
+                    return;
+                }
+
+                setOpenPaymentCancelledModal(true);
+            } catch {
+                setOpenPaymentCancelledModal(true);
+            } finally {
+                sessionStorage.removeItem("paymentToken");
+                window.history.replaceState({}, "", window.location.pathname);
+            }
+        };
+
+        checkCancelledPayment();
+    }, [navigate]);
 
 
     //format package price
