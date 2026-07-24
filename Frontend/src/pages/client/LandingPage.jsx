@@ -568,25 +568,41 @@ export default function LandingPage() {
                 return;
             }
 
-            try {
-                const response = await apiFetch.get(
-                    `/booking/check-payment-status?token=${paymentToken}`
-                );
+            const maxAttempts = 10;
 
-                if (response?.paid) {
-                    navigate(`/booking-payment/success?token=${paymentToken}`, {
-                        replace: true,
-                    });
-                    return;
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                try {
+                    const response = await apiFetch.get(
+                        `/booking/check-payment-status?token=${paymentToken}`
+                    );
+
+                    if (response?.paid) {
+                        sessionStorage.removeItem("paymentToken");
+                        sessionStorage.removeItem("returningFromPayMongo");
+
+                        window.history.replaceState({}, "", window.location.pathname);
+
+                        navigate(
+                            `/booking-payment/success?token=${paymentToken}`,
+                            { replace: true }
+                        );
+
+                        return;
+                    }
+                } catch (err) {
+                    console.error(err);
                 }
 
-                setOpenPaymentCancelledModal(true);
-            } catch {
-                setOpenPaymentCancelledModal(true);
-            } finally {
-                sessionStorage.removeItem("paymentToken");
-                window.history.replaceState({}, "", window.location.pathname);
+                // Wait 1 second before checking again
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
+
+            // Still not paid after 10 seconds
+            setOpenPaymentCancelledModal(true);
+
+            sessionStorage.removeItem("paymentToken");
+            sessionStorage.removeItem("returningFromPayMongo");
+            window.history.replaceState({}, "", window.location.pathname);
         };
 
         checkCancelledPayment();
