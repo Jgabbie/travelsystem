@@ -219,6 +219,8 @@ export default function PaymentProcess() {
                 // If webhook already marked it as paid,
                 // go directly to success page
                 if (response?.paid) {
+                    sessionStorage.removeItem("returningFromPayMongo");
+
                     navigate(
                         `/booking-payment/success?token=${paymentToken}`,
                         { replace: true }
@@ -231,11 +233,16 @@ export default function PaymentProcess() {
         };
 
         // Run when page becomes visible again
+        const returning = sessionStorage.getItem("returningFromPayMongo");
+
+        if (!returning) return;
+
         checkIfAlreadyPaid();
 
         // Also run when user returns from another tab/app
         const handleFocus = () => checkIfAlreadyPaid();
         window.addEventListener('focus', handleFocus);
+
 
         return () => {
             window.removeEventListener('focus', handleFocus);
@@ -565,6 +572,7 @@ export default function PaymentProcess() {
 
             if (checkoutUrl) {
                 window.location.href = checkoutUrl;
+                sessionStorage.setItem("returningFromPayMongo", "true");
             } else {
                 console.error("PayMongo Response Structure:", paymongoResponse);
                 throw new Error("Failed to create PayMongo checkout session - URL missing");
