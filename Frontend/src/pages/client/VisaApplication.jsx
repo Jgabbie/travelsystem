@@ -1191,7 +1191,7 @@ export default function VisaApplication() {
 
                                                 {/* SERVICE FEE */}
                                                 {statusValue && statusValue.toLowerCase() === 'application approved' && (
-                                                    <div style={{ marginBottom: 32, marginTop: 32 }}>
+                                                    <div style={{ marginBottom: 32, marginTop: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
                                                         <h3 style={{ marginTop: 0 }}>Payment {servicePendingManualPayment && <Tag color="orange">Pending Payment</Tag>}</h3>
                                                         <div className="payment-methods-wrapper">
 
@@ -1518,7 +1518,7 @@ export default function VisaApplication() {
 
                                                 {/* DELIVERY FEE */}
                                                 {isDeliveryFeeStage && !isDeliveryFeePaid && (
-                                                    <div style={{ marginBottom: 32, marginTop: 32 }}>
+                                                    <div style={{ marginBottom: 32, marginTop: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
                                                         <h3 style={{ marginTop: 0 }}>Delivery Fee Payment</h3>
                                                         <p style={{ marginTop: 0, color: '#305797', fontWeight: 600 }}>
                                                             Amount due: PHP {deliveryFeeAmount.toLocaleString()} | Target delivery date: {application?.deliveryDate || 'To be announced'}
