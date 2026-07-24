@@ -611,18 +611,16 @@ export default function LandingPage() {
 
     //disable back button
     useEffect(() => {
-        // Push current page into history
-        window.history.pushState(null, "", window.location.href);
+        window.history.pushState({ noBack: true }, "", window.location.href);
 
-        const handleBackButton = () => {
-            // Push it again to prevent going back
-            window.history.pushState(null, "", window.location.href);
+        const onPopState = () => {
+            window.history.pushState({ noBack: true }, "", window.location.href);
         };
 
-        window.addEventListener("popstate", handleBackButton);
+        window.addEventListener("popstate", onPopState);
 
         return () => {
-            window.removeEventListener("popstate", handleBackButton);
+            window.removeEventListener("popstate", onPopState);
         };
     }, []);
 
