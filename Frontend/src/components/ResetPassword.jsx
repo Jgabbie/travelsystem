@@ -239,6 +239,11 @@ export default function ResetPassword() {
             }
         } catch (err) {
             const errorMsg = err.data?.message || "Verification failed"
+
+            setError(prev => ({
+                ...prev,
+                password: [errorMsg]
+            }));
             console.error("Error: ", errorMsg)
         } finally {
             setIsLoading(false);
