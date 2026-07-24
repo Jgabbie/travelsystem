@@ -362,7 +362,7 @@ export default function AdminProfile() {
                                             ref={fileInputRef}
                                             className="profile-avatar-input"
                                             type="file"
-                                            accept="image/*"
+                                            accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                                             onChange={handleImageChange}
                                         />
 
@@ -375,7 +375,7 @@ export default function AdminProfile() {
                                             Change Photo
                                         </Button>
                                         <p className="profile-avatar-help">
-                                            PNG, JPG, JPEG or WebP, maximum file size of 2MB.
+                                            PNG, JPG, or JPEG, maximum file size of 2MB.
                                         </p>
 
                                     </div>

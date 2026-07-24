@@ -572,7 +572,7 @@ export default function AddService() {
                             </label>
 
                             <Upload
-                                accept="image/png,image/jpeg,image/jpg,image/webp"
+                                accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                                 maxCount={1}
                                 listType="picture"
                                 beforeUpload={handleImageChange}

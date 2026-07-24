@@ -1837,7 +1837,7 @@ export default function TransactionManagement() {
                       return false;
                     }}
                     maxCount={1}
-                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                     showUploadList={false}
                     onChange={handleMethodImageChange}
                   >

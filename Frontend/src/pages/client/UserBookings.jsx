@@ -573,7 +573,7 @@ export default function UserBookings() {
                                     ref={fileInputRef}
                                     className="package-image-input"
                                     type="file"
-                                    accept="image/*"
+                                    accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                                     onChange={handleImageChange}
                                     style={{ display: "none" }}
                                 />

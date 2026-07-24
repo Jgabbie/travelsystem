@@ -1883,7 +1883,7 @@ export default function AddPackage() {
                             itineraryImageInputRefs.current[day] = el;
                           }}
                           type="file"
-                          accept="image/*"
+                          accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                           onChange={(e) => handleItineraryImageChange(day, e)}
                           style={{ display: "none" }}
                         />
@@ -1952,7 +1952,7 @@ export default function AddPackage() {
                   ref={fileInputRef}
                   className="package-image-input"
                   type="file"
-                  accept="image/*"
+                  accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                   onChange={handleImageChange}
                   style={{ display: "none" }}
                 />
