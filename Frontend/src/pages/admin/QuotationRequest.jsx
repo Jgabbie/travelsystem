@@ -1550,7 +1550,9 @@ export default function QuotationRequest() {
                                 </div>
 
                                 {formData.dynamicRows && formData.dynamicRows.length > 0 && (
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 8 }}>
+                                        <h3>Additional Information</h3>
+
                                         {formData.dynamicRows.map((row, index) => (
                                             <React.Fragment key={`upload-row-${index}`}>
                                                 <div>
