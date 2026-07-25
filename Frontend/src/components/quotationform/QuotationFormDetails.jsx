@@ -135,6 +135,7 @@ export default function QuotationFormDetails({
                     <Input
                         maxLength={30}
                         size="small"
+                        disabled
                         className="mrc-tour-details-input"
                         placeholder={formatTravelDates(quotationData.travelDates)}
                         value={formData.travelDates || ''}

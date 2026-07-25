@@ -504,9 +504,7 @@ export default function QuotationManagement() {
             {notificationContextHolder}
 
             {actionLoading ? (
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
-                    <Spin size="large" description={`${actionType} quotation...`} />
-                </div>
+                <Spin size="large" description={`${actionType} quotation...`} />
             ) : (
                 <div className="quotation-management-container">
                     <h1 className="page-header">Quotation Management</h1>
