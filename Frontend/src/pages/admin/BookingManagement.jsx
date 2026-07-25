@@ -227,11 +227,40 @@ export default function BookingManagement() {
     doc.text(`Date Generated: ${new Date().toLocaleString()}`, 14, 55);
 
     let tableStartY = 62;
+    const filters = [];
+
     if (searchText) {
+      filters.push(`Search: "${searchText}"`);
+    }
+
+    if (statusFilter) {
+      filters.push(`Status: ${statusFilter}`);
+    }
+
+    if (bookingDateFilter) {
+      filters.push(
+        `Booking Date: ${dayjs(bookingDateFilter).format("MMM DD, YYYY")}`
+      );
+    }
+
+    if (travelDateFilter) {
+      filters.push(
+        `Travel Date: ${dayjs(travelDateFilter).format("MMM DD, YYYY")}`
+      );
+    }
+
+    if (filters.length > 0) {
       doc.setFont("helvetica", "bold");
       doc.setTextColor(0, 0, 0);
-      doc.text(`Search Criteria: "${searchText}"`, 14, 62);
-      tableStartY = 68;
+      doc.text("Filters Applied:", 14, tableStartY);
+
+      doc.setFont("helvetica", "normal");
+
+      filters.forEach((filter, index) => {
+        doc.text(`• ${filter}`, 18, tableStartY + 6 + (index * 6));
+      });
+
+      tableStartY += 6 + (filters.length * 6);
     }
 
     autoTable(doc, {

@@ -191,11 +191,33 @@ export default function UserManagement() {
 
     // display search value
     let tableStartY = 62;
+
+    const filters = [];
+
     if (searchText) {
+      filters.push(`Search: "${searchText}"`);
+    }
+
+    if (roleFilter) {
+      filters.push(`Role: ${roleFilter}`);
+    }
+
+    if (statusFilter) {
+      filters.push(`Status: ${statusFilter}`);
+    }
+
+    if (filters.length > 0) {
       doc.setFont("helvetica", "bold");
       doc.setTextColor(0, 0, 0);
-      doc.text(`Search Criteria: "${searchText}"`, 14, 62);
-      tableStartY = 68;
+      doc.text("Filters Applied:", 14, tableStartY);
+
+      doc.setFont("helvetica", "normal");
+
+      filters.forEach((filter, index) => {
+        doc.text(`• ${filter}`, 18, tableStartY + 6 + (index * 6));
+      });
+
+      tableStartY += 6 + (filters.length * 6);
     }
 
     //geerate table

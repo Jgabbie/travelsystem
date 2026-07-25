@@ -194,6 +194,38 @@ export default function VisaApplications() {
         doc.setFont("helvetica", "normal");
         doc.text(`Date Generated: ${new Date().toLocaleString()}`, 14, 55);
 
+        let tableStartY = 62;
+        const filters = [];
+
+        if (searchText) {
+            filters.push(`Search: "${searchText}"`);
+        }
+
+        if (statusFilter) {
+            filters.push(`Status: ${statusFilter}`);
+        }
+
+        if (submissionDateFilter) {
+            filters.push(
+                `Preferred Date: ${dayjs(submissionDateFilter).format("MMM DD, YYYY")}`
+            );
+        }
+
+        if (filters.length > 0) {
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(0, 0, 0);
+            doc.text("Filters Applied:", 14, tableStartY);
+
+            doc.setFont("helvetica", "normal");
+
+            filters.forEach((filter, index) => {
+                doc.text(`• ${filter}`, 18, tableStartY + 6 + (index * 6));
+            });
+
+            tableStartY += 6 + (filters.length * 6);
+        }
+
+
         autoTable(doc, {
             head: [tableColumn],
             body: tableRows,

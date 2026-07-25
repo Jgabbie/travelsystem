@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, Modal, ConfigProvider, DatePicker, notification } from "antd";
+import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, Modal, ConfigProvider, DatePicker, notification, Spin } from "antd";
 import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, FilePdfOutlined, CheckCircleFilled, InboxOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom'
 import jsPDF from 'jspdf';
@@ -38,6 +38,7 @@ export default function QuotationManagement() {
     const [form] = Form.useForm();
 
     const [loading, setLoading] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
     const [data, setData] = useState([]);
     const [archivedData, setArchivedData] = useState([]);
     const [showArchived, setShowArchived] = useState(false);
@@ -216,11 +217,38 @@ export default function QuotationManagement() {
         doc.text(`Date Generated: ${new Date().toLocaleString()}`, 14, 55);
 
         let tableStartY = 62;
+        const filters = [];
+
         if (searchText) {
+            filters.push(`Search: "${searchText}"`);
+        }
+
+        if (statusFilter) {
+            filters.push(`Status: ${statusFilter}`);
+        }
+
+        if (packageTypeFilter) {
+            filters.push(`Package Type: ${packageTypeFilter}`);
+        }
+
+        if (dateFilter) {
+            filters.push(
+                `Request Date: ${dayjs(dateFilter).format("MMM DD, YYYY")}`
+            );
+        }
+
+        if (filters.length > 0) {
             doc.setFont("helvetica", "bold");
             doc.setTextColor(0, 0, 0);
-            doc.text(`Search Criteria: "${searchText}"`, 14, 62);
-            tableStartY = 68;
+            doc.text("Filters Applied:", 14, tableStartY);
+
+            doc.setFont("helvetica", "normal");
+
+            filters.forEach((filter, index) => {
+                doc.text(`• ${filter}`, 18, tableStartY + 6 + (index * 6));
+            });
+
+            tableStartY += 6 + (filters.length * 6);
         }
 
         autoTable(doc, {
@@ -293,6 +321,9 @@ export default function QuotationManagement() {
             notificationApi.error({ title: "Quotation not found", placement: "topRight" });
             return
         }
+
+        setActionLoading(true);
+
         try {
             await apiFetch.delete(`/quotation/${key}`)
             setIsQuotationDeletedModalOpen(true)
@@ -300,6 +331,8 @@ export default function QuotationManagement() {
         } catch (error) {
             console.error("Error archiving quotation:", error)
             notificationApi.error({ title: "Quotation archived unsuccessfully", placement: "topRight" });
+        } finally {
+            setActionLoading(false);
         }
     }
 
@@ -310,6 +343,9 @@ export default function QuotationManagement() {
             notificationApi.error({ title: "Quotation not found", placement: "topRight" });
             return
         }
+
+        setActionLoading(true);
+
         try {
             await apiFetch.post(`/quotation/archived-quotations/${key}/restore`)
             setIsQuotationRestoredModalOpen(true)
@@ -317,6 +353,8 @@ export default function QuotationManagement() {
         } catch (error) {
             console.error("Error restoring quotation:", error)
             notificationApi.error({ title: error?.response?.data?.message || "Quotation restore failed", placement: "topRight" });
+        } finally {
+            setActionLoading(false);
         }
 
     }
@@ -461,175 +499,179 @@ export default function QuotationManagement() {
             }}
         >
             {notificationContextHolder}
-            <div className="quotation-management-container">
-                <h1 className="page-header">Quotation Management</h1>
+            <Spin spinning={actionLoading} tip="Processing..." size="large">
 
-                {!showArchived && (
-                    <Row gutter={16} className="quotation-statistics">
-                        <Col xs={24} sm={6}>
-                            <Card className="quotation-management-card">
-                                <Statistic
-                                    title="Total Requests"
-                                    value={totalRequests}
-                                    prefix={<FileTextOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                        <Col xs={24} sm={6}>
-                            <Card className="quotation-management-card">
-                                <Statistic
-                                    title="Under Review"
-                                    value={totalUnderReview}
-                                    prefix={<FileTextOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                        <Col xs={24} sm={6}>
-                            <Card className="quotation-management-card">
-                                <Statistic
-                                    title="Accepted"
-                                    value={totalAccepted}
-                                    prefix={<CheckCircleOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                        <Col xs={24} sm={6}>
-                            <Card className="quotation-management-card">
-                                <Statistic
-                                    title="Expired"
-                                    value={totalExpired}
-                                    prefix={<CloseCircleOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                    </Row>
-                )}
 
-                <Card className="quotation-management-actions">
-                    <div className="quotation-management-actions-row">
-                        <div className="quotation-management-actions-filters">
-                            <div className="quotation-management-actions-field quotation-management-actions-field--search">
-                                <label className="quotationmanagement-label">Search</label>
-                                <Input
-                                    maxLength={40}
-                                    prefix={<SearchOutlined />}
-                                    placeholder="Search request, package, customer or status..."
-                                    className="quotationmanagement-search-input"
-                                    value={searchText}
-                                    onChange={(e) => {
-                                        const cleanedValue = e.target.value
-                                            .replace(/[^a-zA-Z0-9\s-]/g, '')
-                                            .replace(/\s{2,}/g, ' ')
-                                            .replace(/-{2,}/g, '-')
-                                            .replace(/^\s+/, '');
+                <div className="quotation-management-container">
+                    <h1 className="page-header">Quotation Management</h1>
 
-                                        setSearchText(cleanedValue);
+                    {!showArchived && (
+                        <Row gutter={16} className="quotation-statistics">
+                            <Col xs={24} sm={6}>
+                                <Card className="quotation-management-card">
+                                    <Statistic
+                                        title="Total Requests"
+                                        value={totalRequests}
+                                        prefix={<FileTextOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col xs={24} sm={6}>
+                                <Card className="quotation-management-card">
+                                    <Statistic
+                                        title="Under Review"
+                                        value={totalUnderReview}
+                                        prefix={<FileTextOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col xs={24} sm={6}>
+                                <Card className="quotation-management-card">
+                                    <Statistic
+                                        title="Accepted"
+                                        value={totalAccepted}
+                                        prefix={<CheckCircleOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col xs={24} sm={6}>
+                                <Card className="quotation-management-card">
+                                    <Statistic
+                                        title="Expired"
+                                        value={totalExpired}
+                                        prefix={<CloseCircleOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                        </Row>
+                    )}
+
+                    <Card className="quotation-management-actions">
+                        <div className="quotation-management-actions-row">
+                            <div className="quotation-management-actions-filters">
+                                <div className="quotation-management-actions-field quotation-management-actions-field--search">
+                                    <label className="quotationmanagement-label">Search</label>
+                                    <Input
+                                        maxLength={40}
+                                        prefix={<SearchOutlined />}
+                                        placeholder="Search request, package, customer or status..."
+                                        className="quotationmanagement-search-input"
+                                        value={searchText}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/-{2,}/g, '-')
+                                                .replace(/^\s+/, '');
+
+                                            setSearchText(cleanedValue);
+                                        }}
+                                        allowClear
+                                    />
+                                </div>
+
+                                <div className="quotation-management-actions-field">
+                                    <label className="quotationmanagement-label">Status</label>
+                                    <Select
+                                        className="quotation-select"
+                                        placeholder="Status"
+                                        allowClear
+                                        value={statusFilter || undefined}
+                                        onChange={(value) => setStatusFilter(value || "")}
+                                        options={[
+                                            { value: "Pending", label: "Pending" },
+                                            { value: "Under Review", label: "Under Review" },
+                                            { value: "Booked", label: "Booked" },
+                                            { value: "Revision Requested", label: "Revision Requested" },
+                                            { value: "Expired", label: "Expired" }
+                                        ]}
+                                    />
+                                </div>
+
+                                <div className="quotation-management-actions-field">
+                                    <label className="quotationmanagement-label">Package Type</label>
+                                    <Select
+                                        className="quotation-select"
+                                        placeholder="Package Type"
+                                        allowClear
+                                        value={packageTypeFilter || undefined}
+                                        onChange={(value) => setPackageTypeFilter(value || "")}
+                                        options={[
+                                            { value: "All Types", label: "All Types" },
+                                            { value: "Domestic", label: "Domestic" },
+                                            { value: "International", label: "International" },
+                                        ]}
+                                    />
+                                </div>
+
+                                <div className="quotation-management-actions-field">
+                                    <label className="quotationmanagement-label">Request Date</label>
+                                    <DatePicker
+                                        inputReadOnly
+                                        className="quotation-date-filter"
+                                        placeholder="Request Date"
+                                        value={dateFilter}
+                                        onChange={(date) => setDateFilter(date)}
+                                        allowClear
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="quotation-management-actions-buttons">
+                                <Button
+                                    className='quotation-export'
+                                    type="primary"
+                                    icon={<FilePdfOutlined />}
+                                    onClick={generatePDF}
+                                >
+                                    Export to PDF
+                                </Button>
+                                <Button
+                                    icon={showArchived ? <FileTextOutlined /> : <InboxOutlined />}
+                                    className='quotation-archive'
+                                    type="primary"
+                                    onClick={() => {
+                                        const nextValue = !showArchived
+                                        setShowArchived(nextValue)
+                                        setSearchText("")
+                                        setStatusFilter("")
+                                        setDateFilter(null)
+                                        setPackageTypeFilter("")
+                                        if (nextValue) {
+                                            fetchArchivedQuotations()
+                                        } else {
+                                            fetchQuotations()
+                                        }
                                     }}
-                                    allowClear
-                                />
-                            </div>
-
-                            <div className="quotation-management-actions-field">
-                                <label className="quotationmanagement-label">Status</label>
-                                <Select
-                                    className="quotation-select"
-                                    placeholder="Status"
-                                    allowClear
-                                    value={statusFilter || undefined}
-                                    onChange={(value) => setStatusFilter(value || "")}
-                                    options={[
-                                        { value: "Pending", label: "Pending" },
-                                        { value: "Under Review", label: "Under Review" },
-                                        { value: "Booked", label: "Booked" },
-                                        { value: "Revision Requested", label: "Revision Requested" },
-                                        { value: "Expired", label: "Expired" }
-                                    ]}
-                                />
-                            </div>
-
-                            <div className="quotation-management-actions-field">
-                                <label className="quotationmanagement-label">Package Type</label>
-                                <Select
-                                    className="quotation-select"
-                                    placeholder="Package Type"
-                                    allowClear
-                                    value={packageTypeFilter || undefined}
-                                    onChange={(value) => setPackageTypeFilter(value || "")}
-                                    options={[
-                                        { value: "All Types", label: "All Types" },
-                                        { value: "Domestic", label: "Domestic" },
-                                        { value: "International", label: "International" },
-                                    ]}
-                                />
-                            </div>
-
-                            <div className="quotation-management-actions-field">
-                                <label className="quotationmanagement-label">Request Date</label>
-                                <DatePicker
-                                    inputReadOnly
-                                    className="quotation-date-filter"
-                                    placeholder="Request Date"
-                                    value={dateFilter}
-                                    onChange={(date) => setDateFilter(date)}
-                                    allowClear
-                                />
+                                >
+                                    {showArchived ? 'Back' : 'Archives'}
+                                </Button>
                             </div>
                         </div>
+                    </Card>
 
-                        <div className="quotation-management-actions-buttons">
-                            <Button
-                                className='quotation-export'
-                                type="primary"
-                                icon={<FilePdfOutlined />}
-                                onClick={generatePDF}
-                            >
-                                Export to PDF
-                            </Button>
-                            <Button
-                                icon={showArchived ? <FileTextOutlined /> : <InboxOutlined />}
-                                className='quotation-archive'
-                                type="primary"
-                                onClick={() => {
-                                    const nextValue = !showArchived
-                                    setShowArchived(nextValue)
-                                    setSearchText("")
-                                    setStatusFilter("")
-                                    setDateFilter(null)
-                                    setPackageTypeFilter("")
-                                    if (nextValue) {
-                                        fetchArchivedQuotations()
-                                    } else {
-                                        fetchQuotations()
+                    <Card className="quotation-management-table-card">
+                        <Form form={form} component={false}>
+                            <Table
+                                components={{
+                                    body: {
+                                        cell: EditableCell
                                     }
                                 }}
-                            >
-                                {showArchived ? 'Back' : 'Archives'}
-                            </Button>
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="quotation-management-table-card">
-                    <Form form={form} component={false}>
-                        <Table
-                            components={{
-                                body: {
-                                    cell: EditableCell
-                                }
-                            }}
-                            columns={showArchived ? archivedColumns : columns}
-                            dataSource={filteredData}
-                            loading={loading}
-                            scroll={{ x: "max-content" }}
-                            pagination={{
-                                pageSize: 10,
-                                showSizeChanger: false
-                            }}
-                            rowClassName="editable-row"
-                        />
-                    </Form>
-                </Card>
-            </div>
+                                columns={showArchived ? archivedColumns : columns}
+                                dataSource={filteredData}
+                                loading={loading}
+                                scroll={{ x: "max-content" }}
+                                pagination={{
+                                    pageSize: 10,
+                                    showSizeChanger: false
+                                }}
+                                rowClassName="editable-row"
+                            />
+                        </Form>
+                    </Card>
+                </div>
+            </Spin>
 
 
             {/* ARCHIVE QUOTATION CONFIRMATION MODAL */}

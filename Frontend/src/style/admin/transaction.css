@@ -67,8 +67,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 90px;
-  max-width: 100px;
+  min-width: 110px;
+  max-width: 120px;
 }
 
 .transaction-actions-field--search {
@@ -162,6 +162,19 @@
   color: #fff;
   border-radius: 16px;
   width: 150px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.transactionmanagement-methods-button {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 16px;
+  width: 110px;
   height: 30px;
   border: none !important;
   box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
@@ -293,7 +306,8 @@
 .transactionmanagement-viewproof-button:hover,
 .transactionmanagement-download-button:hover,
 .transactionmanagement-save-button:hover,
-.transactionmanagement-modal-save-button:hover {
+.transactionmanagement-modal-save-button:hover,
+.transactionmanagement-methods-button:hover {
   background-color: #244575 !important;
   color: #fff !important;
 }
