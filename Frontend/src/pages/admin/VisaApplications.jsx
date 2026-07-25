@@ -142,6 +142,15 @@ export default function VisaApplications() {
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
         const tableColumn = ["Application Number", "Applicant Name", "Visa Type", "Submission Date", "Status"];
+
+        const reportTitle = showArchived
+            ? "VISA APPLICATIONS ARCHIVES REPORT"
+            : "VISA APPLICATIONS REPORT";
+
+        const fileName = showArchived
+            ? `Visa_Applications_Archives_Report_${dayjs().format("YYYY-MM-DD")}.pdf`
+            : `Visa_Applications_Report_${dayjs().format("YYYY-MM-DD")}.pdf`;
+
         const tableRows = filteredData.map(item => [
             item.applicationNumber,
             item.applicantName,
@@ -178,7 +187,7 @@ export default function VisaApplications() {
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(48, 87, 151);
-        doc.text("VISA APPLICATIONS REPORT", 14, 48);
+        doc.text(reportTitle, 14, 48);
 
         doc.setFontSize(9);
         doc.setTextColor(100);
@@ -239,7 +248,7 @@ export default function VisaApplications() {
         }
 
 
-        doc.save(`Visa_Applications_Report_${new Date().toLocaleDateString()}.pdf`);
+        doc.save(fileName);
         notificationApi.success({ title: "Report exported to PDF successfully.", placement: "topRight" });
     };
 

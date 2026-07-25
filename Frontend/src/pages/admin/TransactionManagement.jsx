@@ -317,6 +317,15 @@ export default function TransactionManagement() {
   const generatePDF = async () => {
     const doc = new jsPDF('p', 'mm', 'a4');
     const tableColumn = ["Invoice No.", "Reference", "Travel Package", "Payment Date & Time", "Total Price", "Method", "Status"];
+
+    const reportTitle = showArchived
+      ? "TRANSACTION MANAGEMENT ARCHIVES REPORT"
+      : "TRANSACTION MANAGEMENT REPORT";
+
+    const fileName = showArchived
+      ? `Transaction_Archives_Report_${dayjs().format("YYYY-MM-DD")}.pdf`
+      : `Transaction_Report_${dayjs().format("YYYY-MM-DD")}.pdf`;
+
     const tableRows = filteredData.map(item => [
       item.invoiceNumber || "N/A",
       item.ref,
@@ -355,7 +364,7 @@ export default function TransactionManagement() {
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(48, 87, 151);
-    doc.text("TRANSACTION MANAGEMENT REPORT", 14, 48);
+    doc.text(reportTitle, 14, 48);
 
     doc.setFontSize(9);
     doc.setTextColor(100);
@@ -413,7 +422,7 @@ export default function TransactionManagement() {
       );
     }
 
-    doc.save(`Transaction_Report_${new Date().toLocaleDateString()}.pdf`);
+    doc.save(fileName);
     notificationApi.success({ title: "Report exported to PDF successfully.", placement: "topRight" });
   };
 

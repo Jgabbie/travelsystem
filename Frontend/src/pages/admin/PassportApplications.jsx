@@ -148,6 +148,15 @@ export default function PassportApplications() {
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
         const tableColumn = ["Application Number", "Applicant Name", "Passport Type", "Submission Date", "Status"];
+
+        const reportTitle = showArchived
+            ? "PASSPORT APPLICATIONS ARCHIVES REPORT"
+            : "PASSPORT APPLICATIONS REPORT";
+
+        const fileName = showArchived
+            ? `Passport_Applications_Archives_Report_${dayjs().format("YYYY-MM-DD")}.pdf`
+            : `Passport_Applications_Report_${dayjs().format("YYYY-MM-DD")}.pdf`;
+
         const tableRows = filteredData.map(item => [
             item.applicationNumber,
             item.applicantName,
@@ -187,7 +196,7 @@ export default function PassportApplications() {
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(48, 87, 151);
-        doc.text("PASSPORT APPLICATIONS REPORT", 14, 48);
+        doc.text(reportTitle, 14, 48);
 
         doc.setFontSize(9);
         doc.setTextColor(100);
@@ -246,7 +255,7 @@ export default function PassportApplications() {
             );
         }
 
-        doc.save(`Passport_Applications_Report_${new Date().toLocaleDateString()}.pdf`);
+        doc.save(fileName);
         notificationApi.success({ title: "Report exported to PDF successfully.", placement: "topRight" });
     };
 

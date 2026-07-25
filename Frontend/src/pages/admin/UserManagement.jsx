@@ -143,6 +143,15 @@ export default function UserManagement() {
   const generatePDF = async () => {
     const doc = new jsPDF();
     const tableColumn = ["Name", "Username", "Email", "Role", "Status"];
+
+    const reportTitle = showArchived
+      ? "USER MANAGEMENT ARCHIVES REPORT"
+      : "USER MANAGEMENT REPORT";
+
+    const fileName = showArchived
+      ? `User_Archives_Report_${dayjs().format("YYYY-MM-DD")}.pdf`
+      : `User_Report_${dayjs().format("YYYY-MM-DD")}.pdf`;
+
     const tableRows = filteredUsers.map(user => [
       user.name, user.username, user.email, user.role, user.status
     ]);
@@ -172,7 +181,7 @@ export default function UserManagement() {
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(48, 87, 151);
-    doc.text("USER MANAGEMENT REPORT", 14, 48);
+    doc.text(reportTitle, 14, 48);
 
     doc.setFontSize(9);
     doc.setTextColor(100);
@@ -198,7 +207,7 @@ export default function UserManagement() {
       alternateRowStyles: { fillColor: [245, 247, 250] },
     });
 
-    doc.save(`User_Report_${new Date().toLocaleDateString()}.pdf`);
+    doc.save(fileName);
     notificationApi.success({ title: "Report exported to PDF successfully.", placement: "topRight" });
   };
 

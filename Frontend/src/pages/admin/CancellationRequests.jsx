@@ -181,6 +181,14 @@ export default function CancellationRequests() {
             "Cancellation Date"
         ];
 
+        const reportTitle = showArchived
+            ? "CANCELLATION REQUESTS ARCHIVES REPORT"
+            : "CANCELLATION REQUESTS REPORT";
+
+        const fileName = showArchived
+            ? `Cancellation_Archives_Report_${dayjs().format("YYYY-MM-DD")}.pdf`
+            : `Cancellation_Report_${dayjs().format("YYYY-MM-DD")}.pdf`;
+
         const tableRows = filteredData.map(item => [
             item.ref,
             item.username,
@@ -222,7 +230,7 @@ export default function CancellationRequests() {
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(48, 87, 151);
-        doc.text("CANCELLATION REQUESTS REPORT", 14, 48);
+        doc.text(reportTitle, 14, 48);
 
         doc.setFontSize(9);
         doc.setTextColor(100);
@@ -287,7 +295,7 @@ export default function CancellationRequests() {
         }
 
 
-        doc.save(`Cancellation_Report_${new Date().toLocaleDateString()}.pdf`);
+        doc.save(fileName);
         notificationApi.success({ title: 'Report exported to PDF successfully.', placement: 'topRight' });
     };
 

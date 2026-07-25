@@ -171,6 +171,14 @@ export default function BookingManagement() {
 
     const tableColumn = ["Reference", "Package", "Travel Date", "Booking Date", "Travellers", "Status"];
 
+    const reportTitle = showArchived
+      ? "BOOKING MANAGEMENT ARCHIVES REPORT"
+      : "BOOKING MANAGEMENT REPORT";
+
+    const fileName = showArchived
+      ? `Booking_Archives_Report_${dayjs().format("YYYY-MM-DD")}.pdf`
+      : `Booking_Report_${dayjs().format("YYYY-MM-DD")}.pdf`;
+
     const tableRows = filteredData.map(item => [
       item.ref,
       item.pkg,
@@ -211,7 +219,7 @@ export default function BookingManagement() {
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(48, 87, 151);
-    doc.text("BOOKING MANAGEMENT REPORT", 14, 48);
+    doc.text(reportTitle, 14, 48);
 
     doc.setFontSize(9);
     doc.setTextColor(100);
@@ -280,7 +288,7 @@ export default function BookingManagement() {
       );
     }
 
-    doc.save(`Booking_Report_${dayjs().format("YYYY-MM-DD")}.pdf`);
+    doc.save(fileName);
 
     notificationApi.success({
       title: "Report exported to PDF successfully.",
