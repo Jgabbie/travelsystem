@@ -494,8 +494,11 @@ export default function QuotationRequest() {
             }
         }
 
-        if (travelerCounts.total === 0) {
-            errors.travelers = "Travelers information is required.";
+        if (
+            !formData.travelers.adult ||
+            Number(formData.travelers.adult) <= 0
+        ) {
+            errors.travelers = "Adult travelers is required.";
         }
 
         if (!formData.totalDeposit.trim()) {
