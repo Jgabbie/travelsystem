@@ -88,6 +88,8 @@ export default function TransactionManagement() {
   const [editingMethod, setEditingMethod] = useState(null);
 
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionType, setActionType] = useState("");
   const [data, setData] = useState([]);
   const [archivedData, setArchivedData] = useState([]);
 
@@ -509,24 +511,36 @@ export default function TransactionManagement() {
 
   //archive funtion
   const handleArchive = async (key) => {
+
+    setActionLoading(true);
+    setActionType("Archiving");
+
     try {
       await apiFetch.delete(`/transaction/${key}`);
       setData((prev) => prev.filter((item) => item.key !== key));
       setIsTransactionDeletedModalOpen(true);
     } catch (error) {
       notificationApi.error({ title: "Failed to archive transaction", placement: "topRight" });
+    } finally {
+      setActionLoading(false);
     }
   };
 
 
   //restore function
   const handleRestore = async (key) => {
+
+    setActionLoading(true);
+    setActionType("Restoring");
+
     try {
       await apiFetch.post(`/transaction/archived-transactions/${key}/restore`);
       setIsTransactionRestoredModalOpen(true);
       setArchivedData((prev) => prev.filter((item) => item.key !== key));
     } catch (error) {
       notificationApi.error({ title: "Failed to restore transaction", placement: "topRight" });
+    } finally {
+      setActionLoading(false);
     }
 
   };
@@ -885,6 +899,13 @@ export default function TransactionManagement() {
       }}
     >
       {notificationContextHolder}
+
+      {actionLoading && (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
+          <Spin size="large" description={actionType === "Archiving" ? "Archiving transaction..." : "Restoring transaction..."} />
+        </div>
+      )}
+
       {isProofDecisionloading ? (
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
           <Spin size="large" description={isProofDecision === "Accept" ? "Accepting proof..." : "Rejecting proof..."} />

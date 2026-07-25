@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Card, Table, Button, Space, Row, Col, Statistic, Input, DatePicker, ConfigProvider, Modal, Tag, notification, Select, Image } from 'antd'
+import { Card, Table, Button, Space, Row, Col, Statistic, Input, DatePicker, ConfigProvider, Modal, Tag, notification, Select, Image, Spin } from 'antd'
 import { CheckCircleOutlined, DeleteOutlined, SafetyCertificateOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, SearchOutlined, EyeOutlined, FilePdfOutlined, CheckCircleFilled, InboxOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import jsPDF from 'jspdf'
@@ -39,6 +39,8 @@ export default function CancellationRequests() {
     const [isViewModalOpen, setIsViewModalOpen] = useState(false)
     const [selectedRequest, setSelectedRequest] = useState(null)
     const [loading, setLoading] = useState(false)
+    const [actionLoading, setActionLoading] = useState(false);
+    const [actionType, setActionType] = useState("");
 
     const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false)
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false)
@@ -352,6 +354,9 @@ export default function CancellationRequests() {
     //archive function
     const handleArchive = async (key) => {
 
+        setActionLoading(true);
+        setActionType("Archiving");
+
         try {
             await apiFetch.delete(`/booking/cancellations/${key}/archive`)
             setIsRequestDeletedModalOpen(true)
@@ -359,6 +364,8 @@ export default function CancellationRequests() {
         } catch (error) {
             console.error("Error archiving cancellation request:", error)
             notificationApi.error({ title: 'Cancellation request archived unsuccessfully', placement: 'topRight' })
+        } finally {
+            setActionLoading(false);
         }
 
     }
@@ -367,6 +374,9 @@ export default function CancellationRequests() {
     //restore function
     const handleRestore = async (key) => {
 
+        setActionLoading(true);
+        setActionType("Restoring");
+
         try {
             await apiFetch.post(`/booking/archived-cancellations/${key}/restore`)
             setIsRequestRestoredModalOpen(true)
@@ -374,6 +384,8 @@ export default function CancellationRequests() {
         } catch (error) {
             console.error("Error restoring cancellation request:", error)
             notificationApi.error({ title: error?.response?.data?.message || 'Cancellation restore failed', placement: 'topRight' })
+        } finally {
+            setActionLoading(false);
         }
     }
 
@@ -500,6 +512,12 @@ export default function CancellationRequests() {
             }}
         >
             {notificationContextHolder}
+
+            {actionLoading && (
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
+                    <Spin size="large" description={actionType === "Archiving" ? "Archiving cancellation request..." : "Restoring cancellation request..."} />
+                </div>
+            )}
 
             <div className="cancellations-container">
                 <h1 className="page-header">Cancellation Requests</h1>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, notification, Modal, ConfigProvider } from "antd";
+import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, notification, Modal, ConfigProvider, Spin } from "antd";
 import { SearchOutlined, InboxOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, CheckCircleFilled, BookOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
@@ -49,6 +49,8 @@ export default function BookingManagement() {
   const [data, setData] = useState([]);
   const [archivedData, setArchivedData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionType, setActionType] = useState("");
   const navigate = useNavigate();
   const { auth } = useAuth();
   const isEmployee = auth?.role === 'Employee';
@@ -339,12 +341,17 @@ export default function BookingManagement() {
   //archive function
   const handleArchive = async (key) => {
 
+    setActionLoading(true);
+    setActionType("Archiving");
+
     try {
       await apiFetch.delete(`/booking/${key}`);
       setData((prev) => prev.filter((item) => item.key !== key));
       setIsBookingDeletedModalOpen(true);
     } catch (error) {
       notificationApi.error({ title: 'Unable to archive booking', placement: 'topRight' });
+    } finally {
+      setActionLoading(false);
     }
 
   };
@@ -353,12 +360,17 @@ export default function BookingManagement() {
   //restore function
   const handleRestore = async (key) => {
 
+    setActionLoading(true);
+    setActionType("Restoring");
+
     try {
       await apiFetch.post(`/booking/archived-bookings/${key}/restore`);
       setIsBookingRestoredModalOpen(true);
       setArchivedData((prev) => prev.filter((item) => item.key !== key));
     } catch (error) {
       notificationApi.error({ title: error?.response?.data?.message || 'Unable to restore booking', placement: 'topRight' });
+    } finally {
+      setActionLoading(false);
     }
 
   };
@@ -558,6 +570,11 @@ export default function BookingManagement() {
     >
       {notificationContextHolder}
 
+      {actionLoading && (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
+          <Spin size="large" description={`${actionType} booking...`} />
+        </div>
+      )}
       <div className="booking-management-container">
         <h1 className="page-header">Booking Management</h1>
         {!showArchived && (
