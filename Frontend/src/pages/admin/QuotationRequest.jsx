@@ -46,7 +46,11 @@ export default function QuotationRequest() {
         exclusionsText: '',
         itineraryRows: [],
         baggageAllowance: '',
-        travelers: '',
+        travelers: {
+            adult: '',
+            child: 'N/A',
+            infant: 'N/A'
+        },
         totalRate: '',
         totalChildRate: '0',
         totalInfantRate: '0',
@@ -153,9 +157,15 @@ export default function QuotationRequest() {
 
         if (typeof value === 'object') {
             const adult = Number(value.adult) || 0;
-            const child = Number(value.child) || 0;
-            const infant = Number(value.infant) || 0;
-            return { adult, child, infant, total: adult + child + infant };
+            const child = value.child === 'N/A' ? 0 : Number(value.child) || 0;
+            const infant = value.infant === 'N/A' ? 0 : Number(value.infant) || 0;
+
+            return {
+                adult,
+                child,
+                infant,
+                total: adult + child + infant
+            };
         }
 
         const raw = String(value).trim();
@@ -270,9 +280,18 @@ export default function QuotationRequest() {
                 next.airline = airline && airline !== 'N/A' ? String(airline) : '';
             }
 
-            if (!prev.travelers?.trim()) {
-                const formattedTravelers = formatTravelers(travelers);
-                next.travelers = formattedTravelers === 'N/A' ? '' : formattedTravelers;
+            if (!prev.travelers?.adult) {
+                next.travelers = {
+                    adult: travelers?.adult ?? '',
+                    child:
+                        travelers?.child && travelers.child > 0
+                            ? travelers.child
+                            : 'N/A',
+                    infant:
+                        travelers?.infant && travelers.infant > 0
+                            ? travelers.infant
+                            : 'N/A',
+                };
             }
 
             if (!prev.inclusionsText?.trim()) {
@@ -388,6 +407,59 @@ export default function QuotationRequest() {
         const isUploadMode = viewMode === "upload";
         const computedTotalPrice = calculateTotalPrice(formData);
 
+        const currentTotalPrice = parseFloat(formData.totalPrice) || (Number.isFinite(computedTotalPrice) ? computedTotalPrice : 0);
+
+        const totalRate = parseFloat(formData.totalRate) || 0;
+        const totalChildRate = parseFloat(formData.totalChildRate) || 0;
+        const totalInfantRate = parseFloat(formData.totalInfantRate) || 0;
+        const totalPrice = parseFloat(currentTotalPrice) || 0;
+        const totalDeposit = parseFloat(formData.totalDeposit) || 0;
+
+
+        // Adult rate
+        if (!formData.totalRate.trim()) {
+            errors.totalRate = "Total rate is required.";
+        } else if (totalRate < 5000) {
+            errors.totalRate = "Total rate must be at least ₱5,000.";
+        }
+
+        // Child rate
+        if (travelerCounts.child > 0) {
+            if (!formData.totalChildRate.trim()) {
+                errors.totalChildRate = "Total child rate is required.";
+            } else if (totalChildRate < 5000) {
+                errors.totalChildRate = "Total child rate must be at least ₱5,000.";
+            }
+        }
+
+        // Infant rate
+        if (travelerCounts.infant > 0) {
+            if (!formData.totalInfantRate.trim()) {
+                errors.totalInfantRate = "Total infant rate is required.";
+            } else if (totalInfantRate < 5000) {
+                errors.totalInfantRate = "Total infant rate must be at least ₱5,000.";
+            }
+        }
+
+        // Total price
+        if (!formData.totalPrice.trim()) {
+            if (!(Number.isFinite(computedTotalPrice) && computedTotalPrice > 0)) {
+                errors.totalPrice = "Total price is required.";
+            }
+        } else if (totalPrice < 5000) {
+            errors.totalPrice = "Total price must be at least ₱5,000.";
+        }
+
+        // Deposit
+        if (!formData.totalDeposit.trim()) {
+            errors.totalDeposit = "Total deposit is required.";
+        } else if (totalDeposit < 5000) {
+            errors.totalDeposit = "Deposit must be at least ₱5,000.";
+        } else if (totalDeposit > currentTotalPrice) {
+            errors.totalDeposit = "Deposit amount must not be greater than the Total Price.";
+        }
+
+
         if (!formData.roomType.trim()) {
             errors.roomType = "Room/Type is required.";
         }
@@ -422,12 +494,18 @@ export default function QuotationRequest() {
             }
         }
 
-        if (!formData.travelers.trim()) {
+        if (travelerCounts.total === 0) {
             errors.travelers = "Travelers information is required.";
         }
 
         if (!formData.totalDeposit.trim()) {
             errors.totalDeposit = "Total deposit is required.";
+        } else if (parseFloat(formData.totalDeposit) > currentTotalPrice) {
+            errors.totalDeposit = "Deposit amount must not be greater than the Total Price.";
+        }
+
+        if (!formData.baggageAllowance.trim()) {
+            errors.baggageAllowance = "Baggage allowance is Required.";
         }
 
         if (isUploadMode) {
@@ -469,6 +547,43 @@ export default function QuotationRequest() {
             if (rowErrors.some((rowError) => Object.keys(rowError).length > 0)) {
                 errors.dynamicRows = rowErrors;
             }
+        }
+
+        // Inclusions
+        if (
+            !Array.isArray(formData.inclusions) ||
+            formData.inclusions.filter(item => String(item).trim()).length === 0
+        ) {
+            errors.inclusions = "At least one inclusion is required.";
+        }
+
+        // Exclusions
+        if (
+            !Array.isArray(formData.exclusions) ||
+            formData.exclusions.filter(item => String(item).trim()).length === 0
+        ) {
+            errors.exclusions = "At least one exclusion is required.";
+        }
+
+        // Itinerary
+        const itinerary = formData.itinerary;
+
+        const hasValidItinerary =
+            itinerary &&
+            typeof itinerary === "object" &&
+            Object.keys(itinerary).length > 0 &&
+            Object.values(itinerary).every(
+                (day) =>
+                    Array.isArray(day) &&
+                    day.some(
+                        (item) =>
+                            String(item.activity || item.optionalActivity || item || "")
+                                .trim()
+                    )
+            );
+
+        if (!hasValidItinerary) {
+            errors.itinerary = "Itinerary is required.";
         }
 
         setFormErrors(errors);
@@ -524,6 +639,19 @@ export default function QuotationRequest() {
                 return acc;
             }, {});
 
+
+            const finalTravelers = {
+                adult: Number(formData.travelers.adult) || 0,
+                child:
+                    formData.travelers.child === "N/A"
+                        ? 0
+                        : Number(formData.travelers.child) || 0,
+                infant:
+                    formData.travelers.infant === "N/A"
+                        ? 0
+                        : Number(formData.travelers.infant) || 0,
+            };
+
             const travelDetails = {
                 roomType: formData.roomType,
                 travelDates: formData.travelDates,
@@ -534,7 +662,7 @@ export default function QuotationRequest() {
                 itinerary: itineraryPayload,
                 dynamicRows: formData.dynamicRows,
                 baggageAllowance: formData.baggageAllowance,
-                travelers: travelers,
+                travelers: finalTravelers,
                 totalRate: formData.totalRate,
                 totalChildRate: formData.totalChildRate,
                 totalInfantRate: formData.totalInfantRate,
@@ -555,7 +683,11 @@ export default function QuotationRequest() {
                 exclusionsText: '',
                 itineraryRows: [],
                 baggageAllowance: '',
-                travelers: '',
+                travelers: {
+                    adult: '',
+                    child: 'N/A',
+                    infant: 'N/A'
+                },
                 totalRate: '',
                 totalChildRate: '0',
                 totalInfantRate: '0',
@@ -628,6 +760,19 @@ export default function QuotationRequest() {
                 ? formData.totalPrice
                 : String(computedTotalPrice);
 
+
+            const finalTravelers = {
+                adult: Number(formData.travelers.adult) || 0,
+                child:
+                    formData.travelers.child === "N/A"
+                        ? 0
+                        : Number(formData.travelers.child) || 0,
+                infant:
+                    formData.travelers.infant === "N/A"
+                        ? 0
+                        : Number(formData.travelers.infant) || 0,
+            };
+
             const travelDetails = {
                 roomType: formData.roomType,
                 travelDates: formData.travelDates,
@@ -638,7 +783,7 @@ export default function QuotationRequest() {
                 itinerary: formData.itinerary,
                 dynamicRows: formData.dynamicRows,
                 baggageAllowance: formData.baggageAllowance,
-                travelers: quotation.quotationDetails.travelers,
+                travelers: finalTravelers,
                 totalRate: formData.totalRate,
                 totalChildRate: formData.totalChildRate,
                 totalInfantRate: formData.totalInfantRate,
@@ -668,16 +813,58 @@ export default function QuotationRequest() {
 
     //next function in quotation form
     const handleNextPreview = () => {
-        if (previewStep === 0) {
-            const isValid = validateForm();
+        let errors = {};
 
-            if (!isValid) {
-                notificationApi.error({ title: "Please complete required fields.", placement: "topRight" });
-                return;
-            }
+        switch (previewStep) {
+            // Page 1
+            case 0:
+                errors = validateForm();
+                break;
+
+            // Page 2 (Inclusions & Exclusions)
+            case 1:
+                if (
+                    !formData.inclusions ||
+                    formData.inclusions.filter(item => item.trim()).length === 0
+                ) {
+                    errors.inclusions = "At least one inclusion is required.";
+                }
+
+                if (
+                    !formData.exclusions ||
+                    formData.exclusions.filter(item => item.trim()).length === 0
+                ) {
+                    errors.exclusions = "At least one exclusion is required.";
+                }
+                break;
+
+            // Page 3 (Itinerary)
+            case 2:
+                const hasValidItinerary = editableItinerary.every(
+                    item => item.text.trim() !== ""
+                );
+
+                if (!hasValidItinerary) {
+                    errors.itinerary = "All itinerary days are required.";
+                }
+                break;
+
+            default:
+                break;
         }
 
-        setPreviewStep((prev) => Math.min(previewItems.length - 1, prev + 1));
+        setFormErrors(errors);
+
+        if (Object.keys(errors).length > 0) {
+            notificationApi.error({
+                message: "Please complete the required fields.",
+                placement: "topRight",
+            });
+            return;
+        }
+
+        setPreviewStep(prev => Math.min(previewItems.length - 1, prev + 1));
+
     };
 
 
@@ -896,6 +1083,39 @@ export default function QuotationRequest() {
                                                     Remove Last Row
                                                 </Button>
                                             )}
+
+
+                                            {formData.flightImageA && formData.flightImageA !== 'No Image, Land Arrangement' && (
+                                                <Button
+                                                    className="quotationrequest-formremove-button"
+                                                    type="primary"
+                                                    danger
+                                                    onClick={() =>
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            flightImageA: '',
+                                                        }))
+                                                    }
+                                                >
+                                                    Remove Image 1
+                                                </Button>
+                                            )}
+
+                                            {formData.flightImageB && formData.flightImageB !== 'No Image, Land Arrangement' && (
+                                                <Button
+                                                    className="quotationrequest-formremove-button"
+                                                    type="primary"
+                                                    danger
+                                                    onClick={() =>
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            flightImageB: '',
+                                                        }))
+                                                    }
+                                                >
+                                                    Remove Image 2
+                                                </Button>
+                                            )}
                                         </div>
                                     )}
 
@@ -1070,27 +1290,103 @@ export default function QuotationRequest() {
                                             }));
                                         }}
                                     />
+                                    {formErrors.baggageAllowance && <div className="quotationrequest-error">{formErrors.baggageAllowance}</div>}
                                 </div>
                                 <div>
-                                    <label className="quotationrequest-label">Travelers <span style={{ color: "#ff0000" }}>*</span></label>
-                                    <Input
-                                        maxLength={30}
-                                        placeholder="Travelers"
-                                        value={formData.travelers}
-                                        disabled
-                                        onChange={(e) => {
-                                            const cleanedValue = e.target.value
-                                                .replace(/[^a-zA-Z0-9\s]/g, '')
-                                                .replace(/\s{2,}/g, ' ')
-                                                .replace(/^\s+/, '');
+                                    <label className="quotationrequest-label">
+                                        Travelers (Adult) <span style={{ color: "#ff0000" }}>*</span>
+                                    </label>
 
-                                            setFormData((prev) => ({
+                                    <Input
+                                        maxLength={2}
+                                        placeholder="Adult"
+                                        value={formData.travelers.adult}
+                                        onChange={(e) => {
+                                            const value = e.target.value.replace(/[^0-9]/g, '');
+
+                                            setFormData(prev => ({
                                                 ...prev,
-                                                travelers: cleanedValue,
+                                                travelers: {
+                                                    ...prev.travelers,
+                                                    adult: value
+                                                }
                                             }));
                                         }}
                                     />
-                                    {formErrors.travelers && <div className="quotationrequest-error">{formErrors.travelers}</div>}
+
+                                    {formErrors.travelers && (
+                                        <div className="quotationrequest-error">
+                                            {formErrors.travelers}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="quotationrequest-label">
+                                        Travelers (Child) <span style={{ color: "#ff0000" }}>*</span>
+                                    </label>
+
+                                    <Input
+                                        placeholder="Child or N/A"
+                                        value={formData.travelers.child}
+                                        onChange={(e) => {
+                                            let value = e.target.value.toUpperCase();
+
+                                            if (/^\d+$/.test(value)) {
+                                                value = value.slice(0, 2);
+                                            }
+
+                                            if (
+                                                value === "" ||
+                                                value === "N" ||
+                                                value === "N/" ||
+                                                value === "N/A" ||
+                                                /^\d{0,2}$/.test(value)
+                                            ) {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    travelers: {
+                                                        ...prev.travelers,
+                                                        child: value
+                                                    }
+                                                }));
+                                            }
+                                        }}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="quotationrequest-label">
+                                        Travelers (Infant) <span style={{ color: "#ff0000" }}>*</span>
+                                    </label>
+
+                                    <Input
+                                        placeholder="Infant or N/A"
+                                        value={formData.travelers.infant}
+                                        onChange={(e) => {
+                                            let value = e.target.value.toUpperCase();
+
+                                            if (/^\d+$/.test(value)) {
+                                                value = value.slice(0, 2);
+                                            }
+
+                                            if (
+                                                value === "" ||
+                                                value === "N" ||
+                                                value === "N/" ||
+                                                value === "N/A" ||
+                                                /^\d{0,2}$/.test(value)
+                                            ) {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    travelers: {
+                                                        ...prev.travelers,
+                                                        infant: value
+                                                    }
+                                                }));
+                                            }
+                                        }}
+                                    />
                                 </div>
                                 <div>
                                     <label className="quotationrequest-label">Total Rate per Adult <span style={{ color: "#ff0000" }}>*</span></label>

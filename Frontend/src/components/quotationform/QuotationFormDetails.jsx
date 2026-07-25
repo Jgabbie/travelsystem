@@ -278,24 +278,61 @@ export default function QuotationFormDetails({
         { label: 'AIRPORT TERMINAL FEE', value: 'INCLUDED' },
         {
             label: 'TRAVELERS',
-            value: (
-                <div>
-                    <Input
-                        maxLength={30}
-                        size="small"
-                        className="mrc-tour-details-input"
-                        placeholder="TOTAL"
-                        value={formData.travelers}
-                        onChange={(e) =>
-                            setFormData(prev => ({ ...prev, travelers: e.target.value }))
-                        }
-                        style={formErrors.travelers ? { borderColor: '#ff4d4f' } : undefined}
-                    />
-                    {formErrors.travelers ? (
-                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.travelers}</div>
-                    ) : null}
-                </div>
-            ),
+            value: (() => {
+                const counts = parseTravelerCounts(formData.travelers);
+
+                const handleTravelerChange = (type, value) => {
+                    // Extract only up to 2 digits
+                    const digitsOnly = value.replace(/\D/g, '').slice(0, 2);
+                    const numValue = digitsOnly === '' ? 0 : parseInt(digitsOnly, 10);
+
+                    setFormData(prev => {
+                        const currentCounts = parseTravelerCounts(prev.travelers);
+                        const newCounts = {
+                            adult: type === 'adult' ? numValue : currentCounts.adult,
+                            child: type === 'child' ? numValue : currentCounts.child,
+                            infant: type === 'infant' ? numValue : currentCounts.infant
+                        };
+                        return { ...prev, travelers: newCounts }; // Sets the object in state
+                    });
+                };
+
+                return (
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '10px', fontWeight: 600 }}>Adult:</span>
+                            <Input
+                                size="small"
+                                maxLength={2}
+                                value={counts.adult || ''}
+                                onChange={(e) => handleTravelerChange('adult', e.target.value)}
+                                style={{ width: '20px', marginBottom: '4px', border: 'none', textAlign: 'center', ...(formErrors.travelers ? { borderColor: '#ff4d4f' } : {}) }}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '10px', fontWeight: 600 }}>Child:</span>
+                            <Input
+                                size="small"
+                                value={counts.child === 0 ? 'N/A' : counts.child}
+                                onChange={(e) => handleTravelerChange('child', e.target.value)}
+                                style={{ width: '20px', marginBottom: '4px', textAlign: 'center', border: 'none' }}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '10px', fontWeight: 600 }}>Infant:</span>
+                            <Input
+                                size="small"
+                                value={counts.infant === 0 ? 'N/A' : counts.infant}
+                                onChange={(e) => handleTravelerChange('infant', e.target.value)}
+                                style={{ width: '20px', marginBottom: '4px', textAlign: 'center', border: 'none' }}
+                            />
+                        </div>
+                        {formErrors.travelers ? (
+                            <div style={{ color: '#ff4d4f', fontSize: 11, marginLeft: '8px' }}>{formErrors.travelers}</div>
+                        ) : null}
+                    </div>
+                );
+            })()
         },
         {
             label: 'TOTAL RATE PER ADULT',

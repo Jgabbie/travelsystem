@@ -417,9 +417,8 @@ export default function ReviewRatings() {
                             setSelectedRating(record);
                             setIsViewModalOpen(true);
                         }}
-                    >
-                        View
-                    </Button>
+                    />
+
 
                     <Button
                         className="reviewratings-restore-button"
@@ -429,9 +428,8 @@ export default function ReviewRatings() {
                             setDeletingRating(record);
                             setIsRestoreModalOpen(true);
                         }}
-                    >
-                        Restore
-                    </Button>
+                    />
+
                 </Space>
             )
         }
