@@ -351,7 +351,7 @@ export default function PackageManagement() {
                   value={searchText}
                   onChange={(e) => {
                     const cleanedValue = e.target.value
-                      .replace(/[^a-zA-Z0-9\s]/g, '')
+                      .replace(/[^a-zA-Z0-9\s-]/g, '')
                       .replace(/\s{2,}/g, ' ')
                       .replace(/^\s+/, '');
 

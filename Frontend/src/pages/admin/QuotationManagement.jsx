@@ -376,13 +376,15 @@ export default function QuotationManagement() {
             title: "Actions",
             render: (_text, record) => (
                 <Space>
-                    <Button
-                        className="quotation-view"
-                        type="primary"
-                        icon={<EyeOutlined />}
-                        onClick={() => handleView(record.key)}
-                    >
-                    </Button>
+                    {!showArchived && (
+                        <Button
+                            className="quotation-view"
+                            type="primary"
+                            icon={<EyeOutlined />}
+                            onClick={() => handleView(record.key)}
+                        />
+                    )}
+
                     {showArchived ? (
                         <Button
                             className="quotation-restore"
@@ -392,8 +394,7 @@ export default function QuotationManagement() {
                                 setEditingQuotation(record);
                                 setIsRestoreModalOpen(true);
                             }}
-                        >
-                        </Button>
+                        />
                     ) : (
                         <Button
                             className="quotation-remove"
@@ -403,8 +404,7 @@ export default function QuotationManagement() {
                                 setEditingQuotation(record);
                                 setIsDeleteModalOpen(true);
                             }}
-                        >
-                        </Button>
+                        />
                     )}
                 </Space>
             )
