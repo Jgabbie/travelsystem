@@ -549,43 +549,6 @@ export default function QuotationRequest() {
             }
         }
 
-        // Inclusions
-        if (
-            !Array.isArray(formData.inclusions) ||
-            formData.inclusions.filter(item => String(item).trim()).length === 0
-        ) {
-            errors.inclusions = "At least one inclusion is required.";
-        }
-
-        // Exclusions
-        if (
-            !Array.isArray(formData.exclusions) ||
-            formData.exclusions.filter(item => String(item).trim()).length === 0
-        ) {
-            errors.exclusions = "At least one exclusion is required.";
-        }
-
-        // Itinerary
-        const itinerary = formData.itinerary;
-
-        const hasValidItinerary =
-            itinerary &&
-            typeof itinerary === "object" &&
-            Object.keys(itinerary).length > 0 &&
-            Object.values(itinerary).every(
-                (day) =>
-                    Array.isArray(day) &&
-                    day.some(
-                        (item) =>
-                            String(item.activity || item.optionalActivity || item || "")
-                                .trim()
-                    )
-            );
-
-        if (!hasValidItinerary) {
-            errors.itinerary = "Itinerary is required.";
-        }
-
         setFormErrors(errors);
 
         return Object.keys(errors).length === 0;
@@ -813,6 +776,22 @@ export default function QuotationRequest() {
 
     //next function in quotation form
     const handleNextPreview = () => {
+
+        if (previewStep === 0) {
+            const isValid = validateForm();
+
+            if (!isValid) {
+                notificationApi.error({
+                    message: "Please complete the required fields.",
+                    placement: "topRight",
+                });
+                return;
+            }
+
+            setPreviewStep(prev => prev + 1);
+            return;
+        }
+
         let errors = {};
 
         switch (previewStep) {

@@ -505,12 +505,7 @@ export default function QuotationManagement() {
 
             {actionLoading ? (
                 <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        minHeight: "100vh", // or adjust to your desired height
-                    }}
+                    style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80vh", }}
                 >
                     <Spin
                         size="large"
