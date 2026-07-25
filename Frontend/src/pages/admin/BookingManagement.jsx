@@ -570,386 +570,387 @@ export default function BookingManagement() {
     >
       {notificationContextHolder}
 
-      {actionLoading && (
+      {actionLoading ? (
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
           <Spin size="large" description={`${actionType} booking...`} />
         </div>
-      )}
-      <div className="booking-management-container">
-        <h1 className="page-header">Booking Management</h1>
-        {!showArchived && (
-          <Row gutter={16} className="booking-statistics">
-            <Col xs={24} sm={6}>
-              <Card className="booking-management-card">
-                <Statistic title="Total" value={totalBookings} prefix={<CalendarOutlined />} />
-              </Card>
-            </Col>
-            <Col xs={24} sm={6}>
-              <Card className="booking-management-card">
-                <Statistic title="Pending" value={totalPending} prefix={<ClockCircleOutlined />} />
-              </Card>
-            </Col>
-            <Col xs={24} sm={6}>
-              <Card className="booking-management-card">
-                <Statistic title="Fully Paid" value={totalFullyPaid} prefix={<CheckCircleOutlined />} />
-              </Card>
-            </Col>
-            <Col xs={24} sm={6}>
-              <Card className="booking-management-card">
-                <Statistic title="Cancelled" value={totalCancelled} prefix={<CloseCircleOutlined />} />
-              </Card>
-            </Col>
-          </Row>
-        )}
+      ) : (
+        <div className="booking-management-container">
+          <h1 className="page-header">Booking Management</h1>
+          {!showArchived && (
+            <Row gutter={16} className="booking-statistics">
+              <Col xs={24} sm={6}>
+                <Card className="booking-management-card">
+                  <Statistic title="Total" value={totalBookings} prefix={<CalendarOutlined />} />
+                </Card>
+              </Col>
+              <Col xs={24} sm={6}>
+                <Card className="booking-management-card">
+                  <Statistic title="Pending" value={totalPending} prefix={<ClockCircleOutlined />} />
+                </Card>
+              </Col>
+              <Col xs={24} sm={6}>
+                <Card className="booking-management-card">
+                  <Statistic title="Fully Paid" value={totalFullyPaid} prefix={<CheckCircleOutlined />} />
+                </Card>
+              </Col>
+              <Col xs={24} sm={6}>
+                <Card className="booking-management-card">
+                  <Statistic title="Cancelled" value={totalCancelled} prefix={<CloseCircleOutlined />} />
+                </Card>
+              </Col>
+            </Row>
+          )}
 
-        <Card className="bookingmanagement-actions">
-          <div className="bookingmanagement-actions-row">
-            <div className="bookingmanagement-actions-filters">
-              <div className="bookingmanagement-actions-field bookingmanagement-actions-field--search">
-                <label className="bookingmanagement-label">Search</label>
-                <Input
-                  maxLength={40}
-                  prefix={<SearchOutlined />}
-                  placeholder="Search reference, package or status..."
-                  className="bookingmanagement-search-input"
-                  value={searchText}
-                  onChange={(e) => {
-                    const cleanedValue = e.target.value
-                      .replace(/[^a-zA-Z0-9\s-]/g, '')
-                      .replace(/\s{2,}/g, ' ')
-                      .replace(/-{2,}/g, '-')
-                      .replace(/^\s+/, '');
+          <Card className="bookingmanagement-actions">
+            <div className="bookingmanagement-actions-row">
+              <div className="bookingmanagement-actions-filters">
+                <div className="bookingmanagement-actions-field bookingmanagement-actions-field--search">
+                  <label className="bookingmanagement-label">Search</label>
+                  <Input
+                    maxLength={40}
+                    prefix={<SearchOutlined />}
+                    placeholder="Search reference, package or status..."
+                    className="bookingmanagement-search-input"
+                    value={searchText}
+                    onChange={(e) => {
+                      const cleanedValue = e.target.value
+                        .replace(/[^a-zA-Z0-9\s-]/g, '')
+                        .replace(/\s{2,}/g, ' ')
+                        .replace(/-{2,}/g, '-')
+                        .replace(/^\s+/, '');
 
-                    setSearchText(cleanedValue);
-                  }}
-                  allowClear
-                />
-              </div>
+                      setSearchText(cleanedValue);
+                    }}
+                    allowClear
+                  />
+                </div>
 
-              <div className="bookingmanagement-actions-field">
-                <label className="bookingmanagement-label">Status</label>
-                <Select
-                  className="bookingmanagement-select"
-                  placeholder="Status"
-                  allowClear
-                  value={statusFilter || undefined}
-                  onChange={(v) => setStatusFilter(v || "")}
-                  options={[
-                    { value: "Fully Paid", label: "Fully Paid" },
-                    { value: "Pending", label: "Pending" },
-                    { value: "Cancelled", label: "Cancelled" }
-                  ]}
-                />
-              </div>
-
-              <div className="bookingmanagement-actions-field">
-                <label className="bookingmanagement-label">Booking Date</label>
-                <DatePicker
-                  inputReadOnly
-                  className="booking-date-filter"
-                  placeholder="Booking Date"
-                  value={bookingDateFilter}
-                  onChange={(d) => setBookingDateFilter(d)}
-                  allowClear
-                />
-              </div>
-
-              <div className="bookingmanagement-actions-field">
-                <label className="bookingmanagement-label">Travel Date</label>
-                <DatePicker
-                  inputReadOnly
-                  className="booking-date-filter"
-                  placeholder="Travel Date"
-                  value={travelDateFilter}
-                  onChange={(d) => setTravelDateFilter(d)}
-                  allowClear
-                />
-              </div>
-            </div>
-
-            <div className="bookingmanagement-actions-buttons">
-              <Button className='bookingmanagement-export-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
-              <Button
-                className='bookingmanagement-archive-button'
-                icon={showArchived ? <BookOutlined /> : <InboxOutlined />}
-                type="primary"
-                onClick={() => {
-                  const nextValue = !showArchived;
-                  setShowArchived(nextValue);
-                  setSearchText("");
-                  setStatusFilter("");
-                  setBookingDateFilter(null);
-                  setTravelDateFilter(null);
-                  if (nextValue) {
-                    fetchArchivedBookings();
-                  } else {
-                    fetchBookings();
-                  }
-                }}
-              >
-                {showArchived ? 'Back' : 'Archives'}
-              </Button>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="bookingmanagement-table-card">
-          <Table
-            columns={showArchived ? archivedColumns : columns}
-            dataSource={filteredData}
-            loading={loading}
-            scroll={{ x: "max-content" }}
-            pagination={{ pageSize: 10, showSizeChanger: false }}
-          />
-        </Card>
-
-        <Modal
-          title="Edit Booking"
-          open={isEditModalOpen}
-          onCancel={() => {
-            setIsEditModalOpen(false);
-            setEditingBooking(null);
-          }}
-          footer={null}
-          onOk={save}
-          okText="Save Changes"
-          centered={true}
-          className="booking-edit-modal"
-        >
-          <Form form={editForm} layout="vertical" className="booking-edit-form">
-            {/* Package and Booking Date inputs removed per request */}
-
-            <Row gutter={12}>
-              <Col span={24}>
-                <Form.Item
-                  name="status"
-                  label="Status"
-                  rules={[{ required: true, message: "Status is required" }]}
-                >
+                <div className="bookingmanagement-actions-field">
+                  <label className="bookingmanagement-label">Status</label>
                   <Select
+                    className="bookingmanagement-select"
+                    placeholder="Status"
+                    allowClear
+                    value={statusFilter || undefined}
+                    onChange={(v) => setStatusFilter(v || "")}
                     options={[
                       { value: "Fully Paid", label: "Fully Paid" },
                       { value: "Pending", label: "Pending" },
                       { value: "Cancelled", label: "Cancelled" }
                     ]}
                   />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
+                </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-            <Button
-              type='primary'
-              onClick={() => {
-                setIsEditModalOpen(false);
-                setEditingBooking(null);
-              }}
-              className="bookingmanagement-cancel-button">
-              Cancel
-            </Button>
-            <Button
-              type='primary'
-              onClick={save}
-              className="bookingmanagement-okmodal-button">
-              Save
-            </Button>
-          </div>
-        </Modal>
+                <div className="bookingmanagement-actions-field">
+                  <label className="bookingmanagement-label">Booking Date</label>
+                  <DatePicker
+                    inputReadOnly
+                    className="booking-date-filter"
+                    placeholder="Booking Date"
+                    value={bookingDateFilter}
+                    onChange={(d) => setBookingDateFilter(d)}
+                    allowClear
+                  />
+                </div>
 
+                <div className="bookingmanagement-actions-field">
+                  <label className="bookingmanagement-label">Travel Date</label>
+                  <DatePicker
+                    inputReadOnly
+                    className="booking-date-filter"
+                    placeholder="Travel Date"
+                    value={travelDateFilter}
+                    onChange={(d) => setTravelDateFilter(d)}
+                    allowClear
+                  />
+                </div>
+              </div>
 
-        {/* BOOKING ARCHIVE CONFIRMATION MODAL */}
-        <Modal
-          open={isDeleteModalOpen}
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          centered={true}
-          onCancel={() => {
-            setIsDeleteModalOpen(false);
-          }}
-        >
-          <div className='modal-container'>
-            <h1 className='modal-heading'>Archive Booking?</h1>
-            <p className='modal-text'>Are you sure you want to archive this booking?</p>
+              <div className="bookingmanagement-actions-buttons">
+                <Button className='bookingmanagement-export-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
+                <Button
+                  className='bookingmanagement-archive-button'
+                  icon={showArchived ? <BookOutlined /> : <InboxOutlined />}
+                  type="primary"
+                  onClick={() => {
+                    const nextValue = !showArchived;
+                    setShowArchived(nextValue);
+                    setSearchText("");
+                    setStatusFilter("");
+                    setBookingDateFilter(null);
+                    setTravelDateFilter(null);
+                    if (nextValue) {
+                      fetchArchivedBookings();
+                    } else {
+                      fetchBookings();
+                    }
+                  }}
+                >
+                  {showArchived ? 'Back' : 'Archives'}
+                </Button>
+              </div>
+            </div>
+          </Card>
 
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+          <Card className="bookingmanagement-table-card">
+            <Table
+              columns={showArchived ? archivedColumns : columns}
+              dataSource={filteredData}
+              loading={loading}
+              scroll={{ x: "max-content" }}
+              pagination={{ pageSize: 10, showSizeChanger: false }}
+            />
+          </Card>
 
+          <Modal
+            title="Edit Booking"
+            open={isEditModalOpen}
+            onCancel={() => {
+              setIsEditModalOpen(false);
+              setEditingBooking(null);
+            }}
+            footer={null}
+            onOk={save}
+            okText="Save Changes"
+            centered={true}
+            className="booking-edit-modal"
+          >
+            <Form form={editForm} layout="vertical" className="booking-edit-form">
+              {/* Package and Booking Date inputs removed per request */}
+
+              <Row gutter={12}>
+                <Col span={24}>
+                  <Form.Item
+                    name="status"
+                    label="Status"
+                    rules={[{ required: true, message: "Status is required" }]}
+                  >
+                    <Select
+                      options={[
+                        { value: "Fully Paid", label: "Fully Paid" },
+                        { value: "Pending", label: "Pending" },
+                        { value: "Cancelled", label: "Cancelled" }
+                      ]}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <Button
                 type='primary'
-                className='modal-button'
                 onClick={() => {
-                  handleArchive(editingBooking.key);
-                  setIsDeleteModalOpen(false);
-                }}
-              >
-                Archive
-              </Button>
-              <Button
-                type='primary'
-                className='modal-button-cancel'
-                onClick={() => {
-                  setIsDeleteModalOpen(false);
+                  setIsEditModalOpen(false);
                   setEditingBooking(null);
                 }}
-              >
+                className="bookingmanagement-cancel-button">
                 Cancel
               </Button>
-            </div>
-          </div>
-        </Modal>
-
-
-        {/* BOOKING RESTORE CONFIRMATION MODAL */}
-        <Modal
-          open={isRestoreModalOpen}
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          centered={true}
-          onCancel={() => {
-            setIsRestoreModalOpen(false);
-          }}
-        >
-          <div className='modal-container'>
-            <h1 className='modal-heading'>Restore Booking?</h1>
-            <p className='modal-text'>Are you sure you want to restore this booking?</p>
-
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
               <Button
                 type='primary'
-                className='modal-button'
-                onClick={() => {
-                  handleRestore(editingBooking.key);
-                  setIsRestoreModalOpen(false);
-                }}
-              >
-                Restore
-              </Button>
-              <Button
-                type='primary'
-                className='modal-button-cancel'
-                onClick={() => {
-                  setIsRestoreModalOpen(false);
-                  setEditingBooking(null);
-                }}
-              >
-                Cancel
+                onClick={save}
+                className="bookingmanagement-okmodal-button">
+                Save
               </Button>
             </div>
-          </div>
-        </Modal>
+          </Modal>
 
 
-        {/* BOOKING HAS BEEN EDITED MODAL */}
-        <Modal
-          open={isBookingEditedModalOpen}
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          centered={true}
-          onCancel={() => {
-            setIsBookingEditedModalOpen(false);
-          }}
-        >
-          <div className='modal-container'>
-            <h1 className='modal-heading'>Booking Edited Successfully!</h1>
+          {/* BOOKING ARCHIVE CONFIRMATION MODAL */}
+          <Modal
+            open={isDeleteModalOpen}
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            centered={true}
+            onCancel={() => {
+              setIsDeleteModalOpen(false);
+            }}
+          >
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Archive Booking?</h1>
+              <p className='modal-text'>Are you sure you want to archive this booking?</p>
 
-            <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='modal-button'
+                  onClick={() => {
+                    handleArchive(editingBooking.key);
+                    setIsDeleteModalOpen(false);
+                  }}
+                >
+                  Archive
+                </Button>
+                <Button
+                  type='primary'
+                  className='modal-button-cancel'
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setEditingBooking(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
+          </Modal>
 
-            <p className='modal-text'>The booking has been edited.</p>
 
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+          {/* BOOKING RESTORE CONFIRMATION MODAL */}
+          <Modal
+            open={isRestoreModalOpen}
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            centered={true}
+            onCancel={() => {
+              setIsRestoreModalOpen(false);
+            }}
+          >
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Restore Booking?</h1>
+              <p className='modal-text'>Are you sure you want to restore this booking?</p>
 
-              <Button
-                type='primary'
-                className='modal-button'
-                onClick={() => {
-                  setIsBookingEditedModalOpen(false);
-                }}
-              >
-                Continue
-              </Button>
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='modal-button'
+                  onClick={() => {
+                    handleRestore(editingBooking.key);
+                    setIsRestoreModalOpen(false);
+                  }}
+                >
+                  Restore
+                </Button>
+                <Button
+                  type='primary'
+                  className='modal-button-cancel'
+                  onClick={() => {
+                    setIsRestoreModalOpen(false);
+                    setEditingBooking(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
-
-          </div>
-        </Modal>
+          </Modal>
 
 
-        {/* BOOKING HAS BEEN ARCHIVED MODAL */}
-        <Modal
-          open={isBookingDeletedModalOpen}
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          centered={true}
-          onCancel={() => {
-            setIsBookingDeletedModalOpen(false);
-          }}
-        >
-          <div className='modal-container'>
-            <h1 className='modal-heading'>Booking Archived Successfully!</h1>
+          {/* BOOKING HAS BEEN EDITED MODAL */}
+          <Modal
+            open={isBookingEditedModalOpen}
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            centered={true}
+            onCancel={() => {
+              setIsBookingEditedModalOpen(false);
+            }}
+          >
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Booking Edited Successfully!</h1>
 
-            <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+              <div>
+                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+              </div>
+
+              <p className='modal-text'>The booking has been edited.</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='modal-button'
+                  onClick={() => {
+                    setIsBookingEditedModalOpen(false);
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
+
             </div>
+          </Modal>
 
-            <p className='modal-text'>The booking has been archived.</p>
 
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+          {/* BOOKING HAS BEEN ARCHIVED MODAL */}
+          <Modal
+            open={isBookingDeletedModalOpen}
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            centered={true}
+            onCancel={() => {
+              setIsBookingDeletedModalOpen(false);
+            }}
+          >
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Booking Archived Successfully!</h1>
 
-              <Button
-                type='primary'
-                className='modal-button'
-                onClick={() => {
-                  setIsBookingDeletedModalOpen(false);
-                }}
-              >
-                Continue
-              </Button>
+              <div>
+                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+              </div>
+
+              <p className='modal-text'>The booking has been archived.</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='modal-button'
+                  onClick={() => {
+                    setIsBookingDeletedModalOpen(false);
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
+
             </div>
-
-          </div>
-        </Modal>
+          </Modal>
 
 
 
-        {/* BOOKING HAS BEEN RESTORED MODAL */}
-        <Modal
-          open={isBookingRestoredModalOpen}
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          centered={true}
-          onCancel={() => {
-            setIsBookingRestoredModalOpen(false);
-          }}
-        >
-          <div className='modal-container'>
-            <h1 className='modal-heading'>Booking Restored Successfully!</h1>
+          {/* BOOKING HAS BEEN RESTORED MODAL */}
+          <Modal
+            open={isBookingRestoredModalOpen}
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            centered={true}
+            onCancel={() => {
+              setIsBookingRestoredModalOpen(false);
+            }}
+          >
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Booking Restored Successfully!</h1>
 
-            <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+              <div>
+                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+              </div>
+
+              <p className='modal-text'>The booking has been restored.</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='modal-button'
+                  onClick={() => {
+                    setIsBookingRestoredModalOpen(false);
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
+
             </div>
-
-            <p className='modal-text'>The booking has been restored.</p>
-
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
-              <Button
-                type='primary'
-                className='modal-button'
-                onClick={() => {
-                  setIsBookingRestoredModalOpen(false);
-                }}
-              >
-                Continue
-              </Button>
-            </div>
-
-          </div>
-        </Modal>
+          </Modal>
 
 
-      </div>
+        </div>
+      )}
     </ConfigProvider>
   );
 }

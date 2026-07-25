@@ -513,202 +513,203 @@ export default function CancellationRequests() {
         >
             {notificationContextHolder}
 
-            {actionLoading && (
+            {actionLoading ? (
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
                     <Spin size="large" description={actionType === "Archiving" ? "Archiving cancellation request..." : "Restoring cancellation request..."} />
                 </div>
-            )}
+            ) : (
 
-            <div className="cancellations-container">
-                <h1 className="page-header">Cancellation Requests</h1>
+                <div className="cancellations-container">
+                    <h1 className="page-header">Cancellation Requests</h1>
 
-                {!showArchived && (
-                    <Row gutter={16} className="cancellation-statistics">
-                        <Col xs={24} sm={8}>
-                            <Card className='cancellation-management-card'>
-                                <Statistic
-                                    title="Total Requests"
-                                    value={totalRequests}
-                                    prefix={<CheckCircleOutlined />}
-                                />
-                            </Card>
-                        </Col>
+                    {!showArchived && (
+                        <Row gutter={16} className="cancellation-statistics">
+                            <Col xs={24} sm={8}>
+                                <Card className='cancellation-management-card'>
+                                    <Statistic
+                                        title="Total Requests"
+                                        value={totalRequests}
+                                        prefix={<CheckCircleOutlined />}
+                                    />
+                                </Card>
+                            </Col>
 
-                        <Col xs={24} sm={8}>
-                            <Card className='cancellation-management-card'>
-                                <Statistic
-                                    title="Approved"
-                                    value={approvedRequests}
-                                    prefix={<CheckCircleOutlined />}
-                                />
-                            </Card>
-                        </Col>
+                            <Col xs={24} sm={8}>
+                                <Card className='cancellation-management-card'>
+                                    <Statistic
+                                        title="Approved"
+                                        value={approvedRequests}
+                                        prefix={<CheckCircleOutlined />}
+                                    />
+                                </Card>
+                            </Col>
 
-                        <Col xs={24} sm={8}>
-                            <Card className='cancellation-management-card'>
-                                <Statistic
-                                    title="Disapproved"
-                                    value={disapprovedRequests}
-                                    prefix={<CloseCircleOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                    </Row>
-                )}
+                            <Col xs={24} sm={8}>
+                                <Card className='cancellation-management-card'>
+                                    <Statistic
+                                        title="Disapproved"
+                                        value={disapprovedRequests}
+                                        prefix={<CloseCircleOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                        </Row>
+                    )}
 
-                <Card className="cancel-actions">
-                    <div className="cancel-actions-row">
-                        <div className="cancel-actions-filters">
-                            <div className="cancel-actions-field cancel-actions-field--search">
-                                <label className="cancellationrequests-label">Search</label>
-                                <Input
-                                    maxLength={40}
-                                    prefix={<SearchOutlined />}
-                                    placeholder="Search username, package or reason..."
-                                    className="cancellationrequests-search-input"
-                                    value={searchText}
-                                    onChange={(e) => {
-                                        const cleanedValue = e.target.value
-                                            .replace(/[^a-zA-Z0-9\s-]/g, '')
-                                            .replace(/\s{2,}/g, ' ')
-                                            .replace(/-{2,}/g, '-')
-                                            .replace(/^\s+/, '');
+                    <Card className="cancel-actions">
+                        <div className="cancel-actions-row">
+                            <div className="cancel-actions-filters">
+                                <div className="cancel-actions-field cancel-actions-field--search">
+                                    <label className="cancellationrequests-label">Search</label>
+                                    <Input
+                                        maxLength={40}
+                                        prefix={<SearchOutlined />}
+                                        placeholder="Search username, package or reason..."
+                                        className="cancellationrequests-search-input"
+                                        value={searchText}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/-{2,}/g, '-')
+                                                .replace(/^\s+/, '');
 
-                                        setSearchText(cleanedValue);
+                                            setSearchText(cleanedValue);
+                                        }}
+                                        allowClear
+                                    />
+                                </div>
+
+                                <div className="cancel-actions-field">
+                                    <label className="cancellationrequests-label">Status</label>
+                                    <Select
+                                        className="cancellationrequests-select"
+                                        placeholder="Status"
+                                        allowClear
+                                        value={statusFilter || undefined}
+                                        onChange={(value) => setStatusFilter(value || "")}
+                                        options={[
+                                            { value: "Pending", label: "Pending" },
+                                            { value: "Approved", label: "Approved" },
+                                            { value: "Disapproved", label: "Disapproved" },
+                                        ]}
+                                    />
+                                </div>
+
+                                <div className="cancel-actions-field">
+                                    <label className="cancellationrequests-label">Cancellation Date</label>
+                                    <DatePicker
+                                        inputReadOnly
+                                        className="cancellation-date-filter"
+                                        placeholder="Cancellation Date"
+                                        value={dateFilter}
+                                        onChange={(date) => setDateFilter(date)}
+                                        allowClear
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="cancel-actions-buttons">
+                                <Button
+                                    className='cancellations-export-button'
+                                    type="primary"
+                                    icon={<FilePdfOutlined />}
+                                    onClick={generatePDF}
+                                >
+                                    Export to PDF
+                                </Button>
+                                <Button
+                                    icon={showArchived ? <SafetyCertificateOutlined /> : <InboxOutlined />}
+                                    className='cancellations-archive-button'
+                                    type="primary"
+                                    onClick={() => {
+                                        const nextValue = !showArchived
+                                        setShowArchived(nextValue)
+                                        setSearchText("")
+                                        setStatusFilter("")
+                                        setDateFilter(null)
+                                        if (nextValue) {
+                                            getArchivedCancellationRequests()
+                                        } else {
+                                            getCancellationRequests()
+                                        }
                                     }}
-                                    allowClear
-                                />
-                            </div>
-
-                            <div className="cancel-actions-field">
-                                <label className="cancellationrequests-label">Status</label>
-                                <Select
-                                    className="cancellationrequests-select"
-                                    placeholder="Status"
-                                    allowClear
-                                    value={statusFilter || undefined}
-                                    onChange={(value) => setStatusFilter(value || "")}
-                                    options={[
-                                        { value: "Pending", label: "Pending" },
-                                        { value: "Approved", label: "Approved" },
-                                        { value: "Disapproved", label: "Disapproved" },
-                                    ]}
-                                />
-                            </div>
-
-                            <div className="cancel-actions-field">
-                                <label className="cancellationrequests-label">Cancellation Date</label>
-                                <DatePicker
-                                    inputReadOnly
-                                    className="cancellation-date-filter"
-                                    placeholder="Cancellation Date"
-                                    value={dateFilter}
-                                    onChange={(date) => setDateFilter(date)}
-                                    allowClear
-                                />
+                                >
+                                    {showArchived ? 'Back' : 'Archives'}
+                                </Button>
                             </div>
                         </div>
+                    </Card>
 
-                        <div className="cancel-actions-buttons">
+                    <Card className='cancel-table-card' style={{ marginTop: 20 }}>
+                        <Table
+                            columns={showArchived ? archivedColumns : columns}
+                            loading={loading || isFetchingRequests}
+                            dataSource={filteredData}
+                            scroll={{ x: "max-content" }}
+                            pagination={{
+                                pageSize: 10,
+                                showSizeChanger: false
+                            }}
+                        />
+                    </Card>
+
+                    <Modal
+                        open={isViewModalOpen}
+                        onCancel={() => setIsViewModalOpen(false)}
+                        className="transaction-view-modal"
+                        width={720}
+                        centered={true}
+                        footer={null}
+                        title={"Cancellation Request Proof - " + (selectedRequest?.ref || "")}
+                    >
+                        {selectedRequest && (
+                            <div className="receipt-container">
+                                {selectedRequest.imageProof ? (
+                                    <div className="upload-preview-box" style={{ maxHeight: 520 }}>
+                                        <Image
+                                            src={selectedRequest.imageProof}
+                                            alt={selectedRequest.proofFileName || "Proof of payment"}
+                                            className="upload-preview-image"
+                                            style={{ width: "100%", height: "auto" }}
+                                        />
+                                    </div>
+                                ) : (
+                                    <p>No proof image available.</p>
+                                )}
+                            </div>
+
+
+                        )}
+
+                        <Space style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
                             <Button
-                                className='cancellations-export-button'
+                                className='cancellations-viewproof-button'
                                 type="primary"
-                                icon={<FilePdfOutlined />}
-                                onClick={generatePDF}
-                            >
-                                Export to PDF
-                            </Button>
-                            <Button
-                                icon={showArchived ? <SafetyCertificateOutlined /> : <InboxOutlined />}
-                                className='cancellations-archive-button'
-                                type="primary"
-                                onClick={() => {
-                                    const nextValue = !showArchived
-                                    setShowArchived(nextValue)
-                                    setSearchText("")
-                                    setStatusFilter("")
-                                    setDateFilter(null)
-                                    if (nextValue) {
-                                        getArchivedCancellationRequests()
-                                    } else {
-                                        getCancellationRequests()
+                                onClick={async () => {
+                                    try {
+                                        const date = dayjs().format("YYYY-MM-DD");
+                                        const response = await fetch(selectedRequest.imageProof, { mode: 'cors' });
+                                        const blob = await response.blob();
+                                        const url = window.URL.createObjectURL(blob);
+                                        const link = document.createElement('a');
+                                        link.href = url;
+                                        link.download = 'Cancellation_Proof_' + selectedRequest.ref + '_' + date + '.png';
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                        window.URL.revokeObjectURL(url);
+                                    } catch (err) {
+                                        window.open(selectedRequest.imageProof, '_blank');
                                     }
                                 }}
                             >
-                                {showArchived ? 'Back' : 'Archives'}
+                                Download Image
                             </Button>
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className='cancel-table-card' style={{ marginTop: 20 }}>
-                    <Table
-                        columns={showArchived ? archivedColumns : columns}
-                        loading={loading || isFetchingRequests}
-                        dataSource={filteredData}
-                        scroll={{ x: "max-content" }}
-                        pagination={{
-                            pageSize: 10,
-                            showSizeChanger: false
-                        }}
-                    />
-                </Card>
-
-                <Modal
-                    open={isViewModalOpen}
-                    onCancel={() => setIsViewModalOpen(false)}
-                    className="transaction-view-modal"
-                    width={720}
-                    centered={true}
-                    footer={null}
-                    title={"Cancellation Request Proof - " + (selectedRequest?.ref || "")}
-                >
-                    {selectedRequest && (
-                        <div className="receipt-container">
-                            {selectedRequest.imageProof ? (
-                                <div className="upload-preview-box" style={{ maxHeight: 520 }}>
-                                    <Image
-                                        src={selectedRequest.imageProof}
-                                        alt={selectedRequest.proofFileName || "Proof of payment"}
-                                        className="upload-preview-image"
-                                        style={{ width: "100%", height: "auto" }}
-                                    />
-                                </div>
-                            ) : (
-                                <p>No proof image available.</p>
-                            )}
-                        </div>
-
-
-                    )}
-
-                    <Space style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
-                        <Button
-                            className='cancellations-viewproof-button'
-                            type="primary"
-                            onClick={async () => {
-                                try {
-                                    const date = dayjs().format("YYYY-MM-DD");
-                                    const response = await fetch(selectedRequest.imageProof, { mode: 'cors' });
-                                    const blob = await response.blob();
-                                    const url = window.URL.createObjectURL(blob);
-                                    const link = document.createElement('a');
-                                    link.href = url;
-                                    link.download = 'Cancellation_Proof_' + selectedRequest.ref + '_' + date + '.png';
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    document.body.removeChild(link);
-                                    window.URL.revokeObjectURL(url);
-                                } catch (err) {
-                                    window.open(selectedRequest.imageProof, '_blank');
-                                }
-                            }}
-                        >
-                            Download Image
-                        </Button>
-                    </Space>
-                </Modal>
-            </div>
+                        </Space>
+                    </Modal>
+                </div>
+            )}
 
             {/* APPROVE CANCELLATION REQUEST MODAL */}
             <Modal

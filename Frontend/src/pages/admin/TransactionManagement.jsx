@@ -900,15 +900,16 @@ export default function TransactionManagement() {
     >
       {notificationContextHolder}
 
-      {actionLoading && (
+      {actionLoading || isProofDecisionloading ? (
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
-          <Spin size="large" description={actionType === "Archiving" ? "Archiving transaction..." : "Restoring transaction..."} />
-        </div>
-      )}
-
-      {isProofDecisionloading ? (
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
-          <Spin size="large" description={isProofDecision === "Accept" ? "Accepting proof..." : "Rejecting proof..."} />
+          <Spin
+            size="large"
+            description={
+              actionLoading
+                ? (actionType === "Archiving" ? "Archiving transaction..." : "Restoring transaction...")
+                : (isProofDecision === "Accept" ? "Accepting proof..." : "Rejecting proof...")
+            }
+          />
         </div>
       ) : (
         <div className="transaction-management-container">
@@ -2045,8 +2046,7 @@ export default function TransactionManagement() {
 
         </div >
 
-      )
-      }
+      )}
 
     </ConfigProvider >
   );
