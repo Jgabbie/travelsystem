@@ -1529,25 +1529,6 @@ export default function QuotationRequest() {
                             </div>
 
                             <div style={{ marginBottom: 16 }}>
-                                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                                    <Button className="quotationrequest-form-button" type="primary" onClick={addPackageRow}>
-                                        Add Row
-                                    </Button>
-                                    {formData.dynamicRows && formData.dynamicRows.length > 0 && (
-                                        <Button
-                                            className="quotationrequest-formremove-button"
-                                            type="primary"
-                                            onClick={() =>
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    dynamicRows: prev.dynamicRows.slice(0, -1),
-                                                }))
-                                            }
-                                        >
-                                            Remove Last Row
-                                        </Button>
-                                    )}
-                                </div>
 
                                 {formData.dynamicRows && formData.dynamicRows.length > 0 && (
                                     <div style={{ marginTop: 8, border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
@@ -1596,6 +1577,27 @@ export default function QuotationRequest() {
                                         </div>
                                     </div>
                                 )}
+
+                                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                                    <Button className="quotationrequest-form-button" type="primary" onClick={addPackageRow}>
+                                        Add Row
+                                    </Button>
+                                    {formData.dynamicRows && formData.dynamicRows.length > 0 && (
+                                        <Button
+                                            className="quotationrequest-formremove-button"
+                                            type="primary"
+                                            onClick={() =>
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    dynamicRows: prev.dynamicRows.slice(0, -1),
+                                                }))
+                                            }
+                                        >
+                                            Remove Last Row
+                                        </Button>
+                                    )}
+                                </div>
+
                             </div>
 
                             <Upload
