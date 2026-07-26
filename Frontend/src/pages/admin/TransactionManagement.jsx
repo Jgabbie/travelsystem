@@ -333,7 +333,10 @@ export default function TransactionManagement() {
       item.ref,
       item.package,
       dayjs(item.date).format("MMM DD, YYYY hh:mm A"),
-      formatCurrency(item.amountRaw),
+      `PHP ${Number(item.amountRaw).toLocaleString("en-PH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`,
       item.method,
       item.status
     ]);
