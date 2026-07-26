@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, ConfigProvider, Space, Select, Input, DatePicker, Modal, notification } from "antd";
+import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, ConfigProvider, Space, Select, Input, DatePicker, Modal, notification, Spin } from "antd";
 import { FileTextOutlined, ClockCircleOutlined, IdcardOutlined, InboxOutlined, CheckCircleFilled, CheckCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -53,7 +53,8 @@ export default function VisaApplications() {
     const [isVisaApplicationRestoredModalOpen, setIsVisaApplicationRestoredModalOpen] = useState(false);
     const [archivingApplication, setArchivingApplication] = useState(null);
 
-
+    const [actionLoading, setActionLoading] = useState(false);
+    const [actionType, setActionType] = useState("");
 
     //fetch visa applications 
     const loadApplications = useCallback(async () => {
@@ -287,6 +288,8 @@ export default function VisaApplications() {
 
     //archive visa application function
     const handleArchive = async (key) => {
+        setActionLoading(true);
+        setActionType("Archiving");
         try {
             await apiFetch.delete(`/visa/applications/${key}/archive`)
             setIsVisaApplicationDeletedModalOpen(true);
@@ -294,12 +297,17 @@ export default function VisaApplications() {
         } catch (error) {
             console.error("Error archiving visa application:", error)
             notificationApi.error({ title: "Failed to archive visa application", placement: "topRight" })
+        } finally {
+            setActionLoading(false);
+            setActionType("");
         }
     }
 
 
     //restore visa application function
     const handleRestore = async (key) => {
+        setActionLoading(true);
+        setActionType("Restoring");
         try {
             await apiFetch.post(`/visa/archived-applications/${key}/restore`)
             setIsVisaApplicationRestoredModalOpen(true);
@@ -307,6 +315,9 @@ export default function VisaApplications() {
         } catch (error) {
             console.error("Error restoring visa application:", error)
             notificationApi.error({ title: "Failed to restore visa application", placement: "topRight" })
+        } finally {
+            setActionLoading(false);
+            setActionType("");
         }
 
     }
@@ -472,154 +483,163 @@ export default function VisaApplications() {
             }}
         >
             {notificationContextHolder}
-            <div className="visa-applications-container">
-                <h1 className="page-header">Visa Applications</h1>
 
-                {!showArchived && (
-                    <Row gutter={16} className="visa-applications-statistics">
-                        <Col xs={24} sm={6}>
-                            <Card className="visaapps-management-card">
-                                <Statistic
-                                    title="Total Applications"
-                                    value={totals}
-                                    prefix={<FileTextOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                        <Col xs={24} sm={6}>
-                            <Card className="visaapps-management-card">
-                                <Statistic
-                                    title="Pending"
-                                    value={pending}
-                                    prefix={<ClockCircleOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                        <Col xs={24} sm={6}>
-                            <Card className="visaapps-management-card">
-                                <Statistic
-                                    title="Approved"
-                                    value={approved}
-                                    prefix={<CheckCircleOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                        <Col xs={24} sm={6}>
-                            <Card className="visaapps-management-card">
-                                <Statistic
-                                    title="Rejected"
-                                    value={rejected}
-                                    prefix={<CloseCircleOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                    </Row>
-                )}
+            {actionLoading ? (
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
+                    <Spin size="large" description={actionType === "Archiving" ? "Archiving Visa Application..." : "Restoring Visa Application..."} />
+                </div>
+            ) : (
 
-                <Card className="visaapplications-actions">
-                    <div className="visaapplications-actions-row">
-                        <div className="visaapplications-actions-filters">
-                            <div className="visaapplications-actions-field visaapplications-actions-field--search">
-                                <label className="visaapplications-label">Search</label>
-                                <Input
-                                    prefix={<SearchOutlined />}
-                                    placeholder="Search reference, package, method or status..."
-                                    className="visaapplications-search-input"
-                                    value={searchText}
-                                    onChange={(e) => {
-                                        const cleanedValue = e.target.value
-                                            .replace(/[^a-zA-Z0-9\s-]/g, '')
-                                            .replace(/\s{2,}/g, ' ')
-                                            .replace(/-{2,}/g, '-')
-                                            .replace(/^\s+/, '');
 
-                                        setSearchText(cleanedValue);
+                <div className="visa-applications-container">
+                    <h1 className="page-header">Visa Applications</h1>
+
+                    {!showArchived && (
+                        <Row gutter={16} className="visa-applications-statistics">
+                            <Col xs={24} sm={6}>
+                                <Card className="visaapps-management-card">
+                                    <Statistic
+                                        title="Total Applications"
+                                        value={totals}
+                                        prefix={<FileTextOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col xs={24} sm={6}>
+                                <Card className="visaapps-management-card">
+                                    <Statistic
+                                        title="Pending"
+                                        value={pending}
+                                        prefix={<ClockCircleOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col xs={24} sm={6}>
+                                <Card className="visaapps-management-card">
+                                    <Statistic
+                                        title="Approved"
+                                        value={approved}
+                                        prefix={<CheckCircleOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col xs={24} sm={6}>
+                                <Card className="visaapps-management-card">
+                                    <Statistic
+                                        title="Rejected"
+                                        value={rejected}
+                                        prefix={<CloseCircleOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                        </Row>
+                    )}
+
+                    <Card className="visaapplications-actions">
+                        <div className="visaapplications-actions-row">
+                            <div className="visaapplications-actions-filters">
+                                <div className="visaapplications-actions-field visaapplications-actions-field--search">
+                                    <label className="visaapplications-label">Search</label>
+                                    <Input
+                                        prefix={<SearchOutlined />}
+                                        placeholder="Search reference, package, method or status..."
+                                        className="visaapplications-search-input"
+                                        value={searchText}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/-{2,}/g, '-')
+                                                .replace(/^\s+/, '');
+
+                                            setSearchText(cleanedValue);
+                                        }}
+                                        allowClear
+                                    />
+                                </div>
+
+                                <div className="visaapplications-actions-field">
+                                    <label className="visaapplications-label">Status</label>
+                                    <Select
+                                        className="visaapplications-select"
+                                        placeholder="Status"
+                                        allowClear
+                                        value={statusFilter || undefined}
+                                        onChange={(v) => setStatusFilter(v || "")}
+                                        options={[
+                                            { value: "Successful", label: "Successful" },
+                                            { value: "Pending", label: "Pending" },
+                                            { value: "Failed", label: "Failed" }
+                                        ]}
+                                    />
+                                </div>
+
+                                <div className="visaapplications-actions-field">
+                                    <label className="visaapplications-label">Preferred Date</label>
+                                    <DatePicker
+                                        inputReadOnly
+                                        className="visaapplications-date-filter"
+                                        placeholder="Preferred Date"
+                                        value={submissionDateFilter}
+                                        onChange={(d) => setSubmissionDateFilter(d)}
+                                        allowClear
+                                        showToday={false}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="visaapplications-actions-buttons">
+                                <Button
+                                    className='visaapplications-export'
+                                    type="primary"
+                                    icon={<FilePdfOutlined />}
+                                    onClick={generatePDF}
+                                >
+                                    Export to PDF
+                                </Button>
+                                <Button
+                                    icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
+                                    className='visaapplications-archive'
+                                    type="primary"
+                                    onClick={() => {
+                                        const nextValue = !showArchived
+                                        setShowArchived(nextValue)
+                                        setSearchText("")
+                                        setStatusFilter("")
+                                        setSubmissionDateFilter(null)
+                                        if (nextValue) {
+                                            loadArchivedApplications()
+                                        } else {
+                                            loadApplications()
+                                        }
                                     }}
-                                    allowClear
-                                />
-                            </div>
-
-                            <div className="visaapplications-actions-field">
-                                <label className="visaapplications-label">Status</label>
-                                <Select
-                                    className="visaapplications-select"
-                                    placeholder="Status"
-                                    allowClear
-                                    value={statusFilter || undefined}
-                                    onChange={(v) => setStatusFilter(v || "")}
-                                    options={[
-                                        { value: "Successful", label: "Successful" },
-                                        { value: "Pending", label: "Pending" },
-                                        { value: "Failed", label: "Failed" }
-                                    ]}
-                                />
-                            </div>
-
-                            <div className="visaapplications-actions-field">
-                                <label className="visaapplications-label">Preferred Date</label>
-                                <DatePicker
-                                    inputReadOnly
-                                    className="visaapplications-date-filter"
-                                    placeholder="Preferred Date"
-                                    value={submissionDateFilter}
-                                    onChange={(d) => setSubmissionDateFilter(d)}
-                                    allowClear
-                                    showToday={false}
-                                />
+                                >
+                                    {showArchived ? 'Back' : 'Archives'}
+                                </Button>
                             </div>
                         </div>
+                    </Card>
 
-                        <div className="visaapplications-actions-buttons">
-                            <Button
-                                className='visaapplications-export'
-                                type="primary"
-                                icon={<FilePdfOutlined />}
-                                onClick={generatePDF}
-                            >
-                                Export to PDF
-                            </Button>
-                            <Button
-                                icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
-                                className='visaapplications-archive'
-                                type="primary"
-                                onClick={() => {
-                                    const nextValue = !showArchived
-                                    setShowArchived(nextValue)
-                                    setSearchText("")
-                                    setStatusFilter("")
-                                    setSubmissionDateFilter(null)
-                                    if (nextValue) {
-                                        loadArchivedApplications()
-                                    } else {
-                                        loadApplications()
-                                    }
-                                }}
-                            >
-                                {showArchived ? 'Back' : 'Archives'}
-                            </Button>
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="visaapps-table-card">
-                    <Table
-                        columns={showArchived ? archivedColumns : columns}
-                        dataSource={filteredData}
-                        rowKey="key"
-                        loading={isFetchingApplications}
-                        scroll={{ x: "max-content" }}
-                        pagination={{
-                            pageSize: 10,
-                            showSizeChanger: false
-                        }}
-                        locale={{
-                            emptyText: (
-                                <Empty description="No data" />
-                            ),
-                        }}
-                    />
-                </Card>
-            </div>
+                    <Card className="visaapps-table-card">
+                        <Table
+                            columns={showArchived ? archivedColumns : columns}
+                            dataSource={filteredData}
+                            rowKey="key"
+                            loading={isFetchingApplications}
+                            scroll={{ x: "max-content" }}
+                            pagination={{
+                                pageSize: 10,
+                                showSizeChanger: false
+                            }}
+                            locale={{
+                                emptyText: (
+                                    <Empty description="No data" />
+                                ),
+                            }}
+                        />
+                    </Card>
+                </div>
+            )}
 
 
             {/* ARCHIVE VISA APPLICATION CONFIRMATION MODAL */}

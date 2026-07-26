@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Space, ConfigProvider, Input, Select, DatePicker, Modal, notification, Popconfirm, message } from "antd";
+import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Space, ConfigProvider, Input, Select, DatePicker, Modal, notification, Popconfirm, message, Spin } from "antd";
 import { FileTextOutlined, TeamOutlined, InboxOutlined, DeleteOutlined, CheckCircleFilled, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined, EditOutlined, PlusOutlined, EnvironmentOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
@@ -47,6 +47,8 @@ export default function PassportApplications() {
     const [isPassportApplicationRestoredModalOpen, setIsPassportApplicationRestoredModalOpen] = useState(false);
     const [archivingApplication, setArchivingApplication] = useState(null);
 
+    const [actionLoading, setActionLoading] = useState(false);
+    const [actionType, setActionType] = useState(null);
 
     const [isManageDFAModalOpen, setIsManageDFAModalOpen] = useState(false);
     const [dfaLocations, setDfaLocations] = useState([]);
@@ -294,6 +296,10 @@ export default function PassportApplications() {
 
     //archive passport application function
     const handleArchive = async (key) => {
+
+        setActionLoading(true);
+        setActionType("Archiving");
+
         if (!key) {
             notificationApi.error({ title: "Passport application not found", placement: "topRight" });
             return
@@ -305,12 +311,18 @@ export default function PassportApplications() {
         } catch (error) {
             console.error("Error archiving passport application:", error)
             notificationApi.error({ title: "Passport application archived unsuccessfully", placement: "topRight" });
+        } finally {
+            setActionLoading(false);
+            setActionType(null);
         }
     }
 
 
     //restore passport application function
     const handleRestore = async (key) => {
+        setActionLoading(true);
+        setActionType("Restoring");
+
         if (!key) {
             notificationApi.error({ title: "Passport application not found", placement: "topRight" });
             return
@@ -322,6 +334,9 @@ export default function PassportApplications() {
         } catch (error) {
             console.error("Error restoring passport application:", error)
             notificationApi.error({ title: "Passport application restore unsuccessfully", placement: "topRight" });
+        } finally {
+            setActionLoading(false);
+            setActionType(null);
         }
     }
 
@@ -540,166 +555,172 @@ export default function PassportApplications() {
             }}
         >
             {notificationContextHolder}
-            <div className="passport-applications-container">
 
-                <h1 className="page-header">Passport Applications</h1>
-
-                {!showArchived && (
-                    <Row gutter={16} className="passportapplications-statistics">
-                        <Col xs={24} sm={6}>
-                            <Card className="passportapps-management-card">
-                                <Statistic
-                                    title="Total Applications"
-                                    value={totals}
-                                    prefix={<FileTextOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                        <Col xs={24} sm={6}>
-                            <Card className="passportapps-management-card">
-                                <Statistic
-                                    title="Pending"
-                                    value={pending}
-                                    prefix={<ClockCircleOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                        <Col xs={24} sm={6}>
-                            <Card className="passportapps-management-card">
-                                <Statistic
-                                    title="Approved"
-                                    value={approved}
-                                    prefix={<CheckCircleOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                        <Col xs={24} sm={6}>
-                            <Card className="passportapps-management-card">
-                                <Statistic
-                                    title="Rejected"
-                                    value={rejected}
-                                    prefix={<CloseCircleOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                    </Row>
-                )}
-
-                <Card className="passportapplications-actions">
-                    <div className="passportapplications-actions-row">
-                        <div className="passportapplications-actions-filters">
-                            <div className="passportapplications-actions-field passportapplications-actions-field--search">
-                                <label className="passportapplications-label">Search</label>
-                                <Input
-                                    prefix={<SearchOutlined />}
-                                    placeholder="Search reference, package, method or status..."
-                                    className="passportapplications-search-input"
-                                    value={searchText}
-                                    onChange={(e) => {
-                                        const cleanedValue = e.target.value
-                                            .replace(/[^a-zA-Z0-9\s-]/g, '')
-                                            .replace(/\s{2,}/g, ' ')
-                                            .replace(/-{2,}/g, '-')
-                                            .replace(/^\s+/, '');
-
-                                        setSearchText(cleanedValue);
-                                    }}
-                                    allowClear
-                                />
-                            </div>
-
-                            <div className="passportapplications-actions-field">
-                                <label className="passportapplications-label">Status</label>
-                                <Select
-                                    className="passportapplications-select"
-                                    placeholder="Status"
-                                    allowClear
-                                    value={statusFilter || undefined}
-                                    onChange={(v) => setStatusFilter(v || "")}
-                                    options={[
-                                        { value: "Successful", label: "Successful" },
-                                        { value: "Pending", label: "Pending" },
-                                        { value: "Failed", label: "Failed" }
-                                    ]}
-                                />
-                            </div>
-
-                            <div className="passportapplications-actions-field">
-                                <label className="passportapplications-label">Preferred Date</label>
-                                <DatePicker
-                                    inputReadOnly
-                                    className="passportapplications-date-filter"
-                                    placeholder="Preferred Date"
-                                    value={submissionDateFilter}
-                                    onChange={(d) => setSubmissionDateFilter(d)}
-                                    allowClear
-                                    showToday={false}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="passportapplications-actions-buttons">
-                            <Button
-                                className='passportapplications-export'
-                                type="primary"
-                                icon={<EnvironmentOutlined />}
-                                onClick={() => {
-                                    getDFALocations();
-                                    setIsManageDFAModalOpen(true);
-                                }}
-                            >
-                                Manage DFA
-                            </Button>
-                            <Button
-                                className='passportapplications-export'
-                                type="primary"
-                                icon={<FilePdfOutlined />}
-                                onClick={generatePDF}
-                            >
-                                Export to PDF
-                            </Button>
-                            <Button
-                                icon={showArchived ? <TeamOutlined /> : <InboxOutlined />}
-                                className='passportapplications-archive'
-                                type="primary"
-                                onClick={() => {
-                                    const nextValue = !showArchived
-                                    setShowArchived(nextValue)
-                                    setSearchText("")
-                                    setStatusFilter("")
-                                    setSubmissionDateFilter(null)
-                                    if (nextValue) {
-                                        getArchivedPassportApplications()
-                                    } else {
-                                        getPassportApplications()
-                                    }
-                                }}
-                            >
-                                {showArchived ? 'Back' : 'Archives'}
-                            </Button>
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="passportapplications-table-card">
-                    <Table
-                        columns={columns}
-                        dataSource={filteredData}
-                        rowKey="key"
-                        loading={isFetchingApplications}
-                        scroll={{ x: "max-content" }}
-                        pagination={{
-                            pageSize: 10,
-                            showSizeChanger: false
-                        }}
-                        locale={{
-                            emptyText: (
-                                <Empty description="No data" />
-                            ),
-                        }}
-                    />
-                </Card>
+            {actionLoading ? (<div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
+                <Spin size="large" description={actionType === "Archiving" ? "Archiving Passport Application..." : "Restoring Passport Application..."} />
             </div>
+            ) : (
+                <div className="passport-applications-container">
+
+                    <h1 className="page-header">Passport Applications</h1>
+
+                    {!showArchived && (
+                        <Row gutter={16} className="passportapplications-statistics">
+                            <Col xs={24} sm={6}>
+                                <Card className="passportapps-management-card">
+                                    <Statistic
+                                        title="Total Applications"
+                                        value={totals}
+                                        prefix={<FileTextOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col xs={24} sm={6}>
+                                <Card className="passportapps-management-card">
+                                    <Statistic
+                                        title="Pending"
+                                        value={pending}
+                                        prefix={<ClockCircleOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col xs={24} sm={6}>
+                                <Card className="passportapps-management-card">
+                                    <Statistic
+                                        title="Approved"
+                                        value={approved}
+                                        prefix={<CheckCircleOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col xs={24} sm={6}>
+                                <Card className="passportapps-management-card">
+                                    <Statistic
+                                        title="Rejected"
+                                        value={rejected}
+                                        prefix={<CloseCircleOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                        </Row>
+                    )}
+
+                    <Card className="passportapplications-actions">
+                        <div className="passportapplications-actions-row">
+                            <div className="passportapplications-actions-filters">
+                                <div className="passportapplications-actions-field passportapplications-actions-field--search">
+                                    <label className="passportapplications-label">Search</label>
+                                    <Input
+                                        prefix={<SearchOutlined />}
+                                        placeholder="Search reference, package, method or status..."
+                                        className="passportapplications-search-input"
+                                        value={searchText}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s-]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/-{2,}/g, '-')
+                                                .replace(/^\s+/, '');
+
+                                            setSearchText(cleanedValue);
+                                        }}
+                                        allowClear
+                                    />
+                                </div>
+
+                                <div className="passportapplications-actions-field">
+                                    <label className="passportapplications-label">Status</label>
+                                    <Select
+                                        className="passportapplications-select"
+                                        placeholder="Status"
+                                        allowClear
+                                        value={statusFilter || undefined}
+                                        onChange={(v) => setStatusFilter(v || "")}
+                                        options={[
+                                            { value: "Successful", label: "Successful" },
+                                            { value: "Pending", label: "Pending" },
+                                            { value: "Failed", label: "Failed" }
+                                        ]}
+                                    />
+                                </div>
+
+                                <div className="passportapplications-actions-field">
+                                    <label className="passportapplications-label">Preferred Date</label>
+                                    <DatePicker
+                                        inputReadOnly
+                                        className="passportapplications-date-filter"
+                                        placeholder="Preferred Date"
+                                        value={submissionDateFilter}
+                                        onChange={(d) => setSubmissionDateFilter(d)}
+                                        allowClear
+                                        showToday={false}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="passportapplications-actions-buttons">
+                                <Button
+                                    className='passportapplications-export'
+                                    type="primary"
+                                    icon={<EnvironmentOutlined />}
+                                    onClick={() => {
+                                        getDFALocations();
+                                        setIsManageDFAModalOpen(true);
+                                    }}
+                                >
+                                    Manage DFA
+                                </Button>
+                                <Button
+                                    className='passportapplications-export'
+                                    type="primary"
+                                    icon={<FilePdfOutlined />}
+                                    onClick={generatePDF}
+                                >
+                                    Export to PDF
+                                </Button>
+                                <Button
+                                    icon={showArchived ? <TeamOutlined /> : <InboxOutlined />}
+                                    className='passportapplications-archive'
+                                    type="primary"
+                                    onClick={() => {
+                                        const nextValue = !showArchived
+                                        setShowArchived(nextValue)
+                                        setSearchText("")
+                                        setStatusFilter("")
+                                        setSubmissionDateFilter(null)
+                                        if (nextValue) {
+                                            getArchivedPassportApplications()
+                                        } else {
+                                            getPassportApplications()
+                                        }
+                                    }}
+                                >
+                                    {showArchived ? 'Back' : 'Archives'}
+                                </Button>
+                            </div>
+                        </div>
+                    </Card>
+
+                    <Card className="passportapplications-table-card">
+                        <Table
+                            columns={columns}
+                            dataSource={filteredData}
+                            rowKey="key"
+                            loading={isFetchingApplications}
+                            scroll={{ x: "max-content" }}
+                            pagination={{
+                                pageSize: 10,
+                                showSizeChanger: false
+                            }}
+                            locale={{
+                                emptyText: (
+                                    <Empty description="No data" />
+                                ),
+                            }}
+                        />
+                    </Card>
+                </div>
+            )}
 
 
             {/* ARCHIVE PASSPORT APPLICATION CONFIRMATION MODAL */}

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
-import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Input, Select, DatePicker, Modal, ConfigProvider, Space, notification } from "antd";
+import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Input, Select, DatePicker, Modal, ConfigProvider, Space, notification, Spin } from "antd";
 import { StarOutlined, MessageOutlined, FundOutlined, ClockCircleOutlined, CheckCircleOutlined, DeleteOutlined, SearchOutlined, FilePdfOutlined, CheckCircleFilled, InboxOutlined, EyeOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
@@ -36,6 +36,9 @@ export default function ReviewRatings() {
     const [archivedRatings, setArchivedRatings] = useState([]);
     const [showArchived, setShowArchived] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [actionType, setActionType] = useState(null);
+
     const [searchText, setSearchText] = useState("");
     const [ratingFilter, setRatingFilter] = useState(null);
     const [dateFilter, setDateFilter] = useState(null);
@@ -299,6 +302,10 @@ export default function ReviewRatings() {
 
     //archive rating function
     const handleArchive = async (key) => {
+
+        setActionLoading(true);
+        setActionType("Archiving");
+
         if (!key) {
             notificationApi.error({ title: "Rating not found", placement: "topRight" });
             return
@@ -309,6 +316,9 @@ export default function ReviewRatings() {
             setIsRatingDeletedModalOpen(true);
         } catch {
             notificationApi.error({ title: "Failed to archive review", placement: "topRight" });
+        } finally {
+            setActionLoading(false);
+            setActionType(null);
         }
 
     };
@@ -316,6 +326,10 @@ export default function ReviewRatings() {
 
     //restore rating function
     const handleRestore = async (key) => {
+
+        setActionLoading(true);
+        setActionType("Restoring");
+
         if (!key) {
             notificationApi.error({ title: "Rating not found", placement: "topRight" });
             return
@@ -327,6 +341,9 @@ export default function ReviewRatings() {
         } catch (error) {
             console.error("Error restoring rating:", error)
             notificationApi.error({ title: "Rating restore unsuccessfully", placement: "topRight" });
+        } finally {
+            setActionLoading(false);
+            setActionType(null);
         }
     };
 
@@ -447,134 +464,143 @@ export default function ReviewRatings() {
             }}
         >
             {notificationContextHolder}
-            <div className="reviewratings-container">
-                <h1 className="page-header">Reviews & Ratings</h1>
 
-                {!showArchived && (
-                    <Row gutter={16} className="reviewratings-statistics">
-                        <Col xs={24} sm={8}>
-                            <Card className="rating-management-card">
-                                <Statistic
-                                    title="Average Rating"
-                                    value={averageRating ?? "—"}
-                                    prefix={<StarOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                        <Col xs={24} sm={8}>
-                            <Card className="rating-management-card">
-                                <Statistic
-                                    title="Total Reviews"
-                                    value={ratings.length || "—"}
-                                    prefix={<MessageOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                        <Col xs={24} sm={8}>
-                            <Card className="rating-management-card">
-                                <Statistic
-                                    title="Latest Review"
-                                    value={latestReview}
-                                    prefix={<ClockCircleOutlined />}
-                                />
-                            </Card>
-                        </Col>
-                    </Row>
-                )}
+            {actionLoading ? (
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
+                    <Spin size="large" description={actionType === "Archiving" ? "Archiving review and ratings..." : "Restoring review and ratings..."} />
+                </div>
+            ) : (
 
-                <Card className="reviewratings-actions">
-                    <div className="reviewratings-actions-row">
-                        <div className="reviewratings-actions-filters">
-                            <div className="reviewratings-actions-field reviewratings-actions-field--search">
-                                <label className="reviewratings-label">Search</label>
-                                <Input
-                                    className="reviewratings-search-input"
-                                    placeholder="Search by user or package"
-                                    prefix={<SearchOutlined />}
-                                    value={searchText}
-                                    onChange={(e) => {
-                                        const cleanedValue = e.target.value
-                                            .replace(/[^a-zA-Z0-9\s]/g, '')
-                                            .replace(/\s{2,}/g, ' ')
-                                            .replace(/^\s+/, '');
+                <div className="reviewratings-container">
+                    <h1 className="page-header">Reviews & Ratings</h1>
 
-                                        setSearchText(cleanedValue);
+                    {!showArchived && (
+                        <Row gutter={16} className="reviewratings-statistics">
+                            <Col xs={24} sm={8}>
+                                <Card className="rating-management-card">
+                                    <Statistic
+                                        title="Average Rating"
+                                        value={averageRating ?? "—"}
+                                        prefix={<StarOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col xs={24} sm={8}>
+                                <Card className="rating-management-card">
+                                    <Statistic
+                                        title="Total Reviews"
+                                        value={ratings.length || "—"}
+                                        prefix={<MessageOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col xs={24} sm={8}>
+                                <Card className="rating-management-card">
+                                    <Statistic
+                                        title="Latest Review"
+                                        value={latestReview}
+                                        prefix={<ClockCircleOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+                        </Row>
+                    )}
+
+                    <Card className="reviewratings-actions">
+                        <div className="reviewratings-actions-row">
+                            <div className="reviewratings-actions-filters">
+                                <div className="reviewratings-actions-field reviewratings-actions-field--search">
+                                    <label className="reviewratings-label">Search</label>
+                                    <Input
+                                        className="reviewratings-search-input"
+                                        placeholder="Search by user or package"
+                                        prefix={<SearchOutlined />}
+                                        value={searchText}
+                                        onChange={(e) => {
+                                            const cleanedValue = e.target.value
+                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/^\s+/, '');
+
+                                            setSearchText(cleanedValue);
+                                        }}
+                                        allowClear
+                                    />
+                                </div>
+
+                                <div className="reviewratings-actions-field">
+                                    <label className="reviewratings-label">Rating</label>
+                                    <Select
+                                        className="reviewratings-select"
+                                        placeholder="Rating"
+                                        allowClear
+                                        value={ratingFilter}
+                                        onChange={(value) => setRatingFilter(value)}
+                                        options={[1, 2, 3, 4, 5].map((r) => ({ label: `${r} Stars`, value: r }))}
+                                    />
+                                </div>
+
+                                <div className="reviewratings-actions-field">
+                                    <label className="reviewratings-label">Review Date</label>
+                                    <DatePicker
+                                        inputReadOnly
+                                        className="reviewratings-date-filter"
+                                        placeholder="Review Date"
+                                        value={dateFilter}
+                                        onChange={(date) => setDateFilter(date)}
+                                        allowClear
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="reviewratings-actions-buttons">
+                                <Button
+                                    className='reviewratings-export-button'
+                                    type="primary"
+                                    icon={<FilePdfOutlined />}
+                                    onClick={generatePDF}
+                                >
+                                    Export to PDF
+                                </Button>
+                                <Button
+                                    icon={showArchived ? <FundOutlined /> : <InboxOutlined />}
+                                    className='reviewratings-archive-button'
+                                    type="primary"
+                                    onClick={() => {
+                                        const nextValue = !showArchived;
+                                        setShowArchived(nextValue);
+                                        setSearchText("");
+                                        setRatingFilter(null);
+                                        setDateFilter(null);
+                                        if (nextValue) {
+                                            fetchArchivedRatings();
+                                        } else {
+                                            fetchRatings();
+                                        }
                                     }}
-                                    allowClear
-                                />
-                            </div>
-
-                            <div className="reviewratings-actions-field">
-                                <label className="reviewratings-label">Rating</label>
-                                <Select
-                                    className="reviewratings-select"
-                                    placeholder="Rating"
-                                    allowClear
-                                    value={ratingFilter}
-                                    onChange={(value) => setRatingFilter(value)}
-                                    options={[1, 2, 3, 4, 5].map((r) => ({ label: `${r} Stars`, value: r }))}
-                                />
-                            </div>
-
-                            <div className="reviewratings-actions-field">
-                                <label className="reviewratings-label">Review Date</label>
-                                <DatePicker
-                                    inputReadOnly
-                                    className="reviewratings-date-filter"
-                                    placeholder="Review Date"
-                                    value={dateFilter}
-                                    onChange={(date) => setDateFilter(date)}
-                                    allowClear
-                                />
+                                >
+                                    {showArchived ? 'Back' : 'Archives'}
+                                </Button>
                             </div>
                         </div>
+                    </Card>
 
-                        <div className="reviewratings-actions-buttons">
-                            <Button
-                                className='reviewratings-export-button'
-                                type="primary"
-                                icon={<FilePdfOutlined />}
-                                onClick={generatePDF}
-                            >
-                                Export to PDF
-                            </Button>
-                            <Button
-                                icon={showArchived ? <FundOutlined /> : <InboxOutlined />}
-                                className='reviewratings-archive-button'
-                                type="primary"
-                                onClick={() => {
-                                    const nextValue = !showArchived;
-                                    setShowArchived(nextValue);
-                                    setSearchText("");
-                                    setRatingFilter(null);
-                                    setDateFilter(null);
-                                    if (nextValue) {
-                                        fetchArchivedRatings();
-                                    } else {
-                                        fetchRatings();
-                                    }
-                                }}
-                            >
-                                {showArchived ? 'Back' : 'Archives'}
-                            </Button>
-                        </div>
-                    </div>
-                </Card>
+                    <Card className="reviewratings-table-card">
+                        <Table
+                            columns={showArchived ? archivedColumns : columns}
+                            dataSource={filteredRatings}
+                            rowKey="id"
+                            scroll={{ x: 950 }}
+                            loading={loading}
+                            pagination={{ pageSize: 10, showSizeChanger: false }}
+                            locale={{
+                                emptyText: <Empty description="No reviews available yet" />,
+                            }}
+                        />
+                    </Card>
+                </div>
 
-                <Card className="reviewratings-table-card">
-                    <Table
-                        columns={showArchived ? archivedColumns : columns}
-                        dataSource={filteredRatings}
-                        rowKey="id"
-                        scroll={{ x: 950 }}
-                        loading={loading}
-                        pagination={{ pageSize: 10, showSizeChanger: false }}
-                        locale={{
-                            emptyText: <Empty description="No reviews available yet" />,
-                        }}
-                    />
-                </Card>
-            </div>
+            )}
 
             {/* DELETE RATING CONFIRMATION MODAL */}
             <Modal

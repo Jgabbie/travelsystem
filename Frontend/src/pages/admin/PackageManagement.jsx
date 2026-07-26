@@ -1,4 +1,4 @@
-import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, notification, Select, ConfigProvider, Space, Spin, InputNumber, Tag } from "antd";
+import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, notification, Select, ConfigProvider, Space, InputNumber, Tag, Spin } from "antd";
 import { PlusOutlined, SearchOutlined, SolutionOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined, CalendarOutlined, PercentageOutlined, CheckCircleFilled, InboxOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -31,6 +31,8 @@ export default function PackageManagement() {
   const [editingPackage, setEditingPackage] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionType, setActionType] = useState("");
   const [showArchived, setShowArchived] = useState(false);
 
 
@@ -177,6 +179,10 @@ export default function PackageManagement() {
 
   //archive function
   const handleArchive = async (key) => {
+
+    setActionLoading(true);
+    setActionType("Archiving");
+
     try {
       await apiFetch.delete(`/package/remove-package/${key}`);
       setIsPackageDeletedModalOpen(true);
@@ -184,6 +190,8 @@ export default function PackageManagement() {
     } catch (error) {
       console.error("Error removing package:", error);
       notificationApi.error({ title: 'Package archived unsuccessfully', placement: 'topRight' });
+    } finally {
+      setActionLoading(false);
     }
 
   }
@@ -192,6 +200,9 @@ export default function PackageManagement() {
   //restore function
   const handleRestore = async (key) => {
 
+    setActionLoading(true);
+    setActionType("Restoring");
+
     try {
       await apiFetch.post(`/package/archived-packages/${key}/restore`);
       setIsPackageRestoredModalOpen(true);
@@ -199,6 +210,8 @@ export default function PackageManagement() {
     } catch (error) {
       console.error("Error restoring package:", error);
       notificationApi.error({ title: error?.response?.data?.message || 'Package restore failed', placement: 'topRight' });
+    } finally {
+      setActionLoading(false);
     }
   }
 
@@ -297,637 +310,645 @@ export default function PackageManagement() {
     >
 
       {notificationContextHolder}
-      <div>
-        <h1 className="page-header">Package Management</h1>
 
-        {/* STATISTICS */}
-        {!showArchived && (
-          <Row gutter={16} className="package-statistics">
-            <Col xs={24} sm={8}>
-              <Card className="package-management-card">
-                <Statistic
-                  title="Total Packages"
-                  value={totalPackages}
-                  prefix={<AppstoreOutlined />}
-                />
-              </Card>
-            </Col>
+      {actionLoading ? (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
+          <Spin size="large" description={actionType === "Archiving" ? "Archiving package..." : "Restoring package..."} />
+        </div>
+      ) : (
 
-            <Col xs={24} sm={8}>
-              <Card className="package-management-card">
-                <Statistic
-                  title="Available"
-                  value={filteredPackages.filter(pkg => availableSlots(pkg) > 0).length}
-                  prefix={<CheckCircleOutlined />}
-                />
-              </Card>
-            </Col>
+        <div>
+          <h1 className="page-header">Package Management</h1>
 
-            <Col xs={24} sm={8}>
-              <Card className="package-management-card">
-                <Statistic
-                  title="Unavailable"
-                  value={filteredPackages.filter(pkg => availableSlots(pkg) === 0).length}
-                  prefix={<StopOutlined />}
-                />
-              </Card>
-            </Col>
-          </Row>
-        )}
+          {/* STATISTICS */}
+          {!showArchived && (
+            <Row gutter={16} className="package-statistics">
+              <Col xs={24} sm={8}>
+                <Card className="package-management-card">
+                  <Statistic
+                    title="Total Packages"
+                    value={totalPackages}
+                    prefix={<AppstoreOutlined />}
+                  />
+                </Card>
+              </Col>
+
+              <Col xs={24} sm={8}>
+                <Card className="package-management-card">
+                  <Statistic
+                    title="Available"
+                    value={filteredPackages.filter(pkg => availableSlots(pkg) > 0).length}
+                    prefix={<CheckCircleOutlined />}
+                  />
+                </Card>
+              </Col>
+
+              <Col xs={24} sm={8}>
+                <Card className="package-management-card">
+                  <Statistic
+                    title="Unavailable"
+                    value={filteredPackages.filter(pkg => availableSlots(pkg) === 0).length}
+                    prefix={<StopOutlined />}
+                  />
+                </Card>
+              </Col>
+            </Row>
+          )}
 
 
-        {/* FILTER ACTIONS */}
-        <Card className="packagemanagement-actions">
-          <div className="packagemanagement-actions-row">
-            <div className="packagemanagement-actions-filters">
-              <div className="packagemanagement-actions-field packagemanagement-actions-field--search">
-                <label className="packagemanagement-label">Search</label>
-                <Input
-                  maxLength={50}
-                  className="packagemanagement-search-input"
-                  allowClear
-                  prefix={<SearchOutlined />}
-                  placeholder="Search package..."
-                  value={searchText}
-                  onChange={(e) => {
-                    const cleanedValue = e.target.value
-                      .replace(/[^a-zA-Z0-9\s-]/g, '')
-                      .replace(/\s{2,}/g, ' ')
-                      .replace(/^\s+/, '');
+          {/* FILTER ACTIONS */}
+          <Card className="packagemanagement-actions">
+            <div className="packagemanagement-actions-row">
+              <div className="packagemanagement-actions-filters">
+                <div className="packagemanagement-actions-field packagemanagement-actions-field--search">
+                  <label className="packagemanagement-label">Search</label>
+                  <Input
+                    maxLength={50}
+                    className="packagemanagement-search-input"
+                    allowClear
+                    prefix={<SearchOutlined />}
+                    placeholder="Search package..."
+                    value={searchText}
+                    onChange={(e) => {
+                      const cleanedValue = e.target.value
+                        .replace(/[^a-zA-Z0-9\s-]/g, '')
+                        .replace(/\s{2,}/g, ' ')
+                        .replace(/^\s+/, '');
 
-                    setSearchText(cleanedValue);
+                      setSearchText(cleanedValue);
+                    }}
+                  />
+                </div>
+
+                <div className="packagemanagement-actions-field">
+                  <label className="packagemanagement-label">Package Type</label>
+                  <Select
+                    className="packagemanagement-select"
+                    placeholder="Package Type"
+                    allowClear
+                    value={filters.packageType}
+                    onChange={(value) => setFilters({ ...filters, packageType: value })}
+                    options={packageTypeOptions}
+                  />
+                </div>
+
+                <div className="packagemanagement-actions-field">
+                  <label className="packagemanagement-label">Availability</label>
+                  <Select
+                    className="packagemanagement-select"
+                    placeholder="Availability"
+                    allowClear
+                    value={filters.availability}
+                    onChange={(value) => setFilters({ ...filters, availability: value })}
+                    options={availabilityOptions}
+                  />
+                </div>
+              </div>
+
+              <div className="packagemanagement-actions-buttons">
+
+                <Button
+                  className="packagemanagement-addpackage"
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => navigate(`${basePath}/packages/add`)}
+                  disabled={showArchived}
+                >
+                  Add Package
+                </Button>
+                <Button
+                  icon={showArchived ? <SolutionOutlined /> : <InboxOutlined />}
+                  className="packagemanagement-archive"
+                  type="primary"
+                  onClick={() => {
+                    const nextValue = !showArchived;
+                    setShowArchived(nextValue);
+                    setSearchText("");
+                    setFilters({ packageType: null, availability: null });
+                    if (nextValue) {
+                      getArchivedPackages();
+                    } else {
+                      getPackages();
+                    }
                   }}
-                />
-              </div>
-
-              <div className="packagemanagement-actions-field">
-                <label className="packagemanagement-label">Package Type</label>
-                <Select
-                  className="packagemanagement-select"
-                  placeholder="Package Type"
-                  allowClear
-                  value={filters.packageType}
-                  onChange={(value) => setFilters({ ...filters, packageType: value })}
-                  options={packageTypeOptions}
-                />
-              </div>
-
-              <div className="packagemanagement-actions-field">
-                <label className="packagemanagement-label">Availability</label>
-                <Select
-                  className="packagemanagement-select"
-                  placeholder="Availability"
-                  allowClear
-                  value={filters.availability}
-                  onChange={(value) => setFilters({ ...filters, availability: value })}
-                  options={availabilityOptions}
-                />
+                >
+                  {showArchived ? 'Back' : 'Archives'}
+                </Button>
               </div>
             </div>
-
-            <div className="packagemanagement-actions-buttons">
-
-              <Button
-                className="packagemanagement-addpackage"
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => navigate(`${basePath}/packages/add`)}
-                disabled={showArchived}
-              >
-                Add Package
-              </Button>
-              <Button
-                icon={showArchived ? <SolutionOutlined /> : <InboxOutlined />}
-                className="packagemanagement-archive"
-                type="primary"
-                onClick={() => {
-                  const nextValue = !showArchived;
-                  setShowArchived(nextValue);
-                  setSearchText("");
-                  setFilters({ packageType: null, availability: null });
-                  if (nextValue) {
-                    getArchivedPackages();
-                  } else {
-                    getPackages();
-                  }
-                }}
-              >
-                {showArchived ? 'Back' : 'Archives'}
-              </Button>
-            </div>
-          </div>
-        </Card >
+          </Card >
 
 
-        {/* PACKAGE LIST */}
-        <Spin spinning={loading}>
-          {filteredPackages.length > 0 ? (
-            filteredPackages.map(pkg => (
-              <Card key={pkg.packageItem} className="package-card">
-                <div className="package-container">
-                  <div className="package-media">
-                    {pkg.packageImages && pkg.packageImages.length > 0 ? (
-                      <img className="package-image" src={pkg.packageImages[0]} alt={pkg.packageName} />
-                    ) : (
-                      <div className="package-image-placeholder">No Image</div>
-                    )}
+          {/* PACKAGE LIST */}
+          <Spin spinning={loading}>
+            {filteredPackages.length > 0 ? (
+              filteredPackages.map(pkg => (
+                <Card key={pkg.packageItem} className="package-card">
+                  <div className="package-container">
+                    <div className="package-media">
+                      {pkg.packageImages && pkg.packageImages.length > 0 ? (
+                        <img className="package-image" src={pkg.packageImages[0]} alt={pkg.packageName} />
+                      ) : (
+                        <div className="package-image-placeholder">No Image</div>
+                      )}
 
-                    {Number(pkg.packageDiscountPercent) > 0 && (
-                      <div className="package-discount-badge">-{Number(pkg.packageDiscountPercent)}%</div>
-                    )}
-                  </div>
+                      {Number(pkg.packageDiscountPercent) > 0 && (
+                        <div className="package-discount-badge">-{Number(pkg.packageDiscountPercent)}%</div>
+                      )}
+                    </div>
 
-                  <div className="package-details-actions">
-                    <div className="package-details">
-                      <div className="package-info">
-                        <h3 className="package-name">{pkg.packageName}</h3>
-                        <h3 className="package-code">{pkg.packageCode}</h3>
-                        {Number(pkg.packageDiscountPercent) > 0 ? (
-                          <Tag color="green">{Number(pkg.packageDiscountPercent)}% OFF</Tag>
-                        ) : null}
-                        <h4 className="package-price">₱{pkg.packagePricePerPax} per Pax</h4>
+                    <div className="package-details-actions">
+                      <div className="package-details">
+                        <div className="package-info">
+                          <h3 className="package-name">{pkg.packageName}</h3>
+                          <h3 className="package-code">{pkg.packageCode}</h3>
+                          {Number(pkg.packageDiscountPercent) > 0 ? (
+                            <Tag color="green">{Number(pkg.packageDiscountPercent)}% OFF</Tag>
+                          ) : null}
+                          <h4 className="package-price">₱{pkg.packagePricePerPax} per Pax</h4>
+                        </div>
+
+                        <p className="package-description">{pkg.packageDescription}</p>
+                        <h1 className="package-available-slots">Available Slots: {availableSlots(pkg)}</h1>
                       </div>
 
-                      <p className="package-description">{pkg.packageDescription}</p>
-                      <h1 className="package-available-slots">Available Slots: {availableSlots(pkg)}</h1>
-                    </div>
-
-                    <div className="package-actions-column">
-                      <Space orientation="horizontal" size={8} wrap>
-                        <Button
-                          className="packagemanagement-view-button"
-                          type="primary"
-                          icon={<EyeOutlined />}
-                          onClick={() => showModal(pkg)}
-                        >
-                          View
-                        </Button>
-
-                        <Button
-                          className="packagemanagement-edit-button"
-                          type="primary"
-                          icon={<EditOutlined />}
-                          onClick={() =>
-                            navigate(`${basePath}/packages/edit`, { state: { packageItem: pkg.packageItem } })
-                          }
-                          disabled={showArchived}
-                        >
-                          Edit
-                        </Button>
-
-                        <Button
-                          className="packagemanagement-slotsdiscount-button"
-                          type="primary"
-                          icon={<CalendarOutlined />}
-                          onClick={() => showSlotsModal(pkg)}
-                          disabled={showArchived}
-                        >
-                          Edit Slots
-                        </Button>
-
-                        <Button
-                          className="packagemanagement-slotsdiscount-button"
-                          type="primary"
-                          icon={<PercentageOutlined />}
-                          onClick={() => showDiscountModal(pkg)}
-                          disabled={showArchived}
-                        >
-                          Add Discount
-                        </Button>
-
-                        <Button
-                          className="packagemanagement-remove-button"
-                          type="primary"
-                          icon={<DeleteOutlined />}
-                          onClick={() => {
-                            setEditingPackage({ key: pkg.packageItem });
-                            setIsDeleteModalOpen(true);
-                          }}
-                          disabled={showArchived}
-                        >
-                          Archive
-                        </Button>
-
-                        {showArchived && (
+                      <div className="package-actions-column">
+                        <Space orientation="horizontal" size={8} wrap>
                           <Button
-                            className="packagemanagement-restore-button"
+                            className="packagemanagement-view-button"
                             type="primary"
-                            icon={<CheckCircleOutlined />}
+                            icon={<EyeOutlined />}
+                            onClick={() => showModal(pkg)}
+                          >
+                            View
+                          </Button>
+
+                          <Button
+                            className="packagemanagement-edit-button"
+                            type="primary"
+                            icon={<EditOutlined />}
+                            onClick={() =>
+                              navigate(`${basePath}/packages/edit`, { state: { packageItem: pkg.packageItem } })
+                            }
+                            disabled={showArchived}
+                          >
+                            Edit
+                          </Button>
+
+                          <Button
+                            className="packagemanagement-slotsdiscount-button"
+                            type="primary"
+                            icon={<CalendarOutlined />}
+                            onClick={() => showSlotsModal(pkg)}
+                            disabled={showArchived}
+                          >
+                            Edit Slots
+                          </Button>
+
+                          <Button
+                            className="packagemanagement-slotsdiscount-button"
+                            type="primary"
+                            icon={<PercentageOutlined />}
+                            onClick={() => showDiscountModal(pkg)}
+                            disabled={showArchived}
+                          >
+                            Add Discount
+                          </Button>
+
+                          <Button
+                            className="packagemanagement-remove-button"
+                            type="primary"
+                            icon={<DeleteOutlined />}
                             onClick={() => {
                               setEditingPackage({ key: pkg.packageItem });
-                              setIsRestoreModalOpen(true);
+                              setIsDeleteModalOpen(true);
                             }}
+                            disabled={showArchived}
                           >
-                            Restore
+                            Archive
                           </Button>
-                        )}
-                      </Space>
+
+                          {showArchived && (
+                            <Button
+                              className="packagemanagement-restore-button"
+                              type="primary"
+                              icon={<CheckCircleOutlined />}
+                              onClick={() => {
+                                setEditingPackage({ key: pkg.packageItem });
+                                setIsRestoreModalOpen(true);
+                              }}
+                            >
+                              Restore
+                            </Button>
+                          )}
+                        </Space>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            ))
-          ) : (
-            <Empty description={loading ? "No data" : "No Packages"} />
-          )}
-        </Spin>
+                </Card>
+              ))
+            ) : (
+              <Empty description={loading ? "No data" : "No Packages"} />
+            )}
+          </Spin>
 
 
-        {/* VIEW PACKAGE DETAILS MODAL */}
-        < Modal
-          title="Package Details"
-          closable={{ 'aria-label': 'Custom Close Button' }
-          }
-          footer={null}
-          open={isModalOpen}
-          onCancel={() => { handleCancel() }}
-          className="package-details-modal"
-          width={820}
-          centered={true}
-        >
-          <div className="package-details-modal-header">
-            <div>
-              <p className="package-details-code">{pkg.packageCode}</p>
-              <h2 className="package-details-title">{pkg.packageName}</h2>
-            </div>
-            <div className="package-details-price">₱{pkg.packagePricePerPax} / pax</div>
-          </div>
-
-          <div className="package-details-body">
-            <div className="package-details-media">
-              {pkg.packageImages && pkg.packageImages.length > 0 ? (
-                <img className="package-details-image" src={pkg.packageImages[0]} alt={pkg.packageName} />
-              ) : (
-                <div className="package-details-image-placeholder">No Image</div>
-              )}
-            </div>
-
-            <div className="package-details-content">
-              <p className="package-details-description">{pkg.packageDescription}</p>
-
-              <div className="package-details-stats">
-                <div className="package-details-stat">
-                  <span className="package-details-label">Available Slots</span>
-                  <span className="package-details-value">{availableSlots(pkg)}</span>
-                </div>
-                <div className="package-details-stat">
-                  <span className="package-details-label">Package Type</span>
-                  <span className="package-details-value">{pkg.packageType?.toUpperCase()}</span>
-                </div>
-                <div className="package-details-stat">
-                  <span className="package-details-label">Duration</span>
-                  <span className="package-details-value">{pkg.packageDuration} days</span>
-                </div>
+          {/* VIEW PACKAGE DETAILS MODAL */}
+          < Modal
+            title="Package Details"
+            closable={{ 'aria-label': 'Custom Close Button' }
+            }
+            footer={null}
+            open={isModalOpen}
+            onCancel={() => { handleCancel() }}
+            className="package-details-modal"
+            width={820}
+            centered={true}
+          >
+            <div className="package-details-modal-header">
+              <div>
+                <p className="package-details-code">{pkg.packageCode}</p>
+                <h2 className="package-details-title">{pkg.packageName}</h2>
               </div>
+              <div className="package-details-price">₱{pkg.packagePricePerPax} / pax</div>
             </div>
-          </div>
-        </Modal >
 
-
-        {/* EDIT SLOTS MODAL */}
-        <Modal
-          title="Edit Package Slots"
-          footer={null}
-          open={isSlotsModalOpen}
-          onCancel={handleSlotsCancel}
-          width={760}
-          className="packages-edit-slots-modal"
-          centered={true}
-        >
-          {slotsPackage ? (
-            <div>
-              <div style={{ marginBottom: 12, fontSize: 12, color: "#666" }}>
-                Update the slots per date range for this package.
+            <div className="package-details-body">
+              <div className="package-details-media">
+                {pkg.packageImages && pkg.packageImages.length > 0 ? (
+                  <img className="package-details-image" src={pkg.packageImages[0]} alt={pkg.packageName} />
+                ) : (
+                  <div className="package-details-image-placeholder">No Image</div>
+                )}
               </div>
-              {editableSlots.length === 0 ? (
-                <Empty description="No specific dates" />
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 140px",
-                      gap: 12,
-                      fontWeight: 600,
-                      fontSize: 12,
-                      color: "#305797",
-                      padding: "6px 8px",
-                      borderBottom: "1px solid #e8e8e8"
-                    }}
-                  >
-                    <div>Date Range</div>
-                    <div>Slots</div>
+
+              <div className="package-details-content">
+                <p className="package-details-description">{pkg.packageDescription}</p>
+
+                <div className="package-details-stats">
+                  <div className="package-details-stat">
+                    <span className="package-details-label">Available Slots</span>
+                    <span className="package-details-value">{availableSlots(pkg)}</span>
                   </div>
-                  {editableSlots.map((slot, idx) => (
+                  <div className="package-details-stat">
+                    <span className="package-details-label">Package Type</span>
+                    <span className="package-details-value">{pkg.packageType?.toUpperCase()}</span>
+                  </div>
+                  <div className="package-details-stat">
+                    <span className="package-details-label">Duration</span>
+                    <span className="package-details-value">{pkg.packageDuration} days</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Modal >
+
+
+          {/* EDIT SLOTS MODAL */}
+          <Modal
+            title="Edit Package Slots"
+            footer={null}
+            open={isSlotsModalOpen}
+            onCancel={handleSlotsCancel}
+            width={760}
+            className="packages-edit-slots-modal"
+            centered={true}
+          >
+            {slotsPackage ? (
+              <div>
+                <div style={{ marginBottom: 12, fontSize: 12, color: "#666" }}>
+                  Update the slots per date range for this package.
+                </div>
+                {editableSlots.length === 0 ? (
+                  <Empty description="No specific dates" />
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     <div
-                      key={`${slotsPackage.packageItem}-${idx}`}
                       style={{
                         display: "grid",
                         gridTemplateColumns: "1fr 140px",
                         gap: 12,
-                        alignItems: "center",
-                        padding: "8px",
-                        borderRadius: 6,
-                        background: idx % 2 === 0 ? "#fafafa" : "#fff",
-                        border: "1px solid #f0f0f0"
+                        fontWeight: 600,
+                        fontSize: 12,
+                        color: "#305797",
+                        padding: "6px 8px",
+                        borderBottom: "1px solid #e8e8e8"
                       }}
                     >
-                      <div>
-                        {slot.startdaterange && slot.enddaterange
-                          ? `${formatDate(slot.startdaterange)} - ${formatDate(slot.enddaterange)}`
-                          : "Date range"}
-                      </div>
-                      <InputNumber
-                        min={0}
-                        value={slot.slots || 0}
-                        onChange={(value) => {
-                          const next = [...editableSlots];
-                          next[idx] = { ...next[idx], slots: value || 0 };
-                          setEditableSlots(next);
-                        }}
-                        style={{ width: "100%" }}
-                      />
+                      <div>Date Range</div>
+                      <div>Slots</div>
                     </div>
-                  ))}
+                    {editableSlots.map((slot, idx) => (
+                      <div
+                        key={`${slotsPackage.packageItem}-${idx}`}
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 140px",
+                          gap: 12,
+                          alignItems: "center",
+                          padding: "8px",
+                          borderRadius: 6,
+                          background: idx % 2 === 0 ? "#fafafa" : "#fff",
+                          border: "1px solid #f0f0f0"
+                        }}
+                      >
+                        <div>
+                          {slot.startdaterange && slot.enddaterange
+                            ? `${formatDate(slot.startdaterange)} - ${formatDate(slot.enddaterange)}`
+                            : "Date range"}
+                        </div>
+                        <InputNumber
+                          min={0}
+                          value={slot.slots || 0}
+                          onChange={(value) => {
+                            const next = [...editableSlots];
+                            next[idx] = { ...next[idx], slots: value || 0 };
+                            setEditableSlots(next);
+                          }}
+                          style={{ width: "100%" }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+                  <Button className='package-slots-cancel-button' type="primary" onClick={handleSlotsCancel} style={{ marginRight: 8 }}>
+                    Cancel
+                  </Button>
+                  <Button className='package-slots-save-button' type="primary" onClick={handleSlotsSave}>
+                    Save Slots
+                  </Button>
                 </div>
-              )}
+              </div>
+            ) : null}
+          </Modal>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
-                <Button className='package-slots-cancel-button' type="primary" onClick={handleSlotsCancel} style={{ marginRight: 8 }}>
+          <Modal
+            title="Add Discount"
+            footer={null}
+            open={isDiscountModalOpen}
+            onCancel={handleDiscountCancel}
+            width={420}
+            className="packages-add-discount-modal"
+            centered={true}
+          >
+            {discountPackage ? (
+              <div>
+                <div style={{ marginBottom: 12, fontSize: 12, color: "#666" }}>
+                  Set the discount percent for this package.
+                </div>
+                <InputNumber
+                  min={0}
+                  max={100}
+                  value={discountPercent}
+                  onChange={(value) => setDiscountPercent(value ?? 0)}
+                  formatter={(value) => `${value}%`}
+                  parser={(value) => Number(String(value).replace(/[^0-9]/g, ''))}
+                  style={{ width: "100%" }}
+                />
+
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+                  <Button className='package-discount-cancel-button' type="primary" onClick={handleDiscountCancel} style={{ marginRight: 8 }}>
+                    Cancel
+                  </Button>
+                  <Button className='package-discount-save-button' type="primary" onClick={handleDiscountSave}>
+                    Save Discount
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+          </Modal>
+
+
+          {/* DISCOUNT APPLIED MODAL */}
+          <Modal
+            open={isDiscountAppliedModalOpen}
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            centered={true}
+            onCancel={() => {
+              setIsDiscountAppliedModalOpen(false);
+            }}
+          >
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Discount Applied!</h1>
+
+              <div>
+                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+              </div>
+
+              <p className='modal-text'>The discount has been applied successfully.</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='modal-button'
+                  onClick={() => {
+                    setIsDiscountAppliedModalOpen(false);
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
+
+            </div>
+          </Modal>
+
+
+          {/* SLOTS SAVED MODAL */}
+          <Modal
+            open={isSlotsSavedModalOpen}
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            centered={true}
+            onCancel={() => {
+              setIsSlotsSavedModalOpen(false);
+            }}
+          >
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Slots Saved!</h1>
+
+              <div>
+                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+              </div>
+
+              <p className='modal-text'>The slots have been saved successfully.</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='modal-button'
+                  onClick={() => {
+                    setIsSlotsSavedModalOpen(false);
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
+
+            </div>
+          </Modal>
+
+
+          {/* ARCHIVE PACKAGE CONFIRMATION MODAL */}
+          <Modal
+            open={isDeleteModalOpen}
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            centered={true}
+            onCancel={() => {
+              setIsDeleteModalOpen(false);
+            }}
+          >
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Archive Package?</h1>
+              <p className='modal-text'>Are you sure you want to archive this package?</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='modal-button'
+                  onClick={() => {
+                    handleArchive(editingPackage.key);
+                    setIsDeleteModalOpen(false);
+                  }}
+                >
+                  Archive
+                </Button>
+                <Button
+                  type='primary'
+                  className='modal-button-cancel'
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setEditingPackage(null);
+                  }}
+                >
                   Cancel
                 </Button>
-                <Button className='package-slots-save-button' type="primary" onClick={handleSlotsSave}>
-                  Save Slots
-                </Button>
               </div>
             </div>
-          ) : null}
-        </Modal>
+          </Modal>
 
-        <Modal
-          title="Add Discount"
-          footer={null}
-          open={isDiscountModalOpen}
-          onCancel={handleDiscountCancel}
-          width={420}
-          className="packages-add-discount-modal"
-          centered={true}
-        >
-          {discountPackage ? (
-            <div>
-              <div style={{ marginBottom: 12, fontSize: 12, color: "#666" }}>
-                Set the discount percent for this package.
-              </div>
-              <InputNumber
-                min={0}
-                max={100}
-                value={discountPercent}
-                onChange={(value) => setDiscountPercent(value ?? 0)}
-                formatter={(value) => `${value}%`}
-                parser={(value) => Number(String(value).replace(/[^0-9]/g, ''))}
-                style={{ width: "100%" }}
-              />
 
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
-                <Button className='package-discount-cancel-button' type="primary" onClick={handleDiscountCancel} style={{ marginRight: 8 }}>
+          {/* RESTORE PACKAGE CONFIRMATION MODAL */}
+          <Modal
+            open={isRestoreModalOpen}
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            centered={true}
+            onCancel={() => {
+              setIsRestoreModalOpen(false);
+            }}
+          >
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Restore Package?</h1>
+              <p className='modal-text'>Are you sure you want to restore this package?</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='modal-button'
+                  onClick={() => {
+                    handleRestore(editingPackage.key);
+                    setIsRestoreModalOpen(false);
+                  }}
+                >
+                  Restore
+                </Button>
+                <Button
+                  type='primary'
+                  className='modal-button-cancel'
+                  onClick={() => {
+                    setIsRestoreModalOpen(false);
+                    setEditingPackage(null);
+                  }}
+                >
                   Cancel
                 </Button>
-                <Button className='package-discount-save-button' type="primary" onClick={handleDiscountSave}>
-                  Save Discount
-                </Button>
               </div>
             </div>
-          ) : null}
-        </Modal>
+          </Modal>
 
 
-        {/* DISCOUNT APPLIED MODAL */}
-        <Modal
-          open={isDiscountAppliedModalOpen}
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          centered={true}
-          onCancel={() => {
-            setIsDiscountAppliedModalOpen(false);
-          }}
-        >
-          <div className='modal-container'>
-            <h1 className='modal-heading'>Discount Applied!</h1>
 
-            <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+          {/* PACKAGE HAS BEEN ARCHIVED MODAL */}
+          <Modal
+            open={isPackageDeletedModalOpen}
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            centered={true}
+            onCancel={() => {
+              setIsPackageDeletedModalOpen(false);
+            }}
+          >
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Package Archived Successfully!</h1>
+
+              <div>
+                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+              </div>
+
+              <p className='modal-text'>The package has been archived.</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='modal-button'
+                  onClick={() => {
+                    setIsPackageDeletedModalOpen(false);
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
+
             </div>
+          </Modal>
 
-            <p className='modal-text'>The discount has been applied successfully.</p>
+          {/* PACKAGE HAS BEEN RESTORED MODAL */}
+          <Modal
+            open={isPackageRestoredModalOpen}
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            centered={true}
+            onCancel={() => {
+              setIsPackageRestoredModalOpen(false);
+            }}
+          >
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Package Restored Successfully!</h1>
 
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+              <div>
+                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+              </div>
 
-              <Button
-                type='primary'
-                className='modal-button'
-                onClick={() => {
-                  setIsDiscountAppliedModalOpen(false);
-                }}
-              >
-                Continue
-              </Button>
+              <p className='modal-text'>The package has been restored.</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='modal-button'
+                  onClick={() => {
+                    setIsPackageRestoredModalOpen(false);
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
+
             </div>
-
-          </div>
-        </Modal>
+          </Modal>
 
 
-        {/* SLOTS SAVED MODAL */}
-        <Modal
-          open={isSlotsSavedModalOpen}
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          centered={true}
-          onCancel={() => {
-            setIsSlotsSavedModalOpen(false);
-          }}
-        >
-          <div className='modal-container'>
-            <h1 className='modal-heading'>Slots Saved!</h1>
-
-            <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
-            </div>
-
-            <p className='modal-text'>The slots have been saved successfully.</p>
-
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
-              <Button
-                type='primary'
-                className='modal-button'
-                onClick={() => {
-                  setIsSlotsSavedModalOpen(false);
-                }}
-              >
-                Continue
-              </Button>
-            </div>
-
-          </div>
-        </Modal>
-
-
-        {/* ARCHIVE PACKAGE CONFIRMATION MODAL */}
-        <Modal
-          open={isDeleteModalOpen}
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          centered={true}
-          onCancel={() => {
-            setIsDeleteModalOpen(false);
-          }}
-        >
-          <div className='modal-container'>
-            <h1 className='modal-heading'>Archive Package?</h1>
-            <p className='modal-text'>Are you sure you want to archive this package?</p>
-
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
-              <Button
-                type='primary'
-                className='modal-button'
-                onClick={() => {
-                  handleArchive(editingPackage.key);
-                  setIsDeleteModalOpen(false);
-                }}
-              >
-                Archive
-              </Button>
-              <Button
-                type='primary'
-                className='modal-button-cancel'
-                onClick={() => {
-                  setIsDeleteModalOpen(false);
-                  setEditingPackage(null);
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </Modal>
-
-
-        {/* RESTORE PACKAGE CONFIRMATION MODAL */}
-        <Modal
-          open={isRestoreModalOpen}
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          centered={true}
-          onCancel={() => {
-            setIsRestoreModalOpen(false);
-          }}
-        >
-          <div className='modal-container'>
-            <h1 className='modal-heading'>Restore Package?</h1>
-            <p className='modal-text'>Are you sure you want to restore this package?</p>
-
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
-              <Button
-                type='primary'
-                className='modal-button'
-                onClick={() => {
-                  handleRestore(editingPackage.key);
-                  setIsRestoreModalOpen(false);
-                }}
-              >
-                Restore
-              </Button>
-              <Button
-                type='primary'
-                className='modal-button-cancel'
-                onClick={() => {
-                  setIsRestoreModalOpen(false);
-                  setEditingPackage(null);
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </Modal>
-
-
-
-        {/* PACKAGE HAS BEEN ARCHIVED MODAL */}
-        <Modal
-          open={isPackageDeletedModalOpen}
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          centered={true}
-          onCancel={() => {
-            setIsPackageDeletedModalOpen(false);
-          }}
-        >
-          <div className='modal-container'>
-            <h1 className='modal-heading'>Package Archived Successfully!</h1>
-
-            <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
-            </div>
-
-            <p className='modal-text'>The package has been archived.</p>
-
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
-              <Button
-                type='primary'
-                className='modal-button'
-                onClick={() => {
-                  setIsPackageDeletedModalOpen(false);
-                }}
-              >
-                Continue
-              </Button>
-            </div>
-
-          </div>
-        </Modal>
-
-        {/* PACKAGE HAS BEEN RESTORED MODAL */}
-        <Modal
-          open={isPackageRestoredModalOpen}
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          centered={true}
-          onCancel={() => {
-            setIsPackageRestoredModalOpen(false);
-          }}
-        >
-          <div className='modal-container'>
-            <h1 className='modal-heading'>Package Restored Successfully!</h1>
-
-            <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
-            </div>
-
-            <p className='modal-text'>The package has been restored.</p>
-
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
-              <Button
-                type='primary'
-                className='modal-button'
-                onClick={() => {
-                  setIsPackageRestoredModalOpen(false);
-                }}
-              >
-                Continue
-              </Button>
-            </div>
-
-          </div>
-        </Modal>
-
-
-      </div >
+        </div >
+      )}
     </ConfigProvider >
   );
 }

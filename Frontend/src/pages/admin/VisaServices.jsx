@@ -25,6 +25,8 @@ export default function VisaServices() {
     const [isServiceRestoredModalOpen, setIsServiceRestoredModalOpen] = useState(false);
     const [serviceToDelete, setServiceToDelete] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [actionType, setActionType] = useState("");
 
     const [isFAQModalOpen, setIsFAQModalOpen] = useState(false);
     const [faqs, setFaqs] = useState([]);
@@ -117,6 +119,10 @@ export default function VisaServices() {
 
     //archive service function
     const handleArchive = async (key) => {
+
+        setActionLoading(true);
+        setActionType("Archiving");
+
         try {
 
             await apiFetch.delete(`/services/delete-service/${key}`);
@@ -129,12 +135,19 @@ export default function VisaServices() {
                 title: "Failed to archive visa service",
                 placement: "topRight",
             });
+        } finally {
+            setActionLoading(false);
+            setActionType("");
         }
     };
 
 
     //archive service function
     const handleRestore = async (key) => {
+
+        setActionLoading(true);
+        setActionType("Restoring");
+
         try {
             await apiFetch.post(`/services/archived-services/${key}/restore`);
             await Promise.all([getServices(), getArchivedServices()]);
@@ -145,6 +158,9 @@ export default function VisaServices() {
                 title: "Failed to restore visa service",
                 placement: "topRight",
             });
+        } finally {
+            setActionLoading(false);
+            setActionType("");
         }
     };
 
@@ -245,587 +261,590 @@ export default function VisaServices() {
                 }
             }}
         >
-            <div>
-                <h1 className="page-header">Visa Services</h1>
 
-                {!showArchived && (
-                    <Row gutter={16} className="visaservice-statistics">
-                        <Col xs={24} sm={8}>
-                            <Card className="visaservice-management-card">
-                                <Statistic
-                                    title="Total Visa Services"
-                                    value={totalServices}
-                                    prefix={<AppstoreOutlined />}
-                                />
-                            </Card>
-                        </Col>
+            {actionLoading ? (
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
+                    <Spin size="large" description={actionType === "Archiving" ? "Archiving visa service..." : "Restoring visa service..."} />
+                </div>
+            ) : (
 
-                        <Col xs={24} sm={8}>
-                            <Card className="visaservice-management-card">
-                                <Statistic
-                                    title="Tourist Visas"
-                                    value={servicesData.filter(service => service.visaType === "Tourist").length}
-                                />
-                            </Card>
-                        </Col>
 
-                        <Col xs={24} sm={8}>
-                            <Card className="visaservice-management-card">
-                                <Statistic
-                                    title="Express Processing"
-                                    value={servicesData.filter(service => service.processing === "Express").length}
-                                />
-                            </Card>
-                        </Col>
-                    </Row>
-                )}
+                <div>
+                    <h1 className="page-header">Visa Services</h1>
 
-                <Card className="visaservices-actions">
-                    <div className="visaservices-actions-row">
-                        <div className="visaservices-actions-filters">
-                            <div className="visaservices-actions-field visaservices-actions-field--search">
-                                <label className="visaservices-label">Search</label>
-                                <Input
-                                    className="visaservices-search-input"
-                                    prefix={<SearchOutlined />}
-                                    placeholder="Search service..."
-                                    value={searchText}
-                                    onChange={(event) => {
-                                        const cleanedValue = event.target.value
-                                            .replace(/[^a-zA-Z0-9\s]/g, '')
-                                            .replace(/\s{2,}/g, ' ')
-                                            .replace(/^\s+/, '');
+                    {!showArchived && (
+                        <Row gutter={16} className="visaservice-statistics">
+                            <Col xs={24} sm={8}>
+                                <Card className="visaservice-management-card">
+                                    <Statistic
+                                        title="Total Visa Services"
+                                        value={totalServices}
+                                        prefix={<AppstoreOutlined />}
+                                    />
+                                </Card>
+                            </Col>
 
-                                        setSearchText(cleanedValue);
+                            <Col xs={24} sm={8}>
+                                <Card className="visaservice-management-card">
+                                    <Statistic
+                                        title="Tourist Visas"
+                                        value={servicesData.filter(service => service.visaType === "Tourist").length}
+                                    />
+                                </Card>
+                            </Col>
+
+                            <Col xs={24} sm={8}>
+                                <Card className="visaservice-management-card">
+                                    <Statistic
+                                        title="Express Processing"
+                                        value={servicesData.filter(service => service.processing === "Express").length}
+                                    />
+                                </Card>
+                            </Col>
+                        </Row>
+                    )}
+
+                    <Card className="visaservices-actions">
+                        <div className="visaservices-actions-row">
+                            <div className="visaservices-actions-filters">
+                                <div className="visaservices-actions-field visaservices-actions-field--search">
+                                    <label className="visaservices-label">Search</label>
+                                    <Input
+                                        className="visaservices-search-input"
+                                        prefix={<SearchOutlined />}
+                                        placeholder="Search service..."
+                                        value={searchText}
+                                        onChange={(event) => {
+                                            const cleanedValue = event.target.value
+                                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                .replace(/\s{2,}/g, ' ')
+                                                .replace(/^\s+/, '');
+
+                                            setSearchText(cleanedValue);
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="visaservices-actions-buttons">
+                                <Button
+                                    className="visaservices-add-button"
+                                    type="primary"
+                                    icon={<EditOutlined />}
+                                    onClick={() => setIsFAQModalOpen(true)}
+                                >
+                                    Manage FAQs
+                                </Button>
+                                <Button
+                                    className="visaservices-add-button"
+                                    type="primary"
+                                    icon={<PlusOutlined />}
+                                    onClick={() => navigate(`${basePath}/visa-services/add`)}
+                                    disabled={showArchived}
+                                >
+                                    Add Service
+                                </Button>
+                                <Button
+                                    icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
+                                    className="visaservices-archive-button"
+                                    type="primary"
+                                    onClick={() => {
+                                        const nextValue = !showArchived;
+                                        setShowArchived(nextValue);
+                                        setSearchText("");
+                                        if (nextValue) {
+                                            getArchivedServices();
+                                        } else {
+                                            getServices();
+                                        }
                                     }}
-                                />
+                                >
+                                    {showArchived ? 'Back' : 'Archives'}
+                                </Button>
                             </div>
                         </div>
+                    </Card>
 
-                        <div className="visaservices-actions-buttons">
-                            <Button
-                                className="visaservices-add-button"
-                                type="primary"
-                                icon={<EditOutlined />}
-                                onClick={() => setIsFAQModalOpen(true)}
-                            >
-                                Manage FAQs
-                            </Button>
-                            <Button
-                                className="visaservices-add-button"
-                                type="primary"
-                                icon={<PlusOutlined />}
-                                onClick={() => navigate(`${basePath}/visa-services/add`)}
-                                disabled={showArchived}
-                            >
-                                Add Service
-                            </Button>
-                            <Button
-                                icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
-                                className="visaservices-archive-button"
-                                type="primary"
-                                onClick={() => {
-                                    const nextValue = !showArchived;
-                                    setShowArchived(nextValue);
-                                    setSearchText("");
-                                    if (nextValue) {
-                                        getArchivedServices();
-                                    } else {
-                                        getServices();
-                                    }
-                                }}
-                            >
-                                {showArchived ? 'Back' : 'Archives'}
-                            </Button>
-                        </div>
-                    </div>
-                </Card>
-
-                <Spin spinning={loading}>
-                    {filteredServices.length > 0 ? filteredServices.map(service => (
-                        <Card key={service.visaItem} className="visa-card">
-                            <div className="visa-card-layout">
-                                <div className="visa-card-media">
-                                    {service.visaImage ? (
-                                        <img
-                                            src={service.visaImage}
-                                            alt={service.visaName || "Visa service"}
-                                            className="visa-card-image"
-                                            draggable={false}
-                                        />
-                                    ) : (
-                                        <div className="visa-card-image-placeholder">
-                                            No image available
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="visa-card-content">
-                                    <div className="visa-card-information">
-                                        <div className="visa-info">
-                                            <h5 className="visa-name">
-                                                {service.visaName}
-                                            </h5>
-
-                                            <h6 className="visa-price">
-                                                ₱{Number(service.visaPrice || 0).toLocaleString()} per Applicant
-                                            </h6>
-                                        </div>
-
-                                        <p className="visa-description">
-                                            {service.visaDescription}
-                                        </p>
-                                    </div>
-
-                                    <div className="visa-actions">
-                                        <Button
-                                            className="visaservices-view-button"
-                                            type="primary"
-                                            icon={<EyeOutlined />}
-                                            onClick={() => showModal(service)}
-                                        >
-                                            View
-                                        </Button>
-
-                                        {showArchived ? (
-                                            <Button
-                                                icon={<CheckCircleOutlined />}
-                                                className="visaservices-restore-button"
-                                                type="primary"
-                                                onClick={() => {
-                                                    setServiceToDelete(service.visaItem);
-                                                    setIsRestoreModalOpen(true);
-                                                }}
-                                            >
-                                                Restore
-                                            </Button>
+                    <Spin spinning={loading}>
+                        {filteredServices.length > 0 ? filteredServices.map(service => (
+                            <Card key={service.visaItem} className="visa-card">
+                                <div className="visa-card-layout">
+                                    <div className="visa-card-media">
+                                        {service.visaImage ? (
+                                            <img
+                                                src={service.visaImage}
+                                                alt={service.visaName || "Visa service"}
+                                                className="visa-card-image"
+                                                draggable={false}
+                                            />
                                         ) : (
-                                            <>
-                                                <Button
-                                                    className="visaservices-edit-button"
-                                                    type="primary"
-                                                    icon={<EditOutlined />}
-                                                    onClick={() =>
-                                                        navigate(
-                                                            `${basePath}/visa-services/edit`,
-                                                            {
-                                                                state: {
-                                                                    serviceId: service.visaItem
-                                                                }
-                                                            }
-                                                        )
-                                                    }
-                                                >
-                                                    Edit
-                                                </Button>
-
-                                                <Button
-                                                    className="visaservices-remove-button"
-                                                    type="primary"
-                                                    icon={<DeleteOutlined />}
-                                                    onClick={() => {
-                                                        setServiceToDelete(service.visaItem);
-                                                        setIsDeleteModalOpen(true);
-                                                    }}
-                                                >
-                                                    Archive
-                                                </Button>
-                                            </>
+                                            <div className="visa-card-image-placeholder">
+                                                No image available
+                                            </div>
                                         )}
                                     </div>
-                                </div>
-                            </div>
-                        </Card>
-                    )) : (
-                        <Empty description={loading ? "No data" : "No Services"} />
-                    )}
-                </Spin>
 
+                                    <div className="visa-card-content">
+                                        <div className="visa-card-information">
+                                            <div className="visa-info">
+                                                <h5 className="visa-name">
+                                                    {service.visaName}
+                                                </h5>
 
-                <Modal
-                    title="Visa Service Details"
-                    closable={{ 'aria-label': 'Custom Close Button' }}
-                    footer={null}
-                    open={isModalOpen}
-                    onCancel={() => { handleCancel() }}
-                    className="visa-details-modal"
-                    width={820}
-                    centered={true}
-                >
-                    {selectedService && (
-                        <div>
-                            <div className="visa-details-modal-header">
-                                <div>
-                                    <p className="visa-details-code">{selectedService.visaType}</p>
-                                    <h2 className="visa-details-title">{selectedService.visaName}</h2>
-                                </div>
-                                <div className="visa-details-meta">
-                                    <div className="visa-details-price">₱{selectedService.visaPrice || "--"}</div>
-                                </div>
-                            </div>
+                                                <h6 className="visa-price">
+                                                    ₱{Number(service.visaPrice || 0).toLocaleString()} per Applicant
+                                                </h6>
+                                            </div>
 
-                            <div className="visa-details-body">
-                                <div className="visa-details-content">
-                                    <p className="visa-details-description">{selectedService.visaDescription}</p>
-
-                                    <div className="visa-details-stats">
-                                        <div className="visa-details-stat">
-                                            <span className="visa-details-label">Requirements</span>
-                                            <span className="visa-details-value">
-                                                {selectedService.visaRequirements?.length || 0}
-                                            </span>
+                                            <p className="visa-description">
+                                                {service.visaDescription}
+                                            </p>
                                         </div>
-                                        <div className="visa-details-stat">
-                                            <span className="visa-details-label">Process Steps</span>
-                                            <span className="visa-details-value">
-                                                {selectedService.visaProcessSteps?.length || 0}
-                                            </span>
+
+                                        <div className="visa-actions">
+                                            <Button
+                                                className="visaservices-view-button"
+                                                type="primary"
+                                                icon={<EyeOutlined />}
+                                                onClick={() => showModal(service)}
+                                            >
+                                                View
+                                            </Button>
+
+                                            {showArchived ? (
+                                                <Button
+                                                    icon={<CheckCircleOutlined />}
+                                                    className="visaservices-restore-button"
+                                                    type="primary"
+                                                    onClick={() => {
+                                                        setServiceToDelete(service.visaItem);
+                                                        setIsRestoreModalOpen(true);
+                                                    }}
+                                                >
+                                                    Restore
+                                                </Button>
+                                            ) : (
+                                                <>
+                                                    <Button
+                                                        className="visaservices-edit-button"
+                                                        type="primary"
+                                                        icon={<EditOutlined />}
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `${basePath}/visa-services/edit`,
+                                                                {
+                                                                    state: {
+                                                                        serviceId: service.visaItem
+                                                                    }
+                                                                }
+                                                            )
+                                                        }
+                                                    >
+                                                        Edit
+                                                    </Button>
+
+                                                    <Button
+                                                        className="visaservices-remove-button"
+                                                        type="primary"
+                                                        icon={<DeleteOutlined />}
+                                                        onClick={() => {
+                                                            setServiceToDelete(service.visaItem);
+                                                            setIsDeleteModalOpen(true);
+                                                        }}
+                                                    >
+                                                        Archive
+                                                    </Button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
-
-                                    <div className="visa-details-section">
-                                        <h4>Requirements</h4>
-                                        <ul className="visa-details-list">
-                                            {selectedService.visaRequirements?.map((item, index) => (
-                                                <li key={`req-${index}`}>{formatListItem(item)}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-
-                                    <div className="visa-details-section">
-                                        <h4>Process</h4>
-                                        <ol className="visa-details-list">
-                                            {selectedService.visaProcessSteps?.map((item, index) => (
-                                                <li key={`step-${index}`}>{formatListItem(item)}</li>
-                                            ))}
-                                        </ol>
-                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    )}
-                </Modal>
+                            </Card>
+                        )) : (
+                            <Empty description={loading ? "No data" : "No Services"} />
+                        )}
+                    </Spin>
 
 
-                {/* DELETE SERVICE CONFIRMATION MODAL */}
-                <Modal
-                    open={isDeleteModalOpen}
-                    closable={{ 'aria-label': 'Custom Close Button' }}
-                    footer={null}
-                    centered={true}
-                    onCancel={() => {
-                        setIsDeleteModalOpen(false);
-                    }}
-                >
-                    <div className='modal-container'>
-                        <h1 className='modal-heading'>Archive Service?</h1>
-                        <p className='modal-text'>Are you sure you want to archive this service?</p>
-
-                        <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
-                            <Button
-                                type='primary'
-                                className='modal-button'
-                                onClick={() => {
-                                    handleArchive(serviceToDelete);
-                                    setIsDeleteModalOpen(false);
-                                }}
-                            >
-                                Archive
-                            </Button>
-                            <Button
-                                type='primary'
-                                className='modal-button-cancel'
-                                onClick={() => {
-                                    setIsDeleteModalOpen(false);
-                                }}
-                            >
-                                Cancel
-                            </Button>
-                        </div>
-                    </div>
-                </Modal>
-
-                {/* SERVICE HAS BEEN DELETED MODAL */}
-                <Modal
-                    open={isServiceDeletedModalOpen}
-                    closable={{ 'aria-label': 'Custom Close Button' }}
-                    footer={null}
-                    centered={true}
-                    onCancel={() => {
-                        setIsServiceDeletedModalOpen(false);
-                    }}
-                >
-                    <div className='modal-container'>
-                        <h1 className='modal-heading'>Service Archived!</h1>
-
-                        <div>
-                            <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
-                        </div>
-
-                        <p className='modal-text'>The service has been archived.</p>
-
-                        <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
-                            <Button
-                                type='primary'
-                                className='modal-button'
-                                onClick={() => {
-                                    setIsServiceDeletedModalOpen(false);
-                                }}
-                            >
-                                Continue
-                            </Button>
-                        </div>
-
-                    </div>
-                </Modal>
-
-
-                {/* RESTORE QUOTATION CONFIRMATION MODAL */}
-                <Modal
-                    open={isRestoreModalOpen}
-                    closable={{ 'aria-label': 'Custom Close Button' }}
-                    footer={null}
-                    centered={true}
-                    onCancel={() => {
-                        setIsRestoreModalOpen(false);
-                    }}
-                >
-                    <div className='modal-container'>
-                        <h1 className='modal-heading'>Restore Visa Service?</h1>
-                        <p className='modal-text'>Are you sure you want to restore this visa service?</p>
-
-                        <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
-                            <Button
-                                type='primary'
-                                className='modal-button'
-                                onClick={() => {
-                                    handleRestore(serviceToDelete);
-                                    setIsRestoreModalOpen(false);
-                                }}
-                            >
-                                Restore
-                            </Button>
-                            <Button
-                                type='primary'
-                                className='modal-button-cancel'
-                                onClick={() => {
-                                    setIsRestoreModalOpen(false);
-                                    setServiceToDelete(null);
-                                }}
-                            >
-                                Cancel
-                            </Button>
-                        </div>
-                    </div>
-                </Modal>
-
-                {/* SERVICE HAS BEEN RESTORED MODAL */}
-                <Modal
-                    open={isServiceRestoredModalOpen}
-                    closable={{ 'aria-label': 'Custom Close Button' }}
-                    footer={null}
-                    centered={true}
-                    onCancel={() => {
-                        setIsServiceRestoredModalOpen(false);
-                    }}
-                >
-                    <div className='modal-container'>
-                        <h1 className='modal-heading'>Visa Service Restored Successfully!</h1>
-
-                        <div>
-                            <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
-                        </div>
-
-                        <p className='modal-text'>The visa service has been restored.</p>
-
-                        <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
-                            <Button
-                                type='primary'
-                                className='modal-button'
-                                onClick={() => {
-                                    setIsServiceRestoredModalOpen(false);
-                                }}
-                            >
-                                Continue
-                            </Button>
-                        </div>
-
-                    </div>
-                </Modal>
-
-
-                <Modal
-                    title="Manage FAQs"
-                    open={isFAQModalOpen}
-                    width={900}
-                    footer={null}
-                    onCancel={() => {
-                        setIsFAQModalOpen(false);
-                        setEditingFAQ(null);
-
-                        setFaqForm({
-                            question: "",
-                            answer: "",
-                            category: ""
-                        });
-                    }}
-                >
-
-                    <div style={{ marginBottom: 10 }}>
-                        <label className="visaservices-label">Question</label>
-                        <Input
-                            maxLength={120}
-                            showCount
-                            placeholder="Question"
-                            value={faqForm.question}
-                            onChange={(e) => {
-                                const value = e.target.value
-                                    .replace(/[^a-zA-Z0-9\s.,?!'()-]/g, "")
-                                    .replace(/\s{2,}/g, " ")
-                                    .replace(/^\s+/, "");
-
-                                setFaqForm({
-                                    ...faqForm,
-                                    question: value
-                                });
-                            }}
-                            style={{ marginBottom: 10 }}
-                        />
-                    </div>
-
-                    <div style={{ marginBottom: 10 }}>
-                        <label className="visaservices-label">Answer</label>
-                        <Input.TextArea
-                            rows={4}
-                            maxLength={250}
-                            showCount
-                            placeholder="Answer"
-                            value={faqForm.answer}
-                            onChange={(e) => {
-                                const value = e.target.value
-                                    .replace(/[^a-zA-Z0-9\s.,?!'"():;/-]/g, "")
-                                    .replace(/\s{2,}/g, " ")
-                                    .replace(/^\s+/, "");
-
-                                setFaqForm({
-                                    ...faqForm,
-                                    answer: value
-                                });
-                            }}
-                            style={{ marginBottom: 10 }}
-                        />
-                    </div>
-
-                    <div>
-                        <label className="visaservices-label">Category</label>
-                        <Select
-                            placeholder="Select Category"
-                            value={faqForm.category || undefined}
-                            onChange={(value) =>
-                                setFaqForm({
-                                    ...faqForm,
-                                    category: value
-                                })
-                            }
-                            style={{ width: "100%", marginBottom: 20 }}
-                            options={[
-                                {
-                                    value: "Bookings",
-                                    label: "Bookings"
-                                },
-                                {
-                                    value: "Payments",
-                                    label: "Payments"
-                                },
-                                {
-                                    value: "Quotations",
-                                    label: "Quotations"
-                                },
-                                {
-                                    value: "Student Visa",
-                                    label: "Student Visa"
-                                },
-                                {
-                                    value: "Account",
-                                    label: "Account"
-                                },
-                                {
-                                    value: "Services",
-                                    label: "Services"
-                                }
-                            ]}
-                        />
-                    </div>
-
-
-                    <Button
-                        type="primary"
-                        className="visaservices-addfaq-button"
-                        onClick={handleSaveFAQ}
-                        style={{ marginBottom: 20 }}
+                    <Modal
+                        title="Visa Service Details"
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        open={isModalOpen}
+                        onCancel={() => { handleCancel() }}
+                        className="visa-details-modal"
+                        width={820}
+                        centered={true}
                     >
-                        {editingFAQ ? "Update FAQ" : "Add FAQ"}
-                    </Button>
+                        {selectedService && (
+                            <div>
+                                <div className="visa-details-modal-header">
+                                    <div>
+                                        <p className="visa-details-code">{selectedService.visaType}</p>
+                                        <h2 className="visa-details-title">{selectedService.visaName}</h2>
+                                    </div>
+                                    <div className="visa-details-meta">
+                                        <div className="visa-details-price">₱{selectedService.visaPrice || "--"}</div>
+                                    </div>
+                                </div>
 
-                    <div className="visaservices-faq-table-wrapper">
-                        <table className="visaservices-faq-table" style={{ width: "100%" }}>
-                            <thead>
-                                <tr>
-                                    <th>Question</th>
-                                    <th>Answer</th>
-                                    <th>Category</th>
-                                    <th width="150">Actions</th>
-                                </tr>
-                            </thead>
+                                <div className="visa-details-body">
+                                    <div className="visa-details-content">
+                                        <p className="visa-details-description">{selectedService.visaDescription}</p>
 
-                            <tbody>
-                                {faqs.length > 0 ? (
-                                    faqs.map((faq) => (
-                                        <tr key={faq._id}>
-                                            <td>{faq.question}</td>
-                                            <td>{faq.answer}</td>
-                                            <td>{faq.category}</td>
-                                            <td>
-                                                <Button
-                                                    className="visaservices-editfaq-button"
-                                                    icon={<EditOutlined />}
-                                                    onClick={() => handleEditFAQ(faq)}
-                                                />
+                                        <div className="visa-details-stats">
+                                            <div className="visa-details-stat">
+                                                <span className="visa-details-label">Requirements</span>
+                                                <span className="visa-details-value">
+                                                    {selectedService.visaRequirements?.length || 0}
+                                                </span>
+                                            </div>
+                                            <div className="visa-details-stat">
+                                                <span className="visa-details-label">Process Steps</span>
+                                                <span className="visa-details-value">
+                                                    {selectedService.visaProcessSteps?.length || 0}
+                                                </span>
+                                            </div>
+                                        </div>
 
-                                                <Button
-                                                    className="visaservices-removefaq-button"
-                                                    icon={<DeleteOutlined />}
-                                                    style={{ marginLeft: 8 }}
-                                                    onClick={() => handleDeleteFAQ(faq._id)}
+                                        <div className="visa-details-section">
+                                            <h4>Requirements</h4>
+                                            <ul className="visa-details-list">
+                                                {selectedService.visaRequirements?.map((item, index) => (
+                                                    <li key={`req-${index}`}>{formatListItem(item)}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+
+                                        <div className="visa-details-section">
+                                            <h4>Process</h4>
+                                            <ol className="visa-details-list">
+                                                {selectedService.visaProcessSteps?.map((item, index) => (
+                                                    <li key={`step-${index}`}>{formatListItem(item)}</li>
+                                                ))}
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </Modal>
+
+
+                    {/* DELETE SERVICE CONFIRMATION MODAL */}
+                    <Modal
+                        open={isDeleteModalOpen}
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        centered={true}
+                        onCancel={() => {
+                            setIsDeleteModalOpen(false);
+                        }}
+                    >
+                        <div className='modal-container'>
+                            <h1 className='modal-heading'>Archive Service?</h1>
+                            <p className='modal-text'>Are you sure you want to archive this service?</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='modal-button'
+                                    onClick={() => {
+                                        handleArchive(serviceToDelete);
+                                        setIsDeleteModalOpen(false);
+                                    }}
+                                >
+                                    Archive
+                                </Button>
+                                <Button
+                                    type='primary'
+                                    className='modal-button-cancel'
+                                    onClick={() => {
+                                        setIsDeleteModalOpen(false);
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        </div>
+                    </Modal>
+
+                    {/* SERVICE HAS BEEN DELETED MODAL */}
+                    <Modal
+                        open={isServiceDeletedModalOpen}
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        centered={true}
+                        onCancel={() => {
+                            setIsServiceDeletedModalOpen(false);
+                        }}
+                    >
+                        <div className='modal-container'>
+                            <h1 className='modal-heading'>Service Archived!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+                            </div>
+
+                            <p className='modal-text'>The service has been archived.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='modal-button'
+                                    onClick={() => {
+                                        setIsServiceDeletedModalOpen(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
+                        </div>
+                    </Modal>
+
+
+                    {/* RESTORE QUOTATION CONFIRMATION MODAL */}
+                    <Modal
+                        open={isRestoreModalOpen}
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        centered={true}
+                        onCancel={() => {
+                            setIsRestoreModalOpen(false);
+                        }}
+                    >
+                        <div className='modal-container'>
+                            <h1 className='modal-heading'>Restore Visa Service?</h1>
+                            <p className='modal-text'>Are you sure you want to restore this visa service?</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='modal-button'
+                                    onClick={() => {
+                                        handleRestore(serviceToDelete);
+                                        setIsRestoreModalOpen(false);
+                                    }}
+                                >
+                                    Restore
+                                </Button>
+                                <Button
+                                    type='primary'
+                                    className='modal-button-cancel'
+                                    onClick={() => {
+                                        setIsRestoreModalOpen(false);
+                                        setServiceToDelete(null);
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        </div>
+                    </Modal>
+
+                    {/* SERVICE HAS BEEN RESTORED MODAL */}
+                    <Modal
+                        open={isServiceRestoredModalOpen}
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        centered={true}
+                        onCancel={() => {
+                            setIsServiceRestoredModalOpen(false);
+                        }}
+                    >
+                        <div className='modal-container'>
+                            <h1 className='modal-heading'>Visa Service Restored Successfully!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+                            </div>
+
+                            <p className='modal-text'>The visa service has been restored.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='modal-button'
+                                    onClick={() => {
+                                        setIsServiceRestoredModalOpen(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
+                        </div>
+                    </Modal>
+
+
+                    <Modal
+                        title="Manage FAQs"
+                        open={isFAQModalOpen}
+                        width={900}
+                        footer={null}
+                        onCancel={() => {
+                            setIsFAQModalOpen(false);
+                            setEditingFAQ(null);
+
+                            setFaqForm({
+                                question: "",
+                                answer: "",
+                                category: ""
+                            });
+                        }}
+                    >
+
+                        <div style={{ marginBottom: 10 }}>
+                            <label className="visaservices-label">Question</label>
+                            <Input
+                                maxLength={120}
+                                showCount
+                                placeholder="Question"
+                                value={faqForm.question}
+                                onChange={(e) => {
+                                    const value = e.target.value
+                                        .replace(/[^a-zA-Z0-9\s.,?!'()-]/g, "")
+                                        .replace(/\s{2,}/g, " ")
+                                        .replace(/^\s+/, "");
+
+                                    setFaqForm({
+                                        ...faqForm,
+                                        question: value
+                                    });
+                                }}
+                                style={{ marginBottom: 10 }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: 10 }}>
+                            <label className="visaservices-label">Answer</label>
+                            <Input.TextArea
+                                rows={4}
+                                maxLength={250}
+                                showCount
+                                placeholder="Answer"
+                                value={faqForm.answer}
+                                onChange={(e) => {
+                                    const value = e.target.value
+                                        .replace(/[^a-zA-Z0-9\s.,?!'"():;/-]/g, "")
+                                        .replace(/\s{2,}/g, " ")
+                                        .replace(/^\s+/, "");
+
+                                    setFaqForm({
+                                        ...faqForm,
+                                        answer: value
+                                    });
+                                }}
+                                style={{ marginBottom: 10 }}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="visaservices-label">Category</label>
+                            <Select
+                                placeholder="Select Category"
+                                value={faqForm.category || undefined}
+                                onChange={(value) =>
+                                    setFaqForm({
+                                        ...faqForm,
+                                        category: value
+                                    })
+                                }
+                                style={{ width: "100%", marginBottom: 20 }}
+                                options={[
+                                    {
+                                        value: "Bookings",
+                                        label: "Bookings"
+                                    },
+                                    {
+                                        value: "Payments",
+                                        label: "Payments"
+                                    },
+                                    {
+                                        value: "Quotations",
+                                        label: "Quotations"
+                                    },
+                                    {
+                                        value: "Student Visa",
+                                        label: "Student Visa"
+                                    },
+                                    {
+                                        value: "Account",
+                                        label: "Account"
+                                    },
+                                    {
+                                        value: "Services",
+                                        label: "Services"
+                                    }
+                                ]}
+                            />
+                        </div>
+
+
+                        <Button
+                            type="primary"
+                            className="visaservices-addfaq-button"
+                            onClick={handleSaveFAQ}
+                            style={{ marginBottom: 20 }}
+                        >
+                            {editingFAQ ? "Update FAQ" : "Add FAQ"}
+                        </Button>
+
+                        <div className="visaservices-faq-table-wrapper">
+                            <table className="visaservices-faq-table" style={{ width: "100%" }}>
+                                <thead>
+                                    <tr>
+                                        <th>Question</th>
+                                        <th>Answer</th>
+                                        <th>Category</th>
+                                        <th width="150">Actions</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {faqs.length > 0 ? (
+                                        faqs.map((faq) => (
+                                            <tr key={faq._id}>
+                                                <td>{faq.question}</td>
+                                                <td>{faq.answer}</td>
+                                                <td>{faq.category}</td>
+                                                <td>
+                                                    <Button
+                                                        className="visaservices-editfaq-button"
+                                                        icon={<EditOutlined />}
+                                                        onClick={() => handleEditFAQ(faq)}
+                                                    />
+
+                                                    <Button
+                                                        className="visaservices-removefaq-button"
+                                                        icon={<DeleteOutlined />}
+                                                        style={{ marginLeft: 8 }}
+                                                        onClick={() => handleDeleteFAQ(faq._id)}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={4} style={{ textAlign: "center", padding: "24px" }}>
+                                                <Empty
+                                                    className="visaservices-empty-faqs"
+                                                    description="No FAQs found"
                                                 />
                                             </td>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={4} style={{ textAlign: "center", padding: "24px" }}>
-                                            <Empty
-                                                className="visaservices-empty-faqs"
-                                                description="No FAQs found"
-                                            />
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-
-                </Modal>
-
-
-
-
-            </div>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Modal>
+                </div>
+            )}
         </ConfigProvider>
     );
 }
