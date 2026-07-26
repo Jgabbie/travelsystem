@@ -1550,47 +1550,50 @@ export default function QuotationRequest() {
                                 </div>
 
                                 {formData.dynamicRows && formData.dynamicRows.length > 0 && (
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 8 }}>
+                                    <div style={{ marginTop: 8, border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
                                         <h3>Additional Information</h3>
+                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 8 }}>
+                                            {formData.dynamicRows.map((row, index) => (
+                                                <React.Fragment key={`upload-row-${index}`}>
+                                                    <div>
+                                                        <label className="quotationrequest-label">Label</label>
+                                                        <Input
+                                                            placeholder="Label"
+                                                            value={row.label}
+                                                            onChange={(e) => {
+                                                                const cleanedValue = e.target.value
+                                                                    .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                                    .replace(/\s{2,}/g, ' ')
+                                                                    .replace(/^\s+/, '');
 
-                                        {formData.dynamicRows.map((row, index) => (
-                                            <React.Fragment key={`upload-row-${index}`}>
-                                                <div>
-                                                    <Input
-                                                        placeholder="Label"
-                                                        value={row.label}
-                                                        onChange={(e) => {
-                                                            const cleanedValue = e.target.value
-                                                                .replace(/[^a-zA-Z0-9\s]/g, '')
-                                                                .replace(/\s{2,}/g, ' ')
-                                                                .replace(/^\s+/, '');
+                                                                updateDynamicRow(index, 'label', cleanedValue);
+                                                            }}
+                                                        />
+                                                        {formErrors.dynamicRows?.[index]?.label && (
+                                                            <div className="quotationrequest-error">{formErrors.dynamicRows[index].label}</div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <label className="quotationrequest-label">Value</label>
+                                                        <Input
+                                                            placeholder="Value"
+                                                            value={row.value}
+                                                            onChange={(e) => {
+                                                                const cleanedValue = e.target.value
+                                                                    .replace(/[^a-zA-Z0-9\s]/g, '')
+                                                                    .replace(/\s{2,}/g, ' ')
+                                                                    .replace(/^\s+/, '');
 
-                                                            updateDynamicRow(index, 'label', cleanedValue);
-                                                        }}
-                                                    />
-                                                    {formErrors.dynamicRows?.[index]?.label && (
-                                                        <div className="quotationrequest-error">{formErrors.dynamicRows[index].label}</div>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <Input
-                                                        placeholder="Value"
-                                                        value={row.value}
-                                                        onChange={(e) => {
-                                                            const cleanedValue = e.target.value
-                                                                .replace(/[^a-zA-Z0-9\s]/g, '')
-                                                                .replace(/\s{2,}/g, ' ')
-                                                                .replace(/^\s+/, '');
-
-                                                            updateDynamicRow(index, 'value', cleanedValue);
-                                                        }}
-                                                    />
-                                                    {formErrors.dynamicRows?.[index]?.value && (
-                                                        <div className="quotationrequest-error">{formErrors.dynamicRows[index].value}</div>
-                                                    )}
-                                                </div>
-                                            </React.Fragment>
-                                        ))}
+                                                                updateDynamicRow(index, 'value', cleanedValue);
+                                                            }}
+                                                        />
+                                                        {formErrors.dynamicRows?.[index]?.value && (
+                                                            <div className="quotationrequest-error">{formErrors.dynamicRows[index].value}</div>
+                                                        )}
+                                                    </div>
+                                                </React.Fragment>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
                             </div>
