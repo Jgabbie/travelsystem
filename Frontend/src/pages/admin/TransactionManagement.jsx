@@ -333,7 +333,7 @@ export default function TransactionManagement() {
       item.ref,
       item.package,
       dayjs(item.date).format("MMM DD, YYYY hh:mm A"),
-      item.price,
+      formatCurrency(item.amountRaw),
       item.method,
       item.status
     ]);
@@ -814,6 +814,7 @@ export default function TransactionManagement() {
       setSelectedImage(null);
       setImagePreview("");
       setIsManageMethodModalOpen(false);
+      setEditingMethod(null);
 
     } catch (err) {
       console.error(err);
