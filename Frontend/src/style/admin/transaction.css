@@ -67,14 +67,14 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 120px;
-  max-width: 130px;
+  min-width: 130px;
+  max-width: 140px;
 }
 
 .transaction-actions-field--search {
-  min-width: 160px;
+  min-width: 170px;
   flex: 1 1 300px;
-  max-width: 180px;
+  max-width: 190px;
 }
 
 .transaction-actions-buttons {
