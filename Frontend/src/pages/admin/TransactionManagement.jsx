@@ -689,7 +689,7 @@ export default function TransactionManagement() {
       render: (_, record) => (
         <Space>
           <Button
-            className='transactionmanagement-accept-button'
+            className='transactionmanagement-restore-button'
             type="primary"
             icon={<CheckCircleOutlined />}
             onClick={() => {

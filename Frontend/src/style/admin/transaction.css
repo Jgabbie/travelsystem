@@ -246,6 +246,19 @@
   box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.transactionmanagement-restore-button {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #00bf63;
+  color: #fff;
+  border-radius: 16px;
+  width: 120px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
 .transactionmanagement-remove-button {
   font-family: "Montserrat", sans-serif;
   font-size: 13px;
@@ -312,7 +325,8 @@
   color: #fff !important;
 }
 
-.transactionmanagement-accept-button:hover {
+.transactionmanagement-accept-button:hover,
+.transactionmanagement-restore-button:hover {
   background-color: #009e52 !important;
   color: #fff !important;
 }
