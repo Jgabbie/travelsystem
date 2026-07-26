@@ -696,9 +696,7 @@ export default function TransactionManagement() {
               setEditingTransaction(record);
               setIsRestoreModalOpen(true);
             }}
-          >
-            Restore
-          </Button>
+          />
         </Space>
       )
     }
@@ -791,12 +789,10 @@ export default function TransactionManagement() {
         );
 
         notificationApi.success({
-          title: "Payment method updated.",
+          title: "Payment method updated successfully.",
           placement: "topRight",
         });
-
       } else {
-
         await apiFetch.post(
           "/payment-methods/create-methods",
           formData,
@@ -808,16 +804,10 @@ export default function TransactionManagement() {
         );
 
         notificationApi.success({
-          title: "Payment method added.",
+          title: "Payment method added successfully.",
           placement: "topRight",
         });
-
       }
-
-      notificationApi.success({
-        title: "Payment method added successfully.",
-        placement: "topRight",
-      });
 
       setMethodData(initialMethod);
       setMethodErrors({});
