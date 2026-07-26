@@ -15,6 +15,7 @@ import {
     DeleteOutlined,
     PlusOutlined,
     SaveOutlined,
+    CheckCircleFilled,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
@@ -22,6 +23,7 @@ import apiFetch from "../../config/fetchConfig";
 import { useAuth } from "../../hooks/useAuth";
 import "../../style/admin/addtransaction.css";
 import "../../style/admin/transaction.css";
+import "../../style/components/modals/modaldesign.css";
 
 const createEmptyItem = () => ({
     id: `${Date.now()}-${Math.random()}`,
@@ -53,6 +55,7 @@ export default function AddTransaction() {
     const [errors, setErrors] = useState({});
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [isTransactionAddedModalOpen, setIsTransactionAddedModalOpen] = useState(false);
 
     const itemsTotal = useMemo(
         () => items.reduce((sum, item) => sum + Number(item.amount || 0), 0),
@@ -155,6 +158,12 @@ export default function AddTransaction() {
         return Object.keys(nextErrors).length === 0;
     };
 
+    const clearForm = () => {
+        setItems([createEmptyItem()]);
+        setPrice(0);
+        setErrors({});
+    };
+
     const openReceiptPreview = () => {
         if (!validateForm()) {
             notificationApi.error({
@@ -201,7 +210,8 @@ export default function AddTransaction() {
                 placement: "topRight",
             });
             setIsPreviewOpen(false);
-            navigate(`${basePath}/transactions`);
+            setIsTransactionAddedModalOpen(true);
+            clearForm();
         } catch (error) {
             console.error("Failed to add transaction:", error);
             notificationApi.error({
@@ -532,6 +542,42 @@ export default function AddTransaction() {
                             >
                                 Confirm and Generate
                             </Button>
+                        </div>
+                    </Modal>
+
+
+                    {/* TRANSACTION ADDED SUCCESSFULLY MODAL */}
+                    <Modal
+                        open={isTransactionAddedModalOpen}
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        centered={true}
+                        onCancel={() => {
+                            setIsTransactionAddedModalOpen(false);
+                        }}
+                    >
+                        <div className='modal-container'>
+                            <h1 className='modal-heading'>Transaction Added Successfully!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
+                            </div>
+
+                            <p className='modal-text'>The transaction has been added successfully.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='modal-button'
+                                    onClick={() => {
+                                        setIsTransactionAddedModalOpen(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
                         </div>
                     </Modal>
                 </div>
