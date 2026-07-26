@@ -655,7 +655,7 @@ export default function PackageInternationalQuotation() {
                                                                 .replace(/\s{2,}/g, ' ')
                                                                 .replace(/^\s+/, '');
 
-                                                            setPreferredHotels(cleanedValue);
+                                                            setFlightAirline(cleanedValue);
                                                         }}
                                                         className={`quotation-input ${error.flightAirline ? 'input-error' : ''}`}
                                                     />
