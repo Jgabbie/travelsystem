@@ -260,7 +260,7 @@ export default function AddTransaction() {
                                         showTime
                                         format="MMMM D, YYYY h:mm A"
                                         value={transactionDate}
-                                        readOnly
+                                        disabled
                                         status={errors.transactionDate ? "error" : ""}
                                     />
                                     <p className="add-transaction-error">{errors.transactionDate}</p>
