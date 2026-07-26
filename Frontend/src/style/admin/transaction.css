@@ -72,7 +72,7 @@
 }
 
 .transaction-actions-field--search {
-  min-width: 170px;
+  min-width: 180px;
   flex: 1 1 300px;
   max-width: 190px;
 }
