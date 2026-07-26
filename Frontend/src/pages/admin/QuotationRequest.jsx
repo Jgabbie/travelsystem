@@ -1578,7 +1578,7 @@ export default function QuotationRequest() {
                                     </div>
                                 )}
 
-                                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                                <div style={{ display: "flex", gap: 8, marginBottom: 8, marginTop: 8 }}>
                                     <Button className="quotationrequest-form-button" type="primary" onClick={addPackageRow}>
                                         Add Row
                                     </Button>
