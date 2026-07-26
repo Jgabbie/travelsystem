@@ -47,7 +47,7 @@ export default function AddTransaction() {
         notification.useNotification();
 
     const [invoiceNumber, setInvoiceNumber] = useState("PREVIEW");
-    const [transactionDate, setTransactionDate] = useState(dayjs());
+    const [transactionDate] = useState(dayjs());
     const [price, setPrice] = useState(0);
     const [items, setItems] = useState([createEmptyItem()]);
     const [errors, setErrors] = useState({});
@@ -260,14 +260,8 @@ export default function AddTransaction() {
                                         showTime
                                         format="MMMM D, YYYY h:mm A"
                                         value={transactionDate}
+                                        readOnly
                                         status={errors.transactionDate ? "error" : ""}
-                                        onChange={(value) => {
-                                            setTransactionDate(value);
-                                            setErrors((current) => ({
-                                                ...current,
-                                                transactionDate: "",
-                                            }));
-                                        }}
                                     />
                                     <p className="add-transaction-error">{errors.transactionDate}</p>
                                 </div>
@@ -536,7 +530,7 @@ export default function AddTransaction() {
                                 loading={saving}
                                 onClick={saveTransaction}
                             >
-                                Confirm and Add Transaction
+                                Confirm and Generate
                             </Button>
                         </div>
                     </Modal>
