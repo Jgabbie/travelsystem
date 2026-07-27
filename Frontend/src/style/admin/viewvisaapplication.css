@@ -223,6 +223,44 @@
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.viewvisaapplication-embassy-processing-approve-button {
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #00bf63;
+    color: #fff;
+    border-radius: 16px;
+    width: 150px;
+    height: 35px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    margin-top: 7px;
+}
+
+.viewvisaapplication-embassy-processing-reject-button {
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #992A46;
+    color: #fff;
+    border-radius: 16px;
+    width: 150px;
+    height: 35px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    margin-top: 7px;
+}
+
+.viewvisaapplication-embassy-processing-approve-button:hover {
+    background-color: #009e52 !important;
+    color: #fff !important;
+}
+
+.viewvisaapplication-embassy-processing-reject-button:hover {
+    background-color: #7D2239 !important;
+    color: #fff !important;
+}
+
 /* Preview button style to match provided design */
 
 .application-doc-preview-button {

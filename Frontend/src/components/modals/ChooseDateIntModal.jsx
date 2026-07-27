@@ -156,7 +156,16 @@ export default function ChooseDateIntModal({
                             const endDate = dayjs(range.enddaterange);
 
                             const label = `${startDate.format('MMM D')} - ${endDate.format('MMM D')}`;
-                            const price = (packageData?.packagePricePerPax || 0) + (range.extrarate || 0);
+                            const basePrice = Number(packageData?.packagePricePerPax || 0);
+                            const extraRate = Number(range.extrarate || 0);
+                            const discountPercent = Number(packageData?.packageDiscountPercent || 0);
+
+                            const discountedBasePrice =
+                                discountPercent > 0
+                                    ? basePrice * (1 - discountPercent / 100)
+                                    : basePrice;
+
+                            const price = discountedBasePrice + extraRate;
 
                             const today = dayjs().startOf('day');
                             const isPastOrToday = startDate.isSameOrBefore(today);
@@ -171,42 +180,106 @@ export default function ChooseDateIntModal({
                                     key={startDate.format('YYYY-MM-DD') + endDate.format('YYYY-MM-DD')}
                                     className={`budget-card ${isSelected ? 'selected' : ''} ${(isPastOrToday || isSoldOut) ? 'disabled' : ''}`}
                                     onClick={() => {
-                                        if (isPastOrToday || isSoldOut) return; // prevent selecting today, past dates, or sold out
+                                        if (isPastOrToday || isSoldOut) return;
+
                                         const newRange = { startDate, endDate };
                                         setSelectedDateRange(newRange);
 
                                         onDateChange?.({
-                                            date: { startDate: startDate.format('YYYY-MM-DD'), endDate: endDate.format('YYYY-MM-DD') },
-                                            price: price,
-                                            rate: range.extrarate || 0,
-                                            slots: Number(range.slots || 0)
+                                            date: {
+                                                startDate: startDate.format("YYYY-MM-DD"),
+                                                endDate: endDate.format("YYYY-MM-DD"),
+                                            },
+                                            price,
+                                            rate: extraRate,
+                                            slots: Number(range.slots || 0),
                                         });
                                     }}
                                 >
-                                    <div className="budget-card-info">
-                                        <span className='budget-card-daterange'>
-                                            <span className="budget-card-icon">
-                                                <CalendarOutlined />
-                                            </span>
-                                            <span className='budget-card-daterange-dates'>Dates:</span> {label}
-                                        </span>
-
-                                        {price != null && (
-                                            <span className="range-price">
-                                                ₱{packageData.packagePricePerPax?.toLocaleString()} / pax
-                                                <span className='range-price-extrarate'>
-                                                    {range.extrarate === 0 ? '' : `+ ₱${range.extrarate?.toLocaleString()} extra`}
-                                                </span>
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <span
-                                        className="range-slots"
-                                        style={range.slots < 10 ? { color: 'red', fontWeight: 'bold' } : {}}
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            width: "100%",
+                                            gap: 8,
+                                        }}
                                     >
-                                        {range.slots} slots left
-                                    </span>
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                alignItems: "flex-start",
+                                                gap: 16,
+                                                flexWrap: "wrap",
+                                            }}
+                                        >
+                                            <div className="budget-card-info">
+                                                <span className="budget-card-daterange">
+                                                    <span className="budget-card-icon">
+                                                        <CalendarOutlined />
+                                                    </span>
+                                                    <span className="budget-card-daterange-dates">Dates:</span>{" "}
+                                                    {label}
+                                                </span>
+
+                                                {price != null && (
+                                                    <span className="range-price">
+                                                        {discountPercent > 0 && (
+                                                            <span
+                                                                style={{
+                                                                    textDecoration: "line-through",
+                                                                    color: "#9aa0a6",
+                                                                    fontSize: 12,
+                                                                    marginRight: 6,
+                                                                }}
+                                                            >
+                                                                ₱{basePrice.toLocaleString()}
+                                                            </span>
+                                                        )}
+
+                                                        <span>₱{price.toLocaleString()} / pax</span>
+
+                                                        {extraRate > 0 && (
+                                                            <span className="range-price-extrarate">
+                                                                {" "}+ ₱{extraRate.toLocaleString()} extra
+                                                            </span>
+                                                        )}
+
+                                                        {discountPercent > 0 && (
+                                                            <span
+                                                                style={{
+                                                                    color: "#e72323",
+                                                                    fontWeight: 600,
+                                                                    fontSize: 12,
+                                                                    marginLeft: 6,
+                                                                }}
+                                                            >
+                                                                -{discountPercent}%
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                justifyContent: "flex-end",
+                                            }}
+                                        >
+                                            <span
+                                                className="range-slots"
+                                                style={
+                                                    Number(range.slots) < 10
+                                                        ? { color: "red", fontWeight: "bold" }
+                                                        : {}
+                                                }
+                                            >
+                                                {range.slots} slots left
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             );
                         })}

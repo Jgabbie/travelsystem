@@ -631,10 +631,10 @@ export default function ViewVisaApplication() {
                                         {statusText && String(statusText).toLowerCase() === "processing by embassy" && (
                                             <div style={{ minWidth: 280, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
                                                 <h3 style={{ marginTop: 0 }}>Embassy Processing Actions</h3>
-                                                <Button type="primary" onClick={handleEmbassyApproved} className="viewpassportapplication-dfa-processing-approve-button">
+                                                <Button type="primary" onClick={handleEmbassyApproved} className="viewvisaapplication-embassy-processing-approve-button">
                                                     Embassy Approved
                                                 </Button>
-                                                <Button type="primary" onClick={handleEmbassyRejected} className="viewpassportapplication-dfa-processing-reject-button" style={{ marginLeft: 8 }}>
+                                                <Button type="primary" onClick={handleEmbassyRejected} className="viewvisaapplication-embassy-processing-reject-button" style={{ marginLeft: 8 }}>
                                                     Embassy Rejected
                                                 </Button>
                                             </div>
@@ -941,7 +941,6 @@ export default function ViewVisaApplication() {
             {/* SUGGESTED DATES SENT MODAL */}
             <Modal
                 open={isSuggestedDatesSentModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 centered={true}
@@ -949,20 +948,20 @@ export default function ViewVisaApplication() {
                     setIsSuggestedDatesSentModalOpen(false);
                 }}
             >
-                <div className='signup-success-container'>
-                    <h1 className='signup-success-heading'>Suggested Dates Sent!</h1>
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Suggested Dates Sent!</h1>
 
                     <div>
                         <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
-                    <p className='signup-success-text'>The suggested dates have been sent.</p>
+                    <p className='modal-text'>The suggested dates have been sent.</p>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                         <Button
                             type='primary'
-                            className='logout-confirm-btn'
+                            className='modal-button'
                             onClick={() => {
                                 setIsSuggestedDatesSentModalOpen(false);
                             }}
@@ -978,7 +977,6 @@ export default function ViewVisaApplication() {
             {/* RESUBMIT DOCUMENTS SENT MODAL */}
             <Modal
                 open={isResubmitDocumentsSentModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 centered={true}
@@ -986,20 +984,20 @@ export default function ViewVisaApplication() {
                     setIsResubmitDocumentsSentModalOpen(false);
                 }}
             >
-                <div className='signup-success-container'>
-                    <h1 className='signup-success-heading'>Resubmit Documents Sent!</h1>
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Resubmit Documents Sent!</h1>
 
                     <div>
                         <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
-                    <p className='signup-success-text'>The requested document resubmission has been sent.</p>
+                    <p className='modal-text'>The requested document resubmission has been sent.</p>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                         <Button
                             type='primary'
-                            className='logout-confirm-btn'
+                            className='modal-button'
                             onClick={() => {
                                 setIsResubmitDocumentsSentModalOpen(false);
                             }}

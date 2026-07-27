@@ -874,7 +874,6 @@ export default function ViewPassportApplication() {
             {/* SUGGESTED DATES SENT MODAL */}
             <Modal
                 open={isSuggestedDatesSentModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 centered={true}
@@ -882,20 +881,20 @@ export default function ViewPassportApplication() {
                     setIsSuggestedDatesSentModalOpen(false);
                 }}
             >
-                <div className='signup-success-container'>
-                    <h1 className='signup-success-heading'>Suggested Dates Sent!</h1>
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Suggested Dates Sent!</h1>
 
                     <div>
                         <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
-                    <p className='signup-success-text'>The suggested dates have been sent.</p>
+                    <p className='modal-text'>The suggested dates have been sent.</p>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                         <Button
                             type='primary'
-                            className='logout-confirm-btn'
+                            className='modal-button'
                             onClick={() => {
                                 setIsSuggestedDatesSentModalOpen(false);
                             }}
@@ -911,7 +910,6 @@ export default function ViewPassportApplication() {
             {/* RESUBMIT DOCUMENTS SENT MODAL */}
             <Modal
                 open={isResubmitDocumentsSentModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 centered={true}
@@ -919,20 +917,20 @@ export default function ViewPassportApplication() {
                     setIsResubmitDocumentsSentModalOpen(false);
                 }}
             >
-                <div className='signup-success-container'>
-                    <h1 className='signup-success-heading'>Resubmit Documents Sent!</h1>
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Resubmit Documents Sent!</h1>
 
                     <div>
                         <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
-                    <p className='signup-success-text'>The requested document resubmission has been sent.</p>
+                    <p className='modal-text'>The requested document resubmission has been sent.</p>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                         <Button
                             type='primary'
-                            className='logout-confirm-btn'
+                            className='modal-button'
                             onClick={() => {
                                 setIsResubmitDocumentsSentModalOpen(false);
                             }}

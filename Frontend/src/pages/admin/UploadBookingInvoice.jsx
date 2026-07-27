@@ -478,6 +478,8 @@ export default function UploadBookingInvoice() {
                     setInvoiceNumber(number);
                     return;
                 }
+
+
             } catch (err) {
                 console.error(err);
             }
