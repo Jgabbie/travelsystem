@@ -1654,6 +1654,9 @@ const createCheckoutSession = async (req, res) => {
             totalAmountCents: finalTotalCents,
         };
 
+        const username = await UserModel.findById(userId).select('username');
+        const email = await UserModel.findById(userId).select('email');
+
 
         const response = await apiFetch.post(
             "https://api.paymongo.com/v1/checkout_sessions",
@@ -1759,6 +1762,9 @@ const createCheckoutSessionQuotation = async (req, res) => {
             convenienceFeeCents,
             totalAmountCents: finalTotalCents,
         };
+
+        const username = await UserModel.findById(userId).select('username');
+        const email = await UserModel.findById(userId).select('email');
 
 
         const response = await apiFetch.post(
