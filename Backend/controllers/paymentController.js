@@ -1661,8 +1661,8 @@ const createCheckoutSession = async (req, res) => {
                 data: {
                     attributes: {
                         billing: {
-                            name: "Test User",
-                            email: "test@example.com",
+                            name: username.username || "Test User",
+                            email: email.email || "test@example.com",
                         },
                         line_items: [
                             {
@@ -1767,8 +1767,8 @@ const createCheckoutSessionQuotation = async (req, res) => {
                 data: {
                     attributes: {
                         billing: {
-                            name: "Test User",
-                            email: "test@example.com",
+                            name: username.username || "Test User",
+                            email: email.email || "test@example.com",
                         },
                         line_items: [
                             {
