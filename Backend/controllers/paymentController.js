@@ -1729,7 +1729,7 @@ const createCheckoutSessionQuotation = async (req, res) => {
 
         const { quotationId, paymentToken } = req.body;
 
-        const successUrl = `${FRONTEND_URL}/quotation-payment-process/success?token=${paymentToken}`;
+        const successUrl = `${FRONTEND_URL}/booking-payment/success?token=${paymentToken}`;
         const cancelUrl = `${FRONTEND_URL}/home?payment=cancelled`;
 
         if (!paymentToken) {
