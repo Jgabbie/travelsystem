@@ -362,7 +362,7 @@ export default function UserTransactions() {
                                     <label className="user-transactions-label">Transaction Date</label>
                                     <DatePicker
                                         className="user-transactions-date-filter"
-                                        placeholder="Transaction Date"
+                                        placeholder="Date"
                                         inputReadOnly
                                         value={transactionDateFilter}
                                         onChange={(d) => setTransactionDateFilter(d)}

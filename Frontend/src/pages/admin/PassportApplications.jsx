@@ -122,6 +122,14 @@ export default function PassportApplications() {
     //filter functions
     const currentData = showArchived ? archivedApplications : passportApplications
 
+    const statusOptions = [...new Set(currentData
+        .map(item => item.status)
+        .filter(Boolean)
+    )].map(status => ({
+        value: status,
+        label: status,
+    }));
+
     const filteredData = currentData.filter(item => {
         const matchesSearch =
             (item.applicationNumber?.toString().toLowerCase() || "").includes(searchText.toLowerCase()) ||
@@ -430,13 +438,18 @@ export default function PassportApplications() {
             render: (text, record) => (
                 <>
                     <Space>
-                        <Button
-                            className='viewbutton-passport-application'
-                            type="primary"
-                            icon={<EyeOutlined />}
-                            onClick={() => navigate(`view`, { state: { applicationId: record.key } })}
-                        >
-                        </Button>
+                        {!showArchived && (
+                            <Button
+                                className='viewbutton-passport-application'
+                                type="primary"
+                                icon={<EyeOutlined />}
+                                onClick={() =>
+                                    navigate(`view`, {
+                                        state: { applicationId: record.key },
+                                    })
+                                }
+                            />
+                        )}
                         {showArchived ? (
                             <Button
                                 icon={<CheckCircleOutlined />}
@@ -446,9 +459,7 @@ export default function PassportApplications() {
                                     setArchivingApplication(record);
                                     setIsRestoreModalOpen(true);
                                 }}
-                            >
-
-                            </Button>
+                            />
                         ) : (
                             <Button
                                 icon={<DeleteOutlined />}
@@ -636,11 +647,7 @@ export default function PassportApplications() {
                                         allowClear
                                         value={statusFilter || undefined}
                                         onChange={(v) => setStatusFilter(v || "")}
-                                        options={[
-                                            { value: "Successful", label: "Successful" },
-                                            { value: "Pending", label: "Pending" },
-                                            { value: "Failed", label: "Failed" }
-                                        ]}
+                                        options={statusOptions}
                                     />
                                 </div>
 
@@ -649,7 +656,7 @@ export default function PassportApplications() {
                                     <DatePicker
                                         inputReadOnly
                                         className="passportapplications-date-filter"
-                                        placeholder="Preferred Date"
+                                        placeholder="Date"
                                         value={submissionDateFilter}
                                         onChange={(d) => setSubmissionDateFilter(d)}
                                         allowClear
@@ -659,17 +666,19 @@ export default function PassportApplications() {
                             </div>
 
                             <div className="passportapplications-actions-buttons">
-                                <Button
-                                    className='passportapplications-export'
-                                    type="primary"
-                                    icon={<EnvironmentOutlined />}
-                                    onClick={() => {
-                                        getDFALocations();
-                                        setIsManageDFAModalOpen(true);
-                                    }}
-                                >
-                                    Manage DFA
-                                </Button>
+                                {!showArchived && (
+                                    <Button
+                                        className='passportapplications-export'
+                                        type="primary"
+                                        icon={<EnvironmentOutlined />}
+                                        onClick={() => {
+                                            getDFALocations();
+                                            setIsManageDFAModalOpen(true);
+                                        }}
+                                    >
+                                        Manage DFA
+                                    </Button>
+                                )}
                                 <Button
                                     className='passportapplications-export'
                                     type="primary"

@@ -41,7 +41,8 @@ export default function AddService() {
         description: "",
         requirements: "",
         processSteps: "",
-        visaPrice: ""
+        visaPrice: "",
+        reminders: ""
     });
 
     const [values, setValues] = useState({
@@ -89,6 +90,14 @@ export default function AddService() {
         if (field === "processSteps") {
             if (value.some((item) => !String(item?.title || "").trim() || item?.daysToBeCompleted === "" || item?.daysToBeCompleted === null || item?.daysToBeCompleted === undefined || Number.isNaN(Number(item?.daysToBeCompleted)))) {
                 return "Each process step needs a title and days to be completed.";
+            }
+        }
+
+        if (field === "reminders") {
+            if (!value.length) return "At least one reminder is required.";
+
+            if (value.some((item) => !String(item).trim())) {
+                return "All reminders are required.";
             }
         }
         return "";
@@ -233,7 +242,8 @@ export default function AddService() {
             visaPrice: validate("visaPrice", values.visaPrice),
             description: validate("description", values.description),
             requirements: validate("requirements", values.requirements),
-            processSteps: validate("processSteps", values.processSteps)
+            processSteps: validate("processSteps", values.processSteps),
+            reminders: validate("reminders", values.reminders)
         };
 
         const hasError = Object.values(newErrors).some(Boolean);
@@ -907,7 +917,8 @@ export default function AddService() {
                                     <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
                                         <Input
                                             value={item}
-                                            className="add-service-inputs"
+                                            status={errors.reminders ? "error" : ""}
+                                            className={`add-service-inputs${errors.reminders ? " add-service-inputs-error" : ""}`}
                                             maxLength={300}
                                             onChange={(event) => {
                                                 const cleanedValue = event.target.value
@@ -930,8 +941,14 @@ export default function AddService() {
                                         />
                                     </div>
                                 </div>
+                                <p className="add-service-error-message">
+                                    {errors.reminders}
+                                </p>
+
                             </div>
                         ))}
+
+
                         <Button
                             className="add-service-add-button highlighted-button"
                             type="primary"
@@ -941,6 +958,8 @@ export default function AddService() {
                         >
                             Add Reminder
                         </Button>
+
+
                     </div>
 
                 </Card>

@@ -116,6 +116,14 @@ export default function VisaApplications() {
     //filter functions
     const currentData = showArchived ? archivedApplications : applications
 
+    const statusOptions = [...new Set(currentData
+        .map(item => Array.isArray(item.status) ? item.status[item.status.length - 1] : item.status)
+        .filter(Boolean)
+    )].map(status => ({
+        value: status,
+        label: status,
+    }));
+
     const filteredData = currentData.filter(item => {
         const matchesSearch =
             (item.applicationNumber?.toString().toLowerCase() || "").includes(searchText.toLowerCase()) ||
@@ -463,9 +471,7 @@ export default function VisaApplications() {
                             setArchivingApplication(record);
                             setIsRestoreModalOpen(true);
                         }}
-                    >
-                        Restore
-                    </Button>
+                    />
                 </Space>
             )
         };
@@ -566,11 +572,7 @@ export default function VisaApplications() {
                                         allowClear
                                         value={statusFilter || undefined}
                                         onChange={(v) => setStatusFilter(v || "")}
-                                        options={[
-                                            { value: "Successful", label: "Successful" },
-                                            { value: "Pending", label: "Pending" },
-                                            { value: "Failed", label: "Failed" }
-                                        ]}
+                                        options={statusOptions}
                                     />
                                 </div>
 
@@ -579,7 +581,7 @@ export default function VisaApplications() {
                                     <DatePicker
                                         inputReadOnly
                                         className="visaapplications-date-filter"
-                                        placeholder="Preferred Date"
+                                        placeholder="Date"
                                         value={submissionDateFilter}
                                         onChange={(d) => setSubmissionDateFilter(d)}
                                         allowClear

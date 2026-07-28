@@ -620,7 +620,7 @@ export default function QuotationManagement() {
                                     <DatePicker
                                         inputReadOnly
                                         className="quotation-date-filter"
-                                        placeholder="Request Date"
+                                        placeholder="Date"
                                         value={dateFilter}
                                         onChange={(date) => setDateFilter(date)}
                                         allowClear

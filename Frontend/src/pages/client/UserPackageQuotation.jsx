@@ -185,11 +185,9 @@ export default function UserPackageQuotation() {
                                         value={statusFilter || undefined}
                                         onChange={(v) => setStatusFilter(v || "")}
                                         options={[
-                                            { value: "Successful", label: "Successful" },
+                                            { value: "Booked", label: "Booked" },
                                             { value: "Pending", label: "Pending" },
                                             { value: "Cancelled", label: "Cancelled" },
-                                            { value: "Approved", label: "Approved" },
-                                            { value: "Rejected", label: "Rejected" },
                                             { value: "Under Review", label: "Under Review" },
                                             { value: "Revision Requested", label: "Revision Requested" }
                                         ]}
@@ -200,7 +198,7 @@ export default function UserPackageQuotation() {
                                     <label className="user-quotation-label">Requested Date</label>
                                     <DatePicker
                                         className="user-quotation-date-filter"
-                                        placeholder="Requested Date"
+                                        placeholder="Date"
                                         inputReadOnly
                                         value={quotationDateFilter}
                                         onChange={(d) => setQuotationDateFilter(d)}

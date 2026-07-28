@@ -153,9 +153,16 @@
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-.arrangement-proceed:hover {
+.arrangement-proceed:not(:disabled):hover {
     background-color: #244575 !important;
     color: #fff !important;
+}
+
+.arrangement-proceed:disabled {
+    background-color: #d9d9d9 !important;
+    color: #8c8c8c !important;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 .arrangement-cancel {

@@ -545,7 +545,7 @@ export default function ReviewRatings() {
                                     <DatePicker
                                         inputReadOnly
                                         className="reviewratings-date-filter"
-                                        placeholder="Review Date"
+                                        placeholder="Date"
                                         value={dateFilter}
                                         onChange={(date) => setDateFilter(date)}
                                         allowClear

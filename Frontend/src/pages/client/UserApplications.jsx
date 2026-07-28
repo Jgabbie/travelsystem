@@ -216,7 +216,7 @@ export default function UserApplications() {
                                     <label className="userapplications-label">Application Date</label>
                                     <DatePicker
                                         className="userapplications-date-filter"
-                                        placeholder="Application Date"
+                                        placeholder="Date"
                                         inputReadOnly
                                         value={dateFilter}
                                         onChange={d => setDateFilter(d)}

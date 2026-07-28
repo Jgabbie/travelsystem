@@ -327,40 +327,47 @@ export default function VisaServices() {
                             </div>
 
                             <div className="visaservices-actions-buttons">
-                                <Button
-                                    className="visaservices-add-button"
-                                    type="primary"
-                                    icon={<EditOutlined />}
-                                    onClick={() => setIsFAQModalOpen(true)}
-                                >
-                                    Manage FAQs
-                                </Button>
-                                <Button
-                                    className="visaservices-add-button"
-                                    type="primary"
-                                    icon={<PlusOutlined />}
-                                    onClick={() => navigate(`${basePath}/visa-services/add`)}
-                                    disabled={showArchived}
-                                >
-                                    Add Service
-                                </Button>
-                                <Button
-                                    icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
-                                    className="visaservices-archive-button"
-                                    type="primary"
-                                    onClick={() => {
-                                        const nextValue = !showArchived;
-                                        setShowArchived(nextValue);
-                                        setSearchText("");
-                                        if (nextValue) {
-                                            getArchivedServices();
-                                        } else {
-                                            getServices();
-                                        }
-                                    }}
-                                >
-                                    {showArchived ? 'Back' : 'Archives'}
-                                </Button>
+                                <div className="visaservices-actions-buttons">
+                                    {!showArchived && (
+                                        <>
+                                            <Button
+                                                className="visaservices-add-button"
+                                                type="primary"
+                                                icon={<EditOutlined />}
+                                                onClick={() => setIsFAQModalOpen(true)}
+                                            >
+                                                Manage FAQs
+                                            </Button>
+
+                                            <Button
+                                                className="visaservices-add-button"
+                                                type="primary"
+                                                icon={<PlusOutlined />}
+                                                onClick={() => navigate(`${basePath}/visa-services/add`)}
+                                            >
+                                                Add Service
+                                            </Button>
+                                        </>
+                                    )}
+
+                                    <Button
+                                        icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
+                                        className="visaservices-archive-button"
+                                        type="primary"
+                                        onClick={() => {
+                                            const nextValue = !showArchived;
+                                            setShowArchived(nextValue);
+                                            setSearchText("");
+                                            if (nextValue) {
+                                                getArchivedServices();
+                                            } else {
+                                                getServices();
+                                            }
+                                        }}
+                                    >
+                                        {showArchived ? "Back" : "Archives"}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </Card>

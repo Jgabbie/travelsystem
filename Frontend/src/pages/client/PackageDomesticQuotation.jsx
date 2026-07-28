@@ -136,7 +136,9 @@ export default function PackageDomesticQuotation() {
     const [childCount, setChildCount] = useState(0)
     const [infantCount, setInfantCount] = useState(0)
     const [preferredAirlines, setPreferredAirlines] = useState('')
+    const [otherAirline, setOtherAirline] = useState('');
     const [preferredHotels, setPreferredHotels] = useState('')
+    const [otherHotel, setOtherHotel] = useState('');
     const [preferredDates, setPreferredDates] = useState(null)
     const [selectedDateSlots, setSelectedDateSlots] = useState(null)
     const [budgetRange, setBudgetRange] = useState([minBudget, maxBudget])
@@ -163,7 +165,9 @@ export default function PackageDomesticQuotation() {
         setChildCount(0);
         setInfantCount(0);
         setPreferredAirlines('');
+        setOtherAirline('');
         setPreferredHotels('');
+        setOtherHotel('');
         setPreferredDates(null);
         setSelectedDateSlots(null);
         setBudgetRange([minBudget, maxBudget]);
@@ -273,12 +277,18 @@ export default function PackageDomesticQuotation() {
             newErrors.travelers = `The selected date only has ${selectedDateSlots} slot${selectedDateSlots === 1 ? '' : 's'} left.`
         }
         if (packageCategory !== 'Land Arrangement') {
-            if (!preferredAirlines || preferredAirlines === 'Other' || !preferredAirlines.trim()) {
+            if (
+                !preferredAirlines ||
+                (preferredAirlines === 'Other' && !otherAirline.trim())
+            ) {
                 newErrors.preferredAirlines = 'Please provide your preferred airlines';
             }
         }
-        if (!preferredHotels || preferredHotels === 'Other' || !preferredHotels.trim()) {
-            newErrors.preferredHotels = 'Please provide your preferred hotels'
+        if (
+            !preferredHotels ||
+            (preferredHotels === 'Other' && !otherHotel.trim())
+        ) {
+            newErrors.preferredHotels = 'Please provide your preferred hotels';
         }
         if (!preferredDates) {
             newErrors.preferredDates = 'Please select your preferred date'
@@ -319,8 +329,15 @@ export default function PackageDomesticQuotation() {
                 quotationDetails: {
                     travelers: travelersPayload,
                     packageType: "domestic",
-                    preferredAirlines,
-                    preferredHotels,
+                    preferredAirlines:
+                        preferredAirlines === 'Other'
+                            ? otherAirline.trim()
+                            : preferredAirlines,
+
+                    preferredHotels:
+                        preferredHotels === 'Other'
+                            ? otherHotel.trim()
+                            : preferredHotels,
                     preferredDates,
                     budgetRange,
                     itineraryNotes,
@@ -333,8 +350,11 @@ export default function PackageDomesticQuotation() {
             notificationApi.success({ title: 'Quotation request submitted successfully!', placement: 'topRight' })
             setIsBookingSuccessOpen(true)
             setTravelers(1)
-            setPreferredAirlines('')
-            setPreferredHotels('')
+            setPreferredAirlines('');
+            setOtherAirline('');
+
+            setPreferredHotels('');
+            setOtherHotel('');
             setPreferredDates(null)
             setBudgetRange([minBudget, maxBudget])
             setItineraryNotes(itineraryLabels.map(() => ''))
@@ -519,26 +539,35 @@ export default function PackageDomesticQuotation() {
                                                         id="quotation-airlines"
                                                         placeholder="Select preferred airline"
                                                         value={preferredAirlines || undefined}
-                                                        onChange={(value) => setPreferredAirlines(value)}
+                                                        onChange={(value) => {
+                                                            setPreferredAirlines(value);
+
+                                                            if (value !== 'Other') {
+                                                                setOtherAirline('');
+                                                            }
+                                                        }}
                                                         className={`quotation-input ${error.preferredAirlines ? 'input-error' : ''}`}
-                                                        options={[...(airlines?.map((airline) => ({
-                                                            label: airline.name,
-                                                            value: airline.name
-                                                        })) || []), { label: 'Other', value: 'Other' }]}
+                                                        options={[
+                                                            ...(airlines?.map((airline) => ({
+                                                                label: airline.name,
+                                                                value: airline.name
+                                                            })) || []),
+                                                            { label: 'Other', value: 'Other' }
+                                                        ]}
                                                     />
-                                                    {(preferredAirlines === 'Other' || (preferredAirlines && !airlines?.some(a => a.name === preferredAirlines))) && (
+                                                    {preferredAirlines === 'Other' && (
                                                         <div style={{ marginTop: 8 }}>
                                                             <Input
                                                                 maxLength={30}
                                                                 placeholder="Enter preferred airline"
-                                                                value={preferredAirlines === 'Other' ? '' : preferredAirlines}
+                                                                value={otherAirline}
                                                                 onChange={(e) => {
                                                                     const cleanedValue = e.target.value
                                                                         .replace(/[^a-zA-Z0-9\s]/g, '')
                                                                         .replace(/\s{2,}/g, ' ')
                                                                         .replace(/^\s+/, '');
 
-                                                                    setPreferredAirlines(cleanedValue);
+                                                                    setOtherAirline(cleanedValue);
                                                                 }}
                                                                 className={`quotation-input ${error.preferredAirlines ? 'input-error' : ''}`}
                                                             />
@@ -556,36 +585,50 @@ export default function PackageDomesticQuotation() {
                                                     id="quotation-hotels"
                                                     placeholder="Select preferred hotel"
                                                     value={preferredHotels || undefined}
-                                                    onChange={(value) => setPreferredHotels(value)}
+                                                    onChange={(value) => {
+                                                        setPreferredHotels(value);
+
+                                                        if (value !== 'Other') {
+                                                            setOtherHotel('');
+                                                        }
+                                                    }}
                                                     className={`quotation-input ${error.preferredHotels ? 'input-error' : ''}`}
                                                     options={[
                                                         {
                                                             label: '5 Star Hotels',
-                                                            options: hotels.filter(h => h.stars === 5).map(h => ({ label: h.name, value: h.name }))
+                                                            options: hotels
+                                                                .filter(h => h.stars === 5)
+                                                                .map(h => ({ label: h.name, value: h.name }))
                                                         },
                                                         {
                                                             label: '4 Star Hotels',
-                                                            options: hotels.filter(h => h.stars === 4).map(h => ({ label: h.name, value: h.name }))
+                                                            options: hotels
+                                                                .filter(h => h.stars === 4)
+                                                                .map(h => ({ label: h.name, value: h.name }))
                                                         },
                                                         {
                                                             label: '3 Star Hotels',
-                                                            options: hotels.filter(h => h.stars === 3).map(h => ({ label: h.name, value: h.name }))
+                                                            options: hotels
+                                                                .filter(h => h.stars === 3)
+                                                                .map(h => ({ label: h.name, value: h.name }))
                                                         }
-                                                    ].filter(group => group.options.length > 0).concat([{ label: 'Other', options: [{ label: 'Other', value: 'Other' }] }])}
+                                                    ]
+                                                        .filter(group => group.options.length > 0)
+                                                        .concat([{ label: 'Other', options: [{ label: 'Other', value: 'Other' }] }])}
                                                 />
-                                                {(preferredHotels === 'Other' || (preferredHotels && !hotels?.some(h => h.name === preferredHotels))) && (
+                                                {preferredHotels === 'Other' && (
                                                     <div style={{ marginTop: 8 }}>
                                                         <Input
                                                             maxLength={30}
                                                             placeholder="Enter preferred hotel"
-                                                            value={preferredHotels === 'Other' ? '' : preferredHotels}
+                                                            value={otherHotel}
                                                             onChange={(e) => {
                                                                 const cleanedValue = e.target.value
                                                                     .replace(/[^a-zA-Z0-9\s]/g, '')
                                                                     .replace(/\s{2,}/g, ' ')
                                                                     .replace(/^\s+/, '');
 
-                                                                setPreferredHotels(cleanedValue);
+                                                                setOtherHotel(cleanedValue);
                                                             }}
                                                             className={`quotation-input ${error.preferredHotels ? 'input-error' : ''}`}
                                                         />

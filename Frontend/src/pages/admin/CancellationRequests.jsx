@@ -601,7 +601,7 @@ export default function CancellationRequests() {
                                     <DatePicker
                                         inputReadOnly
                                         className="cancellation-date-filter"
-                                        placeholder="Cancellation Date"
+                                        placeholder="Date"
                                         value={dateFilter}
                                         onChange={(date) => setDateFilter(date)}
                                         allowClear
@@ -663,24 +663,62 @@ export default function CancellationRequests() {
                         footer={null}
                         title={"Cancellation Request Proof - " + (selectedRequest?.ref || "")}
                     >
-                        {selectedRequest && (
-                            <div className="receipt-container">
-                                {selectedRequest.imageProof ? (
-                                    <div className="upload-preview-box" style={{ maxHeight: 520 }}>
-                                        <Image
-                                            src={selectedRequest.imageProof}
-                                            alt={selectedRequest.proofFileName || "Proof of payment"}
-                                            className="upload-preview-image"
-                                            style={{ width: "100%", height: "auto" }}
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                minHeight: 600,
+                            }}
+                        >
+                            {selectedRequest?.imageProof ? (
+                                (() => {
+                                    const proof = selectedRequest.imageProof;
+                                    const isPdf =
+                                        proof.toLowerCase().includes(".pdf") ||
+                                        proof.toLowerCase().includes("/pdf") ||
+                                        proof.toLowerCase().includes("application/pdf");
+
+                                    return isPdf ? (
+                                        <iframe
+                                            src={proof}
+                                            title="Cancellation Proof"
+                                            width="80%"
+                                            height="600"
+                                            style={{
+                                                border: "1px solid #d9d9d9",
+                                                borderRadius: 8,
+                                            }}
                                         />
-                                    </div>
-                                ) : (
-                                    <p>No proof image available.</p>
-                                )}
-                            </div>
-
-
-                        )}
+                                    ) : (
+                                        <Image
+                                            src={proof}
+                                            alt="Cancellation Proof"
+                                            preview
+                                            style={{
+                                                maxWidth: "100%",
+                                                maxHeight: "600px",
+                                                objectFit: "contain",
+                                                borderRadius: 8,
+                                            }}
+                                        />
+                                    );
+                                })()
+                            ) : (
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        width: "100%",
+                                        height: 300,
+                                        color: "#999",
+                                    }}
+                                >
+                                    No proof uploaded.
+                                </div>
+                            )}
+                        </div>
 
                         <Space style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
                             <Button
@@ -688,23 +726,33 @@ export default function CancellationRequests() {
                                 type="primary"
                                 onClick={async () => {
                                     try {
-                                        const date = dayjs().format("YYYY-MM-DD");
-                                        const response = await fetch(selectedRequest.imageProof, { mode: 'cors' });
+                                        const response = await fetch(selectedRequest.imageProof, {
+                                            mode: "cors",
+                                        });
+
                                         const blob = await response.blob();
                                         const url = window.URL.createObjectURL(blob);
-                                        const link = document.createElement('a');
+
+                                        const extension =
+                                            blob.type.split("/")[1] ||
+                                            selectedRequest.imageProof.split(".").pop().split("?")[0] ||
+                                            "file";
+
+                                        const link = document.createElement("a");
                                         link.href = url;
-                                        link.download = 'Cancellation_Proof_' + selectedRequest.ref + '_' + date + '.png';
+                                        link.download = `Cancellation_Proof_${selectedRequest.ref}.${extension}`;
+
                                         document.body.appendChild(link);
                                         link.click();
                                         document.body.removeChild(link);
+
                                         window.URL.revokeObjectURL(url);
                                     } catch (err) {
-                                        window.open(selectedRequest.imageProof, '_blank');
+                                        window.open(selectedRequest.imageProof, "_blank");
                                     }
                                 }}
                             >
-                                Download Image
+                                Download File
                             </Button>
                         </Space>
                     </Modal>

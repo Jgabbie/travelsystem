@@ -504,6 +504,11 @@ function App() {
                   />
 
                   <Route
+                    path="transactions/add"
+                    element={<AddTransaction />}
+                  />
+
+                  <Route
                     path="packages"
                     element={<PackageManagement />}
                   />

@@ -1079,10 +1079,11 @@ const createCheckoutSessionDeliveryFee = async (req, res) => {
                             //     currency: "PHP",
                             // }
                         ],
-                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
+                        payment_method_types: ["qrph"], // start with card first
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
+                        send_email_receipt: true,
                         show_description: true,
                         show_line_items: true,
                     },
@@ -1176,10 +1177,11 @@ const createCheckoutSessionPassport = async (req, res) => {
                             //     currency: "PHP",
                             // }
                         ],
-                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
+                        payment_method_types: ["qrph"], // start with card first
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
+                        send_email_receipt: true,
                         show_description: true,
                         show_line_items: true,
                     },
@@ -1273,10 +1275,11 @@ const createCheckoutSessionVisa = async (req, res) => {
                             //     currency: "PHP",
                             // }
                         ],
-                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
+                        payment_method_types: ["qrph"], // start with card first
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
+                        send_email_receipt: true,
                         show_description: true,
                         show_line_items: true,
                     },
@@ -1376,6 +1379,7 @@ const createCheckoutSessionPassportPenalty = async (req, res) => {
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
+                        send_email_receipt: true,
                         show_description: true,
                         show_line_items: true,
                     },
@@ -1471,10 +1475,11 @@ const createCheckoutSessionVisaPenalty = async (req, res) => {
                             //     currency: "PHP",
                             // }
                         ],
-                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
+                        payment_method_types: ["qrph"], // start with card first
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
+                        send_email_receipt: true,
                         show_description: true,
                         show_line_items: true,
                     },
@@ -1574,10 +1579,11 @@ const createCheckoutSessionDeposit = async (req, res) => {
                             //     currency: "PHP",
                             // }
                         ],
-                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"],
+                        payment_method_types: ["qrph"],
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
+                        send_email_receipt: true,
                         show_description: true,
                         show_line_items: true,
                     },
@@ -1682,7 +1688,7 @@ const createCheckoutSession = async (req, res) => {
                             //     currency: "PHP",
                             // }
                         ],
-                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"],
+                        payment_method_types: ["qrph"],
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
@@ -1792,10 +1798,11 @@ const createCheckoutSessionQuotation = async (req, res) => {
                             //     currency: "PHP",
                             // }
                         ],
-                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"],
+                        payment_method_types: ["qrph"],
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
+                        send_email_receipt: true,
                         show_description: true,
                         show_line_items: true,
                     },

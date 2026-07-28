@@ -1014,7 +1014,7 @@ export default function TransactionManagement() {
                   <DatePicker
                     inputReadOnly
                     className="transaction-date-filter"
-                    placeholder="Payment Date"
+                    placeholder="Date"
                     value={paymentDateFilter}
                     onChange={(d) => setPaymentDateFilter(d)}
                     allowClear

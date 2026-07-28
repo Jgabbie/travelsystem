@@ -544,9 +544,7 @@ export default function BookingManagement() {
               setEditingBooking(record);
               setIsRestoreModalOpen(true);
             }}
-          >
-            Restore
-          </Button>
+          />
         </Space>
       )
     }
@@ -647,7 +645,7 @@ export default function BookingManagement() {
                   <DatePicker
                     inputReadOnly
                     className="booking-date-filter"
-                    placeholder="Booking Date"
+                    placeholder="Date"
                     value={bookingDateFilter}
                     onChange={(d) => setBookingDateFilter(d)}
                     allowClear
@@ -659,7 +657,7 @@ export default function BookingManagement() {
                   <DatePicker
                     inputReadOnly
                     className="booking-date-filter"
-                    placeholder="Travel Date"
+                    placeholder="Date"
                     value={travelDateFilter}
                     onChange={(d) => setTravelDateFilter(d)}
                     allowClear

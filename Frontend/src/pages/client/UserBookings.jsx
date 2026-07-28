@@ -424,7 +424,7 @@ export default function UserBookings() {
                                         <label className="user-bookings-label">Booking Date</label>
                                         <DatePicker
                                             className="user-bookings-date-filter"
-                                            placeholder="Booking Date"
+                                            placeholder="Date"
                                             inputReadOnly
                                             value={bookingDateFilter}
                                             onChange={(d) => setBookingDateFilter(d)}
@@ -436,7 +436,7 @@ export default function UserBookings() {
                                         <label className="user-bookings-label">Travel Date</label>
                                         <DatePicker
                                             className="user-bookings-date-filter"
-                                            placeholder="Travel Date"
+                                            placeholder="Date"
                                             inputReadOnly
                                             value={travelDateFilter}
                                             onChange={(d) => setTravelDateFilter(d)}

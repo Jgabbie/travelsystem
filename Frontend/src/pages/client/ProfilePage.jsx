@@ -1079,7 +1079,7 @@ export default function ProfilePage() {
                                                         setNationalitySearch('');
                                                     }}
                                                     onClear={() => {
-                                                        valueHandler('nationality', undefined);
+                                                        valueHandler('nationality', '');
                                                         setNationalitySearch('');
                                                     }}
                                                     style={{ width: '100%' }}

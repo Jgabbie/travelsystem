@@ -631,7 +631,15 @@ export default function ViewPassportApplication() {
                                                 <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 20 }}>
                                                     {alternateSlots.map((slot, idx) => (
                                                         <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                                                            <span style={{ minWidth: 20 }}>{idx + 1}.</span>
+                                                            <span
+                                                                style={{
+                                                                    minWidth: 80,
+                                                                    fontWeight: 600,
+                                                                    color: "#305797",
+                                                                }}
+                                                            >
+                                                                Option {idx + 1}
+                                                            </span>
                                                             <DatePicker
                                                                 inputReadOnly
                                                                 disabledDate={disableDates}

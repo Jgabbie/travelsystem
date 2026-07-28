@@ -936,18 +936,12 @@ export default function QuotationRequest() {
             {notificationContextHolder}
 
 
-            {loading || !quotation ? (
+            {uploading || loading || !quotation ? (
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80vh" }}>
                     <Spin description={"Loading quotation..."} size="large" />
                 </div>
             ) : (
                 <div className="quotationrequest-page">
-                    {uploading && (
-                        <div className="booking-loading-overlay">
-                            <Spin description={"Uploading quotation..."} size="large" />
-                        </div>
-                    )}
-
                     <div >
                         <h1 className="quotationrequest-page-header">Quotation Request</h1>
                     </div>
