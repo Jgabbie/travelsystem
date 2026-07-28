@@ -936,7 +936,7 @@ export default function QuotationRequest() {
             {notificationContextHolder}
 
 
-            {uploading || loading || !quotation ? (
+            {loading || !quotation ? (
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80vh" }}>
                     <Spin description={"Loading quotation..."} size="large" />
                 </div>
