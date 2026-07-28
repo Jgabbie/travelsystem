@@ -636,15 +636,16 @@ export default function UserManagement() {
             </div>
 
             <div className="usermanagement-actions-buttons">
-              <Button
-                className='usermanagement-add-button'
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => setIsModalOpen(true)}
-                disabled={showArchived}
-              >
-                Add User
-              </Button>
+              {!showArchived && (
+                <Button
+                  className="usermanagement-add-button"
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  Add User
+                </Button>
+              )}
 
               <Button
                 className='usermanagement-export-button'

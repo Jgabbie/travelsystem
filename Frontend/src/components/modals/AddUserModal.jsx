@@ -484,7 +484,6 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             {/* USER HAS BEEN ADDED MODAL */}
             <Modal
                 open={isUserAddedModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 style={{ top: 220 }}
@@ -492,20 +491,20 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                     setIsUserAddedModalOpen(false);
                 }}
             >
-                <div className='signup-success-container'>
-                    <h1 className='signup-success-heading'>User Added Successfully!</h1>
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>User Added Successfully!</h1>
 
                     <div>
                         <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
-                    <p className='signup-success-text'>The user has been added to the system.</p>
+                    <p className='modal-text'>The user has been added to the system.</p>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                         <Button
                             type='primary'
-                            className='logout-confirm-btn'
+                            className='modal-button'
                             onClick={() => {
                                 setIsUserAddedModalOpen(false);
                             }}

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Input, Button, Modal, Spin, ConfigProvider } from 'antd';
 import apiFetch from '../config/fetchConfig';
 import '../style/components/newpasswordpage.css'
+import '../style/components/modals/modaldesign.css';
 
 export default function NewPassword() {
     const navigate = useNavigate();
@@ -129,7 +130,7 @@ export default function NewPassword() {
                             </div>
 
                             {error.password.length > 0 && (
-                                <p id='error-message'>{error.password[0]}</p>
+                                <p className='newpassword-error-message'>{error.password[0]}</p>
                             )}
 
                             <div className='div-input-fields'>
@@ -142,10 +143,10 @@ export default function NewPassword() {
                             </div>
 
                             {error.confirmPassword.length > 0 && (
-                                <p id='error-message'>{error.confirmPassword[0]}</p>
+                                <p className='newpassword-error-message'>{error.confirmPassword[0]}</p>
                             )}
 
-                            {serverError && <p id='error-message'>{serverError}</p>}
+                            {serverError && <p className='newpassword-error-message'>{serverError}</p>}
 
                             <div id='newpassword-links-container'>
                                 <Button className='newpassword-button-links' type='link' onClick={() => navigate('/login')}>Remembered your password? Go to Login</Button>
@@ -161,18 +162,17 @@ export default function NewPassword() {
 
                 <Modal
                     open={isSuccessModalOpen}
-                    className='resetpassword-success-modal'
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
                     onOk={handleSuccessOk}
                     onCancel={handleSuccessCancel}
                     centered={true}
                 >
-                    <div className='resetpassword-success-container'>
-                        <h1 className='resetpassword-success-heading'>Password Changed</h1>
-                        <p className='resetpassword-success-text'>Your password has been updated successfully.</p>
+                    <div className='modal-container'>
+                        <h1 className='modal-heading'>Password Changed</h1>
+                        <p className='modal-text'>Your password has been updated successfully.</p>
 
-                        <Button id='resetpassword-success-button' onClick={handleSuccessOk}>Continue</Button>
+                        <Button className='modal-button' onClick={handleSuccessOk}>Continue</Button>
                     </div>
                 </Modal>
             </Spin>

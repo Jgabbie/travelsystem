@@ -455,13 +455,6 @@ export default function VisaApplication() {
                 }
             );
 
-            const documentsStatus =
-                process.find(
-                    step =>
-                        String(step.title || "").toLowerCase() ===
-                        "documents uploaded"
-                )?.title || "Documents uploaded";
-
             const refreshed = await apiFetch.get(
                 `/visa/applications/${id}`
             );
