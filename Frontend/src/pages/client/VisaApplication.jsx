@@ -462,13 +462,6 @@ export default function VisaApplication() {
                         "documents uploaded"
                 )?.title || "Documents uploaded";
 
-            await apiFetch.put(
-                `/visa/applications/${id}/status`,
-                {
-                    status: documentsStatus,
-                }
-            );
-
             const refreshed = await apiFetch.get(
                 `/visa/applications/${id}`
             );
@@ -1690,7 +1683,7 @@ export default function VisaApplication() {
 
 
                                                 {/* UPLOAD DOCUMENTS AND PAYMENT COMPLETE */}
-                                                {shouldShow && (
+                                                {shouldShow && statusValue !== 'Documents Uploaded' && (
                                                     <div style={{ border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff', marginTop: 32, marginBottom: 32 }}>
                                                         <h3 style={{ marginTop: 0 }}>Upload Requirements</h3>
                                                         {requirements.length === 0 && (

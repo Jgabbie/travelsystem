@@ -812,6 +812,8 @@ export default function TransactionManagement() {
         });
       }
 
+      await fetchPaymentMethods();
+
       setMethodData(initialMethod);
       setMethodErrors({});
       setSelectedImage(null);
@@ -852,6 +854,10 @@ export default function TransactionManagement() {
     try {
 
       await apiFetch.delete(`/payment-methods/${id}/delete-methods`);
+
+      setPaymentMethods((prev) =>
+        prev.filter((method) => method._id !== id)
+      );
 
       notificationApi.success({
         title: "Payment method removed.",

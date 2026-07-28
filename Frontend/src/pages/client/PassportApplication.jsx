@@ -1274,7 +1274,7 @@ export default function PassportApplication() {
 
 
                                         {/* UPLOAD DOCUMENTS AND PAYMENT COMPLETE */}
-                                        {shouldShow && (
+                                        {shouldShow && application?.status !== 'Documents Uploaded' && (
                                             <div style={{ border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff', marginTop: 32, marginBottom: 32 }}>
                                                 <h3 style={{ marginTop: 0 }}>Upload Requirements</h3>
 
