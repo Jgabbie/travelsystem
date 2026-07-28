@@ -1686,6 +1686,7 @@ const createCheckoutSession = async (req, res) => {
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
+                        send_email_receipt: true,
                         show_description: true,
                         show_line_items: true,
                     },

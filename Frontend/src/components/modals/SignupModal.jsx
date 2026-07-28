@@ -89,7 +89,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
         }
         if (field === "phone") {
             if (value === "") return "Phone number is required.";
-            if (value.length < 13) return "Phone number must be 10 digits";
+            if (value.length < 13) return "Phone number must be 11 digits";
             if (!/^0[9]/.test(value))
                 return "Phone number must start with 09";
         }
