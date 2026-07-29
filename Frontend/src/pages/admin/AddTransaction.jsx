@@ -239,7 +239,7 @@ export default function AddTransaction() {
 
             {notificationContextHolder}
             {saving ? (
-                <div className="loading-container">
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
                     <Spin size="large" description="Saving transaction..." />
                 </div>
             ) : (

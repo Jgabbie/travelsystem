@@ -485,9 +485,7 @@ export default function UserManagement() {
               setEditingUser(record);
               setIsRestoreModalOpen(true);
             }}
-          >
-            Restore
-          </Button>
+          />
         </Space>
       )
     }
@@ -1114,10 +1112,6 @@ export default function UserManagement() {
 
         </div>
       </Modal>
-
-
-
-
     </ConfigProvider >
   );
 }
