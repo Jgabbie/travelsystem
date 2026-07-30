@@ -124,7 +124,7 @@ const getUserBookings = async (req, res) => {
         const bookings = await BookingModel.find({ userId })
             .sort({ createdAt: -1 })
             .populate('packageId', 'packageName packageType')
-            .select('-__v -paidAmount -documentsResubmissionTravelerIndexes -slotDecremented -documentsResubmissionRequestedAt -documentsResubmissionRequired -passportFiles -photoFiles -userId -expiresAt -createdAt -updatedAt -statusHistory')
+            .select('-__v -paidAmount -documentsResubmissionTravelerIndexes -slotDecremented -documentsResubmissionRequestedAt -documentsResubmissionRequired -passportFiles -photoFiles -userId -expiresAt -updatedAt -statusHistory')
             .lean();
 
         if (!bookings.length) {
