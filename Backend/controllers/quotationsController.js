@@ -523,6 +523,62 @@ const requestRevision = async (req, res) => {
 }
 
 
+const getDashboardQuotations = async (req, res) => {
+    try {
+        const quotations = await QuotationModel.find(
+            {},
+            "status createdAt"
+        ).lean();
+
+        const quotationStatus = {
+            pending: 0,
+            booked: 0,
+            rejected: 0,
+            cancelled: 0,
+        };
+
+        quotations.forEach((quotation) => {
+            switch ((quotation.status || "").toLowerCase()) {
+                case "pending":
+                    quotationStatus.pending++;
+                    break;
+
+                case "booked":
+                    quotationStatus.booked++;
+                    break;
+
+                case "rejected":
+                    quotationStatus.rejected++;
+                    break;
+
+                case "cancelled":
+                    quotationStatus.cancelled++;
+                    break;
+            }
+        });
+
+        const totalQuotations = quotations.length;
+
+        const conversionRate =
+            totalQuotations === 0
+                ? 0
+                : (quotationStatus.booked / totalQuotations) * 100;
+
+        res.status(200).json({
+            totalQuotations,
+            quotationStatus,
+            conversionRate,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "Failed to fetch dashboard quotations",
+        });
+    }
+};
+
+
+
 export {
     createQuotation,
     getUserQuotations,
@@ -534,5 +590,6 @@ export {
     getQuotation,
     uploadQuotationPDF,
     requestRevision,
-    uploadTravelDetails
+    uploadTravelDetails,
+    getDashboardQuotations
 };

@@ -69,148 +69,72 @@ export default function AdminDashboard() {
   const pieRef = useRef(null);
   const statusPieRef = useRef(null);
 
-  const [transactions, setTransactions] = useState([]);
-  const [bookings, setBookings] = useState([]);
   const [popularPackages, setPopularPackages] = useState([]);
-  const [quotations, setQuotations] = useState([]);
-
-
-  //top 3 packages
-  const packageCountMap = {};
-
-  bookings.forEach((booking) => {
-    const packageId = booking.packageId?._id;
-    const packageName = booking.packageId?.packageName;
-
-    if (!packageId) return;
-
-    if (!packageCountMap[packageId]) {
-      packageCountMap[packageId] = { packageName, count: 0 };
-    }
-
-    packageCountMap[packageId].count++;
+  const [quotationStats, setQuotationStats] = useState({
+    totalQuotations: 0,
+    quotationStatus: {
+        pending: 0,
+        booked: 0,
+        rejected: 0,
+        cancelled: 0,
+    },
+    conversionRate: 0,
   });
 
-  const packageCountArray = Object.values(packageCountMap);
-  packageCountArray.sort((a, b) => b.count - a.count);
-  const top3Packages = packageCountArray.slice(0, 3);
+  const [bookingTrend, setBookingTrend] = useState(Array(12).fill(0));
+
+  const [bookingTypeCount, setBookingTypeCount] = useState({
+      domestic: 0,
+      international: 0,
+  });
+
+  const [bookingStatusCount, setBookingStatusCount] = useState({
+      pending: 0,
+      notPaid: 0,
+      fullyPaid: 0,
+      cancelled: 0,
+  });
+
+  const [topDurations, setTopDurations] = useState([]);
+
+  const [monthlyRevenue, setMonthlyRevenue] = useState(Array(12).fill(0));
+
+  const fetchDashboardRevenue = async () => {
+      try {
+          const response = await apiFetch.get("/transaction/dashboard-revenue");
+          setMonthlyRevenue(response.monthlyRevenue);
+      } catch (err) {
+          console.error(err);
+      }
+  };
 
 
   //display top packages function
-  const displayTopPackages = (Array.isArray(popularPackages) && popularPackages.length)
+  const displayTopPackages = Array.isArray(popularPackages)
     ? popularPackages.map(p => ({
-      packageName: p.packageName,
-      count: p.bookingCount || p.bookingCount || p.count || 0,
-      packageImage: p.packageImage || null
+        packageName: p.packageName,
+        count: p.bookingCount,
+        packageImage: p.packageImage
     }))
-    : top3Packages;
+    : [];
 
-
-  //booking trends
-  const currentYear = new Date().getFullYear();
-
-  const bookingTrendData = Array(12).fill(0);
-
-  bookings.forEach((booking) => {
-    if (!booking.bookingDate) return;
-
-    const date = new Date(booking.bookingDate);
-
-    if (date.getFullYear() !== currentYear) return;
-
-    const monthIndex = date.getMonth();
-    bookingTrendData[monthIndex]++;
-  });
-
-  const bookingTrend = bookingTrendData;
-
-  const durationCountMap = {};
-
-  bookings.forEach((booking) => {
-    const duration = booking.packageId?.packageDuration;
-
-    if (!duration) return;
-
-    // normalize (optional but recommended)
-    const key = Number(duration);
-
-    durationCountMap[key] = (durationCountMap[key] || 0) + 1;
-  });
-
-
-  //top 3 durations functions
-  const topDurationEntries = Object.entries(durationCountMap)
-    .sort((a, b) => b[1] - a[1]) // sort by count DESC
-    .slice(0, 3) // top 3
-    .map(([duration, count]) => ({
-      label: `${duration} Days`,
-      count
-    }));
-
-
-  // build a map from duration -> image (take first package image found for that duration)
-  const durationImageMap = {};
-
-
-  // prefer popularPackages (API) first
-  if (Array.isArray(popularPackages) && popularPackages.length) {
-    popularPackages.forEach((p) => {
-      const dur = Number(p.packageDuration || p.packageDuration || (p.packageDuration === 0 ? 0 : undefined));
-      if (dur == null) return;
-      const imgs = p.packageImage || p.images || [];
-      const first = Array.isArray(imgs) ? imgs[0] : imgs;
-      const imageUrl = first && typeof first === 'string' ? first : (first && (first.url || first.path || first.src)) || null;
-      if (imageUrl && !durationImageMap[dur]) durationImageMap[dur] = imageUrl;
-    });
-  }
-
-
-  // fallback: scan bookings' package info
-  bookings.forEach((b) => {
-    const dur = Number(b.packageId?.packageDuration);
-    if (Number.isNaN(dur)) return;
-    if (durationImageMap[dur]) return;
-    const imgs = b.packageId?.packageImage || b.packageId?.images || [];
-    const first = Array.isArray(imgs) ? imgs[0] : imgs;
-    const imageUrl = first && typeof first === 'string' ? first : (first && (first.url || first.path || first.src)) || null;
-    if (imageUrl) durationImageMap[dur] = imageUrl;
-  });
-
-
-  // package type amount
-  const bookingTypeCount = {
-    domestic: 0,
-    international: 0
-  };
-
-  bookings.forEach((booking) => {
-    const type = booking.packageId?.packageType?.toLowerCase();
-
-    if (type === "domestic") bookingTypeCount.domestic++;
-    if (type === "international") bookingTypeCount.international++;
-  });
 
   const paymentSplit = [
-    { id: 0, value: bookingTypeCount.domestic, label: "Domestic" },
-    { id: 1, value: bookingTypeCount.international, label: "International" },
+      {
+          id: 0,
+          value: bookingTypeCount.domestic,
+          label: "Domestic",
+      },
+      {
+          id: 1,
+          value: bookingTypeCount.international,
+          label: "International",
+      },
   ];
 
 
-  //transactions amount
-  const monthlyRevenueData = Array(12).fill(0);
-
-  transactions.forEach((txn) => {
-    if (!txn.createdAt) return;
-
-    const date = new Date(txn.createdAt);
-    const monthIndex = date.getMonth(); // 0 = Jan, 11 = Dec
-
-    monthlyRevenueData[monthIndex] += Number(txn.amount || 0);
-  });
-
   const themeColor = "#305797";
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const monthlyRevenue = monthlyRevenueData
 
 
   //fetch stats
@@ -234,29 +158,31 @@ export default function AdminDashboard() {
 
   //fetch transactions, bookings, popular packages, and quotations
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const response = await apiFetch.get("/transaction/all-transactions");
 
-        setTransactions(response);
+    const fetchDashboardBookings = async () => {
+        try {
+            const response = await apiFetch.get("/booking/dashboard-bookings");
 
-      } catch (error) {
-        console.error("Failed to load transactions:", error);
-        notificationApi.error({ title: 'Unable to load transactions.', placement: 'topRight' });
-      }
+            setBookingTrend(response.bookingTrend);
+
+            setBookingTypeCount({
+                domestic: response.bookingTypes.domestic,
+                international: response.bookingTypes.international,
+            });
+
+            setBookingStatusCount({
+                pending: response.bookingStatus.pending,
+                notPaid: response.bookingStatus.notPaid,
+                fullyPaid: response.bookingStatus.fullyPaid,
+                cancelled: response.bookingStatus.cancelled,
+            });
+
+            setTopDurations(response.topDurations || []);
+        } catch (error) {
+            console.error(error);
+        }
     };
 
-    const fetchBookings = async () => {
-      try {
-        const response = await apiFetch.get("/booking/all-bookings")
-
-        setBookings(response);
-
-      } catch (error) {
-        console.error("Failed to load bookings:", error);
-        notificationApi.error({ title: 'Unable to load bookings.', placement: 'topRight' });
-      }
-    }
     const fetchPopularPackages = async () => {
       try {
         const resp = await apiFetch.get('/package/popular-packages?limit=3');
@@ -266,42 +192,23 @@ export default function AdminDashboard() {
       }
     };
 
-    const fetchQuotations = async () => {
+    const fetchDashboardQuotations = async () => {
       try {
-        const resp = await apiFetch.get('/quotation/all-quotations');
-        setQuotations(resp || []);
+          const response = await apiFetch.get(
+              "/quotation/dashboard-quotations"
+          );
+
+          setQuotationStats(response);
       } catch (err) {
-        console.error('Failed to load quotations', err);
+          console.error(err);
       }
     };
 
-    fetchTransactions();
-    fetchBookings();
+    fetchDashboardBookings();
     fetchPopularPackages();
-    fetchQuotations();
+    fetchDashboardQuotations();
+    fetchDashboardRevenue();
   }, [notificationApi]);
-
-
-  // booking status breakdown
-  const bookingStatusCount = {
-    pending: 0,
-    notPaid: 0,
-    fullyPaid: 0,
-    cancelled: 0,
-  };
-
-  bookings.forEach((b) => {
-    const s = (b.status || '').toString().toLowerCase();
-    if (s.includes('cancel')) {
-      bookingStatusCount.cancelled++;
-    } else if (s === 'fully paid' || s === 'fully_paid' || s === 'paid' || s === 'successful') {
-      bookingStatusCount.fullyPaid++;
-    } else if (s === 'not paid' || s === 'not_paid') {
-      bookingStatusCount.notPaid++;
-    } else {
-      bookingStatusCount.pending++;
-    }
-  });
 
 
   //booking status breakdown series for pie chart
@@ -311,13 +218,6 @@ export default function AdminDashboard() {
     { id: 2, value: bookingStatusCount.fullyPaid, label: 'Fully Paid' },
     { id: 3, value: bookingStatusCount.cancelled, label: 'Cancelled' },
   ];
-
-
-  // conversion rate
-  const completedBookingsCount = Array.isArray(quotations) ? quotations.filter(q => q?.status?.toLowerCase() === 'booked').length : 0;
-  const totalQuotationRequests = Array.isArray(quotations) ? quotations.length : 0;
-  const conversionRate = totalQuotationRequests === 0 ? 0 : (completedBookingsCount / totalQuotationRequests) * 100;
-
 
 
   const isCompactTablet = viewportWidth <= 786;
@@ -420,6 +320,16 @@ export default function AdminDashboard() {
   }, []);
 
 
+  console.log({
+    BarChart,
+    PieChart,
+    ChartContainer,
+    LinePlot,
+    AreaPlot,
+    ChartsXAxis,
+    ChartsYAxis,
+    ChartsTooltip,
+  });
 
 
   return (
@@ -636,9 +546,9 @@ export default function AdminDashboard() {
               <p>Completed bookings vs quotation requests</p>
             </div>
             <div className="dashboard-chart-body" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: 260 }}>
-              <h2 style={{ fontSize: 28, margin: 0 }}>{conversionRate.toFixed(2)}%</h2>
-              <p style={{ margin: '8px 0 0' }}>{completedBookingsCount} completed bookings</p>
-              <p style={{ margin: 0 }}>{totalQuotationRequests} quotation requests</p>
+              <h2 style={{ fontSize: 28, margin: 0 }}>{quotationStats?.conversionRate.toFixed(2)}%</h2>
+              <p style={{ margin: '8px 0 0' }}>{quotationStats?.completedBookingsCount} completed bookings</p>
+              <p style={{ margin: 0 }}>{quotationStats?.totalQuotationRequests} quotation requests</p>
             </div>
           </Card>
         </div>
@@ -699,11 +609,10 @@ export default function AdminDashboard() {
 
           <div style={{ marginTop: 24 }}>
             <h2>Top 3 Most Booked Durations</h2>
-            {topDurationEntries.length > 0 ? (
+            {topDurations.length > 0 ? (
               <Row gutter={[16, 16]}>
-                {topDurationEntries.map((entry, idx) => {
-                  const durationNumber = Number(entry.label.split(' ')[0]);
-                  const imageUrl = durationImageMap[durationNumber] || null;
+                {topDurations.map((entry, idx) => {
+                  const imageUrl = entry.image;
                   return (
                     <Col xs={24} sm={12} md={8} key={entry.label}>
                       <Card
@@ -718,7 +627,7 @@ export default function AdminDashboard() {
                         }}
                       >
                         <div className="top-duration-content">
-                          <h3 className="top-duration-name">{entry.label}</h3>
+                          <h3 className="top-duration-name">{entry.label} DAYS</h3>
                           <p className="top-duration-count">{entry.count} bookings</p>
                           <div className="top-duration-rank">#{idx + 1}</div>
                         </div>

@@ -319,14 +319,29 @@ const getTransactionsForApplication = async (req, res) => {
 
 
 //get all transactions function
-const getAllTransactions = async (_req, res) => {
+const getAllTransactions = async (req, res) => {
     try {
-        const transactions = await TransactionModel.find({})
-            .populate('userId', 'username firstname lastname')
-            .populate('packageId', 'packageName')
-            .sort({ createdAt: -1 });
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
 
-        res.status(200).json(transactions)
+        const skip = (page - 1) * limit;
+
+        const total = await TransactionModel.countDocuments();
+
+        const transactions = await TransactionModel.find({})
+            .populate("userId", "username firstname lastname")
+            .populate("packageId", "packageName")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        res.json({
+            transactions,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit)
+        });
     } catch (error) {
         console.error('Error fetching transactions:', error)
         res.status(500).json({ message: "Failed to fetch transactions", error: error.message })
@@ -699,6 +714,53 @@ const rejectTransaction = async (req, res) => {
     }
 }
 
+const getDashboardRevenue = async (req, res) => {
+    try {
+        const currentYear = new Date().getFullYear();
+
+        const startDate = new Date(currentYear, 0, 1);
+        const endDate = new Date(currentYear + 1, 0, 1);
+
+        const revenue = await TransactionModel.aggregate([
+        {
+            $match: {
+            status: "Successful",
+            createdAt: {
+                $gte: startDate,
+                $lt: endDate,
+            },
+            },
+        },
+        {
+            $group: {
+            _id: { $month: "$createdAt" },
+            totalRevenue: { $sum: "$amount" },
+            },
+        },
+        {
+            $sort: { _id: 1 },
+        },
+        ]);
+
+        const monthlyRevenue = Array(12).fill(0);
+
+        revenue.forEach((item) => {
+        monthlyRevenue[item._id - 1] = item.totalRevenue;
+        });
+
+        res.status(200).json({
+        monthlyRevenue,
+        });
+    } catch (error) {
+        res.status(500).json({
+        message: "Failed to fetch dashboard revenue",
+        error: error.message,
+        });
+    }
+};
+
+
+
 export {
     createTransaction,
     getUserTransactions,
@@ -709,5 +771,6 @@ export {
     updateTransaction,
     deleteTransaction,
     restoreArchivedTransaction,
-    rejectTransaction
+    rejectTransaction,
+    getDashboardRevenue
 };

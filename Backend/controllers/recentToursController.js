@@ -1,4 +1,4 @@
-import RecentTour from "../models/recentTours.js";
+import RecentTour from "../models/recenttours.js";
 import cloudinary from "../config/cloudinary.js";
 import streamifier from "streamifier";
 

@@ -76,4 +76,11 @@ router.delete(
     transactionController.deleteTransaction
 );
 
+router.get(
+    '/dashboard-revenue',
+    userAuth,
+    staffOnly,
+    transactionController.getDashboardRevenue
+);
+
 export default router;

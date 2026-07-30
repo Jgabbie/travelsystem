@@ -253,12 +253,13 @@ const getBookingsTotalBaseOnMonth = async (req, res) => {
 //get all bookings function
 const getAllBookings = async (_req, res) => {
     try {
-        const bookings = await BookingModel.find({})
-            .populate('userId', 'username')
-            .populate('packageId', 'packageName packageType packageDuration')
-            .sort({ createdAt: -1 });
+        const bookings = await BookingModel.find()
+            .populate("userId", "username")
+            .populate("packageId", "packageName")
+            .sort({ createdAt: -1 })
+            .lean();
 
-        res.status(200).json(bookings)
+        res.status(200).json(bookings);
     } catch (error) {
         console.error('Error fetching bookings:', error)
         res.status(500).json({ message: 'Error fetching bookings', error })
@@ -1071,6 +1072,99 @@ const checkPaymentStatus = async (req, res) => {
     }
 };
 
+
+const getDashboardBookings = async (req, res) => {
+    try {
+        const bookings = await BookingModel.find({})
+            .populate("packageId", "packageType packageDuration")
+            .lean();
+
+        // Monthly booking trend
+        const bookingTrend = Array(12).fill(0);
+
+        bookings.forEach((booking) => {
+            const month = new Date(
+                booking.bookingDate || booking.createdAt
+            ).getMonth();
+
+            bookingTrend[month]++;
+        });
+
+        // Package Types
+        const bookingTypes = {
+            domestic: 0,
+            international: 0,
+        };
+
+        // Booking Status
+        const bookingStatus = {
+            pending: 0,
+            notPaid: 0,
+            fullyPaid: 0,
+            cancelled: 0,
+        };
+
+        // Duration Counter
+        const durationMap = {};
+
+        bookings.forEach((booking) => {
+            // Package Type
+            const type = booking.packageId?.packageType?.toLowerCase();
+
+            if (type === "domestic") bookingTypes.domestic++;
+            if (type === "international") bookingTypes.international++;
+
+            // Booking Status
+            switch ((booking.status || "").toLowerCase()) {
+                case "pending":
+                    bookingStatus.pending++;
+                    break;
+
+                case "not paid":
+                    bookingStatus.notPaid++;
+                    break;
+
+                case "fully paid":
+                    bookingStatus.fullyPaid++;
+                    break;
+
+                case "cancelled":
+                    bookingStatus.cancelled++;
+                    break;
+            }
+
+            // Package Duration
+            const duration = booking.packageId?.packageDuration;
+
+            if (duration) {
+                durationMap[duration] = (durationMap[duration] || 0) + 1;
+            }
+        });
+
+        const topDurations = Object.entries(durationMap)
+            .map(([label, count]) => ({
+                label,
+                count,
+            }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 3);
+
+        res.status(200).json({
+            bookingTrend,
+            bookingTypes,
+            bookingStatus,
+            topDurations,
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "Failed to fetch dashboard bookings",
+        });
+    }
+};
+
+
 export {
     createBooking,
     getUserBookings,
@@ -1091,5 +1185,6 @@ export {
     approveCancellation,
     disApproveCancellation,
     requestDocumentResubmission,
-    resubmitBookingDocuments
+    resubmitBookingDocuments,
+    getDashboardBookings
 };

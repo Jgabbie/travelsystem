@@ -493,6 +493,7 @@ const restoreArchivedUser = async (req, res) => {
 };
 
 
+
 export {
     getUsers,
     getArchivedUsers,
@@ -501,5 +502,5 @@ export {
     restoreArchivedUser,
     getUserData,
     updateUserData,
-    markLoginOnce
+    markLoginOnce,
 };

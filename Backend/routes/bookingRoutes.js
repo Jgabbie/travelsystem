@@ -126,4 +126,11 @@ router.post(
     staffOnly,
     bookingController.requestDocumentResubmission
 );
+
+router.get(
+    '/dashboard-bookings',
+    staffOnly,
+    bookingController.getDashboardBookings
+);
+
 export default router;

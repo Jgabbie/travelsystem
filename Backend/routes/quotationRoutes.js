@@ -82,4 +82,12 @@ router.put(
     quotationsController.uploadTravelDetails
 );
 
+router.get(
+    '/dashboard-quotations',
+    userAuth,
+    staffOnly,
+    quotationsController.getDashboardQuotations
+);
+
+
 export default router;

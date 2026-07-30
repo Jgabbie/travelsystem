@@ -78,4 +78,5 @@ router.put(
     packageController.updateDiscount
 );
 
+
 export default router;

@@ -945,5 +945,5 @@ export {
     updatePackage,
     getPopularPackages,
     updateSlots,
-    updateDiscount
+    updateDiscount,
 };
