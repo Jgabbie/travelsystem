@@ -6,6 +6,7 @@ import isBetween from "dayjs/plugin/isBetween";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import apiFetch from "../../config/fetchConfig";
+import ReactMarkdown from "react-markdown";
 import "../../style/admin/reviewratings.css";
 import "../../style/components/modals/modaldesign.css";
 import { useAuth } from "../../hooks/useAuth";
@@ -53,6 +54,9 @@ export default function ReviewRatings() {
 
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [selectedRating, setSelectedRating] = useState(null);
+
+    const [reviewSummary, setReviewSummary] = useState("");
+    const [summaryLoading, setSummaryLoading] = useState(false);
 
     const { auth } = useAuth();
 
@@ -115,10 +119,29 @@ export default function ReviewRatings() {
         }
     };
 
+
+    const fetchReviewSummary = async () => {
+        try {
+            setSummaryLoading(true);
+
+            const response = await apiFetch.get(
+                "/rating/summarize-all-reviews"
+            );
+
+            setReviewSummary(response.summary);
+
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setSummaryLoading(false);
+        }
+    };
+
+
     useEffect(() => {
         fetchRatings();
+        fetchReviewSummary();
     }, [fetchRatings]);
-
 
     // filtering functions
     const currentRatings = showArchived ? archivedRatings : ratings;
@@ -505,6 +528,34 @@ export default function ReviewRatings() {
                             </Col>
                         </Row>
                     )}
+
+                    <Card
+                        title="AI Review Summary"
+                        style={{ marginBottom: 20 }}
+                    >
+                        <Spin spinning={summaryLoading}>
+                            {reviewSummary ? (
+                                <ReactMarkdown
+                                    components={{
+                                        strong: ({ children }) => (
+                                            <strong style={{ fontWeight: 700 }}>
+                                                {children}
+                                            </strong>
+                                        ),
+                                        p: ({ children }) => (
+                                            <p style={{ marginBottom: 12, lineHeight: 1.8 }}>
+                                                {children}
+                                            </p>
+                                        ),
+                                    }}
+                                >
+                                    {reviewSummary}
+                                </ReactMarkdown>
+                            ) : (
+                                "No summary available."
+                            )}
+                        </Spin>
+                    </Card>
 
                     <Card className="reviewratings-actions">
                         <div className="reviewratings-actions-row">

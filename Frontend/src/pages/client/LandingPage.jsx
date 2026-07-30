@@ -46,6 +46,10 @@ export default function LandingPage() {
     const [popularSlideIndex, setPopularSlideIndex] = useState(0)
     const [popularCardsPerView, setPopularCardsPerView] = useState(3)
 
+    const [recentTours, setRecentTours] = useState([]);
+    const [recentToursLoading, setRecentToursLoading] = useState(false);
+    const [recentTourIndex, setRecentTourIndex] = useState(0);
+
     const [openPaymentCancelledModal, setOpenPaymentCancelledModal] = useState(false);
 
     //handle contact form values
@@ -309,6 +313,17 @@ export default function LandingPage() {
     }, [auth, authLoading])
 
 
+    useEffect(() => {
+        if (recentTours.length <= 1) return;
+
+        const interval = setInterval(() => {
+            setRecentTourIndex(prev => (prev + 1) % recentTours.length);
+        }, 4000);
+
+        return () => clearInterval(interval);
+    }, [recentTours]);
+
+
     //fetch personalized recommendations for "for you" section
     useEffect(() => {
         if (authLoading) return
@@ -538,6 +553,18 @@ export default function LandingPage() {
         )
     }
 
+    const recentTourSlides = [];
+
+    for (
+        let i = 0;
+        i < recentTours.length;
+        i += popularCardsPerView
+    ) {
+        recentTourSlides.push(
+            recentTours.slice(i, i + popularCardsPerView)
+        );
+    }
+
 
     //reset carousel index if number of slides changes
     useEffect(() => {
@@ -607,6 +634,26 @@ export default function LandingPage() {
 
         checkCancelledPayment();
     }, [navigate]);
+
+
+    useEffect(() => {
+        const fetchRecentTours = async () => {
+            setRecentToursLoading(true);
+
+            try {
+                const response = await apiFetch.get("/recent-tours/get-recent-tours");
+
+                setRecentTours(response || []);
+            } catch (err) {
+                console.error("Failed to fetch recent tours:", err);
+                setRecentTours([]);
+            } finally {
+                setRecentToursLoading(false);
+            }
+        };
+
+        fetchRecentTours();
+    }, []);
 
 
     useEffect(() => {
@@ -1183,6 +1230,90 @@ export default function LandingPage() {
                             </div>
                         )}
                     </div>
+
+
+                    <div className="recent-tours-section">
+
+                                    <div className="recent-tours-carousel">
+
+                                         <div className="recent-tours-info">
+
+                                            <h1 className='recent-tours-title ' style={{ marginBottom: 0, paddingBottom: 0 }}>
+                                                Recent Tours
+                                            </h1>
+
+                                            <div className='text-underline' style={{ backgroundColor: '#305797' }}></div>
+
+                                            <p className="recent-tours-subtitle">
+                                               Explore highlights from our latest travel adventures. From breathtaking landscapes to vibrant cities, discover the unforgettable destinations our clients have explored and the memories they've created along the way.
+                                            </p>
+
+                                        </div>
+
+
+                                        <Button
+                                            shape="circle"
+                                            className="popular-carousel-button"
+                                            icon={<LeftOutlined />}
+                                            onClick={() =>
+                                                setRecentTourIndex(prev =>
+                                                    (prev - 1 + recentTours.length) %
+                                                    recentTours.length
+                                                )
+                                            }
+                                        />
+
+                                        <div className="recent-tours-viewport">
+
+                                            <div
+                                                className="recent-tours-track"
+                                                style={{
+                                                    transform: `translateX(-${recentTourIndex * 100}%)`
+                                                }}
+                                            >
+                                                {recentTours.map((tour, index) => (
+
+                                                    <div
+                                                        key={index}
+                                                        className="recent-tours-slide"
+                                                    >
+                                                        <img
+                                                            src={tour.image || tour}
+                                                            alt={`Recent Tour ${index + 1}`}
+                                                        />
+                                                    </div>
+
+                                                ))}
+                                            </div>
+
+                                        </div>
+
+                                        <Button
+                                            shape="circle"
+                                            className="popular-carousel-button"
+                                            icon={<RightOutlined />}
+                                            onClick={() =>
+                                                setRecentTourIndex(prev =>
+                                                    (prev + 1) % recentTours.length
+                                                )
+                                            }
+                                        />
+
+                                        <div className="explore-carousel-dots">
+                                            {recentTours.map((_, index) => (
+                                                <span
+                                                    key={index}
+                                                    className={index === recentTourIndex ? "active" : ""}
+                                                    onClick={() => setRecentTourIndex(index)}
+                                                />
+                                            ))}
+                                        </div>
+
+                                    </div>
+
+
+                    </div>
+
                 </div>
 
 

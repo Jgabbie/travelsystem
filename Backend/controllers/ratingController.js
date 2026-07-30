@@ -4,6 +4,66 @@ import PackageModel from '../models/package.js';
 import mongoose from 'mongoose';
 import logAction from '../utils/logger.js';
 import { scheduleRetrain } from '../utils/recommendationRetrainQueue.js';
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+});
+
+
+const generateReviewSummary = async () => {
+    const ratings = await Rating.find({})
+        .populate("packageId", "packageName")
+        .select("rating review packageId");
+
+    if (!ratings.length) {
+        return {
+            summary: "No reviews available."
+        };
+    }
+
+    const reviews = ratings
+            .map(r => `
+        Package: ${r.packageId?.packageName || "Unknown Package"}
+        Rating: ${r.rating}/5
+        Review: ${r.review || "No review"}
+        `)
+            .join("\n\n");
+
+    const response = await openai.responses.create({
+    model: "gpt-5-mini",
+    input: `
+You are an AI assistant analyzing customer reviews for a travel agency.
+
+Analyze ALL reviews together.
+
+Write a report in Markdown.
+
+Requirements:
+
+- Start with an **Overall Summary** (2-3 sentences).
+- Then create a section called **Top Performing Tour Packages**.
+- List ONLY packages that consistently receive positive reviews.
+- For each package, explain why customers liked it.
+- Then create a section called **Tour Packages with Recurring Complaints**.
+- List ONLY packages that repeatedly receive negative reviews.
+- Explain the common complaints.
+- If a package has only one negative review, do not consider it a recurring complaint.
+- If there are no recurring complaints, state that.
+- Bold package names and important keywords.
+- Do not mention customer names.
+- Base everything only on the reviews below.
+
+Reviews:
+
+${reviews}
+`
+});
+
+    return {
+        summary: response.output_text.trim()
+    };
+};
 
 
 const queueRetrainSafely = (reason) => {
@@ -503,6 +563,17 @@ const restoreArchivedRating = async (req, res) => {
     }
 }
 
+const summarizePackageReviews = async (req, res) => {
+    try {
+        const result = await generateReviewSummary();
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+};
+
 
 export {
     submitRating,
@@ -515,5 +586,6 @@ export {
     getAverageRating,
     getAverageRatings,
     getArchivedRatings,
-    restoreArchivedRating
+    restoreArchivedRating,
+    summarizePackageReviews
 };

@@ -812,6 +812,89 @@
     text-align: center;
 }
 
+
+
+.recent-tours-section {
+    width: 100%;
+    padding: 90px 5%;
+    background: #f6f9ff;
+}
+
+.recent-tours-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 80px;
+}
+
+.recent-tours-info {
+    flex: 0.9;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.recent-tours-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 35px;
+    font-weight: 600;
+    color: #000000;
+    line-height: .5;
+    padding-bottom: 0;
+    margin-bottom: 40px;
+}
+
+.recent-tours-subtitle {
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #000000;
+    margin-left: 24px;
+    margin-right: 24px;
+    width: 100%;
+    max-width: 650px;
+    text-align: justify;
+    line-height: 1.5;
+}
+
+.recent-tours-carousel {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+}
+
+.recent-tours-viewport {
+    width: 500px;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.recent-tours-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform .5s ease;
+}
+
+.recent-tours-slide {
+    min-width: 100%;
+    height: 100%;
+}
+
+.recent-tours-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+
 @media (max-width: 1024px) {
     .popular-packages-slide {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -820,6 +903,30 @@
 
     .for-you-section .popular-reference-card.ant-card {
         max-width: 400px;
+    }
+}
+
+@media (max-width: 992px) {
+    .recent-tours-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 40px;
+    }
+
+    .recent-tours-info {
+        align-items: center;
+    }
+
+    .recent-tours-subtitle {
+        max-width: 600px;
+    }
+
+    .recent-tours-carousel {
+        justify-content: center;
+    }
+
+    .recent-tours-viewport {
+        width: min(90vw, 500px);
     }
 }
 

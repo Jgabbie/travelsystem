@@ -81,15 +81,29 @@ export default function AddService() {
         if (field === "description" && !value.trim()) return "Description is required.";
         if (field === "visaPrice" && !value) return "Visa price is required.";
         if (field === "requirements") {
-            if (!value.length) return "At least one requirement is required.";
-            if (value.some((item) => !item.req.trim())) return "All requirements must be filled.";
-            // Optionally, require description for each requirement
-            // if (value.some((item) => !item.desc.trim())) return "All requirement descriptions must be filled.";
+                if (!value.length) return "At least one requirement is required.";
+
+                if (
+                    value.some(
+                        (item) =>
+                            !String(item.req || "").trim() ||
+                            !String(item.desc || "").trim() ||
+                            !String(item.isReq || "").trim()
+                    )
+                ) {
+                    return "Please complete all requirement fields.";
+                }
         }
 
         if (field === "processSteps") {
-            if (value.some((item) => !String(item?.title || "").trim() || item?.daysToBeCompleted === "" || item?.daysToBeCompleted === null || item?.daysToBeCompleted === undefined || Number.isNaN(Number(item?.daysToBeCompleted)))) {
-                return "Each process step needs a title and days to be completed.";
+            if (
+                value.some(
+                    (item) =>
+                        !String(item.title || "").trim() ||
+                        !String(item.description || "").trim()
+                )
+            ) {
+                return "Please complete all process step fields.";
             }
         }
 

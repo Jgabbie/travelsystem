@@ -8,7 +8,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 
-
+import recentToursRoutes from "./routes/recentToursRoutes.js";
 import faqsRoutes from "./routes/faqsRoutes.js";
 import paymentMethodRoutes from "./routes/paymentmethodRoutes.js";
 import dfaLocationRoutes from "./routes/dfalocationRoutes.js";
@@ -131,6 +131,7 @@ app.use("/api/package-tags", packageTagRoutes);
 app.use("/api/dfa-locations", dfaLocationRoutes);
 app.use("/api/payment-methods", paymentMethodRoutes);
 app.use("/api/faqs", faqsRoutes);
+app.use("/api/recent-tours", recentToursRoutes);
 
 //might remove later
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

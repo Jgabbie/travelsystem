@@ -295,6 +295,45 @@
   box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.packagemanagement-addrecenttour {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 16px;
+  width: 170px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.recenttours-upload {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 16px;
+  width: 100px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.recenttours-select-image {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 16px;
+  width: 140px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
 .packagemanagement-archive {
   font-family: "Montserrat", sans-serif;
   font-size: 12px;
@@ -321,7 +360,21 @@
   box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-.packagemanagement-remove-button:hover {
+.recenttours-delete {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #992A46;
+  color: #fff;
+  border-radius: 16px;
+  width: 130px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.packagemanagement-remove-button:hover,
+.recenttours-delete:hover {
   background-color: #7D2239 !important;
   color: #fff !important;
 }
@@ -330,7 +383,10 @@
 .packagemanagement-edit-button:hover,
 .packagemanagement-slotsdiscount-button:hover,
 .packagemanagement-addpackage:hover,
-.packagemanagement-archive:hover {
+.packagemanagement-archive:hover,
+.packagemanagement-addrecenttour:hover,
+.recenttours-upload:hover,
+.recenttours-select-image:hover {
   background-color: #244575 !important;
   color: #fff !important;
 }

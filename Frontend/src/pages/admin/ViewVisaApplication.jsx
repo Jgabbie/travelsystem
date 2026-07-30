@@ -127,18 +127,24 @@ export default function ViewVisaApplication() {
     const handleSubmitAlternateSlots = async () => {
         setIsSubmittingSlots(true);
         try {
-            const slots = alternateSlots
-                .map((slot) => ({
-                    date: slot.date ? dayjs(slot.date).format("YYYY-MM-DD") : null,
-                    time: slot.time ? dayjs(slot.time).format("h:mm A") : null
-                }))
-                .filter((slot) => slot.date && slot.time);
+            const hasIncompleteSlot = alternateSlots.some(
+            (slot) => !slot.date || !slot.time
+        );
 
-            if (slots.length === 0) {
-                setIsSubmittingSlots(false);
-                notificationApi.error({ title: "Failed to submit appointment options", placement: "topRight" });
-                return;
-            }
+        if (hasIncompleteSlot) {
+            setIsSubmittingSlots(false);
+            notificationApi.error({
+                title: "Please complete all three suggested appointment options.",
+                description: "Each option must have both a date and a time.",
+                placement: "topRight"
+            });
+            return;
+        }
+
+        const slots = alternateSlots.map((slot) => ({
+            date: dayjs(slot.date).format("YYYY-MM-DD"),
+            time: dayjs(slot.time).format("h:mm A")
+        }));
 
             await apiFetch.put(`/visa/applications/${applicationItem}/suggest-appointments`, { slots });
 

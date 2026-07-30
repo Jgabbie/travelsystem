@@ -1,5 +1,5 @@
-import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, notification, Select, ConfigProvider, Space, InputNumber, Tag, Spin } from "antd";
-import { PlusOutlined, SearchOutlined, SolutionOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined, CalendarOutlined, PercentageOutlined, CheckCircleFilled, InboxOutlined } from "@ant-design/icons";
+import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, notification, Select, ConfigProvider, Space, InputNumber, Tag, Spin, Upload } from "antd";
+import { PlusOutlined, SearchOutlined, SolutionOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined, CalendarOutlined, PercentageOutlined, CheckCircleFilled, InboxOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
@@ -35,6 +35,12 @@ export default function PackageManagement() {
   const [actionType, setActionType] = useState("");
   const [showArchived, setShowArchived] = useState(false);
 
+
+  const [recentToursModal, setRecentToursModal] = useState(false);
+  const [recentTours, setRecentTours] = useState([]);
+  const [recentImage, setRecentImage] = useState(null);
+  const [uploadingRecentTour, setUploadingRecentTour] = useState(false);
+  const [fileList, setFileList] = useState([]);
 
   const [filters, setFilters] = useState({
     packageType: null,
@@ -298,6 +304,87 @@ export default function PackageManagement() {
   const totalPackages = currentPackages.length;
 
 
+  const getRecentTours = async () => {
+    try {
+
+        const response = await apiFetch.get(
+            "/recent-tours/get-recent-tours"
+        );
+
+        setRecentTours(response);
+
+    } catch (err) {
+        console.error(err);
+    }
+  };
+
+
+
+  const uploadRecentTour = async () => {
+
+    if (!recentImage) {
+        notificationApi.error({
+            message: "Please select an image."
+        });
+        return;
+    }
+
+    try {
+
+        setUploadingRecentTour(true);
+
+        const formData = new FormData();
+        formData.append("image", recentImage);
+
+        await apiFetch.post(
+            "/recent-tours/create-recent-tour",
+            formData
+        );
+
+        setRecentImage(null);
+        setFileList([]);
+
+        await getRecentTours();
+
+        notificationApi.success({
+            message: "Recent tour uploaded."
+        });
+
+    } catch (err) {
+        console.error(err);
+
+    } finally {
+        setUploadingRecentTour(false);
+    }
+  };
+
+
+  const deleteRecentTour = async (id) => {
+
+    try {
+
+        await apiFetch.delete(
+            `/recent-tours/${id}/delete-recent-tour`
+        );
+
+        getRecentTours();
+
+        notificationApi.success({
+            message: "Recent tour deleted."
+        });
+
+    } catch (err) {
+        console.error(err);
+    }
+
+  };
+
+
+
+
+
+
+
 
 
   return (
@@ -406,7 +493,18 @@ export default function PackageManagement() {
               </div>
 
               <div className="packagemanagement-actions-buttons">
-
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  className="packagemanagement-addrecenttour"
+                  onClick={() => {
+                      getRecentTours();
+                      setRecentToursModal(true);
+                  }}
+                  disabled={showArchived}
+                >
+                    Add Recent Tours
+                </Button>
                 <Button
                   className="packagemanagement-addpackage"
                   type="primary"
@@ -943,6 +1041,88 @@ export default function PackageManagement() {
                 </Button>
               </div>
 
+            </div>
+          </Modal>
+
+          <Modal
+            title="Recent Tours"
+            open={recentToursModal}
+            onCancel={() => setRecentToursModal(false)}
+            footer={null}
+            width={850}
+            centered
+          >
+
+            <Upload
+                fileList={fileList}
+                beforeUpload={(file) => {
+                    setRecentImage(file);
+                    setFileList([file]);   // <-- add this
+                    return false;
+                }}
+                onRemove={() => {
+                    setRecentImage(null);
+                    setFileList([]);
+                }}
+                maxCount={1}
+                listType="picture"
+                
+            >
+                <Button 
+                  type="primary"
+                  className="recenttours-select-image" 
+                  icon={<UploadOutlined />}
+                >
+                    Select Image
+                </Button>
+            </Upload>
+
+            <Button
+                type="primary"
+                style={{marginTop:15}}
+                loading={uploadingRecentTour}
+                onClick={uploadRecentTour}
+                className="recenttours-upload"
+            >
+                Upload
+            </Button>
+
+            <div
+                style={{
+                    marginTop:30,
+                    display:"grid",
+                    gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",
+                    gap:20
+                }}
+            >
+                {recentTours.map((tour)=>(
+                    <Card
+                        key={tour._id}
+                        cover={
+                            <img
+                                src={tour.image}
+                                alt={tour.title}
+                                style={{
+                                    height:170,
+                                    objectFit:"cover"
+                                }}
+                            />
+                        }
+                    >
+                        <h4>{tour.title}</h4>
+
+                        <p>{tour.location}</p>
+
+                        <Button
+                            type="primary"
+                            className="recenttours-delete"
+                            icon={<DeleteOutlined />}
+                            onClick={()=>deleteRecentTour(tour._id)}
+                        >
+                            Delete
+                        </Button>
+                    </Card>
+                ))}
             </div>
           </Modal>
 

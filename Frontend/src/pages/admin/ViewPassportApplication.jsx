@@ -119,18 +119,24 @@ export default function ViewPassportApplication() {
     const handleSubmitAlternateSlots = async () => {
         setIsSubmittingSlots(true);
         try {
-            const slots = alternateSlots
-                .map((slot) => ({
-                    date: slot.date ? dayjs(slot.date).format("YYYY-MM-DD") : null,
-                    time: slot.time ? dayjs(slot.time).format("h:mm A") : null
-                }))
-                .filter((slot) => slot.date && slot.time);
+            const hasIncompleteSlot = alternateSlots.some(
+            (slot) => !slot.date || !slot.time
+        );
 
-            if (slots.length === 0) {
+            if (hasIncompleteSlot) {
                 setIsSubmittingSlots(false);
-                notificationApi.error({ title: "Please select date and time for at least one option.", placement: "topRight" });
+                notificationApi.error({
+                    title: "Please complete all three suggested appointment options.",
+                    description: "Each option must have both a date and a time.",
+                    placement: "topRight"
+                });
                 return;
             }
+
+            const slots = alternateSlots.map((slot) => ({
+                date: dayjs(slot.date).format("YYYY-MM-DD"),
+                time: dayjs(slot.time).format("h:mm A")
+            }));
 
             await apiFetch.put(`/passport/applications/${applicationId}/suggest-appointments`, { slots });
 

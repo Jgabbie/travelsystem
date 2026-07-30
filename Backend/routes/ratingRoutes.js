@@ -78,4 +78,11 @@ router.delete(
     ratingController.adminDeleteRating
 );
 
+router.get(
+    '/summarize-all-reviews',
+    userAuth,
+    staffOnly,
+    ratingController.summarizePackageReviews
+);
+
 export default router;
