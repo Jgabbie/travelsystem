@@ -466,22 +466,6 @@ export default function Wishlist() {
                                                             : 'VIEW DETAILS'}
                                                     </button>
 
-                                                    <button
-                                                        type="button"
-                                                        className="wishlist-reference-remove-button"
-                                                        onClick={(event) => {
-                                                            event.stopPropagation()
-
-                                                            setSelectedWishlistId(
-                                                                pkg.wishlistId
-                                                            )
-
-                                                            setIsDeleteModalOpen(true)
-                                                        }}
-                                                    >
-                                                        <DeleteOutlined />
-                                                        REMOVE
-                                                    </button>
                                                 </div>
                                             </Card>
                                         </Col>
