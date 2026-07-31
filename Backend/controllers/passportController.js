@@ -1536,8 +1536,11 @@ const getPassportApplications = async (req, res) => {
     try {
 
         const applications = await PassportModel.find({})
-            .populate('userId', 'username email')
+            .select(
+                "applicationNumber username dfaLocation preferredDate preferredTime applicationType status"
+            )
             .sort({ createdAt: -1 })
+            .lean();
 
         await Promise.all(applications.map((application) => processPassportDeadlineAction(application).catch((error) => {
             console.error('Failed to process passport deadline warning:', error);

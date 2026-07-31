@@ -93,10 +93,6 @@ export default function TransactionManagement() {
   const [data, setData] = useState([]);
   const [archivedData, setArchivedData] = useState([]);
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [total, setTotal] = useState(0);
-
 
   //fetch transactions function
   const mapTransactions = (response) => response.map((t) => ({
@@ -156,26 +152,23 @@ export default function TransactionManagement() {
 
 
   const fetchTransactions = useCallback(async () => {
-
     setLoading(true);
 
     try {
+      const response = await apiFetch.get("/transaction/all-transactions");
 
-        const response = await apiFetch.get(
-            `/transaction/all-transactions?page=${page}&limit=${pageSize}`
-        );
+      setData(mapTransactions(response.transactions || response));
+    } catch (error) {
+      console.error(error);
 
-        setData(mapTransactions(response.transactions));
-
-        setTotal(response.total);
-
+      notificationApi.error({
+        title: "Unable to load transactions.",
+        placement: "topRight",
+      });
     } finally {
-
-        setLoading(false);
-
+      setLoading(false);
     }
-
-  }, [page, pageSize]);
+  }, [notificationApi]);
 
 
   //fetch archived transactions function
@@ -1099,14 +1092,8 @@ export default function TransactionManagement() {
                 loading={loading}
                 scroll={{ x: "max-content" }}
                 pagination={{
-                  current: page,
-                  pageSize,
-                  total,
-
-                  onChange: (newPage, newPageSize) => {
-                      setPage(newPage);
-                      setPageSize(newPageSize);
-                    }
+                  pageSize: 10,
+                  showSizeChanger: false,
                 }}
               />
             </Form>

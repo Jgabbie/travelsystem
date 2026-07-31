@@ -635,7 +635,9 @@ export default function BookingManagement() {
                     options={[
                       { value: "Fully Paid", label: "Fully Paid" },
                       { value: "Pending", label: "Pending" },
-                      { value: "Cancelled", label: "Cancelled" }
+                      { value: "Cancelled", label: "Cancelled" },
+                      { value: "Not Paid", label: "Not Paid"},
+                      { value: "Cancellation Requested", label: "Cancellation Requested"}
                     ]}
                   />
                 </div>

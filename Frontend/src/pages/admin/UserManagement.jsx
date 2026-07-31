@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Input, Select, Button, Form, Modal, Tag, Space, Row, Col, Statistic, Card, ConfigProvider, Avatar, notification, Tabs } from "antd";
+import { Table, Input, Select, Button, Form, Modal, Tag, Space, Row, Col, Statistic, Card, ConfigProvider, Avatar, notification, Tabs, Spin } from "antd";
 import {
   SearchOutlined,
   EditOutlined,
@@ -66,6 +66,9 @@ export default function UserManagement() {
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
   const [isUserRestoredModalOpen, setIsUserRestoredModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("customers");
+
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionType, setActionType] = useState(null);
 
   const [editUserData, setEditUserData] = useState({
     firstname: "",
@@ -237,17 +240,30 @@ export default function UserManagement() {
 
   //handle archive user
   const handleArchive = async (key) => {
+
+    setActionLoading(true);
+    setActionType("Archiving");
+
     try {
       await apiFetch.delete(`/user/deleteUsers/${key}`, { withCredentials: true });
       setIsDeleteModalOpen(false);
       setIsUserDeletedModalOpen(true);
       getUsers();
-    } catch { notificationApi.error({ title: "Archive failed", placement: "topRight" }); }
+    } catch (error) {
+      notificationApi.error({ title: "Archive failed", placement: "topRight" });
+    } finally {
+      setActionLoading(false);
+      setActionType(null);
+    }
   };
 
 
   //handle restore user
   const handleRestore = async (key) => {
+
+    setActionLoading(true);
+    setActionType("Restoring");
+
     try {
       await apiFetch.post(`/user/archived-users/${key}/restore`, {}, { withCredentials: true });
       setIsUserRestoredModalOpen(true);
@@ -256,6 +272,9 @@ export default function UserManagement() {
 
     } catch (error) {
       notificationApi.error({ title: error?.response?.data?.message || "Email of the user is already in use", placement: "topRight" });
+    } finally {
+      setActionLoading(false);
+      setActionType(null);
     }
   };
 
@@ -545,6 +564,12 @@ export default function UserManagement() {
     <ConfigProvider theme={{ token: { colorPrimary: "#305797" } }}>
 
       {notificationContextHolder}
+
+      {actionLoading ? (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
+          <Spin size="large" description={actionType === "Archiving" ? "Archiving user..." : "Restoring user..."} />
+        </div>
+      ): (
       <div className="user-management-container">
         <h1 className="page-header">User Management</h1>
 
@@ -725,6 +750,7 @@ export default function UserManagement() {
           )}
         </Modal>
       </div>
+      )}
 
 
       <Modal

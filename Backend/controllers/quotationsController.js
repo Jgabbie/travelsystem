@@ -77,11 +77,16 @@ const getUserQuotations = async (req, res) => {
 //get all quotations function 
 const getAllQuotations = async (_req, res) => {
     try {
-        const quotations = await QuotationModel.find({}).sort({ createdAt: -1 })
-            .populate('userId', 'username')
-            .populate('packageId', 'packageName packageType')
+        const quotations = await QuotationModel.find({})
+            .select(
+                "reference packageId userId quotationDetails status createdAt"
+            )
+            .populate("userId", "username")
+            .populate("packageId", "packageName packageType")
+            .sort({ createdAt: -1 })
+            .lean();
 
-        res.status(200).json(quotations)
+        res.status(200).json(quotations);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching quotations', error })
     }

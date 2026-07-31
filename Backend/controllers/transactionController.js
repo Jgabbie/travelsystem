@@ -321,26 +321,17 @@ const getTransactionsForApplication = async (req, res) => {
 //get all transactions function
 const getAllTransactions = async (req, res) => {
     try {
-        const page = Number(req.query.page) || 1;
-        const limit = Number(req.query.limit) || 10;
-
-        const skip = (page - 1) * limit;
-
-        const total = await TransactionModel.countDocuments();
-
         const transactions = await TransactionModel.find({})
+            .select(
+                "reference invoiceNumber amount method status transactionDate createdAt userId packageId applicationType proofImage"
+            )
             .populate("userId", "username firstname lastname")
             .populate("packageId", "packageName")
             .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
             .lean();
 
         res.json({
-            transactions,
-            total,
-            page,
-            totalPages: Math.ceil(total / limit)
+            transactions
         });
     } catch (error) {
         console.error('Error fetching transactions:', error)

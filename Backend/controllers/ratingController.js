@@ -418,9 +418,12 @@ const updateRating = async (req, res) => {
 const getAllRatings = async (_req, res) => {
     try {
         const ratings = await Rating.find({})
+            .select("rating review createdAt userId packageId")
             .populate('userId', 'username firstname lastname')
             .populate('packageId', 'packageName')
             .sort({ createdAt: -1 })
+            .lean();
+
         res.status(200).json(ratings)
     } catch (error) {
         res.status(500).json({ message: "Error fetching ratings", error })

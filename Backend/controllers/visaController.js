@@ -1275,34 +1275,16 @@ const requestVisaDocumentResubmission = async (req, res) => {
 const getVisaApplications = async (_req, res) => {
     try {
         const applications = await VisaModel.find({})
-            .populate('userId', 'firstname lastname username')
-            .populate('serviceId', 'visaName visaProcessSteps')
+            .select(
+                "applicationNumber applicantName serviceName preferredDate preferredTime status"
+            )
             .sort({ createdAt: -1 })
+            .lean();
 
         await Promise.all(applications.map((application) => processVisaDeadlineAction(application).catch((error) => { console.error('Failed to process visa deadline action:', error); })));
         await Promise.all(applications.map((application) => sendVisaDeadlineWarning(application).catch((error) => { console.error('Failed to send visa deadline warning:', error); })));
 
-        const applicationsPayload = applications.map(app => ({
-            applicationItem: app._id,
-            applicationNumber: app.applicationNumber,
-            applicantName: app.applicantName,
-            serviceName: app.serviceId?.visaName || app.serviceName || "N/A",
-            preferredDate: app.preferredDate,
-            preferredTime: app.preferredTime,
-            purposeOfTravel: app.purposeOfTravel,
-            status: getCurrentVisaStatus(app) || app.status,
-            processSteps: app.processSteps || buildProcessSteps(app, getVisaProcessStepsFromApplication(app)),
-            suggestedAppointmentSchedules: app.suggestedAppointmentSchedules,
-            suggestedAppointmentScheduleChosen: app.suggestedAppointmentScheduleChosen,
-            statusDeadlineDate: getVisaDeadlineInfo(app)?.deadlineDate.toISOString() || null,
-            statusDeadlineDays: getVisaDeadlineInfo(app)?.deadlineDays ?? null,
-            visaStatusTotalDaysMap: buildVisaStatusTotalDaysMapFromSteps(getVisaProcessStepsFromApplication(app)),
-            statusHistory: app.statusHistory || [],
-            resubmissionTarget: app.resubmissionTarget || null,
-            resubmissionTargets: app.resubmissionTargets || [],
-        }))
-
-        res.status(200).json(applicationsPayload)
+        res.status(200).json(applications)
     } catch (error) {
         res.status(500).json({ message: 'Error fetching visa applications', error: error.message })
     }

@@ -254,6 +254,9 @@ const getBookingsTotalBaseOnMonth = async (req, res) => {
 const getAllBookings = async (_req, res) => {
     try {
         const bookings = await BookingModel.find()
+            .select(
+                "reference bookingDate travelDate travelers status createdAt userId packageId"
+            )
             .populate("userId", "username")
             .populate("packageId", "packageName")
             .sort({ createdAt: -1 })
@@ -273,6 +276,7 @@ const getArchivedBookings = async (_req, res) => {
             .populate('userId', 'username')
             .populate('packageId', 'packageName packageType packageDuration')
             .sort({ archivedAt: -1 })
+            .lean();
 
         res.status(200).json(bookings)
     } catch (error) {
@@ -903,6 +907,9 @@ const disApproveCancellation = async (req, res) => {
 const getcancellations = async (req, res) => {
     try {
         const cancellations = await CancellationModel.find({})
+            .select(
+                "reference userId bookingId cancellationReason cancellationDate status imageProof"
+            )
             .populate('userId', 'username email')
             .populate({
                 path: 'bookingId',
@@ -911,6 +918,8 @@ const getcancellations = async (req, res) => {
             })
             .populate('packageId', 'packageName')
             .sort({ cancellationDate: -1 })
+            .lean()
+
         res.status(200).json(cancellations)
     } catch (error) {
         res.status(500).json({ message: 'Error fetching cancellations', error })

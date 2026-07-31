@@ -7,8 +7,10 @@ const getLogs = async (req, res) => {
     try {
         // Fetch logs and populate 'performedBy' with username, email, AND role
         const logs = await LogModel.find()
-            .populate('performedBy', 'username email role')
-            .sort({ timestamp: -1 });
+            .select("action performedBy details timestamp")
+            .populate("performedBy", "username email role")
+            .sort({ timestamp: -1 })
+            .lean();
 
         res.status(200).json(logs);
     } catch (error) {
@@ -21,8 +23,10 @@ const getLogs = async (req, res) => {
 const getAudits = async (req, res) => {
     try {
         const audits = await AuditModel.find()
-            .populate('performedBy', 'username email role')
-            .sort({ timestamp: -1 });
+            .select("action performedBy details timestamp")
+            .populate("performedBy", "username email role")
+            .sort({ timestamp: -1 })
+            .lean();
 
         res.status(200).json(audits);
     } catch (error) {

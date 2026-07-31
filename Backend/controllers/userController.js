@@ -211,10 +211,15 @@ const updateUserData = async (req, res) => {
 //mark login once function
 const getUsers = (req, res) => {
     UserModel.find()
+        .select(
+            "username firstname lastname email phone profileImage role isAccountVerified createdAt"
+        )
+        .sort({ createdAt: -1 })
+        .lean()
         .then(users => res.json(users))
         .catch(err => {
             console.error(err);
-            res.status(500).json({ error: err.message })
+            res.status(500).json({ error: err.message });
         });
 };
 
@@ -222,11 +227,15 @@ const getUsers = (req, res) => {
 //get archived users function
 const getArchivedUsers = (req, res) => {
     ArchivedUserModel.find()
+        .select(
+            "originalUserId username firstname lastname email phone profileImage role isAccountVerified archivedAt"
+        )
         .sort({ archivedAt: -1 })
+        .lean()
         .then(users => res.json(users))
         .catch(err => {
             console.error(err);
-            res.status(500).json({ error: err.message })
+            res.status(500).json({ error: err.message });
         });
 };
 
