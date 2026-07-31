@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Input, Button, Card, Space, notification, ConfigProvider, Select, Upload, Image } from "antd";
+import { Input, Button, Card, Space, notification, ConfigProvider, Upload, Image } from "antd";
 import { PlusOutlined, DeleteOutlined, ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
@@ -51,7 +51,7 @@ export default function AddService() {
         visaPrice: "",
         imageFile: "",
         imagePreview: "",
-        requirements: [{ req: "", desc: "", isReq: "", applicationLink: "" }],
+        requirements: [{ req: "", desc: "", isReq: "Required", applicationLink: "" }],
         standardProcessSteps: [],
         processSteps: [],
         reminders: [""],
@@ -87,8 +87,7 @@ export default function AddService() {
                     value.some(
                         (item) =>
                             !String(item.req || "").trim() ||
-                            !String(item.desc || "").trim() ||
-                            !String(item.isReq || "").trim()
+                            !String(item.desc || "").trim()
                     )
                 ) {
                     return "Please complete all requirement fields.";
@@ -128,7 +127,7 @@ export default function AddService() {
     //add bullet function
     const addBullet = (type) => {
         if (type === "requirements") {
-            const updated = [...values.requirements, { req: "", desc: "", isReq: "" }];
+            const updated = [...values.requirements, { req: "", desc: "", isReq: "Required" }];
             valueHandler("requirements", updated);
         }
         if (type === "processSteps") {
@@ -334,7 +333,7 @@ export default function AddService() {
             visaRequirements: values.requirements.map((item) => ({
                 req: item.req.trim(),
                 desc: item.desc.trim(),
-                isReq: item.isReq,
+                isReq: "Required",
                 applicationLink:
                     item.applicationLink != null
                         ? String(item.applicationLink).trim()
@@ -463,7 +462,7 @@ export default function AddService() {
                     imagePreview: existing.visaImage || "",
                     description: existing.visaDescription || "",
                     requirements: existing.visaRequirements?.length
-                        ? existing.visaRequirements.map((item) => typeof item === "string" ? { req: item, desc: "", isReq: "" } : { req: item.req || "", desc: item.desc || "", isReq: item.isReq || "", applicationLink: item.applicationLink || "" })
+                        ? existing.visaRequirements.map((item) => typeof item === "string" ? { req: item, desc: "", isReq: "" } : { req: item.req || "", desc: item.desc || "", isReq: "Required", applicationLink: item.applicationLink || "" })
                         : [{ req: "", desc: "", isReq: "", applicationLink: "" }],
                     standardProcessSteps: editableStandardSteps,
                     // store only custom steps in the editable area
@@ -694,18 +693,6 @@ export default function AddService() {
                                                 </div>
                                             </div>
                                         </Space>
-
-                                        <label className="add-service-input-labels">Required or Optional <span style={{ color: "#ff0000" }}>*</span></label>
-                                        <Select
-                                            value={item.isReq}
-                                            className="add-service-inputs"
-                                            placeholder="Requirement Type"
-                                            onChange={(value) => updateBullet("requirements", index, value, "isReq")}
-                                            options={[
-                                                { value: "Required", label: "Required (For General Applicants)" },
-                                                { value: "Optional", label: "Optional" }
-                                            ]}
-                                        />
 
                                         <div>
                                             <label className="add-service-input-labels">Requirement Description <span style={{ color: "#ff0000" }}>*</span></label>

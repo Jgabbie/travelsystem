@@ -1276,7 +1276,7 @@ const getVisaApplications = async (_req, res) => {
     try {
         const applications = await VisaModel.find({})
             .select(
-                "applicationNumber applicantName serviceName preferredDate preferredTime status"
+                "_id applicationNumber applicantName serviceName preferredDate preferredTime status"
             )
             .sort({ createdAt: -1 })
             .lean();

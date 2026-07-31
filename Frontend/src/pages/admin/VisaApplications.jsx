@@ -63,7 +63,7 @@ export default function VisaApplications() {
             const response = await apiFetch.get('/visa/applications')
 
             const applications = response.map((a) => ({
-                key: a.applicationItem,
+                key: a._id,
                 applicationNumber: a.applicationNumber,
                 applicantName: a.applicantName,
                 serviceName: a.serviceName,
@@ -116,24 +116,37 @@ export default function VisaApplications() {
     //filter functions
     const currentData = showArchived ? archivedApplications : applications
 
-    const statusOptions = [...new Set(currentData
-        .map(item => Array.isArray(item.status) ? item.status[item.status.length - 1] : item.status)
-        .filter(Boolean)
-    )].map(status => ({
+    const statusOptions = [
+            ...new Set(
+                currentData
+                    .map(item => {
+                        const status = Array.isArray(item.status)
+                            ? item.status[item.status.length - 1]
+                            : item.status;
+                        return status;
+                    })
+                    .filter(Boolean)
+            )
+    ].map(status => ({
         value: status,
         label: status,
     }));
 
     const filteredData = currentData.filter(item => {
+        const currentStatus = Array.isArray(item.status)
+            ? item.status[item.status.length - 1]
+            : item.status;
+
         const matchesSearch =
             (item.applicationNumber?.toString().toLowerCase() || "").includes(searchText.toLowerCase()) ||
             (item.applicantName?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
             (item.serviceName?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
-            (dayjs(item.preferredDate).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
-            (item.status?.toLowerCase() || "").includes(searchText.toLowerCase());
+            (item.preferredDate?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (currentStatus?.toLowerCase() || "").includes(searchText.toLowerCase());
 
 
-        const matchesStatus = statusFilter === "" || item.status === statusFilter;
+        const matchesStatus =
+            statusFilter === "" || currentStatus === statusFilter;
 
         const matchesDate = !submissionDateFilter ||
             (item.preferredDate && dayjs(item.preferredDate).isSame(submissionDateFilter, "day"));
