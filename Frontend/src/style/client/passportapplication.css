@@ -86,14 +86,14 @@
     border-radius: 8px;
     border: 1px solid #cbd5e1;
     box-shadow: 0 4px 12px rgba(31, 42, 68, 0.08);
-    max-width: 100px;
+    max-width: 136px;
 }
 
 .passportapplication-suggestedoptions-timepicker {
     border-radius: 8px;
     border: 1px solid #cbd5e1;
     box-shadow: 0 4px 12px rgba(31, 42, 68, 0.08);
-    max-width: 100px;
+    max-width: 170px;
 }
 
 .passportapplication-suggestedoption-card {
@@ -197,6 +197,20 @@
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
+
+.passportapplication-submitdate-button {
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 16px;
+    width: 170px;
+    height: 35px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
 
 .passportapplication-uploadreceipt-button {
     font-family: "Montserrat", sans-serif;

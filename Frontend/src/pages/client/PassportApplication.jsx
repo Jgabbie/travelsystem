@@ -81,8 +81,8 @@ export default function PassportApplication() {
     const [selectedSuggestedIndex, setSelectedSuggestedIndex] = useState(null);
     const [customDateTime, setCustomDateTime] = useState({ date: null, time: null });
     const [confirmingSuggested, setConfirmingSuggested] = useState(false);
-    const [setSelectedDate] = useState(null);
-    const [setSelectedTime] = useState(null);
+    const [, setSelectedDate] = useState(null);
+    const [, setSelectedTime] = useState(null);
 
     const [isConfirmDocumentsOpen, setIsConfirmDocumentsOpen] = useState(false);
     const [isSelectDateModalOpen, setIsSelectDateModalOpen] = useState(false);
@@ -644,6 +644,7 @@ export default function PassportApplication() {
             setApplication(refreshed);
             setIsDateSelectedModalOpen(true);
         } catch (error) {
+            console.error(error);
             notificationApi.error({ title: 'Failed to confirm appointment schedule.', placement: 'topRight' });
         } finally {
             setConfirmingSuggested(false);
@@ -931,7 +932,7 @@ export default function PassportApplication() {
 
                                                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
                                                             <Button
-                                                                className='passport-submitdate'
+                                                                className='passportapplication-submitdate-button'
                                                                 type="primary"
                                                                 onClick={() => {
                                                                     setIsSelectDateModalOpen(true);
