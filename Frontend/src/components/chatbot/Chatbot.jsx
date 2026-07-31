@@ -159,7 +159,7 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
                         value={chatMessage}
                         onChange={(e) => {
                             const cleanedValue = e.target.value
-                                .replace(/[^a-zA-Z0-9\s]/g, '')
+                                .replace(/[^a-zA-Z0-9\s?!]/g, '')
                                 .replace(/[^\S\r\n]{2,}/g, ' ')
                                 .replace(/^\s+/, '');
 
