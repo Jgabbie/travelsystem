@@ -866,7 +866,7 @@ export default function VisaApplication() {
                                 {/* THE REST OF THE PROCESS */}
                                 {statusValue && (statusValue.toLowerCase() === 'documents received' ||
                                     statusValue?.toLowerCase() === 'documents submitted' ||
-                                    statusValue?.toLowerCase() === 'processing by dfa') && (
+                                    statusValue?.toLowerCase() === 'processing by embassy') && (
                                         <div style={{ marginBottom: 24, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
                                             <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#faad14' }}>PROGRESS TRACKER</h2>
                                             <p style={{ margin: 0, fontSize: 14 }}>
