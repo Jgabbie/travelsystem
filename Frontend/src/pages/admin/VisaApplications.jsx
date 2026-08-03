@@ -117,16 +117,16 @@ export default function VisaApplications() {
     const currentData = showArchived ? archivedApplications : applications
 
     const statusOptions = [
-            ...new Set(
-                currentData
-                    .map(item => {
-                        const status = Array.isArray(item.status)
-                            ? item.status[item.status.length - 1]
-                            : item.status;
-                        return status;
-                    })
-                    .filter(Boolean)
-            )
+        ...new Set(
+            currentData
+                .map(item => {
+                    const status = Array.isArray(item.status)
+                        ? item.status[item.status.length - 1]
+                        : item.status;
+                    return status;
+                })
+                .filter(Boolean)
+        )
     ].map(status => ({
         value: status,
         label: status,
@@ -154,10 +154,31 @@ export default function VisaApplications() {
         return matchesSearch && matchesStatus && matchesDate;
     });
 
-    const totals = applications.length
-    const pending = applications.filter((item) => item.status === 'Pending').length
-    const approved = applications.filter((item) => item.status === 'Approved').length
-    const rejected = applications.filter((item) => item.status === 'Rejected').length
+    const totals = applications.length;
+
+    const pending = applications.filter((item) => {
+        const status = Array.isArray(item.status)
+            ? item.status[item.status.length - 1]
+            : item.status;
+
+        return status === "Application Submitted";
+    }).length;
+
+    const approved = applications.filter((item) => {
+        const status = Array.isArray(item.status)
+            ? item.status[item.status.length - 1]
+            : item.status;
+
+        return status === "Application Approved";
+    }).length;
+
+    const rejected = applications.filter((item) => {
+        const status = Array.isArray(item.status)
+            ? item.status[item.status.length - 1]
+            : item.status;
+
+        return status === "Rejected";
+    }).length;
 
 
     //generate PDF function

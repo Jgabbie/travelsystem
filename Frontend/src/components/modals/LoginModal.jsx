@@ -265,6 +265,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
         e.preventDefault();
         isCloseLogin();
         navigate('/reset-password');
+        clearForm();
     }
 
 

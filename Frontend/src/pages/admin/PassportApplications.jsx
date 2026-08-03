@@ -148,10 +148,31 @@ export default function PassportApplications() {
         return matchesSearch && matchesStatus && matchesDate;
     });
 
-    const totals = passportApplications.length
-    const pending = passportApplications.filter((item) => item.status === 'Pending').length
-    const approved = passportApplications.filter((item) => item.status === 'Approved').length
-    const rejected = passportApplications.filter((item) => item.status === 'Rejected').length
+    const totals = passportApplications.length;
+
+    const pending = passportApplications.filter((item) => {
+        const status = Array.isArray(item.status)
+            ? item.status[item.status.length - 1]
+            : item.status;
+
+        return status === "Application Submitted";
+    }).length;
+
+    const approved = passportApplications.filter((item) => {
+        const status = Array.isArray(item.status)
+            ? item.status[item.status.length - 1]
+            : item.status;
+
+        return status === "Application Approved";
+    }).length;
+
+    const rejected = passportApplications.filter((item) => {
+        const status = Array.isArray(item.status)
+            ? item.status[item.status.length - 1]
+            : item.status;
+
+        return status === "Rejected";
+    }).length;
 
 
     //generate PDF function
