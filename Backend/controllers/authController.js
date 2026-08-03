@@ -260,7 +260,21 @@ const loginUser = async (req, res) => {
     const { username, password } = req.body;
     await connectToDatabase();
     try {
-        const user = await UserModel.findOne({ username })
+        const login = typeof req.body.username === "string"
+            ? req.body.username.trim()
+            : "";
+
+        const password = typeof req.body.password === "string"
+            ? req.body.password
+            : "";
+
+        const isEmail = login.includes("@");
+
+        const user = await UserModel.findOne(
+            isEmail
+                ? { email: normalizeEmail(login) }
+                : { username: normalizeUsername(login) }
+        );
 
         if (!user) {
             return res.status(401).json({ message: "Invalid Username or Password" })

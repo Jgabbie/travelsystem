@@ -831,6 +831,18 @@ export default function VisaApplication() {
                                     </div>
                                 )}
 
+                                {statusValue && statusValue.toLowerCase() === 'application submitted' && application?.suggestedAppointmentScheduleChosen?.date === "" && application?.suggestedAppointmentScheduleChosen?.time === "" && (
+                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #1677ff', backgroundColor: '#e6f4ff', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8, }}>
+                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#1677ff', }}>
+                                            APPLICATION SUBMITTED
+                                        </h2>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Your application has been submitted successfully.
+                                            Kindly wait for the suggested appointment schedule from our team or approval of your preferred date and time. We will notify you once the date is available.
+                                        </p>
+                                    </div>
+                                )}
+
                                 {/* SUGGESTED APPOINTMENT */}
                                 {statusValue && statusValue.toLowerCase() === 'application submitted' && application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
                                     <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
@@ -851,6 +863,30 @@ export default function VisaApplication() {
                                         </p>
                                     </div>
                                 )}
+
+                                {/* PAYMENT COMPLETED */}
+                                {statusValue && statusValue.toLowerCase() === 'payment completed' && application?.onPenalty === false && (
+                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8, }} >
+                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63', }}>PAYMENT COMPLETED</h2>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Your payment has been successfully verified.
+                                            You may now upload the required documents to continue with your passport application.
+                                        </p>
+                                    </div>
+                                )}
+
+
+                                {/* DOCUMENTS UPLOADED */}
+                                {statusValue && statusValue.toLowerCase() === 'documents uploaded' && (
+                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #fa8c16', backgroundColor: '#fff7e6', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8, }} >
+                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#fa8c16', }} >DOCUMENTS UPLOADED</h2>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Your required documents have been successfully uploaded.
+                                            Our team is currently reviewing them. You will receive a notification once the review has been completed.
+                                        </p>
+                                    </div>
+                                )}
+
 
                                 {/* DOCUMENTS APPROVED */}
                                 {statusValue && statusValue.toLowerCase() === 'documents approved' && (
@@ -888,6 +924,25 @@ export default function VisaApplication() {
                                         </p>
                                     </div>
                                 )}
+
+
+                                {application?.onPenalty && application.secondChance === false &&
+                                    (statusValue?.trim().toLowerCase() === 'payment completed' ||
+                                        statusValue?.trim().toLowerCase() === 'documents uploaded') && (
+                                        <div style={{ marginBottom: 24, borderLeft: '4px solid #ff4d4f', backgroundColor: '#fff1f0', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8, }}>
+                                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#ff4d4f', }}>
+                                                APPLICATION ON PENALTY
+                                            </h2>
+
+                                            <p style={{ margin: 0, fontSize: 14 }}>
+                                                Your application has exceeded the allotted submission period and is
+                                                currently under penalty. To continue processing your application,
+                                                you must first settle the required penalty fee. Once your payment
+                                                has been verified, you may proceed with the remaining requirements.
+                                            </p>
+                                        </div>
+                                    )}
+
 
                                 {/* APPLICATION SUCCESS */}
                                 {statusValue && statusValue.toLowerCase() === 'embassy approved' && (

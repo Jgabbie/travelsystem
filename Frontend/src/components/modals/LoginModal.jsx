@@ -329,16 +329,35 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
 
                                     <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleLogin}>
                                         <div className='login-div-input-fields-modal'>
-                                            <label className='login-labels-modal' htmlFor="username">Username <span style={{ color: "#ff0000" }}>*</span></label>
-                                            <Input status={error ? "error" : ""} maxLength={20} minLength={8} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
-                                                if (e.key === " " || e.key === "Backspace") {
-                                                    return;
-                                                }
+                                            <label className='login-labels-modal' htmlFor="username">Username or Email <span style={{ color: "#ff0000" }}>*</span></label>
+                                            <Input status={error ? "error" : ""} maxLength={50} minLength={8} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off'
+                                                onKeyDown={(e) => {
+                                                    // Allow control/navigation keys
+                                                    if (
+                                                        [
+                                                            "Backspace",
+                                                            "Delete",
+                                                            "Tab",
+                                                            "ArrowLeft",
+                                                            "ArrowRight",
+                                                            "Home",
+                                                            "End",
+                                                        ].includes(e.key)
+                                                    ) {
+                                                        return;
+                                                    }
 
-                                                if (!/^[A-Za-z0-9]+$/.test(e.key)) {
-                                                    e.preventDefault();
-                                                }
-                                            }} value={values.username} type="text" id="username" name="username" className='login-input-fields-modal' required />
+                                                    // Block spaces
+                                                    if (e.key === " ") {
+                                                        e.preventDefault();
+                                                        return;
+                                                    }
+
+                                                    // Allow letters, numbers, @, and .
+                                                    if (!/^[A-Za-z0-9@.]$/.test(e.key)) {
+                                                        e.preventDefault();
+                                                    }
+                                                }} value={values.username} type="text" id="username" name="username" className='login-input-fields-modal' required />
                                         </div>
 
                                         <div className='login-div-input-fields-modal'>
