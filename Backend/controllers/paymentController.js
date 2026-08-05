@@ -173,7 +173,7 @@ const createManualPayment = async (req, res) => {
             userId,
             bookingId,
             amount,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
         const reference = generateTransactionReference();
@@ -293,7 +293,7 @@ const createManualPaymentQuotation = async (req, res) => {
             userId,
             bookingId,
             amount,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
         const reference = generateTransactionReference();
@@ -414,7 +414,7 @@ const createManualPaymentDeposit = async (req, res) => {
             userId,
             bookingId,
             amount: amount.amount,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
         const reference = generateTransactionReference();
@@ -527,7 +527,7 @@ const createManualPaymentPassportPenalty = async (req, res) => {
             userId,
             applicationId,
             amount,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
 
@@ -627,7 +627,7 @@ const createManualPaymentVisaPenalty = async (req, res) => {
             userId,
             applicationId,
             amount,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
 
@@ -728,7 +728,7 @@ const createManualPaymentPassport = async (req, res) => {
             userId,
             applicationId,
             amount,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
 
@@ -830,7 +830,7 @@ const createManualPaymentVisa = async (req, res) => {
             userId,
             applicationId,
             amount,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
 
@@ -930,7 +930,7 @@ const createManualPaymentDeliveryFee = async (req, res) => {
             userId,
             applicationId,
             amount,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
 
@@ -1031,7 +1031,7 @@ const createCheckoutSessionDeliveryFee = async (req, res) => {
             userId,
             applicationId,
             amount: totalPrice,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
 
@@ -1129,7 +1129,7 @@ const createCheckoutSessionPassport = async (req, res) => {
             userId,
             applicationId,
             amount: totalPrice,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
 
@@ -1227,7 +1227,7 @@ const createCheckoutSessionVisa = async (req, res) => {
             userId,
             applicationId,
             amount: totalPrice,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
 
@@ -1327,7 +1327,7 @@ const createCheckoutSessionPassportPenalty = async (req, res) => {
             applicationId,
             applicationNumber,
             amount: penaltyAmount,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
 
@@ -1427,7 +1427,7 @@ const createCheckoutSessionVisaPenalty = async (req, res) => {
             applicationId,
             applicationNumber,
             amount: penaltyAmount,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
 
@@ -1523,7 +1523,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
             userId,
             bookingId,
             amount: totalPrice,
-            expiresAt: dayjs().add(2, 'minutes').toDate()
+            expiresAt: dayjs().add(30, 'minutes').toDate()
         });
 
         const bookingReference = paymentPayload.bookingReference;
