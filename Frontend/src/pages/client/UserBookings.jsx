@@ -64,6 +64,20 @@ export default function UserBookings() {
         fetchBookings()
     }, [notificationApi])
 
+    useEffect(() => {
+        window.history.pushState(null, "", window.location.href);
+
+        const handlePopState = () => {
+            window.history.go(1);
+        };
+
+        window.addEventListener("popstate", handlePopState);
+
+        return () => {
+            window.removeEventListener("popstate", handlePopState);
+        };
+    }, []);
+
 
     //filter bookings based on search and filters
     const filteredData = bookings.filter(item => {

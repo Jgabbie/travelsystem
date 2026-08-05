@@ -61,6 +61,21 @@ export default function UserApplications() {
     }, []);
 
 
+    useEffect(() => {
+        window.history.pushState(null, "", window.location.href);
+
+        const handlePopState = () => {
+            window.history.go(1);
+        };
+
+        window.addEventListener("popstate", handlePopState);
+
+        return () => {
+            window.removeEventListener("popstate", handlePopState);
+        };
+    }, []);
+
+
     //filter applications based on search text, type, status, and date
     const filteredData = applications.filter(item => {
         const search = searchText.toLowerCase();
