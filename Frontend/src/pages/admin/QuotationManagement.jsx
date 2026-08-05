@@ -154,7 +154,7 @@ export default function QuotationManagement() {
 
         // Headers updated to match your screenshot exactly
         const tableColumn = [
-            "Quotation Request No.",
+            "Quotation Reference",
             "Package Name",
             "Date Requested",
             "Customer Name",
