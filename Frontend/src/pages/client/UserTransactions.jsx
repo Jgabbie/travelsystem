@@ -291,10 +291,10 @@ export default function UserTransactions() {
 
             pdf.save(`Receipt-${selectedTransaction?.reference || 'download'}.pdf`);
 
-            notificationApi.success({ title: "Downloaded successfully!", placement: 'topRight' });
+            notificationApi.success({ title: "Downloaded successfully!", key: "pdf", placement: 'topRight', duration: 3 });
         } catch (error) {
             console.error("PDF Generation Error:", error);
-            notificationApi.error({ title: "Failed to generate PDF.", placement: 'topRight' });
+            notificationApi.error({ title: "Failed to generate PDF.", key: "pdf", placement: 'topRight', duration: 3 });
         }
     };
 
@@ -576,6 +576,12 @@ export default function UserTransactions() {
                                             link.click();
                                             document.body.removeChild(link);
                                             window.URL.revokeObjectURL(url);
+
+                                            notificationApi.success({
+                                                title: "Proof Image downloaded successfully!",
+                                                placement: "topRight",
+                                            });
+
                                         } catch (err) {
                                             window.open(
                                                 selectedTransaction.proofImage,
