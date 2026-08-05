@@ -1463,6 +1463,12 @@ export default function TransactionManagement() {
                     link.click();
                     document.body.removeChild(link);
                     window.URL.revokeObjectURL(url);
+
+                    notificationApi.success({
+                      title: "Proof image downloaded successfully.",
+                      placement: "topRight",
+                    });
+
                   } catch (err) {
                     window.open(proofTransaction.proofImage, "_blank");
                   }
