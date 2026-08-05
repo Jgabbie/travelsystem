@@ -366,7 +366,7 @@ export default function QuotationManagement() {
     //table columns
     const columns = [
         {
-            title: "Quotation Request No.",
+            title: "Quotation Reference",
             dataIndex: "ref",
             key: "ref"
         },
