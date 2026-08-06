@@ -212,33 +212,43 @@ export default function BookingProcess() {
         ? { adult: 1, child: 0, infant: 0 }
         : { adult: counts.adult, child: counts.child, infant: counts.infant }
 
-    const discountPercent = Number(data.packageDiscountPercent) || 0
-    const discountMultiplier = discountPercent > 0 ? 1 - (discountPercent / 100) : 1
+    const discountPercent = Number(data.packageDiscountPercent) || 0;
+    const discountMultiplier = discountPercent > 0 ? 1 - (discountPercent / 100) : 1;
+    const dateSurcharge = Number(data.travelDateRate) || 0;
 
-    const basePackagePricePerPax = data.travelDatePrice || 0
-    const baseSoloRate = data.packageSoloRate || 0
-    const baseChildRate = data.packageChildRate || 0
-    const baseInfantRate = data.packageInfantRate || 0
+    const packagePricePerPax = data.travelDatePrice || 0;
+    const baseSoloRate = data.packageSoloRate || 0;
+    const baseChildRate = data.packageChildRate || 0;
+    const baseInfantRate = data.packageInfantRate || 0;
 
-    const packagePricePerPax = basePackagePricePerPax * discountMultiplier
-    const soloRate = baseSoloRate * discountMultiplier
-    const childRate = baseChildRate * discountMultiplier
-    const infantRate = baseInfantRate * discountMultiplier
+    const pureAdultBase = discountMultiplier > 0
+        ? (packagePricePerPax - dateSurcharge) / discountMultiplier
+        : (packagePricePerPax - dateSurcharge);
 
-    const baseSoloDisplayRate = baseSoloRate || basePackagePricePerPax
-    const discountedSoloDisplayRate = soloRate || packagePricePerPax
+    const pureChildBase = Math.max(0, baseChildRate - dateSurcharge);
+    const pureInfantBase = Math.max(0, baseInfantRate - dateSurcharge);
 
-    const soloExtraRate = Math.max(0, soloRate - packagePricePerPax)
-    const dateSurcharge = data.travelDateRate || 0
+    const originalAdultRate = pureAdultBase + dateSurcharge;
+    const originalChildRate = baseChildRate;
+    const originalInfantRate = baseInfantRate;
+
+    const childRate = (pureChildBase * discountMultiplier) + dateSurcharge;
+    const infantRate = (pureInfantBase * discountMultiplier) + dateSurcharge;
+    const soloRate = baseSoloRate;
+
+    const soloExtraRate = baseSoloRate - dateSurcharge;
+    const baseSoloDisplayRate = baseSoloRate
+    const discountedSoloDisplayRate = soloRate;
 
     const totalPrice =
-        travelersCount.adult * packagePricePerPax +
-        travelersCount.child * childRate +
-        travelersCount.infant * infantRate;
+        (travelersCount.adult * packagePricePerPax) +
+        (travelersCount.child * childRate) +
+        (travelersCount.infant * infantRate);
+
     const originalTotalPrice =
-        travelersCount.adult * basePackagePricePerPax +
-        travelersCount.child * baseChildRate +
-        travelersCount.infant * baseInfantRate;
+        (travelersCount.adult * originalAdultRate) +
+        (travelersCount.child * originalChildRate) +
+        (travelersCount.infant * originalInfantRate);
     const travelersTotal = travelersCount.adult + travelersCount.child + travelersCount.infant
     const travelerBreakdownParts = [
         travelersCount.adult ? `${travelersCount.adult} Adult${travelersCount.adult > 1 ? 's' : ''}` : null,

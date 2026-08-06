@@ -467,7 +467,15 @@ export default function PackagePage() {
         packageId: packageItem,
         packageName: packageData?.packageName || 'Package Details',
         packagePricePerPax: packageData?.packagePricePerPax + selectedDateRate || 0,
-        packageSoloRate: packageData?.packageSoloRate + selectedDateRate || 0,
+        packageSoloRate: (() => {
+            const baseSoloRate = Number(packageData?.packageSoloRate || 0);
+            const discountPercent = Number(packageData?.packageDiscountPercent || 0);
+            const discountedSoloRate = discountPercent > 0
+                ? baseSoloRate * (1 - discountPercent / 100)
+                : baseSoloRate;
+
+            return discountedSoloRate + (Number(selectedDateRate) || 0);
+        })(),
         packageChildRate: packageData?.packageChildRate + selectedDateRate || 0,
         packageInfantRate: packageData?.packageInfantRate + selectedDateRate || 0,
         packageDiscountPercent: packageData?.packageDiscountPercent || 0,

@@ -313,10 +313,15 @@ export default function PaymentProcess() {
     const baseChildRate = bookingData?.packageChildRate || 0;
     const baseInfantRate = bookingData?.packageInfantRate || 0;
 
-    const packagePricePerPax = basePackagePricePerPax * discountMultiplier;
-    const soloRate = baseSoloRate * discountMultiplier;
-    const childRate = baseChildRate * discountMultiplier;
-    const infantRate = baseInfantRate * discountMultiplier;
+    const dateSurcharge = Number(bookingData?.travelDateRate) || 0;
+    const rawBasePackagePricePerPax = basePackagePricePerPax - dateSurcharge;
+    const rawBaseChildRate = baseChildRate - dateSurcharge;
+    const rawBaseInfantRate = baseInfantRate - dateSurcharge;
+
+    const packagePricePerPax = (rawBasePackagePricePerPax * discountMultiplier) + dateSurcharge;
+    const soloRate = baseSoloRate;
+    const childRate = (rawBaseChildRate * discountMultiplier) + dateSurcharge;
+    const infantRate = (rawBaseInfantRate * discountMultiplier) + dateSurcharge;
 
     const bookingType = bookingData?.bookingType || 'Group Booking';
     const computedTotalAmount =
