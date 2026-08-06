@@ -1,5 +1,5 @@
 """Terminal-only smoke test for the recommendation service.
-
+# test1
 Run from aiservice:
     python test_recommend.py
 
