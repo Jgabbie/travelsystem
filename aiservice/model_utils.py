@@ -289,52 +289,172 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
         preferences_df = preferences_df.copy()
         ratings_df = ratings_df.copy()
 
+        # ============================================================
+        # PREPARE PACKAGES
+        # ============================================================
+
         if '_id' in packages_df.columns:
             packages_df['packageId'] = packages_df['_id'].astype(str)
         else:
             packages_df['packageId'] = packages_df.index.astype(str)
 
         packages_df['packageName'] = _series_or_empty(
-            packages_df, 'packageName', dtype=str).fillna('').astype(str)
+            packages_df, 'packageName', dtype=str
+        ).fillna('').astype(str)
+
         packages_df['packageDescription'] = _series_or_empty(
-            packages_df, 'packageDescription', dtype=str).fillna('').astype(str)
+            packages_df, 'packageDescription', dtype=str
+        ).fillna('').astype(str)
+
         packages_df['packageType'] = _series_or_empty(
-            packages_df, 'packageType', dtype=str).fillna('').astype(str)
+            packages_df, 'packageType', dtype=str
+        ).fillna('').astype(str)
+
         packages_df['packageTags'] = _series_or_empty(
-            packages_df, 'packageTags').apply(_as_text_list)
+            packages_df, 'packageTags'
+        ).apply(_as_text_list)
+
         packages_df['package_text'] = packages_df.apply(
-            _build_package_text, axis=1)
+            _build_package_text,
+            axis=1
+        )
+
+        # ============================================================
+        # CONTENT-BASED MODEL
+        # ============================================================
 
         print("[Training] Training Content-Based model from package tags...")
-        tfidf = TfidfVectorizer(stop_words='english', max_features=500)
+
+        tfidf = TfidfVectorizer(
+            stop_words='english',
+            max_features=500
+        )
+
         tfidf_matrix = tfidf.fit_transform(
-            packages_df['package_text'].fillna(''))
+            packages_df['package_text'].fillna('')
+        )
+
+        # ============================================================
+        # PREPARE USER PREFERENCES
+        # ============================================================
 
         preferences_df['userId'] = _series_or_empty(
-            preferences_df, 'userId', dtype=str).astype(str)
+            preferences_df,
+            'userId',
+            dtype=str
+        ).astype(str).str.strip()
+
         preferences_df['moods'] = _series_or_empty(
-            preferences_df, 'moods').apply(_as_text_list)
+            preferences_df,
+            'moods'
+        ).apply(_as_text_list)
+
         preferences_df['tours'] = _series_or_empty(
-            preferences_df, 'tours').apply(_as_text_list)
+            preferences_df,
+            'tours'
+        ).apply(_as_text_list)
+
         preferences_df['pace'] = _series_or_empty(
-            preferences_df, 'pace').apply(_as_text_list)
+            preferences_df,
+            'pace'
+        ).apply(_as_text_list)
+
         preferences_df['preference_text'] = preferences_df.apply(
-            _build_user_query_text, axis=1)
+            _build_user_query_text,
+            axis=1
+        )
+
+        # ============================================================
+        # PREPARE RATINGS
+        # ============================================================
 
         ratings_df['userId'] = _series_or_empty(
-            ratings_df, 'userId', dtype=str).astype(str)
+            ratings_df,
+            'userId',
+            dtype=str
+        ).astype(str).str.strip()
+
         ratings_df['packageId'] = _series_or_empty(
-            ratings_df, 'packageId', dtype=str).astype(str)
-        ratings_df['rating'] = pd.to_numeric(_series_or_empty(
-            ratings_df, 'rating', dtype=float), errors='coerce').fillna(0).astype(float)
-        ratings_df = ratings_df[(ratings_df['packageId'].isin(
-            packages_df['packageId'])) & (ratings_df['rating'] > 0)]
+            ratings_df,
+            'packageId',
+            dtype=str
+        ).astype(str).str.strip()
+
+        ratings_df['rating'] = pd.to_numeric(
+            _series_or_empty(
+                ratings_df,
+                'rating',
+                dtype=float
+            ),
+            errors='coerce'
+        )
+
+        # ------------------------------------------------------------
+        # Remove invalid user IDs
+        # ------------------------------------------------------------
+
+        ratings_df = ratings_df[
+            ratings_df['userId'].notna()
+            & (ratings_df['userId'] != '')
+            & (ratings_df['userId'].str.lower() != 'nan')
+            & (ratings_df['userId'].str.lower() != 'none')
+        ].copy()
+
+        # ------------------------------------------------------------
+        # Remove invalid package IDs
+        # ------------------------------------------------------------
+
+        ratings_df = ratings_df[
+            ratings_df['packageId'].notna()
+            & (ratings_df['packageId'] != '')
+            & (ratings_df['packageId'].str.lower() != 'nan')
+            & (ratings_df['packageId'].str.lower() != 'none')
+        ].copy()
+
+        # ------------------------------------------------------------
+        # Remove invalid ratings
+        # ------------------------------------------------------------
+
+        ratings_df = ratings_df[
+            ratings_df['rating'].notna()
+            & np.isfinite(ratings_df['rating'])
+            & (ratings_df['rating'] > 0)
+        ].copy()
+
+        # ------------------------------------------------------------
+        # Only keep ratings belonging to existing packages
+        # ------------------------------------------------------------
+
+        ratings_df = ratings_df[
+            ratings_df['packageId'].isin(
+                packages_df['packageId']
+            )
+        ].copy()
+
+        print(
+            f"[Training] Valid ratings after cleanup: "
+            f"{len(ratings_df)}"
+        )
+
+        # ============================================================
+        # PACKAGE INDEXES
+        # ============================================================
 
         package_ids = packages_df['packageId'].tolist()
-        package_id_to_index = {package_id: idx for idx,
-                               package_id in enumerate(package_ids)}
+
+        package_id_to_index = {
+            package_id: idx
+            for idx, package_id in enumerate(package_ids)
+        }
+
         index_to_package_id = {
-            idx: package_id for package_id, idx in package_id_to_index.items()}
+            idx: package_id
+            for package_id, idx in package_id_to_index.items()
+        }
+
+        # ============================================================
+        # USER INDEXES
+        # ============================================================
 
         user_ids = sorted(
             ratings_df['userId']
@@ -343,22 +463,90 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
             .unique()
         )
 
-        user_id_to_index = {user_id: idx for idx,
-                            user_id in enumerate(user_ids)}
-        index_to_user_id = {idx: user_id for user_id,
-                            idx in user_id_to_index.items()}
+        user_id_to_index = {
+            user_id: idx
+            for idx, user_id in enumerate(user_ids)
+        }
+
+        index_to_user_id = {
+            idx: user_id
+            for user_id, idx in user_id_to_index.items()
+        }
+
+        # ============================================================
+        # SAFELY MAP RATINGS TO MATRIX INDEXES
+        # ============================================================
+
+        user_indices = ratings_df['userId'].map(
+            user_id_to_index
+        )
+
+        package_indices = ratings_df['packageId'].map(
+            package_id_to_index
+        )
+
+        # Remove anything that could not be mapped
+        valid_matrix_rows = (
+            user_indices.notna()
+            & package_indices.notna()
+            & ratings_df['rating'].notna()
+            & np.isfinite(ratings_df['rating'])
+        )
+
+        ratings_for_matrix = ratings_df.loc[
+            valid_matrix_rows
+        ].copy()
+
+        user_indices = (
+            user_indices.loc[valid_matrix_rows]
+            .astype(int)
+            .to_numpy()
+        )
+
+        package_indices = (
+            package_indices.loc[valid_matrix_rows]
+            .astype(int)
+            .to_numpy()
+        )
+
+        rating_values = (
+            ratings_for_matrix['rating']
+            .astype(float)
+            .to_numpy()
+        )
+
+        # ============================================================
+        # USER-ITEM MATRIX
+        # ============================================================
 
         user_item_matrix = sparse.csr_matrix(
             (
-                ratings_df['rating'].astype(float),
+                rating_values,
                 (
-                    ratings_df['userId'].map(user_id_to_index).astype(int),
-                    ratings_df['packageId'].map(
-                        package_id_to_index).astype(int),
-                ),
+                    user_indices,
+                    package_indices
+                )
             ),
-            shape=(len(user_id_to_index), len(package_id_to_index))
+            shape=(
+                len(user_id_to_index),
+                len(package_id_to_index)
+            )
         )
+
+        print(
+            f"[Training] User-item matrix: "
+            f"{user_item_matrix.shape[0]} users x "
+            f"{user_item_matrix.shape[1]} packages"
+        )
+
+        print(
+            f"[Training] Matrix ratings: "
+            f"{user_item_matrix.nnz}"
+        )
+
+        # ============================================================
+        # COLLABORATIVE FILTERING
+        # ============================================================
 
         rating_user_count = ratings_df['userId'].nunique()
         rated_package_count = ratings_df['packageId'].nunique()
@@ -375,6 +563,7 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
                 f"Users with ratings: {rating_user_count}, "
                 f"packages with ratings: {rated_package_count}"
             )
+
         else:
             print(
                 "[Training] Training Collaborative Filtering "
@@ -393,42 +582,98 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
                 user_item_matrix.tocsr() * 15
             )
 
-        print("[Training] Saving models...")
-        # Ensure models directory exists (handle case where it was removed at runtime)
-        models_path = models_dir
-        models_path.mkdir(parents=True, exist_ok=True)
+            print(
+                "[Training] Collaborative Filtering model trained "
+                "successfully."
+            )
 
-        # Save ALS model only when trained; remove stale file if present when not training
+        # ============================================================
+        # SAVE MODELS
+        # ============================================================
+
+        print("[Training] Saving models...")
+
+        models_path = models_dir
+        models_path.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        # ------------------------------------------------------------
+        # Save / remove ALS model
+        # ------------------------------------------------------------
+
         als_path = models_path / 'als_model.pkl'
+
         if model is not None:
-            joblib.dump(model, str(als_path))
+            joblib.dump(
+                model,
+                str(als_path)
+            )
+
         else:
             try:
                 if als_path.exists():
                     als_path.unlink()
+
             except FileNotFoundError:
                 pass
+
             except Exception:
                 print(
-                    f"[Training] Could not remove stale ALS file: {als_path}")
+                    f"[Training] Could not remove stale ALS file: "
+                    f"{als_path}"
+                )
 
-        joblib.dump(tfidf_matrix, str(models_path / 'tfidf_matrix.pkl'))
-        joblib.dump(tfidf, str(models_path / 'tfidf_vectorizer.pkl'))
-        joblib.dump(user_item_matrix, str(
-            models_path / 'user_item_matrix.pkl'))
-        joblib.dump({
-            'packages_df': packages_df,
-            'preferences_df': preferences_df,
-            'ratings_df': ratings_df,
-            'package_id_to_index': package_id_to_index,
-            'index_to_package_id': index_to_package_id,
-            'user_id_to_index': user_id_to_index,
-            'index_to_user_id': index_to_user_id,
-            'package_text_column': 'package_text',
-        }, str(models_path / 'metadata.pkl'))
-        print("[Training]  All models saved successfully")
+        # ------------------------------------------------------------
+        # Save content-based model
+        # ------------------------------------------------------------
+
+        joblib.dump(
+            tfidf_matrix,
+            str(models_path / 'tfidf_matrix.pkl')
+        )
+
+        joblib.dump(
+            tfidf,
+            str(models_path / 'tfidf_vectorizer.pkl')
+        )
+
+        # ------------------------------------------------------------
+        # Save user-item matrix
+        # ------------------------------------------------------------
+
+        joblib.dump(
+            user_item_matrix,
+            str(models_path / 'user_item_matrix.pkl')
+        )
+
+        # ------------------------------------------------------------
+        # Save metadata
+        # ------------------------------------------------------------
+
+        joblib.dump(
+            {
+                'packages_df': packages_df,
+                'preferences_df': preferences_df,
+                'ratings_df': ratings_df,
+                'package_id_to_index': package_id_to_index,
+                'index_to_package_id': index_to_package_id,
+                'user_id_to_index': user_id_to_index,
+                'index_to_user_id': index_to_user_id,
+                'package_text_column': 'package_text',
+            },
+            str(models_path / 'metadata.pkl')
+        )
+
+        print(
+            "[Training] All models saved successfully"
+        )
+
     except Exception as e:
-        print(f"[Training]  Error saving models: {e}")
+        print(
+            f"[Training] Error saving models: {e}"
+        )
         traceback.print_exc()
         raise
 
@@ -523,9 +768,7 @@ def _build_live_user_item_row(
         column_indices.append(package_index)
 
         # Must use a similar confidence scale to model training.
-        confidence_values.append(
-            rating_value * 15.0
-        )
+        confidence_values.append(1.0 + (rating_value * 10.0))
 
     if not column_indices:
         return sparse.csr_matrix(

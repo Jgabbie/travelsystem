@@ -27,8 +27,11 @@ def fetch_json(url: str):
         return json.loads(response.read().decode("utf-8"))
 
 
+# 6a736b725c25421666542d91
+# 69f3423e0e53deae16278d5d
+
 def main() -> int:
-    user_id = sys.argv[1] if len(sys.argv) > 1 else "69f348080e53deae16278d67"
+    user_id = sys.argv[1] if len(sys.argv) > 1 else "69f3423e0e53deae16278d5d"
     last_tour_name = sys.argv[2] if len(
         sys.argv) > 2 else "Beach"
 
