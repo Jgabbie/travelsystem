@@ -180,6 +180,13 @@
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.viewpassportapplication-submit-button:disabled,
+.viewpassportapplication-submit-button:disabled:hover {
+    background-color: #f5f5f5 !important;
+    color: #b8b8b8 !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+}
 
 .viewpassportapplication-dfa-processing-approve-button {
     font-family: "Montserrat", sans-serif;

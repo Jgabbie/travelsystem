@@ -128,23 +128,23 @@ export default function ViewVisaApplication() {
         setIsSubmittingSlots(true);
         try {
             const hasIncompleteSlot = alternateSlots.some(
-            (slot) => !slot.date || !slot.time
-        );
+                (slot) => !slot.date || !slot.time
+            );
 
-        if (hasIncompleteSlot) {
-            setIsSubmittingSlots(false);
-            notificationApi.error({
-                title: "Please complete all three suggested appointment options.",
-                description: "Each option must have both a date and a time.",
-                placement: "topRight"
-            });
-            return;
-        }
+            if (hasIncompleteSlot) {
+                setIsSubmittingSlots(false);
+                notificationApi.error({
+                    title: "Please complete all three suggested appointment options.",
+                    description: "Each option must have both a date and a time.",
+                    placement: "topRight"
+                });
+                return;
+            }
 
-        const slots = alternateSlots.map((slot) => ({
-            date: dayjs(slot.date).format("YYYY-MM-DD"),
-            time: dayjs(slot.time).format("h:mm A")
-        }));
+            const slots = alternateSlots.map((slot) => ({
+                date: dayjs(slot.date).format("YYYY-MM-DD"),
+                time: dayjs(slot.time).format("h:mm A")
+            }));
 
             await apiFetch.put(`/visa/applications/${applicationItem}/suggest-appointments`, { slots });
 
@@ -534,6 +534,14 @@ export default function ViewVisaApplication() {
     };
 
 
+    const hasIncompleteSlot = alternateSlots.some(
+        (slot) => !slot.date || !slot.time
+    );
+
+    const hasSubmittedSlots = application?.suggestedAppointmentSchedules?.length > 0 && application?.suggestedAppointmentScheduleChosen?.date === "" && application?.suggestedAppointmentScheduleChosen?.time === "";
+
+
+
 
 
     return (
@@ -692,7 +700,7 @@ export default function ViewVisaApplication() {
                                                         </div>
                                                     ))}
                                                     <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                                                        <Button type="primary" onClick={handleSubmitAlternateSlots} className="viewvisaapplication-submit-button">
+                                                        <Button type="primary" disabled={isSubmittingSlots || hasIncompleteSlot || hasSubmittedSlots} onClick={handleSubmitAlternateSlots} className="viewvisaapplication-submit-button">
                                                             Submit Options
                                                         </Button>
                                                     </div>

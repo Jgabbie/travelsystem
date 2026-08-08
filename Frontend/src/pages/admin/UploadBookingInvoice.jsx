@@ -911,6 +911,12 @@ export default function UploadBookingInvoice() {
 
 
 
+    const isForResubmission = booking?.documentsResubmissionRequired === true;
+
+
+
+
+
 
     return (
         <ConfigProvider
@@ -1265,7 +1271,7 @@ export default function UploadBookingInvoice() {
                                                         className="upload-invoice-form-button"
                                                         onClick={() => handleRequestDocumentsResubmission(index)}
                                                         loading={isRequestingResubmission}
-                                                        disabled={!bookingId || isRequestingResubmission}
+                                                        disabled={!bookingId || isRequestingResubmission || isForResubmission}
                                                     >
                                                         Resubmit Traveler
                                                     </Button>
@@ -1384,7 +1390,7 @@ export default function UploadBookingInvoice() {
                                         className="upload-invoice-form-button"
                                         onClick={() => handleRequestDocumentsResubmission()}
                                         loading={isRequestingResubmission}
-                                        disabled={!bookingId || isRequestingResubmission}
+                                        disabled={!bookingId || isRequestingResubmission || isForResubmission}
                                     >
                                         Resubmit All
                                     </Button>

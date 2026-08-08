@@ -163,6 +163,15 @@
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.user-bookings-cancel-button:disabled,
+.user-bookings-cancel-button:disabled:hover,
+.user-bookings-cancel-button:disabled:active {
+    background-color: #f5f5f5 !important;
+    color: #b8b8b8 !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+}
+
 .user-bookings-cancel-button:hover {
     background-color: #7D2239 !important;
     color: #fff !important;

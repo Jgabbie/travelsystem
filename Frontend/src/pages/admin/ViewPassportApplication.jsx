@@ -120,8 +120,8 @@ export default function ViewPassportApplication() {
         setIsSubmittingSlots(true);
         try {
             const hasIncompleteSlot = alternateSlots.some(
-            (slot) => !slot.date || !slot.time
-        );
+                (slot) => !slot.date || !slot.time
+            );
 
             if (hasIncompleteSlot) {
                 setIsSubmittingSlots(false);
@@ -523,7 +523,11 @@ export default function ViewPassportApplication() {
         return hours;
     }
 
+    const hasIncompleteSlot = alternateSlots.some(
+        (slot) => !slot.date || !slot.time
+    );
 
+    const hasSubmittedSlots = application?.suggestedAppointmentSchedules?.length > 0 && application?.suggestedAppointmentScheduleChosen?.date === "" && application?.suggestedAppointmentScheduleChosen?.time === "";
 
 
     return (
@@ -677,7 +681,7 @@ export default function ViewPassportApplication() {
                                                         </div>
                                                     ))}
                                                     <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                                                        <Button type="primary" onClick={handleSubmitAlternateSlots} className="viewpassportapplication-submit-button">
+                                                        <Button type="primary" disabled={isSubmittingSlots || hasIncompleteSlot || hasSubmittedSlots} onClick={handleSubmitAlternateSlots} className="viewpassportapplication-submit-button">
                                                             Submit Options
                                                         </Button>
                                                     </div>
