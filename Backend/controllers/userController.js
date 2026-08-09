@@ -295,17 +295,7 @@ const createUsers = async (req, res) => {
                 </p>
 
                 <a href="${resetLink}"
-                    style="
-                        display:inline-block;
-                        margin-top:25px;
-                        padding:12px 28px;
-                        background:#305797;
-                        color:#ffffff;
-                        text-decoration:none;
-                        border-radius:6px;
-                        font-weight:bold;
-                        font-size:14px;
-                    ">
+                    style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.4px; font-weight:700; text-transform:uppercase;">
                     Set Your Password
                 </a>
 
@@ -345,7 +335,41 @@ const createUsers = async (req, res) => {
                 phone,
                 hashedPassword,
                 role: role || "Customer",
-                isAccountVerified: true
+                isAccountVerified: false
+            });
+
+            const resetToken = jwt.sign({ id: newUser._id, scope: 'password-reset' }, process.env.JWT_SECRET_RESET_KEY, { expiresIn: '1d' })
+            const clientUrl = process.env.FRONTEND_URL || 'https://mrctravelandtours.com'
+            const resetLink = `${clientUrl}/new-password?token=${resetToken}`
+
+            await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: email,
+                subject: `Set up your ${role} account`,
+                html: `
+            <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+
+                <h2 style="color:#305797; margin-bottom:10px;">
+                    Welcome to M&RC Travel and Tours
+                </h2>
+
+                <p style="color:#555; font-size:16px;">
+                    Hello <b>${username}</b>,
+                </p>
+
+                <p style="color:#555; font-size:15px; line-height:1.6;">
+                    An account has been created for you as <b>${role}</b>. To set your password and activate your account, click the button below.
+                </p>
+
+                <a href="${resetLink}"
+                    style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.4px; font-weight:700; text-transform:uppercase;">
+                    Set Your Password
+                </a>
+
+                <p style="color:#777; font-size:13px; margin-top:30px;">
+                    If you did not request this account, please ignore this email.
+                </p>
+            </div>`
             });
 
             const actionName = role === "Admin" ? "ADMIN_CREATED_ADMIN" : "ADMIN_CREATED_USER";
