@@ -45,6 +45,21 @@ import rateLimit from 'express-rate-limit';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+if (!global.processErrorHandlersRegistered) {
+    global.processErrorHandlersRegistered = true;
+
+    process.on('unhandledRejection', (reason) => {
+        console.error('Unhandled promise rejection:', reason);
+        process.exitCode = 1;
+    });
+
+    process.on('uncaughtException', (error) => {
+        console.error('Uncaught exception:', error);
+        process.exitCode = 1;
+        setImmediate(() => process.exit(1));
+    });
+}
+
 const contactLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
@@ -144,6 +159,14 @@ app.get('/api/test', (_req, res) => {
     res.json({ message: 'API is working!' });
 });
 
+app.get(['/health', '/api/health'], (_req, res) => {
+    res.status(200).json({
+        status: 'ok',
+        service: 'travelsystem-backend',
+        uptime: process.uptime(),
+    });
+});
+
 app.get('/', (_req, res) => res.send('API Working'));
 
 const isServerless = Boolean(process.env.VERCEL);
@@ -165,7 +188,25 @@ if (!isServerless) {
     //fixed
     app.set('io', io);
 
-    const PORT = 8080; //change to 8000 for local testing, 8080 for cloud deployment
+    const PORT = Number(process.env.PORT) || 8080;
+
+    const shutdown = (signal) => {
+        console.log(`${signal} received. Closing HTTP server...`);
+        server.close((error) => {
+            if (error) {
+                console.error('HTTP server closed with error:', error);
+                process.exitCode = 1;
+            }
+            process.exit();
+        });
+    };
+
+    process.once('SIGTERM', () => shutdown('SIGTERM'));
+    process.once('SIGINT', () => shutdown('SIGINT'));
+
+    server.on('error', (error) => {
+        console.error('HTTP server error:', error);
+    });
 
     // Remove the 'production' check so it actually runs on the cloud
     server.listen(PORT, '0.0.0.0', () => {
