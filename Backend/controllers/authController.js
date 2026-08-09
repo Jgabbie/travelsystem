@@ -587,29 +587,42 @@ const refreshToken = async (req, res) => {
         setAccessTokenCookie(res, newAccessToken);
         setRefreshTokenCookie(res, newRefreshToken);
 
-        /*
-         * The access token does not need to be returned in the body
-         * because it is already stored in an HttpOnly cookie.
-         */
         return res.status(200).json({
             message: "Session refreshed"
         });
     } catch (error) {
-        clearAuthCookies(res);
+        // clearAuthCookies(res);
+
+        // if (
+        //     error.name === "TokenExpiredError" ||
+        //     error.name === "JsonWebTokenError"
+        // ) {
+        //     return res.status(401).json({
+        //         message: "Invalid or expired session"
+        //     });
+        // }
+
+        // console.error("Refresh token error:", error);
+
+        // return res.status(500).json({
+        //     message: "Unable to refresh session"
+        // });
+
+        console.error("Refresh token error:", error);
 
         if (
             error.name === "TokenExpiredError" ||
             error.name === "JsonWebTokenError"
         ) {
+            clearAuthCookies(res);
+
             return res.status(401).json({
                 message: "Invalid or expired session"
             });
         }
 
-        console.error("Refresh token error:", error);
-
-        return res.status(500).json({
-            message: "Unable to refresh session"
+        return res.status(503).json({
+            message: "Authentication service temporarily unavailable"
         });
     }
 };

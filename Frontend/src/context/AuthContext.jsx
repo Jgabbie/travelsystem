@@ -57,15 +57,18 @@ export const AuthProvider = ({ children }) => {
                 return;
             }
 
-            if (isUnauthorizedError(err)) {
+            //ADD DEPENDENCY
+
+            // if (isUnauthorizedError(err)) {
+            //     setAuth(null);
+            //     return;
+            // }
+
+            if (err?.status === 401) {
                 setAuth(null);
                 return;
             }
 
-            /*
-             * Do not log the user out because of a temporary network,
-             * database, CORS, or server error.
-             */
             console.warn(
                 "Temporary session heartbeat failure. Keeping the current session.",
                 err
@@ -73,7 +76,7 @@ export const AuthProvider = ({ children }) => {
         } finally {
             touchInFlightRef.current = false;
         }
-    }, [isIdleLogoutError, isUnauthorizedError, triggerIdleLogout]);
+    }, [isIdleLogoutError, triggerIdleLogout]);
 
     const checkAuth = useCallback(async () => {
         setAuthLoading(true);
@@ -89,15 +92,18 @@ export const AuthProvider = ({ children }) => {
                 return;
             }
 
-            if (isUnauthorizedError(err)) {
+            //ADD DEPENDENCY
+            if (err?.status === 401) {
                 setAuth(null);
                 return;
             }
 
-            /*
-             * Keep the existing authenticated state when the API is
-             * temporarily unavailable.
-             */
+            // if (isUnauthorizedError(err)) {
+            //     setAuth(null);
+            //     return;
+            // }
+
+
             console.warn(
                 "Temporary authentication check failure.",
                 err
