@@ -167,6 +167,8 @@ const apiFetch = async (endpoint, options = {}) => {
 //     return response.json();
 // };
 
+
+//get
 apiFetch.get = (endpoint, options = {}) => apiFetch(endpoint, { ...options, method: 'GET' });
 
 apiFetch.post = (endpoint, data, options = {}) => {
