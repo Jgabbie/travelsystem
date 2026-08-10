@@ -10,5 +10,6 @@ router.use(authorizeRoles('Admin'));
 
 router.get('/get-logs', logController.getLogs);
 router.get('/get-audits', logController.getAudits);
+router.get('/get-latest-audits', logController.getLatestAudits);
 
 export default router;

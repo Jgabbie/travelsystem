@@ -136,9 +136,11 @@ export default function AdminProfile() {
     //fetch recent actions function
     const fetchRecentActions = async () => {
         try {
-            const response = await apiFetch.get('/logs/get-audits')
-            const audits = Array.isArray(response) ? response : []
-            const recent = audits.slice(0, 3).map((audit) => ({
+            const response = await apiFetch.get('/logs/get-latest-audits');
+
+            const audits = Array.isArray(response) ? response : [];
+
+            const recent = audits.map((audit) => ({
                 _id: audit?._id,
                 title: audit?.action || 'Admin action',
                 date: audit?.timestamp
@@ -148,13 +150,14 @@ export default function AdminProfile() {
                         year: 'numeric'
                     })
                     : 'Recently',
-            }))
-            setRecentActions(recent)
+            }));
+
+            setRecentActions(recent);
         } catch (error) {
-            console.error('Failed to fetch audit actions:', error)
-            setRecentActions([])
+            console.error('Failed to fetch audit actions:', error);
+            setRecentActions([]);
         }
-    }
+    };
 
 
     //fetch pending approvals function

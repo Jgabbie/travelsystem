@@ -35,7 +35,27 @@ const getAudits = async (req, res) => {
 };
 
 
+// get latest 3 audits function
+const getLatestAudits = async (req, res) => {
+    try {
+        const audits = await AuditModel.find()
+            .select("action performedBy details timestamp")
+            .populate("performedBy", "username email role")
+            .sort({ timestamp: -1 })
+            .limit(3)
+            .lean();
+
+        res.status(200).json(audits);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching latest audits: " + error.message
+        });
+    }
+};
+
+
 export {
     getLogs,
-    getAudits
+    getAudits,
+    getLatestAudits
 };
