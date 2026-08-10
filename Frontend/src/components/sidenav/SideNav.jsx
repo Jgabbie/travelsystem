@@ -15,7 +15,7 @@ import {
   TransactionOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router-dom";
 import "../../style/components/sidenav.css";
 import apiFetch from "../../config/fetchConfig";
@@ -71,15 +71,6 @@ export default function SideNav() {
     return Number.isNaN(time) ? null : time;
   };
 
-  const getLatestValue = useCallback((items, field) => {
-    const values = items
-      .map((item) => getDateValue(item?.[field]))
-      .filter((value) => value !== null);
-    if (!values.length) return null;
-    values.sort((a, b) => a - b);
-    return values[values.length - 1];
-  }, []);
-
   useEffect(() => {
     const updateLayout = () => {
       const nextIsMobile = window.innerWidth <= 900;
@@ -106,134 +97,48 @@ export default function SideNav() {
 
     const fetchNotifications = async () => {
       try {
-        const [
-          bookingResponse,
-          cancellationResponse,
-          usersResponse,
-          transactionResponse,
-          quotationResponse,
-          ratingResponse,
-          passportResponse,
-          visaResponse,
-          loggingResponse,
-          auditingResponse,
-        ] = await Promise.all([
-          apiFetch.get("/booking/all-bookings"),
-          apiFetch.get("/booking/cancellations"),
-          apiFetch.get("/user/getUsers"),
-          apiFetch.get("/transaction/all-transactions"),
-          apiFetch.get("/quotation/all-quotations"),
-          apiFetch.get("/rating/all-ratings"),
-          apiFetch.get("/passport/applications"),
-          apiFetch.get("/visa/applications"),
-          apiFetch.get("/logs/get-logs"),
-          apiFetch.get("/logs/get-audits"),
-        ]);
+        const summary = await apiFetch.get("/admin/sidebar-notifications", {
+          params: {
+            bookings: localStorage.getItem(lastSeenBookingKey),
+            cancellations: localStorage.getItem(lastSeenCancellationKey),
+            users: localStorage.getItem(lastSeenUserKey),
+            transactions: localStorage.getItem(lastSeenTransactionKey),
+            quotations: localStorage.getItem(lastSeenQuotationKey),
+            ratings: localStorage.getItem(lastSeenRatingKey),
+            passports: localStorage.getItem(lastSeenPassportKey),
+            visas: localStorage.getItem(lastSeenVisaKey),
+            logging: localStorage.getItem(lastSeenLoggingKey),
+            auditing: localStorage.getItem(lastSeenAuditingKey),
+          },
+        });
 
-        const bookings = bookingResponse || [];
-        const cancellations = cancellationResponse || [];
-        const users = usersResponse || [];
-        const transactions = transactionResponse || [];
-        const quotations = quotationResponse || [];
-        const ratings = ratingResponse || [];
-        const passports = passportResponse || [];
-        const visas = visaResponse || [];
-        const logs = loggingResponse || [];
-        const audits = auditingResponse || [];
+        const getSummaryCount = (key) =>
+          Number(summary?.[key]?.count ?? summary?.[`${key}Count`] ?? 0);
 
-        const latestBooking = getLatestValue(bookings, "createdAt");
-        const latestCancellation = getLatestValue(cancellations, "cancellationDate");
-        const latestUser = getLatestValue(users, "createdAt");
-        const latestTransaction = getLatestValue(transactions, "createdAt");
-        const latestQuotation = getLatestValue(quotations, "createdAt");
-        const latestRating = getLatestValue(ratings, "createdAt");
-        const latestPassport = getLatestValue(passports, "createdAt");
-        const latestVisa = getLatestValue(visas, "createdAt");
-        const latestLogging = getLatestValue(logs, "timestamp");
-        const latestAuditing = getLatestValue(audits, "timestamp");
-
-        const lastSeenBookingValue = getDateValue(localStorage.getItem(lastSeenBookingKey)) || 0;
-        const lastSeenCancellationValue = getDateValue(localStorage.getItem(lastSeenCancellationKey)) || 0;
-        const lastSeenUserValue = getDateValue(localStorage.getItem(lastSeenUserKey)) || 0;
-        const lastSeenTransactionValue = getDateValue(localStorage.getItem(lastSeenTransactionKey)) || 0;
-        const lastSeenQuotationValue = getDateValue(localStorage.getItem(lastSeenQuotationKey)) || 0;
-        const lastSeenRatingValue = getDateValue(localStorage.getItem(lastSeenRatingKey)) || 0;
-        const lastSeenPassportValue = getDateValue(localStorage.getItem(lastSeenPassportKey)) || 0;
-        const lastSeenVisaValue = getDateValue(localStorage.getItem(lastSeenVisaKey)) || 0;
-        const lastSeenLoggingValue = getDateValue(localStorage.getItem(lastSeenLoggingKey)) || 0;
-        const lastSeenAuditingValue = getDateValue(localStorage.getItem(lastSeenAuditingKey)) || 0;
-
-        const newBookingCount = bookings.filter((b) => {
-          const value = getDateValue(b?.createdAt);
-          return value && value > lastSeenBookingValue;
-        }).length;
-
-        const newCancellationCount = cancellations.filter((c) => {
-          const value = getDateValue(c?.cancellationDate);
-          return value && value > lastSeenCancellationValue;
-        }).length;
-
-        const newUserCount = users.filter((u) => {
-          const value = getDateValue(u?.createdAt);
-          return value && value > lastSeenUserValue;
-        }).length;
-
-        const newTransactionCount = transactions.filter((t) => {
-          const value = getDateValue(t?.createdAt);
-          return value && value > lastSeenTransactionValue;
-        }).length;
-
-        const newQuotationCount = quotations.filter((q) => {
-          const value = getDateValue(q?.createdAt);
-          return value && value > lastSeenQuotationValue;
-        }).length;
-
-        const newRatingCount = ratings.filter((r) => {
-          const value = getDateValue(r?.createdAt);
-          return value && value > lastSeenRatingValue;
-        }).length;
-
-        const newPassportCount = passports.filter((p) => {
-          const value = getDateValue(p?.createdAt);
-          return value && value > lastSeenPassportValue;
-        }).length;
-
-        const newVisaCount = visas.filter((v) => {
-          const value = getDateValue(v?.createdAt);
-          return value && value > lastSeenVisaValue;
-        }).length;
-
-        const newLoggingCount = logs.filter((l) => {
-          const value = getDateValue(l?.timestamp);
-          return value && value > lastSeenLoggingValue;
-        }).length;
-
-        const newAuditingCount = audits.filter((a) => {
-          const value = getDateValue(a?.timestamp);
-          return value && value > lastSeenAuditingValue;
-        }).length;
+        const getSummaryLatestValue = (key) =>
+          getDateValue(summary?.[key]?.latestValue ?? summary?.[key]?.latest ?? summary?.[`${key}LatestValue`]);
 
         if (!isMounted) return;
-        setLatestBookingValue(latestBooking);
-        setLatestCancellationValue(latestCancellation);
-        setLatestUserValue(latestUser);
-        setLatestTransactionValue(latestTransaction);
-        setLatestQuotationValue(latestQuotation);
-        setLatestRatingValue(latestRating);
-        setLatestPassportValue(latestPassport);
-        setLatestVisaValue(latestVisa);
-        setLatestLoggingValue(latestLogging);
-        setLatestAuditingValue(latestAuditing);
-        setBookingCount(newBookingCount);
-        setCancellationCount(newCancellationCount);
-        setUserCount(newUserCount);
-        setTransactionCount(newTransactionCount);
-        setQuotationCount(newQuotationCount);
-        setRatingCount(newRatingCount);
-        setPassportCount(newPassportCount);
-        setVisaCount(newVisaCount);
-        setLoggingCount(newLoggingCount);
-        setAuditingCount(newAuditingCount);
+        setLatestBookingValue(getSummaryLatestValue("bookings"));
+        setLatestCancellationValue(getSummaryLatestValue("cancellations"));
+        setLatestUserValue(getSummaryLatestValue("users"));
+        setLatestTransactionValue(getSummaryLatestValue("transactions"));
+        setLatestQuotationValue(getSummaryLatestValue("quotations"));
+        setLatestRatingValue(getSummaryLatestValue("ratings"));
+        setLatestPassportValue(getSummaryLatestValue("passports"));
+        setLatestVisaValue(getSummaryLatestValue("visas"));
+        setLatestLoggingValue(getSummaryLatestValue("logging"));
+        setLatestAuditingValue(getSummaryLatestValue("auditing"));
+        setBookingCount(getSummaryCount("bookings"));
+        setCancellationCount(getSummaryCount("cancellations"));
+        setUserCount(getSummaryCount("users"));
+        setTransactionCount(getSummaryCount("transactions"));
+        setQuotationCount(getSummaryCount("quotations"));
+        setRatingCount(getSummaryCount("ratings"));
+        setPassportCount(getSummaryCount("passports"));
+        setVisaCount(getSummaryCount("visas"));
+        setLoggingCount(getSummaryCount("logging"));
+        setAuditingCount(getSummaryCount("auditing"));
       } catch (error) {
         if (!isMounted) return;
         setBookingCount(0);
@@ -246,12 +151,6 @@ export default function SideNav() {
         setVisaCount(0);
         setLoggingCount(0);
         setAuditingCount(0);
-      }
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        fetchNotifications();
       }
     };
 
@@ -362,7 +261,6 @@ export default function SideNav() {
       }
     };
   }, [
-    getLatestValue,
     lastSeenBookingKey,
     lastSeenCancellationKey,
     lastSeenUserKey,

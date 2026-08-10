@@ -1,5 +1,5 @@
 import { Layout } from "antd";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppstoreOutlined, BookOutlined, DownOutlined, FileTextOutlined, FundOutlined, IdcardOutlined, RightOutlined, SafetyCertificateOutlined, SolutionOutlined, TeamOutlined, TransactionOutlined } from "@ant-design/icons";
 import { NavLink } from "react-router-dom";
 import "../../style/components/sidenav.css";
@@ -45,15 +45,6 @@ export default function SideNavEmployee() {
         return Number.isNaN(time) ? null : time;
     };
 
-    const getLatestValue = useCallback((items, field) => {
-        const values = items
-            .map((item) => getDateValue(item?.[field]))
-            .filter((value) => value !== null);
-        if (!values.length) return null;
-        values.sort((a, b) => a - b);
-        return values[values.length - 1];
-    }, []);
-
     useEffect(() => {
         const updateLayout = () => {
             const nextIsMobile = window.innerWidth <= 900;
@@ -80,98 +71,39 @@ export default function SideNavEmployee() {
 
         const fetchNotifications = async () => {
             try {
-                const [
-                    bookingResponse,
-                    cancellationResponse,
-                    transactionResponse,
-                    quotationResponse,
-                    ratingResponse,
-                    passportResponse,
-                    visaResponse,
-                ] = await Promise.all([
-                    apiFetch.get("/booking/all-bookings"),
-                    apiFetch.get("/booking/cancellations"),
-                    apiFetch.get("/transaction/all-transactions"),
-                    apiFetch.get("/quotation/all-quotations"),
-                    apiFetch.get("/rating/all-ratings"),
-                    apiFetch.get("/passport/applications"),
-                    apiFetch.get("/visa/applications"),
-                ]);
+                const summary = await apiFetch.get("/admin/sidebar-notifications", {
+                    params: {
+                        bookings: localStorage.getItem(lastSeenBookingKey),
+                        cancellations: localStorage.getItem(lastSeenCancellationKey),
+                        transactions: localStorage.getItem(lastSeenTransactionKey),
+                        quotations: localStorage.getItem(lastSeenQuotationKey),
+                        ratings: localStorage.getItem(lastSeenRatingKey),
+                        passports: localStorage.getItem(lastSeenPassportKey),
+                        visas: localStorage.getItem(lastSeenVisaKey),
+                    },
+                });
 
-                const bookings = bookingResponse || [];
-                const cancellations = cancellationResponse || [];
-                const transactions = transactionResponse || [];
-                const quotations = quotationResponse || [];
-                const ratings = ratingResponse || [];
-                const passports = passportResponse || [];
-                const visas = visaResponse || [];
+                const getSummaryCount = (key) =>
+                    Number(summary?.[key]?.count ?? summary?.[`${key}Count`] ?? 0);
 
-                const latestBooking = getLatestValue(bookings, "createdAt");
-                const latestCancellation = getLatestValue(cancellations, "cancellationDate");
-                const latestTransaction = getLatestValue(transactions, "createdAt");
-                const latestQuotation = getLatestValue(quotations, "createdAt");
-                const latestRating = getLatestValue(ratings, "createdAt");
-                const latestPassport = getLatestValue(passports, "createdAt");
-                const latestVisa = getLatestValue(visas, "createdAt");
-
-                const lastSeenBookingValue = getDateValue(localStorage.getItem(lastSeenBookingKey)) || 0;
-                const lastSeenCancellationValue = getDateValue(localStorage.getItem(lastSeenCancellationKey)) || 0;
-                const lastSeenTransactionValue = getDateValue(localStorage.getItem(lastSeenTransactionKey)) || 0;
-                const lastSeenQuotationValue = getDateValue(localStorage.getItem(lastSeenQuotationKey)) || 0;
-                const lastSeenRatingValue = getDateValue(localStorage.getItem(lastSeenRatingKey)) || 0;
-                const lastSeenPassportValue = getDateValue(localStorage.getItem(lastSeenPassportKey)) || 0;
-                const lastSeenVisaValue = getDateValue(localStorage.getItem(lastSeenVisaKey)) || 0;
-
-                const newBookingCount = bookings.filter((b) => {
-                    const value = getDateValue(b?.createdAt);
-                    return value && value > lastSeenBookingValue;
-                }).length;
-
-                const newCancellationCount = cancellations.filter((c) => {
-                    const value = getDateValue(c?.cancellationDate);
-                    return value && value > lastSeenCancellationValue;
-                }).length;
-
-                const newTransactionCount = transactions.filter((t) => {
-                    const value = getDateValue(t?.createdAt);
-                    return value && value > lastSeenTransactionValue;
-                }).length;
-
-                const newQuotationCount = quotations.filter((q) => {
-                    const value = getDateValue(q?.createdAt);
-                    return value && value > lastSeenQuotationValue;
-                }).length;
-
-                const newRatingCount = ratings.filter((r) => {
-                    const value = getDateValue(r?.createdAt);
-                    return value && value > lastSeenRatingValue;
-                }).length;
-
-                const newPassportCount = passports.filter((p) => {
-                    const value = getDateValue(p?.createdAt);
-                    return value && value > lastSeenPassportValue;
-                }).length;
-
-                const newVisaCount = visas.filter((v) => {
-                    const value = getDateValue(v?.createdAt);
-                    return value && value > lastSeenVisaValue;
-                }).length;
+                const getSummaryLatestValue = (key) =>
+                    getDateValue(summary?.[key]?.latestValue ?? summary?.[key]?.latest ?? summary?.[`${key}LatestValue`]);
 
                 if (!isMounted) return;
-                setLatestBookingValue(latestBooking);
-                setLatestCancellationValue(latestCancellation);
-                setLatestTransactionValue(latestTransaction);
-                setLatestQuotationValue(latestQuotation);
-                setLatestRatingValue(latestRating);
-                setLatestPassportValue(latestPassport);
-                setLatestVisaValue(latestVisa);
-                setBookingCount(newBookingCount);
-                setCancellationCount(newCancellationCount);
-                setTransactionCount(newTransactionCount);
-                setQuotationCount(newQuotationCount);
-                setRatingCount(newRatingCount);
-                setPassportCount(newPassportCount);
-                setVisaCount(newVisaCount);
+                setLatestBookingValue(getSummaryLatestValue("bookings"));
+                setLatestCancellationValue(getSummaryLatestValue("cancellations"));
+                setLatestTransactionValue(getSummaryLatestValue("transactions"));
+                setLatestQuotationValue(getSummaryLatestValue("quotations"));
+                setLatestRatingValue(getSummaryLatestValue("ratings"));
+                setLatestPassportValue(getSummaryLatestValue("passports"));
+                setLatestVisaValue(getSummaryLatestValue("visas"));
+                setBookingCount(getSummaryCount("bookings"));
+                setCancellationCount(getSummaryCount("cancellations"));
+                setTransactionCount(getSummaryCount("transactions"));
+                setQuotationCount(getSummaryCount("quotations"));
+                setRatingCount(getSummaryCount("ratings"));
+                setPassportCount(getSummaryCount("passports"));
+                setVisaCount(getSummaryCount("visas"));
             } catch (error) {
                 if (!isMounted) return;
                 setBookingCount(0);
@@ -181,12 +113,6 @@ export default function SideNavEmployee() {
                 setRatingCount(0);
                 setPassportCount(0);
                 setVisaCount(0);
-            }
-        };
-
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === "visible") {
-                fetchNotifications();
             }
         };
 
@@ -284,7 +210,6 @@ export default function SideNavEmployee() {
             }
         };
     }, [
-        getLatestValue,
         lastSeenBookingKey,
         lastSeenCancellationKey,
         lastSeenTransactionKey,

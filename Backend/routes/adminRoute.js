@@ -25,4 +25,12 @@ router.get(
     authorizeRoles("Admin", "Employee"),
     adminController.getDashboardStats
 );
+
+router.get(
+    "/sidebar-notifications",
+    userAuth,
+    authorizeRoles("Admin", "Employee"),
+    adminController.getSidebarNotifications
+);
+
 export default router;

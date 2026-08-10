@@ -3,7 +3,13 @@ import BookingModel from "../models/booking.js";
 import PackageModel from "../models/package.js";
 import TransactionModel from "../models/transactions.js";
 import logAction from "../utils/logger.js";
-
+import CancellationModel from "../models/cancellations.js";
+import QuotationModel from "../models/quotations.js";
+import RatingModel from "../models/rating.js";
+import PassportModel from "../models/passport.js";
+import VisaModel from "../models/visas.js";
+import LogModel from "../models/log.js";
+import AuditModel from "../models/audit.js";
 
 //get admins function
 const getAdmins = async (req, res) => {
@@ -130,9 +136,61 @@ const getDashboardStats = async (req, res) => {
     }
 };
 
+
+// Get all sidebar notification counts in one request
+const getSidebarNotifications = async (req, res) => {
+    try {
+        const [
+            latestBooking,
+            latestCancellation,
+            latestUser,
+            latestTransaction,
+            latestQuotation,
+            latestRating,
+            latestPassport,
+            latestVisa,
+            latestLog,
+            latestAudit
+        ] = await Promise.all([
+            BookingModel.findOne().sort({ createdAt: -1 }).select("createdAt").lean(),
+            CancellationModel.findOne().sort({ cancellationDate: -1 }).select("cancellationDate").lean(),
+            UserModel.findOne().sort({ createdAt: -1 }).select("createdAt").lean(),
+            TransactionModel.findOne().sort({ createdAt: -1 }).select("createdAt").lean(),
+            QuotationModel.findOne().sort({ createdAt: -1 }).select("createdAt").lean(),
+            RatingModel.findOne().sort({ createdAt: -1 }).select("createdAt").lean(),
+            PassportModel.findOne().sort({ createdAt: -1 }).select("createdAt").lean(),
+            VisaModel.findOne().sort({ createdAt: -1 }).select("createdAt").lean(),
+            LogModel.findOne().sort({ timestamp: -1 }).select("timestamp").lean(),
+            AuditModel.findOne().sort({ timestamp: -1 }).select("timestamp").lean()
+        ]);
+
+        return res.status(200).json({
+            booking: latestBooking?.createdAt || null,
+            cancellation: latestCancellation?.cancellationDate || null,
+            user: latestUser?.createdAt || null,
+            transaction: latestTransaction?.createdAt || null,
+            quotation: latestQuotation?.createdAt || null,
+            rating: latestRating?.createdAt || null,
+            passport: latestPassport?.createdAt || null,
+            visa: latestVisa?.createdAt || null,
+            log: latestLog?.timestamp || null,
+            audit: latestAudit?.timestamp || null
+        });
+    } catch (err) {
+        console.error("Sidebar notification error:", err);
+        return res.status(500).json({
+            message: "Failed to load sidebar notifications"
+        });
+    }
+};
+
+
+
 export {
     getAdmins,
     editUser,
-    getDashboardStats
+    getDashboardStats,
+    getSidebarNotifications
 };
+
 

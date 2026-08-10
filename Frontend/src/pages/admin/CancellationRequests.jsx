@@ -90,29 +90,38 @@ export default function CancellationRequests() {
     //fetch cancellation requests
     const getCancellationRequests = async () => {
         try {
-            setIsFetchingRequests(true)
-            const response = await apiFetch.get('/booking/cancellations')
+            setIsFetchingRequests(true);
+
+            const response = await apiFetch.get('/booking/cancellations');
+
+            console.log('Cancellation API response:', response);
+
             const cancellations = response.map((c) => ({
                 key: c._id,
                 ref: c.reference,
                 username: c.userId?.username || c.userId?.email || 'Unknown',
-                package: c.bookingId?.packageId?.packageName || 'Package',
-                daysAfterBooking: c.bookingId?.createdAt && c.cancellationDate
-                    ? dayjs(c.cancellationDate).diff(dayjs(c.bookingId?.createdAt), 'day')
-                    : '--',
+                package: c.packageId?.packageName || 'Package',
+                daysAfterBooking:
+                    c.bookingId?.createdAt && c.cancellationDate
+                        ? dayjs(c.cancellationDate).diff(
+                            dayjs(c.bookingId.createdAt),
+                            'day'
+                        )
+                        : '--',
                 reason: c.cancellationReason || '--',
                 cancellationDate: c.cancellationDate,
                 status: c.status || 'Pending',
                 imageProof: c.imageProof || null
-            }))
-            setRequests(cancellations)
+            }));
+
+            setRequests(cancellations);
         } catch (err) {
-            console.error('Error fetching cancellation requests:', err)
+            console.error('Error fetching cancellation requests:', err);
+            console.error('Response:', err?.data);
         } finally {
-            setIsFetchingRequests(false)
+            setIsFetchingRequests(false);
         }
-        return []
-    }
+    };
 
 
     //fetch archived cancellation requests

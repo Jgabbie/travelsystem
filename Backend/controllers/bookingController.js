@@ -904,27 +904,28 @@ const disApproveCancellation = async (req, res) => {
 
 
 //get cancellations function
-const getcancellations = async (req, res) => {
+const getcancellations = async (_req, res) => {
     try {
         const cancellations = await CancellationModel.find({})
             .select(
-                "reference userId bookingId cancellationReason cancellationDate status imageProof"
+                'reference userId bookingId packageId cancellationReason cancellationComments cancellationDate imageProof status createdAt'
             )
             .populate('userId', 'username email')
-            .populate({
-                path: 'bookingId',
-                select: 'bookingDetails createdAt reference status packageId',
-                populate: { path: 'packageId', select: 'packageName' }
-            })
             .populate('packageId', 'packageName')
+            .populate('bookingId', 'reference createdAt bookingDetails status')
             .sort({ cancellationDate: -1 })
-            .lean()
+            .lean();
 
-        res.status(200).json(cancellations)
+        return res.status(200).json(cancellations);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching cancellations', error })
+        console.error('Error fetching cancellations:', error);
+
+        return res.status(500).json({
+            message: 'Error fetching cancellations',
+            error: error.message
+        });
     }
-}
+};
 
 
 //get archived cancellations function
