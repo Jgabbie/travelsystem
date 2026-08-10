@@ -73,10 +73,10 @@ export default function AdminDashboard() {
   const [quotationStats, setQuotationStats] = useState({
     totalQuotations: 0,
     quotationStatus: {
-        pending: 0,
-        booked: 0,
-        rejected: 0,
-        cancelled: 0,
+      pending: 0,
+      booked: 0,
+      rejected: 0,
+      cancelled: 0,
     },
     conversionRate: 0,
   });
@@ -84,15 +84,15 @@ export default function AdminDashboard() {
   const [bookingTrend, setBookingTrend] = useState(Array(12).fill(0));
 
   const [bookingTypeCount, setBookingTypeCount] = useState({
-      domestic: 0,
-      international: 0,
+    domestic: 0,
+    international: 0,
   });
 
   const [bookingStatusCount, setBookingStatusCount] = useState({
-      pending: 0,
-      notPaid: 0,
-      fullyPaid: 0,
-      cancelled: 0,
+    pending: 0,
+    notPaid: 0,
+    fullyPaid: 0,
+    cancelled: 0,
   });
 
   const [topDurations, setTopDurations] = useState([]);
@@ -100,36 +100,36 @@ export default function AdminDashboard() {
   const [monthlyRevenue, setMonthlyRevenue] = useState(Array(12).fill(0));
 
   const fetchDashboardRevenue = async () => {
-      try {
-          const response = await apiFetch.get("/transaction/dashboard-revenue");
-          setMonthlyRevenue(response.monthlyRevenue);
-      } catch (err) {
-          console.error(err);
-      }
+    try {
+      const response = await apiFetch.get("/transaction/dashboard-revenue");
+      setMonthlyRevenue(response.monthlyRevenue);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
 
   //display top packages function
   const displayTopPackages = Array.isArray(popularPackages)
     ? popularPackages.map(p => ({
-        packageName: p.packageName,
-        count: p.bookingCount,
-        packageImage: p.packageImage
+      packageName: p.packageName,
+      count: p.bookingCount,
+      packageImage: p.packageImage
     }))
     : [];
 
 
   const paymentSplit = [
-      {
-          id: 0,
-          value: bookingTypeCount.domestic,
-          label: "Domestic",
-      },
-      {
-          id: 1,
-          value: bookingTypeCount.international,
-          label: "International",
-      },
+    {
+      id: 0,
+      value: bookingTypeCount.domestic,
+      label: "Domestic",
+    },
+    {
+      id: 1,
+      value: bookingTypeCount.international,
+      label: "International",
+    },
   ];
 
 
@@ -160,27 +160,27 @@ export default function AdminDashboard() {
   useEffect(() => {
 
     const fetchDashboardBookings = async () => {
-        try {
-            const response = await apiFetch.get("/booking/dashboard-bookings");
+      try {
+        const response = await apiFetch.get("/booking/dashboard-bookings");
 
-            setBookingTrend(response.bookingTrend);
+        setBookingTrend(response.bookingTrend);
 
-            setBookingTypeCount({
-                domestic: response.bookingTypes.domestic,
-                international: response.bookingTypes.international,
-            });
+        setBookingTypeCount({
+          domestic: response.bookingTypes.domestic,
+          international: response.bookingTypes.international,
+        });
 
-            setBookingStatusCount({
-                pending: response.bookingStatus.pending,
-                notPaid: response.bookingStatus.notPaid,
-                fullyPaid: response.bookingStatus.fullyPaid,
-                cancelled: response.bookingStatus.cancelled,
-            });
+        setBookingStatusCount({
+          pending: response.bookingStatus.pending,
+          notPaid: response.bookingStatus.notPaid,
+          fullyPaid: response.bookingStatus.fullyPaid,
+          cancelled: response.bookingStatus.cancelled,
+        });
 
-            setTopDurations(response.topDurations || []);
-        } catch (error) {
-            console.error(error);
-        }
+        setTopDurations(response.topDurations || []);
+      } catch (error) {
+        console.error(error);
+      }
     };
 
     const fetchPopularPackages = async () => {
@@ -194,13 +194,13 @@ export default function AdminDashboard() {
 
     const fetchDashboardQuotations = async () => {
       try {
-          const response = await apiFetch.get(
-              "/quotation/dashboard-quotations"
-          );
+        const response = await apiFetch.get(
+          "/quotation/dashboard-quotations"
+        );
 
-          setQuotationStats(response);
+        setQuotationStats(response);
       } catch (err) {
-          console.error(err);
+        console.error(err);
       }
     };
 
@@ -318,18 +318,6 @@ export default function AdminDashboard() {
       observer.disconnect();
     };
   }, []);
-
-
-  console.log({
-    BarChart,
-    PieChart,
-    ChartContainer,
-    LinePlot,
-    AreaPlot,
-    ChartsXAxis,
-    ChartsYAxis,
-    ChartsTooltip,
-  });
 
 
   return (

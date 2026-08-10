@@ -262,7 +262,6 @@ export default function SideNavEmployee() {
 
         fetchNotifications();
 
-        let intervalId;
         if (isSocketEnabled) {
             socket.on("booking:created", handleBookingCreated);
             socket.on("cancellation:created", handleCancellationCreated);
@@ -271,11 +270,7 @@ export default function SideNavEmployee() {
             socket.on("rating:created", handleRatingCreated);
             socket.on("passport:created", handlePassportCreated);
             socket.on("visa:created", handleVisaCreated);
-        } else {
-            intervalId = setInterval(fetchNotifications, 5000);
         }
-        window.addEventListener("focus", fetchNotifications);
-        document.addEventListener("visibilitychange", handleVisibilityChange);
         return () => {
             isMounted = false;
             if (isSocketEnabled) {
@@ -287,11 +282,6 @@ export default function SideNavEmployee() {
                 socket.off("passport:created", handlePassportCreated);
                 socket.off("visa:created", handleVisaCreated);
             }
-            if (intervalId) {
-                clearInterval(intervalId);
-            }
-            window.removeEventListener("focus", fetchNotifications);
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
         };
     }, [
         getLatestValue,
