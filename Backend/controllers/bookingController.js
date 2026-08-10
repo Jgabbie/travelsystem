@@ -1174,6 +1174,38 @@ const getDashboardBookings = async (req, res) => {
 };
 
 
+
+const getLatestPendingBookings = async (_req, res) => {
+    try {
+        const bookings = await BookingModel.find({
+            status: { $regex: /^pending$/i }
+        })
+            .select(
+                "reference status createdAt userId packageId bookingDetails"
+            )
+            .populate("userId", "username")
+            .populate("packageId", "packageType")
+            .sort({ createdAt: -1 })
+            .limit(3)
+            .lean();
+
+        res.status(200).json(bookings);
+    } catch (error) {
+        console.error("Error fetching latest pending bookings:", error);
+        res.status(500).json({
+            message: "Error fetching latest pending bookings",
+            error
+        });
+    }
+};
+
+
+
+
+
+
+
+
 export {
     createBooking,
     getUserBookings,
@@ -1195,5 +1227,6 @@ export {
     disApproveCancellation,
     requestDocumentResubmission,
     resubmitBookingDocuments,
-    getDashboardBookings
+    getDashboardBookings,
+    getLatestPendingBookings
 };

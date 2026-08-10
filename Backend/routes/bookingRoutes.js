@@ -133,4 +133,10 @@ router.get(
     bookingController.getDashboardBookings
 );
 
+router.get(
+    '/latest-pending-bookings',
+    staffOnly,
+    bookingController.getLatestPendingBookings
+);
+
 export default router;

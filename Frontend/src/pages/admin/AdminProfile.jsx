@@ -160,34 +160,42 @@ export default function AdminProfile() {
     //fetch pending approvals function
     const fetchPendingApprovals = async () => {
         try {
-            const response = await apiFetch.get('/booking/all-bookings')
-            const bookings = Array.isArray(response) ? response : [] //just make sure that it return an array, if not then empty array to avoid crashes
-            const pending = bookings
-                .filter((booking) => (booking.status || '').toLowerCase() === 'pending')
-                .slice(0, 3) //just get 3 recent pending approvals
-                .map((booking) => { //get necessary details for display
-                    const details = booking.bookingDetails || {}
+            const response = await apiFetch.get('/booking/latest-pending-bookings')
 
-                    const travelDate = dayjs(details.travelDate.startDate).format('MMMM D, YYYY')
-                    const packageType = details.bookingType || ''
-                    const date = travelDate
-                        ? new Date(travelDate).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                        })
-                        : 'Recently' //convert date to something like "Sep 15, 2023" or show "Recently" if no date available
 
-                    return { //create new object with necessary details for display
-                        _id: booking._id,
-                        title: details.tourPackageTitle || 'Package',
-                        date,
-                        status: 'Pending',
-                        packageType: packageType,
-                        reference: booking.reference || 'BK-00000'
-                    }
-                })
-            setPendingApprovals(pending) //set state with the 3 recent pending approvals
+            const bookings = Array.isArray(response) ? response : [];
+
+            const pendingBookings = bookings.map((booking) => {
+                const details = booking.bookingDetails || {};
+
+                const travelDateStart = details?.travelDate?.startDate;
+
+                const date = travelDateStart
+                    ? dayjs(travelDateStart).format('MMM D, YYYY')
+                    : 'Recently';
+
+                const packageType =
+                    booking.packageId?.packageType
+                        ? booking.packageId.packageType.charAt(0).toUpperCase() +
+                        booking.packageId.packageType.slice(1).toLowerCase()
+                        : '';
+
+                const title =
+                    details?.tourPackageTitle ||
+                    booking.packageId?.packageName ||
+                    'Package';
+
+                return {
+                    _id: booking._id,
+                    title,
+                    date,
+                    status: 'Pending',
+                    packageType,
+                    reference: booking.reference || 'BK-00000'
+                };
+            });
+
+            setPendingApprovals(pendingBookings);
         } catch (error) {
             console.error('Failed to fetch pending approvals:', error)
             setPendingApprovals([])
