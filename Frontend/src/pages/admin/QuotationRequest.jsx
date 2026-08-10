@@ -935,6 +935,25 @@ export default function QuotationRequest() {
         >
             {notificationContextHolder}
 
+            {uploading && (
+                <div
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        zIndex: 99999,
+                        backgroundColor: "rgba(255, 255, 255, 0.92)",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    <Spin
+                        size="large"
+                        description={"Please wait. Do not close or refresh this page."}
+                    />
+                </div>
+            )}
 
             {loading || !quotation ? (
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80vh" }}>
