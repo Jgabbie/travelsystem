@@ -319,25 +319,201 @@ const getTransactionsForApplication = async (req, res) => {
 
 
 //get all transactions function
+// get all transactions function
 const getAllTransactions = async (req, res) => {
     try {
-        const transactions = await TransactionModel.find({})
+        const {
+            page = 1,
+            limit = 10,
+            search = '',
+            method = '',
+            status = '',
+            paymentDate = '',
+            export: exportAll = 'false'
+        } = req.query;
+
+        const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
+        const parsedLimit = Math.min(
+            Math.max(parseInt(limit, 10) || 10, 1),
+            100
+        );
+
+        const trimmedSearch = String(search || '').trim();
+
+        const transactionFilter = {};
+
+        // Method filter
+        if (method) {
+            transactionFilter.method = method;
+        }
+
+        // Status filter
+        if (status) {
+            transactionFilter.status = status;
+        }
+
+        // Payment date filter
+        if (paymentDate) {
+            const selectedDate = new Date(paymentDate);
+
+            if (!Number.isNaN(selectedDate.getTime())) {
+                const startOfDay = new Date(selectedDate);
+                startOfDay.setHours(0, 0, 0, 0);
+
+                const endOfDay = new Date(selectedDate);
+                endOfDay.setHours(23, 59, 59, 999);
+
+                transactionFilter.transactionDate = {
+                    $gte: startOfDay,
+                    $lte: endOfDay
+                };
+            }
+        }
+
+        /*
+         * Search username / firstname / lastname.
+         *
+         * We resolve matching users first instead of populating every
+         * transaction and filtering in JavaScript.
+         */
+        if (trimmedSearch) {
+            const searchRegex = new RegExp(trimmedSearch, 'i');
+
+            const [matchingUsers, matchingPackages] = await Promise.all([
+                UserModel.find({
+                    $or: [
+                        { username: searchRegex },
+                        { firstname: searchRegex },
+                        { lastname: searchRegex }
+                    ]
+                }).select('_id').lean(),
+
+                PackageModel.find({
+                    packageName: searchRegex
+                }).select('_id').lean()
+            ]);
+
+            const matchingUserIds = matchingUsers.map(user => user._id);
+            const matchingPackageIds = matchingPackages.map(pkg => pkg._id);
+
+            /*
+             * Search transaction fields directly.
+             */
+            transactionFilter.$or = [
+                { reference: searchRegex },
+                { invoiceNumber: searchRegex },
+                { applicationType: searchRegex },
+                { method: searchRegex },
+                { status: searchRegex }
+            ];
+
+            /*
+             * Include matching customers/packages.
+             */
+            if (matchingUserIds.length > 0) {
+                transactionFilter.$or.push({
+                    userId: { $in: matchingUserIds }
+                });
+            }
+
+            if (matchingPackageIds.length > 0) {
+                transactionFilter.$or.push({
+                    packageId: { $in: matchingPackageIds }
+                });
+            }
+        }
+
+        /*
+         * EXPORT MODE
+         *
+         * The normal table uses pagination.
+         * PDF export deliberately does NOT use pagination.
+         */
+        const isExport = exportAll === 'true';
+
+        let query = TransactionModel.find(transactionFilter)
             .select(
-                "reference invoiceNumber amount method status transactionDate createdAt userId packageId applicationType proofImage"
+                "reference invoiceNumber amount method status transactionDate createdAt userId packageId applicationType proofImage proofImageType proofFileName items"
             )
             .populate("userId", "username firstname lastname")
             .populate("packageId", "packageName")
             .sort({ createdAt: -1 })
             .lean();
 
-        res.json({
-            transactions
+        if (!isExport) {
+            const skip = (parsedPage - 1) * parsedLimit;
+
+            query = query
+                .skip(skip)
+                .limit(parsedLimit);
+        }
+
+        const [transactions, total] = await Promise.all([
+            query,
+            TransactionModel.countDocuments(transactionFilter)
+        ]);
+
+        /*
+         * Statistics for the currently filtered dataset.
+         *
+         * These are NOT limited to the current page.
+         */
+        const statistics = await TransactionModel.aggregate([
+            {
+                $match: transactionFilter
+            },
+            {
+                $group: {
+                    _id: "$status",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const stats = {
+            total: total,
+            successful: 0,
+            pending: 0,
+            failed: 0
+        };
+
+        statistics.forEach(item => {
+            if (item._id === "Successful") {
+                stats.successful = item.count;
+            }
+
+            if (item._id === "Pending") {
+                stats.pending = item.count;
+            }
+
+            if (item._id === "Failed") {
+                stats.failed = item.count;
+            }
         });
+
+        res.json({
+            transactions,
+            pagination: {
+                page: isExport ? 1 : parsedPage,
+                limit: isExport ? total : parsedLimit,
+                total,
+                totalPages: isExport
+                    ? 1
+                    : Math.ceil(total / parsedLimit)
+            },
+            statistics: stats,
+            export: isExport
+        });
+
     } catch (error) {
-        console.error('Error fetching transactions:', error)
-        res.status(500).json({ message: "Failed to fetch transactions", error: error.message })
+        console.error('Error fetching transactions:', error);
+
+        res.status(500).json({
+            message: "Failed to fetch transactions",
+            error: error.message
+        });
     }
-}
+};
 
 
 //get transaction by ID function
@@ -713,39 +889,39 @@ const getDashboardRevenue = async (req, res) => {
         const endDate = new Date(currentYear + 1, 0, 1);
 
         const revenue = await TransactionModel.aggregate([
-        {
-            $match: {
-            status: "Successful",
-            createdAt: {
-                $gte: startDate,
-                $lt: endDate,
+            {
+                $match: {
+                    status: "Successful",
+                    createdAt: {
+                        $gte: startDate,
+                        $lt: endDate,
+                    },
+                },
             },
+            {
+                $group: {
+                    _id: { $month: "$createdAt" },
+                    totalRevenue: { $sum: "$amount" },
+                },
             },
-        },
-        {
-            $group: {
-            _id: { $month: "$createdAt" },
-            totalRevenue: { $sum: "$amount" },
+            {
+                $sort: { _id: 1 },
             },
-        },
-        {
-            $sort: { _id: 1 },
-        },
         ]);
 
         const monthlyRevenue = Array(12).fill(0);
 
         revenue.forEach((item) => {
-        monthlyRevenue[item._id - 1] = item.totalRevenue;
+            monthlyRevenue[item._id - 1] = item.totalRevenue;
         });
 
         res.status(200).json({
-        monthlyRevenue,
+            monthlyRevenue,
         });
     } catch (error) {
         res.status(500).json({
-        message: "Failed to fetch dashboard revenue",
-        error: error.message,
+            message: "Failed to fetch dashboard revenue",
+            error: error.message,
         });
     }
 };

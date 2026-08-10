@@ -45,4 +45,13 @@ const TransactionSchema = new mongoose.Schema({
     ],
 }, { timestamps: true });
 
+TransactionSchema.index({ createdAt: -1 });
+TransactionSchema.index({ transactionDate: -1 });
+TransactionSchema.index({ status: 1, createdAt: -1 });
+TransactionSchema.index({ method: 1, createdAt: -1 });
+TransactionSchema.index({ userId: 1, createdAt: -1 });
+TransactionSchema.index({ packageId: 1, createdAt: -1 });
+TransactionSchema.index({ reference: 1 });
+TransactionSchema.index({ invoiceNumber: 1 });
+
 export default mongoose.model('transactions', TransactionSchema);

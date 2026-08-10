@@ -93,6 +93,17 @@ export default function TransactionManagement() {
   const [data, setData] = useState([]);
   const [archivedData, setArchivedData] = useState([]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [totalTransactionsCount, setTotalTransactionsCount] = useState(0);
+
+  const [statistics, setStatistics] = useState({
+    total: 0,
+    successful: 0,
+    pending: 0,
+    failed: 0,
+  });
+
 
   //fetch transactions function
   const mapTransactions = (response) => response.map((t) => ({
@@ -151,15 +162,54 @@ export default function TransactionManagement() {
   }, [notificationApi]);
 
 
-  const fetchTransactions = useCallback(async () => {
+  const fetchTransactions = useCallback(async (page = 1) => {
     setLoading(true);
 
     try {
-      const response = await apiFetch.get("/transaction/all-transactions");
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(pageSize),
+      });
 
-      setData(mapTransactions(response.transactions || response));
+      if (searchText.trim()) {
+        params.append("search", searchText.trim());
+      }
+
+      if (methodFilter) {
+        params.append("method", methodFilter);
+      }
+
+      if (statusFilter) {
+        params.append("status", statusFilter);
+      }
+
+      if (paymentDateFilter) {
+        params.append(
+          "paymentDate",
+          dayjs(paymentDateFilter).format("YYYY-MM-DD")
+        );
+      }
+
+      const response = await apiFetch.get(
+        `/transaction/all-transactions?${params.toString()}`
+      );
+
+      setData(mapTransactions(response.transactions || []));
+
+      setTotalTransactionsCount(
+        response.pagination?.total || 0
+      );
+
+      setStatistics(
+        response.statistics || {
+          total: 0,
+          successful: 0,
+          pending: 0,
+          failed: 0,
+        }
+      );
     } catch (error) {
-      console.error(error);
+      console.error("Failed to fetch transactions:", error);
 
       notificationApi.error({
         title: "Unable to load transactions.",
@@ -168,7 +218,14 @@ export default function TransactionManagement() {
     } finally {
       setLoading(false);
     }
-  }, [notificationApi]);
+  }, [
+    pageSize,
+    searchText,
+    methodFilter,
+    statusFilter,
+    paymentDateFilter,
+    notificationApi,
+  ]);
 
 
   //fetch archived transactions function
@@ -187,50 +244,61 @@ export default function TransactionManagement() {
   };
 
   useEffect(() => {
-    fetchTransactions();
     fetchPaymentMethods();
-  }, [fetchTransactions, fetchPaymentMethods]);
+  }, [fetchPaymentMethods]);
 
+  useEffect(() => {
+    if (!showArchived) {
+      fetchTransactions(currentPage);
+    }
+  }, [
+    currentPage,
+    showArchived,
+    fetchTransactions
+  ]);
+
+  useEffect(() => {
+    if (showArchived) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetchTransactions(1);
+      setCurrentPage(1);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [
+    searchText,
+    methodFilter,
+    statusFilter,
+    paymentDateFilter,
+    showArchived,
+    fetchTransactions
+  ]);
 
   //filter functions
   const currentData = showArchived ? archivedData : data;
 
-  const filteredData = currentData.filter(item => {
+  const filteredData = currentData;
 
-    const searchValue = searchText.trim().toLowerCase();
+  const totalTransactions = showArchived
+    ? archivedData.length
+    : statistics.total;
 
-    const matchesSearch =
-      String(item.ref || "").toLowerCase().includes(searchValue) ||
-      String(item.package || "").toLowerCase().includes(searchValue) ||
-      String(item.method || "").toLowerCase().includes(searchValue) ||
-      String(item.status || "").toLowerCase().includes(searchValue) ||
-      String(item.username || "").toLowerCase().includes(searchValue) ||
-      String(item.firstname || "").toLowerCase().includes(searchValue) ||
-      String(item.lastname || "").toLowerCase().includes(searchValue) ||
-      String(item.price || "").toLowerCase().includes(searchValue);
+  const totalSuccessful = showArchived
+    ? archivedData.filter(t => t.status === "Successful").length
+    : statistics.successful;
 
-    const matchesMethod =
-      methodFilter === "" || item.method === methodFilter;
+  const totalPending = showArchived
+    ? archivedData.filter(t => t.status === "Pending").length
+    : statistics.pending;
 
-    const matchesStatus =
-      statusFilter === "" || item.status === statusFilter;
+  const totalFailed = showArchived
+    ? archivedData.filter(t => t.status === "Failed").length
+    : statistics.failed;
 
-    const matchesPaymentDate =
-      !paymentDateFilter ||
-      dayjs(item.date).isSame(paymentDateFilter, "day");
 
-    return (
-      matchesSearch &&
-      matchesMethod &&
-      matchesStatus &&
-      matchesPaymentDate
-    );
-  });
-
-  const totalTransactions = filteredData.length;
-  const totalSuccessful = filteredData.filter(t => t.status === "Successful").length;
-  const totalPending = filteredData.filter(t => t.status === "Pending").length;
-  const totalFailed = filteredData.filter(t => t.status === "Failed").length;
   const receiptWatermarkText = selectedTransaction?.status === "Successful" ? "PAID" : "NOT PAID";
   const receiptWatermarkClass = selectedTransaction?.status === "Successful" ? "receipt-watermark--paid" : "receipt-watermark--unpaid";
 
@@ -319,145 +387,347 @@ export default function TransactionManagement() {
 
   //generate PDF function
   const generatePDF = async () => {
-    const doc = new jsPDF('p', 'mm', 'a4');
-    const tableColumn = ["Invoice No.", "Reference", "Travel Package", "Payment Date & Time", "Total Price", "Method", "Status"];
-
-    const reportTitle = showArchived
-      ? "TRANSACTION MANAGEMENT ARCHIVES REPORT"
-      : "TRANSACTION MANAGEMENT REPORT";
-
-    const fileName = showArchived
-      ? `Transaction_Archives_Report_${dayjs().format("YYYY-MM-DD")}.pdf`
-      : `Transaction_Report_${dayjs().format("YYYY-MM-DD")}.pdf`;
-
-    const tableRows = filteredData.map(item => [
-      item.invoiceNumber || "N/A",
-      item.ref,
-      item.package,
-      dayjs(item.date).format("MMM DD, YYYY hh:mm A"),
-      `PHP ${Number(item.amountRaw).toLocaleString("en-PH", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`,
-      item.method,
-      item.status
-    ]);
-
-    const generatedBy =
-      [auth?.firstname, auth?.lastname]
-        .filter(Boolean)
-        .join(" ")
-        .trim() || "Administrator";
-
     try {
-      const imgData = await getBase64ImageFromURL("/images/Logo.png");
-      doc.addImage(imgData, "PNG", 14, 12, 24, 24);
-    } catch (e) {
-      console.warn("Logo not found at /public/images/Logo.png");
-    }
-
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text("M&RC TRAVEL AND TOURS", 40, 18);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 40, 23);
-    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 40, 27);
-    doc.text("+639690554806 | info1@mrctravels.com", 40, 31);
-
-    doc.setDrawColor(48, 87, 151);
-    doc.line(14, 38, 196, 38);
-
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(48, 87, 151);
-    doc.text(reportTitle, 14, 48);
-
-    doc.setFontSize(9);
-    doc.setTextColor(100);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Date Generated: ${new Date().toLocaleString()}`, 14, 55);
-
-    let tableStartY = 62;
-    const filters = [];
-
-    if (searchText) {
-      filters.push(`Search: "${searchText}"`);
-    }
-
-    if (methodFilter) {
-      filters.push(`Payment Method: ${methodFilter}`);
-    }
-
-    if (statusFilter) {
-      filters.push(`Status: ${statusFilter}`);
-    }
-
-    if (paymentDateFilter) {
-      filters.push(
-        `Payment Date: ${dayjs(paymentDateFilter).format("MMM DD, YYYY")}`
-      );
-    }
-
-    if (filters.length > 0) {
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(0, 0, 0);
-      doc.text("Filters Applied:", 14, tableStartY);
-
-      doc.setFont("helvetica", "normal");
-
-      filters.forEach((filter, index) => {
-        doc.text(`• ${filter}`, 18, tableStartY + 6 + (index * 6));
+      notificationApi.info({
+        title: "Preparing all transaction data...",
+        key: "pdf",
+        placement: "topRight",
       });
 
-      tableStartY += 6 + (filters.length * 6);
-    }
+      /*
+       * Fetch ALL matching records.
+       *
+       * Notice that we intentionally do NOT send page/limit.
+       * export=true tells the backend not to paginate.
+       */
+      const params = new URLSearchParams({
+        export: "true",
+      });
 
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: tableStartY,
-      styles: { fontSize: 7.5 },
-      headStyles: { fillColor: [48, 87, 151] },
-      alternateRowStyles: { fillColor: [245, 247, 250] },
-      margin: { left: 14, right: 14 }
-    });
+      if (searchText.trim()) {
+        params.append("search", searchText.trim());
+      }
 
-    //add the footer and page numbers
-    const totalPages = doc.getNumberOfPages();
+      if (methodFilter) {
+        params.append("method", methodFilter);
+      }
 
-    for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
-      doc.setPage(pageNumber);
+      if (statusFilter) {
+        params.append("status", statusFilter);
+      }
 
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const footerY = pageHeight - 8;
+      if (paymentDateFilter) {
+        params.append(
+          "paymentDate",
+          dayjs(paymentDateFilter).format("YYYY-MM-DD")
+        );
+      }
 
-      //footer separator line
-      doc.setDrawColor(210, 210, 210);
-      doc.setLineWidth(0.2);
-      doc.line(14, pageHeight - 14, pageWidth - 14, pageHeight - 14);
+      const response = await apiFetch.get(
+        `/transaction/all-transactions?${params.toString()}`
+      );
+
+      const allTransactions = mapTransactions(
+        response.transactions || []
+      );
+
+      const doc = new jsPDF("p", "mm", "a4");
+
+      const tableColumn = [
+        "Invoice No.",
+        "Reference",
+        "Travel Package",
+        "Payment Date & Time",
+        "Total Price",
+        "Method",
+        "Status"
+      ];
+
+      const reportTitle = showArchived
+        ? "TRANSACTION MANAGEMENT ARCHIVES REPORT"
+        : "TRANSACTION MANAGEMENT REPORT";
+
+      const fileName = showArchived
+        ? `Transaction_Archives_Report_${dayjs().format("YYYY-MM-DD")}.pdf`
+        : `Transaction_Report_${dayjs().format("YYYY-MM-DD")}.pdf`;
+
+      /*
+       * ALL records are used here.
+       * This is not filteredData, which only contains the current page.
+       */
+      const tableRows = allTransactions.map(item => [
+        item.invoiceNumber || "N/A",
+        item.ref || "N/A",
+        item.package || "N/A",
+        item.date
+          ? dayjs(item.date).format("MMM DD, YYYY hh:mm A")
+          : "N/A",
+        `PHP ${Number(item.amountRaw || 0).toLocaleString("en-PH", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`,
+        item.method || "N/A",
+        item.status || "N/A"
+      ]);
+
+      const generatedBy =
+        [auth?.firstname, auth?.lastname]
+          .filter(Boolean)
+          .join(" ")
+          .trim() || "Administrator";
+
+      /*
+       * Logo
+       */
+      try {
+        const imgData = await getBase64ImageFromURL(
+          "/images/Logo.png"
+        );
+
+        doc.addImage(
+          imgData,
+          "PNG",
+          14,
+          12,
+          24,
+          24
+        );
+      } catch (e) {
+        console.warn(
+          "Logo not found at /public/images/Logo.png"
+        );
+      }
+
+      /*
+       * Header
+       */
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+
+      doc.text(
+        "M&RC TRAVEL AND TOURS",
+        40,
+        18
+      );
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
-      doc.setTextColor(100, 100, 100);
 
-      //generated by on the left
-      doc.text(`Generated by: ${generatedBy}`, 14, footerY);
-
-      //page number on the right
       doc.text(
-        `Page ${pageNumber} of ${totalPages}`,
-        pageWidth - 14,
-        footerY,
-        {
-          align: "right"
-        }
+        "2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy",
+        40,
+        23
       );
-    }
 
-    doc.save(fileName);
-    notificationApi.success({ title: "Report exported to PDF successfully.", placement: "topRight" });
+      doc.text(
+        "San Antonio, Paranaque City, Philippines, 1709 PHL",
+        40,
+        27
+      );
+
+      doc.text(
+        "+639690554806 | info1@mrctravels.com",
+        40,
+        31
+      );
+
+      doc.setDrawColor(48, 87, 151);
+      doc.line(14, 38, 196, 38);
+
+      /*
+       * Report title
+       */
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(48, 87, 151);
+
+      doc.text(
+        reportTitle,
+        14,
+        48
+      );
+
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.setFont("helvetica", "normal");
+
+      doc.text(
+        `Date Generated: ${new Date().toLocaleString()}`,
+        14,
+        55
+      );
+
+      /*
+       * Record count
+       */
+      doc.setTextColor(0, 0, 0);
+
+      doc.text(
+        `Total Records: ${allTransactions.length}`,
+        14,
+        61
+      );
+
+      let tableStartY = 68;
+
+      /*
+       * Filters
+       */
+      const filters = [];
+
+      if (searchText) {
+        filters.push(
+          `Search: "${searchText}"`
+        );
+      }
+
+      if (methodFilter) {
+        filters.push(
+          `Payment Method: ${methodFilter}`
+        );
+      }
+
+      if (statusFilter) {
+        filters.push(
+          `Status: ${statusFilter}`
+        );
+      }
+
+      if (paymentDateFilter) {
+        filters.push(
+          `Payment Date: ${dayjs(paymentDateFilter).format(
+            "MMM DD, YYYY"
+          )}`
+        );
+      }
+
+      if (filters.length > 0) {
+        doc.setFont("helvetica", "bold");
+        doc.text(
+          "Filters Applied:",
+          14,
+          tableStartY
+        );
+
+        doc.setFont("helvetica", "normal");
+
+        filters.forEach((filter, index) => {
+          doc.text(
+            `• ${filter}`,
+            18,
+            tableStartY + 6 + index * 6
+          );
+        });
+
+        tableStartY += 6 + filters.length * 6;
+      }
+
+      /*
+       * Generate the table using ALL records.
+       */
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+
+        startY: tableStartY,
+
+        styles: {
+          fontSize: 7.5,
+          cellPadding: 2,
+          overflow: "linebreak"
+        },
+
+        headStyles: {
+          fillColor: [48, 87, 151]
+        },
+
+        alternateRowStyles: {
+          fillColor: [245, 247, 250]
+        },
+
+        margin: {
+          left: 14,
+          right: 14,
+          bottom: 18
+        },
+
+        didDrawPage: () => {
+          const pageWidth =
+            doc.internal.pageSize.getWidth();
+
+          const pageHeight =
+            doc.internal.pageSize.getHeight();
+
+          const footerY =
+            pageHeight - 8;
+
+          doc.setDrawColor(
+            210,
+            210,
+            210
+          );
+
+          doc.setLineWidth(0.2);
+
+          doc.line(
+            14,
+            pageHeight - 14,
+            pageWidth - 14,
+            pageHeight - 14
+          );
+
+          doc.setFont(
+            "helvetica",
+            "normal"
+          );
+
+          doc.setFontSize(8);
+          doc.setTextColor(
+            100,
+            100,
+            100
+          );
+
+          doc.text(
+            `Generated by: ${generatedBy}`,
+            14,
+            footerY
+          );
+
+          doc.text(
+            `Page ${doc.internal.getNumberOfPages()}`,
+            pageWidth - 14,
+            footerY,
+            {
+              align: "right"
+            }
+          );
+        }
+      });
+
+      /*
+       * Save PDF
+       */
+      doc.save(fileName);
+
+      notificationApi.success({
+        title: `PDF exported successfully (${allTransactions.length} records).`,
+        key: "pdf",
+        placement: "topRight",
+      });
+
+    } catch (error) {
+      console.error(
+        "PDF Generation Error:",
+        error
+      );
+
+      notificationApi.error({
+        title: "Failed to generate PDF.",
+        key: "pdf",
+        placement: "topRight",
+      });
+    }
   };
 
 
@@ -981,6 +1251,7 @@ export default function TransactionManagement() {
                         .replace(/^\s+/, '');
 
                       setSearchText(cleanedValue);
+                      setCurrentPage(1);
                     }}
                     allowClear
                   />
@@ -993,7 +1264,10 @@ export default function TransactionManagement() {
                     placeholder="Method"
                     allowClear
                     value={methodFilter || undefined}
-                    onChange={(v) => setMethodFilter(v || "")}
+                    onChange={(v) => {
+                      setMethodFilter(v || "");
+                      setCurrentPage(1);
+                    }}
                     options={[
                       { value: "Manual", label: "Manual" },
                       { value: "Paymongo", label: "Paymongo" },
@@ -1008,7 +1282,10 @@ export default function TransactionManagement() {
                     placeholder="Status"
                     allowClear
                     value={statusFilter || undefined}
-                    onChange={(v) => setStatusFilter(v || "")}
+                    onChange={(v) => {
+                      setStatusFilter(v || "");
+                      setCurrentPage(1);
+                    }}
                     options={[
                       { value: "Successful", label: "Successful" },
                       { value: "Pending", label: "Pending" },
@@ -1024,7 +1301,10 @@ export default function TransactionManagement() {
                     className="transaction-date-filter"
                     placeholder="Date"
                     value={paymentDateFilter}
-                    onChange={(d) => setPaymentDateFilter(d)}
+                    onChange={(date) => {
+                      setPaymentDateFilter(date);
+                      setCurrentPage(1);
+                    }}
                     allowClear
                   />
                 </div>
@@ -1092,8 +1372,15 @@ export default function TransactionManagement() {
                 loading={loading}
                 scroll={{ x: "max-content" }}
                 pagination={{
-                  pageSize: 10,
+                  current: currentPage,
+                  pageSize: pageSize,
+                  total: showArchived
+                    ? archivedData.length
+                    : totalTransactionsCount,
                   showSizeChanger: false,
+                  onChange: (page) => {
+                    setCurrentPage(page);
+                  },
                 }}
               />
             </Form>
