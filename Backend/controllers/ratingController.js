@@ -23,42 +23,67 @@ const generateReviewSummary = async () => {
     }
 
     const reviews = ratings
-            .map(r => `
+        .map(r => `
         Package: ${r.packageId?.packageName || "Unknown Package"}
         Rating: ${r.rating}/5
         Review: ${r.review || "No review"}
         `)
-            .join("\n\n");
+        .join("\n\n");
 
     const response = await openai.responses.create({
-    model: "gpt-5-mini",
-    input: `
+        model: "gpt-5-mini",
+        input: `
 You are an AI assistant analyzing customer reviews for a travel agency.
 
-Analyze ALL reviews together.
+Analyze ALL reviews together and produce a concise, objective report.
 
-Write a report in Markdown.
-
-Requirements:
-
-- Start with an **Overall Summary** (2-3 sentences).
-- Then create a section called **Top Performing Tour Packages**.
-- List ONLY packages that consistently receive positive reviews.
-- For each package, explain why customers liked it.
-- Then create a section called **Tour Packages with Recurring Complaints**.
-- List ONLY packages that repeatedly receive negative reviews.
-- Explain the common complaints.
-- If a package has only one negative review, do not consider it a recurring complaint.
-- If there are no recurring complaints, state that.
-- Bold package names and important keywords.
+OUTPUT RULES:
+- Output ONLY the Markdown report.
+- Do NOT include greetings, introductions outside the report, conclusions outside the required sections, recommendations, suggestions, questions, or offers to do more work.
+- Do NOT say phrases such as "If you'd like...", "I can also...", "Let me know if...", "Would you like...", or similar.
+- Do NOT add any content after the final section of the report.
+- The response must END immediately after the last relevant finding.
 - Do not mention customer names.
-- Base everything only on the reviews below.
+- Base everything ONLY on the reviews provided below.
+- Do not invent information that is not supported by the reviews.
+
+REPORT STRUCTURE:
+
+## Overall Summary
+- Write 2-3 sentences summarizing the overall sentiment and major patterns found across all reviews.
+
+## Top Performing Tour Packages
+- List ONLY packages that consistently receive positive reviews.
+- For each package:
+  - **Package Name**
+  - Explain the specific aspects customers liked.
+- Do not include packages with mixed or insufficiently positive feedback.
+- If there are no consistently positive packages, state:
+  **No tour packages received consistently positive feedback based on the available reviews.**
+
+## Tour Packages with Recurring Complaints
+- List ONLY packages that have recurring negative complaints.
+- A complaint is considered recurring ONLY when the same or substantially similar issue appears in at least TWO reviews for that package.
+- If a package has only ONE negative review, DO NOT classify it as a recurring complaint.
+- For each package:
+  - **Package Name**
+  - Explain the recurring complaints.
+- If there are no recurring complaints, state:
+  **No recurring complaints were identified based on the available reviews.**
+
+FORMATTING:
+- Use Markdown headings.
+- Bold package names and important keywords.
+- Keep the report factual and concise.
+- Do not mention customer names.
+- Do not add a "Recommendations", "Next Steps", "Additional Analysis", or similar section unless explicitly requested.
+- Do not end with a question or an offer to provide additional analysis.
 
 Reviews:
 
 ${reviews}
 `
-});
+    });
 
     return {
         summary: response.output_text.trim()
