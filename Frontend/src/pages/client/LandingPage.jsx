@@ -447,6 +447,10 @@ export default function LandingPage() {
     }, [auth, authLoading])
 
 
+    const handleReloadRecommendations = () => {
+        window.location.reload();
+    };
+
 
     // Check for next steps modal flag from preferences
     useEffect(() => {
@@ -1029,7 +1033,19 @@ export default function LandingPage() {
                         ) : isForYouLoading ? (
                             <p className='for-you-status-text'>Loading recommendations...</p>
                         ) : forYouError ? (
-                            <p className='for-you-status-text'>{forYouError}</p>
+                            <div className="for-you-empty-state">
+                                <p className="for-you-status-text">
+                                    {forYouError}
+                                </p>
+
+                                <Button
+                                    type="primary"
+                                    className="for-you-login-button"
+                                    onClick={handleReloadRecommendations}
+                                >
+                                    Reload
+                                </Button>
+                            </div>
                         ) : forYouPackages.length === 0 ? (
                             <p className='for-you-status-text'>No recommendations yet. Rate more packages to improve suggestions.</p>
                         ) : (
@@ -1234,82 +1250,82 @@ export default function LandingPage() {
 
                     <div className="recent-tours-section">
 
-                                    <div className="recent-tours-carousel">
+                        <div className="recent-tours-carousel">
 
-                                         <div className="recent-tours-info">
+                            <div className="recent-tours-info">
 
-                                            <h1 className='recent-tours-title ' style={{ marginBottom: 0, paddingBottom: 0 }}>
-                                                Recent Tours
-                                            </h1>
+                                <h1 className='recent-tours-title ' style={{ marginBottom: 0, paddingBottom: 0 }}>
+                                    Recent Tours
+                                </h1>
 
-                                            <div className='text-underline' style={{ backgroundColor: '#305797' }}></div>
+                                <div className='text-underline' style={{ backgroundColor: '#305797' }}></div>
 
-                                            <p className="recent-tours-subtitle">
-                                               Explore highlights from our latest travel adventures. From breathtaking landscapes to vibrant cities, discover the unforgettable destinations our clients have explored and the memories they've created along the way.
-                                            </p>
+                                <p className="recent-tours-subtitle">
+                                    Explore highlights from our latest travel adventures. From breathtaking landscapes to vibrant cities, discover the unforgettable destinations our clients have explored and the memories they've created along the way.
+                                </p>
 
+                            </div>
+
+
+                            <Button
+                                shape="circle"
+                                className="popular-carousel-button"
+                                icon={<LeftOutlined />}
+                                onClick={() =>
+                                    setRecentTourIndex(prev =>
+                                        (prev - 1 + recentTours.length) %
+                                        recentTours.length
+                                    )
+                                }
+                            />
+
+                            <div className="recent-tours-viewport">
+
+                                <div
+                                    className="recent-tours-track"
+                                    style={{
+                                        transform: `translateX(-${recentTourIndex * 100}%)`
+                                    }}
+                                >
+                                    {recentTours.map((tour, index) => (
+
+                                        <div
+                                            key={index}
+                                            className="recent-tours-slide"
+                                        >
+                                            <img
+                                                src={tour.image || tour}
+                                                alt={`Recent Tour ${index + 1}`}
+                                            />
                                         </div>
 
+                                    ))}
+                                </div>
 
-                                        <Button
-                                            shape="circle"
-                                            className="popular-carousel-button"
-                                            icon={<LeftOutlined />}
-                                            onClick={() =>
-                                                setRecentTourIndex(prev =>
-                                                    (prev - 1 + recentTours.length) %
-                                                    recentTours.length
-                                                )
-                                            }
-                                        />
+                            </div>
 
-                                        <div className="recent-tours-viewport">
+                            <Button
+                                shape="circle"
+                                className="popular-carousel-button"
+                                icon={<RightOutlined />}
+                                onClick={() =>
+                                    setRecentTourIndex(prev =>
+                                        (prev + 1) % recentTours.length
+                                    )
+                                }
+                            />
 
-                                            <div
-                                                className="recent-tours-track"
-                                                style={{
-                                                    transform: `translateX(-${recentTourIndex * 100}%)`
-                                                }}
-                                            >
-                                                {recentTours.map((tour, index) => (
+                            <div className="explore-carousel-dots">
+                                {recentTours.map((_, index) => (
+                                    <span
+                                        key={index}
+                                        className={index === recentTourIndex ? "active" : ""}
+                                        onClick={() => setRecentTourIndex(index)}
+                                    />
+                                ))}
+                            </div>
 
-                                                    <div
-                                                        key={index}
-                                                        className="recent-tours-slide"
-                                                    >
-                                                        <img
-                                                            src={tour.image || tour}
-                                                            alt={`Recent Tour ${index + 1}`}
-                                                        />
-                                                    </div>
-
-                                                ))}
-                                            </div>
-
-                                        </div>
-
-                                        <Button
-                                            shape="circle"
-                                            className="popular-carousel-button"
-                                            icon={<RightOutlined />}
-                                            onClick={() =>
-                                                setRecentTourIndex(prev =>
-                                                    (prev + 1) % recentTours.length
-                                                )
-                                            }
-                                        />
-
-                                        <div className="explore-carousel-dots">
-                                            {recentTours.map((_, index) => (
-                                                <span
-                                                    key={index}
-                                                    className={index === recentTourIndex ? "active" : ""}
-                                                    onClick={() => setRecentTourIndex(index)}
-                                                />
-                                            ))}
-                                        </div>
-
-                                    </div>
+                        </div>
 
 
                     </div>
