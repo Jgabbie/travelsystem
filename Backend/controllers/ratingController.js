@@ -33,55 +33,32 @@ const generateReviewSummary = async () => {
     const response = await openai.responses.create({
         model: "gpt-5-mini",
         input: `
-You are an AI assistant analyzing customer reviews for a travel agency.
+You are analyzing travel package customer reviews.
 
-Analyze ALL reviews together and produce a concise, objective report.
+Analyze ALL reviews together.
 
-OUTPUT RULES:
-- Output ONLY the Markdown report.
-- Do NOT include greetings, introductions outside the report, conclusions outside the required sections, recommendations, suggestions, questions, or offers to do more work.
-- Do NOT say phrases such as "If you'd like...", "I can also...", "Let me know if...", "Would you like...", or similar.
-- Do NOT add any content after the final section of the report.
-- The response must END immediately after the last relevant finding.
-- Do not mention customer names.
-- Base everything ONLY on the reviews provided below.
-- Do not invent information that is not supported by the reviews.
-
-REPORT STRUCTURE:
+Return ONLY this Markdown report:
 
 ## Overall Summary
-- Write 2-3 sentences summarizing the overall sentiment and major patterns found across all reviews.
+2-3 sentences.
 
 ## Top Performing Tour Packages
-- List ONLY packages that consistently receive positive reviews.
-- For each package:
-  - **Package Name**
-  - Explain the specific aspects customers liked.
-- Do not include packages with mixed or insufficiently positive feedback.
-- If there are no consistently positive packages, state:
-  **No tour packages received consistently positive feedback based on the available reviews.**
+Only packages with consistently positive feedback.
 
 ## Tour Packages with Recurring Complaints
-- List ONLY packages that have recurring negative complaints.
-- A complaint is considered recurring ONLY when the same or substantially similar issue appears in at least TWO reviews for that package.
-- If a package has only ONE negative review, DO NOT classify it as a recurring complaint.
-- For each package:
-  - **Package Name**
-  - Explain the recurring complaints.
-- If there are no recurring complaints, state:
-  **No recurring complaints were identified based on the available reviews.**
+Only packages where the same or substantially similar complaint appears in at least 2 reviews.
 
-FORMATTING:
-- Use Markdown headings.
-- Bold package names and important keywords.
-- Keep the report factual and concise.
+Rules:
 - Do not mention customer names.
-- Do not add a "Recommendations", "Next Steps", "Additional Analysis", or similar section unless explicitly requested.
-- Do not end with a question or an offer to provide additional analysis.
+- Do not invent information.
+- Do not add recommendations.
+- Do not add a conclusion.
+- Do not ask questions.
+- Do not say "If you'd like", "I can also", "Let me know", or similar phrases.
+- End immediately after the final finding.
 
 Reviews:
-
-${reviews}
+${JSON.stringify(reviewText)}
 `
     });
 
