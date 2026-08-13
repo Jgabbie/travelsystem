@@ -125,7 +125,10 @@ export default function ReviewRatings() {
             setSummaryLoading(true);
 
             const response = await apiFetch.get(
-                "/rating/summarize-all-reviews"
+                "/rating/summarize-all-reviews",
+                {
+                    timeout: 120000
+                }
             );
 
             setReviewSummary(response.summary);
