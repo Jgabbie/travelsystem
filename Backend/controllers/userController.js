@@ -255,6 +255,16 @@ const createUsers = async (req, res) => {
             return res.status(400).json({ message: "Username or Email already exists" });
         }
 
+        if (role === "Admin") {
+            const adminCount = await UserModel.countDocuments({ role: "Admin" });
+
+            if (adminCount >= 3) {
+                return res.status(400).json({
+                    message: "The maximum number of Admin accounts (3) has been reached."
+                });
+            }
+        }
+
         if (role === "Admin" || role === "Employee") {
             // Generate a temporary random password (never sent) and store its hash so schema validation passes
             const tempPassword = Math.random().toString(36).slice(-12)

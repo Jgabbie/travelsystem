@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Input, Button, Select, message } from 'antd';
+import { Modal, Input, Button, Select, notification } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
 import '../../style/components/modals/addusermodal.css';
 import '../../style/components/modals/modaldesign.css';
@@ -28,6 +28,11 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         password: '',
         confirmPassword: ''
     });
+
+
+    const [notificationApi, notificationContextHolder] =
+        notification.useNotification();
+
 
     // RESET FIELDS AND ERRORS WHEN MODAL OPENS OR ROLE TO ADD CHANGES -----------------------------
     useEffect(() => {
@@ -200,7 +205,11 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
 
             await apiFetch.post('/user/createUsers', payload, { withCredentials: true });
 
-            message.success(`${values.role} created successfully!`);
+            notificationApi.success({
+                title: 'Success',
+                description: `${values.role} created successfully!`
+            }
+            );
             setIsUserAddedModalOpen(true);
             setValues({
                 role: roleToAdd || 'Customer',
@@ -216,7 +225,10 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             onClose(); // Close modal
         } catch (err) {
             const errorMsg = err.data?.message || err.data?.error || "Failed to create user";
-            message.error(errorMsg);
+            notificationApi.error({
+                title: 'Unable to create user',
+                description: errorMsg
+            });
         } finally {
             setLoading(false);
         }
@@ -250,6 +262,8 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
 
     return (
         <>
+            {notificationContextHolder}
+
             <Modal
                 className="adduser-modal"
                 title={`Add New ${values.role}`}

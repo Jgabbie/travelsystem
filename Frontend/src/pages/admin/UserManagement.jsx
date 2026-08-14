@@ -356,18 +356,38 @@ export default function UserManagement() {
       setEditErrors({});
       getUsers();
     } catch (error) {
+      console.error("Edit user error:", error);
+
       const errorMessage =
         error?.response?.data?.message ||
-        error?.response?.data?.error ||
+        error?.data?.message ||
+        error?.message ||
         "Update failed";
 
-      const normalizedMessage = errorMessage.toLowerCase();
+      const normalizedMessage = String(errorMessage).toLowerCase();
 
+      // Maximum Admin limit
+      if (
+        normalizedMessage.includes("maximum") &&
+        normalizedMessage.includes("admin")
+      ) {
+        notificationApi.error({
+          title: "Cannot update user",
+          description: errorMessage,
+          placement: "topRight",
+        });
+
+        return;
+      }
+
+      // Username already exists
       if (
         normalizedMessage.includes("username") &&
-        (normalizedMessage.includes("already") ||
+        (
+          normalizedMessage.includes("already") ||
           normalizedMessage.includes("exist") ||
-          normalizedMessage.includes("duplicate"))
+          normalizedMessage.includes("duplicate")
+        )
       ) {
         setEditErrors((previous) => ({
           ...previous,
@@ -379,6 +399,7 @@ export default function UserManagement() {
 
       notificationApi.error({
         title: "Failed to update user",
+        description: errorMessage,
         placement: "topRight",
       });
     }
@@ -569,187 +590,187 @@ export default function UserManagement() {
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
           <Spin size="large" description={actionType === "Archiving" ? "Archiving user..." : "Restoring user..."} />
         </div>
-      ): (
-      <div className="user-management-container">
-        <h1 className="page-header">User Management</h1>
+      ) : (
+        <div className="user-management-container">
+          <h1 className="page-header">User Management</h1>
 
-        {!showArchived && (
-          <Row gutter={16} className='usermanagement-statistics' >
-            <Col xs={24} sm={8}>
-              <Card className='usermanagement-card'>
-                <Statistic
-                  title="Total Users"
-                  value={users.length}
-                  prefix={<UserOutlined />}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Card className='usermanagement-card'>
-                <Statistic
-                  title="Verified Users"
-                  value={users.filter(u => u.status === "Verified").length}
-                  prefix={<CheckCircleOutlined />}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Card className='usermanagement-card'>
-                <Statistic
-                  title="Unverified Users"
-                  value={users.filter(u => u.status === "Pending").length}
-                  prefix={<ExclamationCircleOutlined />}
-                />
-              </Card>
-            </Col>
-          </Row>
-        )}
+          {!showArchived && (
+            <Row gutter={16} className='usermanagement-statistics' >
+              <Col xs={24} sm={8}>
+                <Card className='usermanagement-card'>
+                  <Statistic
+                    title="Total Users"
+                    value={users.length}
+                    prefix={<UserOutlined />}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={8}>
+                <Card className='usermanagement-card'>
+                  <Statistic
+                    title="Verified Users"
+                    value={users.filter(u => u.status === "Verified").length}
+                    prefix={<CheckCircleOutlined />}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={8}>
+                <Card className='usermanagement-card'>
+                  <Statistic
+                    title="Unverified Users"
+                    value={users.filter(u => u.status === "Pending").length}
+                    prefix={<ExclamationCircleOutlined />}
+                  />
+                </Card>
+              </Col>
+            </Row>
+          )}
 
-        <Card className="usermanagement-actions">
-          <div className="usermanagement-actions-row">
-            <div className="usermanagement-actions-filters">
-              <div className="usermanagement-actions-field usermanagement-actions-field--search">
-                <label className="usermanagement-label">Search</label>
-                <Input
-                  maxLength={40}
-                  prefix={<SearchOutlined />}
-                  placeholder="Search..."
-                  className="usermanagement-search-input"
-                  value={searchText}
-                  onChange={(e) => {
-                    const cleanedValue = e.target.value
-                      .replace(/[^a-zA-Z0-9\s@._+-]/g, "")
-                      .replace(/\s{2,}/g, " ")
-                      .replace(/^\s+/, "");
+          <Card className="usermanagement-actions">
+            <div className="usermanagement-actions-row">
+              <div className="usermanagement-actions-filters">
+                <div className="usermanagement-actions-field usermanagement-actions-field--search">
+                  <label className="usermanagement-label">Search</label>
+                  <Input
+                    maxLength={40}
+                    prefix={<SearchOutlined />}
+                    placeholder="Search..."
+                    className="usermanagement-search-input"
+                    value={searchText}
+                    onChange={(e) => {
+                      const cleanedValue = e.target.value
+                        .replace(/[^a-zA-Z0-9\s@._+-]/g, "")
+                        .replace(/\s{2,}/g, " ")
+                        .replace(/^\s+/, "");
 
-                    setSearchText(cleanedValue);
-                  }}
-                  allowClear
-                />
-              </div>
+                      setSearchText(cleanedValue);
+                    }}
+                    allowClear
+                  />
+                </div>
 
-              <div className="usermanagement-actions-field">
-                <label className="usermanagement-label">Role</label>
-                <Select
-                  placeholder="Role"
-                  className="usermanagement-select"
-                  allowClear
-                  onChange={(v) => setRoleFilter(v || "")}
-                  options={[
-                    { value: "Admin", label: "Admin" },
-                    { value: "Customer", label: "Customer" },
-                    { value: "Employee", label: "Employee" }
-                  ]}
-                />
-              </div>
+                <div className="usermanagement-actions-field">
+                  <label className="usermanagement-label">Role</label>
+                  <Select
+                    placeholder="Role"
+                    className="usermanagement-select"
+                    allowClear
+                    onChange={(v) => setRoleFilter(v || "")}
+                    options={[
+                      { value: "Admin", label: "Admin" },
+                      { value: "Customer", label: "Customer" },
+                      { value: "Employee", label: "Employee" }
+                    ]}
+                  />
+                </div>
 
-              <div className="usermanagement-actions-field">
-                <label className="usermanagement-label">Status</label>
-                <Select
-                  placeholder="Status"
-                  className="usermanagement-select"
-                  allowClear
-                  onChange={(v) => setStatusFilter(v || "")}
-                  options={[
-                    { value: "Verified", label: "Verified" },
-                    { value: "Pending", label: "Pending" }
-                  ]}
-                />
-              </div>
-            </div>
-
-            <div className="usermanagement-actions-buttons">
-              {!showArchived && (
-                <Button
-                  className="usermanagement-add-button"
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => setIsModalOpen(true)}
-                >
-                  Add User
-                </Button>
-              )}
-
-              <Button
-                className='usermanagement-export-button'
-                type="primary"
-                icon={<FilePdfOutlined />}
-                onClick={generatePDF}
-              >
-                Export to PDF
-              </Button>
-
-              <Button
-                icon={showArchived ? <UserOutlined /> : <InboxOutlined />}
-                className='usermanagement-archive-button'
-                type="primary"
-                onClick={() => {
-                  const nextValue = !showArchived;
-                  setShowArchived(nextValue);
-                  setSearchText("");
-                  setRoleFilter("");
-                  setStatusFilter("");
-                  if (nextValue) {
-                    getArchivedUsers();
-                  } else {
-                    getUsers();
-                  }
-                }}
-              >
-                {showArchived ? 'Back' : 'Archives'}
-              </Button>
-            </div>
-          </div>
-        </Card>
-
-        <Card style={{ marginTop: 20 }}>
-          <Form form={form} component={false}>
-            <Tabs
-              activeKey={activeTab}
-              onChange={setActiveTab}
-              items={tabItems}
-            />
-          </Form>
-        </Card>
-
-        <AddUserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} roleToAdd={targetRole} refreshData={getUsers} />
-
-        <Modal
-          open={isViewModalOpen}
-          onCancel={() => setIsViewModalOpen(false)}
-          footer={null}
-          className="users-view-modal"
-          width={720}
-          centered={true}
-        >
-          {selectedUser && (
-            <div className="users-view-content">
-              <div className="users-view-header">
-                <Avatar
-                  size={96}
-                  src={resolveAvatarUrl(selectedUser.avatar) || undefined}
-                  icon={<UserOutlined />}
-                  className="users-view-avatar"
-                />
-                <div className="users-view-title">
-                  <h2 className="users-view-name">{selectedUser.name}</h2>
-                  <div className="users-view-subtitle">
-                    <span>{selectedUser.email}</span>
-                    <Tag color={selectedUser.role === "Admin" ? "purple" : selectedUser.role === "Customer" ? "volcano" : "blue"}>{selectedUser.role}</Tag>
-                    <Tag color={selectedUser.status === "Verified" ? "green" : "orange"}>{selectedUser.status}</Tag>
-                  </div>
+                <div className="usermanagement-actions-field">
+                  <label className="usermanagement-label">Status</label>
+                  <Select
+                    placeholder="Status"
+                    className="usermanagement-select"
+                    allowClear
+                    onChange={(v) => setStatusFilter(v || "")}
+                    options={[
+                      { value: "Verified", label: "Verified" },
+                      { value: "Pending", label: "Pending" }
+                    ]}
+                  />
                 </div>
               </div>
-              <div className="users-view-grid">
-                <div className="users-view-item"><span className="users-view-label">First Name</span><span className="users-view-value">{selectedUser.firstname || "N/A"}</span></div>
-                <div className="users-view-item"><span className="users-view-label">Last Name</span><span className="users-view-value">{selectedUser.lastname || "N/A"}</span></div>
-                <div className="users-view-item"><span className="users-view-label">Username</span><span className="users-view-value">{selectedUser.username}</span></div>
-                <div className="users-view-item"><span className="users-view-label">Phone</span><span className="users-view-value">{selectedUser.phone || "N/A"}</span></div>
+
+              <div className="usermanagement-actions-buttons">
+                {!showArchived && (
+                  <Button
+                    className="usermanagement-add-button"
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => setIsModalOpen(true)}
+                  >
+                    Add User
+                  </Button>
+                )}
+
+                <Button
+                  className='usermanagement-export-button'
+                  type="primary"
+                  icon={<FilePdfOutlined />}
+                  onClick={generatePDF}
+                >
+                  Export to PDF
+                </Button>
+
+                <Button
+                  icon={showArchived ? <UserOutlined /> : <InboxOutlined />}
+                  className='usermanagement-archive-button'
+                  type="primary"
+                  onClick={() => {
+                    const nextValue = !showArchived;
+                    setShowArchived(nextValue);
+                    setSearchText("");
+                    setRoleFilter("");
+                    setStatusFilter("");
+                    if (nextValue) {
+                      getArchivedUsers();
+                    } else {
+                      getUsers();
+                    }
+                  }}
+                >
+                  {showArchived ? 'Back' : 'Archives'}
+                </Button>
               </div>
             </div>
-          )}
-        </Modal>
-      </div>
+          </Card>
+
+          <Card style={{ marginTop: 20 }}>
+            <Form form={form} component={false}>
+              <Tabs
+                activeKey={activeTab}
+                onChange={setActiveTab}
+                items={tabItems}
+              />
+            </Form>
+          </Card>
+
+          <AddUserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} roleToAdd={targetRole} refreshData={getUsers} />
+
+          <Modal
+            open={isViewModalOpen}
+            onCancel={() => setIsViewModalOpen(false)}
+            footer={null}
+            className="users-view-modal"
+            width={720}
+            centered={true}
+          >
+            {selectedUser && (
+              <div className="users-view-content">
+                <div className="users-view-header">
+                  <Avatar
+                    size={96}
+                    src={resolveAvatarUrl(selectedUser.avatar) || undefined}
+                    icon={<UserOutlined />}
+                    className="users-view-avatar"
+                  />
+                  <div className="users-view-title">
+                    <h2 className="users-view-name">{selectedUser.name}</h2>
+                    <div className="users-view-subtitle">
+                      <span>{selectedUser.email}</span>
+                      <Tag color={selectedUser.role === "Admin" ? "purple" : selectedUser.role === "Customer" ? "volcano" : "blue"}>{selectedUser.role}</Tag>
+                      <Tag color={selectedUser.status === "Verified" ? "green" : "orange"}>{selectedUser.status}</Tag>
+                    </div>
+                  </div>
+                </div>
+                <div className="users-view-grid">
+                  <div className="users-view-item"><span className="users-view-label">First Name</span><span className="users-view-value">{selectedUser.firstname || "N/A"}</span></div>
+                  <div className="users-view-item"><span className="users-view-label">Last Name</span><span className="users-view-value">{selectedUser.lastname || "N/A"}</span></div>
+                  <div className="users-view-item"><span className="users-view-label">Username</span><span className="users-view-value">{selectedUser.username}</span></div>
+                  <div className="users-view-item"><span className="users-view-label">Phone</span><span className="users-view-value">{selectedUser.phone || "N/A"}</span></div>
+                </div>
+              </div>
+            )}
+          </Modal>
+        </div>
       )}
 
 

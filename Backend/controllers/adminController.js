@@ -56,6 +56,18 @@ const editUser = async (req, res) => {
             return res.status(400).json({ message: "Username already exists" });
         }
 
+        if (role === "Admin" && user.role !== "Admin") {
+            const adminCount = await UserModel.countDocuments({
+                role: "Admin"
+            });
+
+            if (adminCount >= 3) {
+                return res.status(400).json({
+                    message: "The maximum number of Admin accounts (3) has been reached."
+                });
+            }
+        }
+
         const updatedFields = {};
         const changes = [];
 
