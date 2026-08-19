@@ -504,6 +504,26 @@ export default function PassportApplication() {
 
     //validate file size before uploading
     const beforeRequirementUpload = (file) => {
+
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "application/pdf",
+        ];
+
+        const isValidType = allowedTypes.includes(file.type);
+
+        if (!isValidType) {
+            notificationApi.error({
+                title: "Invalid file type",
+                description: "Only JPG, JPEG, PNG, and PDF files are allowed.",
+                placement: "topRight",
+            });
+
+            return Upload.LIST_IGNORE;
+        }
+
+
         const isLt3M = file.size / 1024 / 1024 < 3;
         if (!isLt3M) {
             notificationApi.error({ title: 'Image/PDF must be smaller than 3MB!', placement: 'topRight' });
@@ -1138,8 +1158,34 @@ export default function PassportApplication() {
                                                             <Upload
                                                                 fileList={fileList}
                                                                 maxCount={1}
-                                                                accept="image/*,.pdf"
-                                                                beforeUpload={() => false}
+                                                                accept=".jpg,.jpeg,.png"
+                                                                beforeUpload={(file) => {
+                                                                    const allowedTypes = ["image/jpeg", "image/png"];
+                                                                    const isValidType = allowedTypes.includes(file.type);
+                                                                    const isValidSize = file.size / 1024 / 1024 < 3;
+
+                                                                    if (!isValidType) {
+                                                                        notificationApi.error({
+                                                                            title: "Invalid file type",
+                                                                            description: "Only JPG, JPEG, and PNG files are allowed.",
+                                                                            placement: "topRight",
+                                                                        });
+
+                                                                        return Upload.LIST_IGNORE;
+                                                                    }
+
+                                                                    if (!isValidSize) {
+                                                                        notificationApi.error({
+                                                                            title: "File too large",
+                                                                            description: "The image must be smaller than 3MB.",
+                                                                            placement: "topRight",
+                                                                        });
+
+                                                                        return Upload.LIST_IGNORE;
+                                                                    }
+
+                                                                    return false;
+                                                                }}
                                                                 onChange={({ fileList }) => setFileList(fileList)}
                                                             >
                                                                 <Button
@@ -1303,8 +1349,34 @@ export default function PassportApplication() {
                                                             <Upload
                                                                 fileList={fileList}
                                                                 maxCount={1}
-                                                                accept="image/*,.pdf"
-                                                                beforeUpload={() => false}
+                                                                accept=".jpg,.jpeg,.png"
+                                                                beforeUpload={(file) => {
+                                                                    const allowedTypes = ["image/jpeg", "image/png"];
+                                                                    const isValidType = allowedTypes.includes(file.type);
+                                                                    const isValidSize = file.size / 1024 / 1024 < 3;
+
+                                                                    if (!isValidType) {
+                                                                        notificationApi.error({
+                                                                            title: "Invalid file type",
+                                                                            description: "Only JPG, JPEG, and PNG files are allowed.",
+                                                                            placement: "topRight",
+                                                                        });
+
+                                                                        return Upload.LIST_IGNORE;
+                                                                    }
+
+                                                                    if (!isValidSize) {
+                                                                        notificationApi.error({
+                                                                            title: "File too large",
+                                                                            description: "The image must be smaller than 3MB.",
+                                                                            placement: "topRight",
+                                                                        });
+
+                                                                        return Upload.LIST_IGNORE;
+                                                                    }
+
+                                                                    return false;
+                                                                }}
                                                                 onChange={({ fileList }) => setFileList(fileList)}
                                                             >
                                                                 <Button

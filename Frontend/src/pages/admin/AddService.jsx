@@ -81,17 +81,17 @@ export default function AddService() {
         if (field === "description" && !value.trim()) return "Description is required.";
         if (field === "visaPrice" && !value) return "Visa price is required.";
         if (field === "requirements") {
-                if (!value.length) return "At least one requirement is required.";
+            if (!value.length) return "At least one requirement is required.";
 
-                if (
-                    value.some(
-                        (item) =>
-                            !String(item.req || "").trim() ||
-                            !String(item.desc || "").trim()
-                    )
-                ) {
-                    return "Please complete all requirement fields.";
-                }
+            if (
+                value.some(
+                    (item) =>
+                        !String(item.req || "").trim() ||
+                        !String(item.desc || "").trim()
+                )
+            ) {
+                return "Please complete all requirement fields.";
+            }
         }
 
         if (field === "processSteps") {

@@ -1065,6 +1065,15 @@ export default function PackageManagement() {
                   return Upload.LIST_IGNORE;
                 }
 
+                const isLt5M = file.size / 1024 / 1024 < 5;
+
+                if (!isLt5M) {
+                  notificationApi.error({
+                    message: "Image must be smaller than 5 MB."
+                  });
+                  return Upload.LIST_IGNORE;
+                }
+
                 setRecentImage(file);
                 setFileList([file]);
                 return false;
