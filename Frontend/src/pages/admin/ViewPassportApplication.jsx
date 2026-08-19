@@ -512,6 +512,17 @@ export default function ViewPassportApplication() {
     };
 
 
+    const defaultPreferredDate = dayjs().startOf('day').add(14, 'day');
+
+    while (defaultPreferredDate.day() === 0 || defaultPreferredDate.day() === 6) {
+        defaultPreferredDate.add(1, 'day');
+    }
+
+    const isDefaultDateNextMonth =
+        defaultPreferredDate.month() !== dayjs().month() ||
+        defaultPreferredDate.year() !== dayjs().year();
+
+
     //disable hours for time picker
     const disabledHours = () => {
         const hours = [];
@@ -652,6 +663,11 @@ export default function ViewPassportApplication() {
                                                             </span>
                                                             <DatePicker
                                                                 inputReadOnly
+                                                                defaultPickerValue={
+                                                                    isDefaultDateNextMonth
+                                                                        ? defaultPreferredDate
+                                                                        : dayjs()
+                                                                }
                                                                 disabledDate={disableDates}
                                                                 placeholder="Select date"
                                                                 value={slot.date}

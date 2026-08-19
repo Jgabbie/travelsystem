@@ -377,13 +377,6 @@ export default function VisaApplication() {
         try {
             setUploading(true);
 
-            /*
-             * Initial submission:
-             * Require every document.
-             *
-             * Resubmission:
-             * Require only the documents requested by the admin.
-             */
             const requirementsToUpload = visibleRequirements
                 .map((req, idx) => ({
                     requirement: req,
@@ -780,6 +773,18 @@ export default function VisaApplication() {
             )
         );
     };
+
+
+    const defaultPreferredDate = dayjs().startOf('day').add(14, 'day');
+
+    while (defaultPreferredDate.day() === 0 || defaultPreferredDate.day() === 6) {
+        defaultPreferredDate.add(1, 'day');
+    }
+
+    const isDefaultDateNextMonth =
+        defaultPreferredDate.month() !== dayjs().month() ||
+        defaultPreferredDate.year() !== dayjs().year();
+
 
     //disable hours in the time picker to only allow selection of hours between 8 AM and 5 PM
     const disabledHours = () => {
@@ -1202,6 +1207,11 @@ export default function VisaApplication() {
                                                                             <Space orientation="vertical" style={{ width: '100%' }}>
                                                                                 <DatePicker
                                                                                     className='visaapplication-suggestedoptions-datepicker'
+                                                                                    defaultPickerValue={
+                                                                                        isDefaultDateNextMonth
+                                                                                            ? defaultPreferredDate
+                                                                                            : dayjs()
+                                                                                    }
                                                                                     disabledDate={disableDates}
                                                                                     placeholder="Select Date"
                                                                                     onChange={(date) => setCustomDateTime(prev => ({ ...prev, date }))}

@@ -685,6 +685,18 @@ export default function PassportApplication() {
         );
     };
 
+
+    const defaultPreferredDate = dayjs().startOf('day').add(14, 'day');
+
+    while (defaultPreferredDate.day() === 0 || defaultPreferredDate.day() === 6) {
+        defaultPreferredDate.add(1, 'day');
+    }
+
+    const isDefaultDateNextMonth =
+        defaultPreferredDate.month() !== dayjs().month() ||
+        defaultPreferredDate.year() !== dayjs().year();
+
+
     const disabledHours = () => {
         const hours = [];
         for (let i = 0; i < 24; i++) {
@@ -985,6 +997,11 @@ export default function PassportApplication() {
                                                                     <Space orientation="vertical" style={{ width: '100%' }}>
                                                                         <DatePicker
                                                                             className='passportapplication-suggestedoptions-datepicker'
+                                                                            defaultPickerValue={
+                                                                                isDefaultDateNextMonth
+                                                                                    ? defaultPreferredDate
+                                                                                    : dayjs()
+                                                                            }
                                                                             disabledDate={disableDates}
                                                                             placeholder="Select Date"
                                                                             onChange={(date) => setCustomDateTime(prev => ({ ...prev, date }))}

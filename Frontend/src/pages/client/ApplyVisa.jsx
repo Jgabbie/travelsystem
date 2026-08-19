@@ -212,6 +212,16 @@ export default function ApplyVisa() {
         return hours
     }
 
+    const defaultPreferredDate = dayjs().startOf('day').add(14, 'day');
+
+    while (defaultPreferredDate.day() === 0 || defaultPreferredDate.day() === 6) {
+        defaultPreferredDate.add(1, 'day');
+    }
+
+    const isDefaultDateNextMonth =
+        defaultPreferredDate.month() !== dayjs().month() ||
+        defaultPreferredDate.year() !== dayjs().year();
+
 
 
     return (
@@ -365,6 +375,11 @@ export default function ApplyVisa() {
                                                     <label className="passport-label">Preferred appointment date <span style={{ color: "#ff0000" }}>*</span></label>
                                                     <DatePicker
                                                         value={preferredDate ? dayjs(preferredDate, 'YYYY-MM-DD') : null}
+                                                        defaultPickerValue={
+                                                            isDefaultDateNextMonth
+                                                                ? defaultPreferredDate
+                                                                : dayjs()
+                                                        }
                                                         inputReadOnly
                                                         disabledDate={disableDates}
                                                         onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}

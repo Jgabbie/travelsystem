@@ -163,6 +163,17 @@ export default function NewPassport() {
     };
 
 
+    const defaultPreferredDate = dayjs().startOf('day').add(14, 'day');
+
+    while (defaultPreferredDate.day() === 0 || defaultPreferredDate.day() === 6) {
+        defaultPreferredDate.add(1, 'day');
+    }
+
+    const isDefaultDateNextMonth =
+        defaultPreferredDate.month() !== dayjs().month() ||
+        defaultPreferredDate.year() !== dayjs().year();
+
+
     // disable hours outside of 8am-5pm
     const disabledHours = () => {
         const hours = [];
@@ -389,6 +400,11 @@ export default function NewPassport() {
 
                                             <DatePicker
                                                 value={preferredDate ? dayjs(preferredDate) : null}
+                                                defaultPickerValue={
+                                                    isDefaultDateNextMonth
+                                                        ? defaultPreferredDate
+                                                        : dayjs()
+                                                }
                                                 inputReadOnly
                                                 disabledDate={disableDates}
                                                 showNow={false}
