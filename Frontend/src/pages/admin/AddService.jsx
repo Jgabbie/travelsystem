@@ -39,6 +39,7 @@ export default function AddService() {
     const [errors, setErrors] = useState({
         visaName: "",
         description: "",
+        visaImage: "",
         requirements: "",
         processSteps: "",
         visaPrice: "",
@@ -79,6 +80,7 @@ export default function AddService() {
     const validate = (field, value) => {
         if (field === "visaName" && !value.trim()) return "Visa name is required.";
         if (field === "description" && !value.trim()) return "Description is required.";
+        if (field === "visaImage" && !value) return "Visa image is required.";
         if (field === "visaPrice" && !value) return "Visa price is required.";
         if (field === "requirements") {
             if (!value.length) return "At least one requirement is required.";
@@ -230,6 +232,11 @@ export default function AddService() {
             imagePreview: URL.createObjectURL(file)
         }));
 
+        setErrors((prev) => ({
+            ...prev,
+            visaImage: ""
+        }));
+
         // Prevent Ant Design from automatically uploading it.
         return false;
     };
@@ -245,6 +252,11 @@ export default function AddService() {
             imageFile: null,
             imagePreview: ""
         }));
+
+        setErrors((prev) => ({
+            ...prev,
+            visaImage: "Visa image is required."
+        }));
     };
 
 
@@ -254,6 +266,7 @@ export default function AddService() {
             visaName: validate("visaName", values.visaName),
             visaPrice: validate("visaPrice", values.visaPrice),
             description: validate("description", values.description),
+            visaImage: validate("visaImage", values.visaImage || values.imageFile),
             requirements: validate("requirements", values.requirements),
             processSteps: validate("processSteps", values.processSteps),
             reminders: validate("reminders", values.reminders)
@@ -649,6 +662,10 @@ export default function AddService() {
                             <span style={{ fontSize: 12, color: "#777" }}>
                                 PNG, JPG, JPEG, or WEBP. Maximum size: 5MB.
                             </span>
+
+                            <p className="add-service-error-message">
+                                {errors.visaImage}
+                            </p>
                         </div>
                     </div>
 
