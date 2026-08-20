@@ -49,9 +49,9 @@
     z-index: -2;
     background:
         linear-gradient(180deg,
-            rgba(8, 18, 36, 0.72) 0%,
-            rgba(8, 18, 36, 0.82) 55%,
-            rgba(8, 18, 36, 0.90) 100%);
+            rgba(8, 18, 36, 0.40) 0%,
+            rgba(8, 18, 36, 0.50) 55%,
+            rgba(8, 18, 36, 0.60) 100%);
     pointer-events: none;
 }
 
@@ -235,9 +235,9 @@
     z-index: -2;
     background:
         linear-gradient(180deg,
-            rgba(8, 18, 36, 0.72) 0%,
-            rgba(8, 18, 36, 0.82) 55%,
-            rgba(8, 18, 36, 0.90) 100%);
+            rgba(8, 18, 36, 0.40) 0%,
+            rgba(8, 18, 36, 0.50) 55%,
+            rgba(8, 18, 36, 0.60) 100%);
     pointer-events: none;
 }
 
