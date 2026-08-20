@@ -817,7 +817,7 @@ export default function LandingPage() {
                     </div>
 
                     <div className='popular-packages-section'>
-                        <h1 className='popular-packages-text' style={{ color: "#ffffff" }}>POPULAR PACKAGES</h1>
+                        <h2 className='popular-packages-text' style={{ color: "#ffffff" }}>POPULAR PACKAGES</h2>
                         <p className='for-you-method' style={{ color: "#ffffff" }} >
                             These packages are the most booked and highly rated packages by the travelers.
                         </p>
@@ -1027,7 +1027,7 @@ export default function LandingPage() {
 
                         {!auth && !authLoading ? (
                             <div className='for-you-empty-state'>
-                                <p className='for-you-method' style={{ color: '#787878', fontSize: '14px' }}>Log in to get personalized package recommendations.</p>
+                                <p className='for-you-method' style={{ fontSize: '14px' }}>Log in to get personalized package recommendations.</p>
                                 <Button className='for-you-login-button' type='primary' onClick={() => setIsLoginVisible(true)}>Log In</Button>
                             </div>
                         ) : isForYouLoading ? (
@@ -1373,7 +1373,7 @@ export default function LandingPage() {
 
                             <div className='aboutus-service-item'>
                                 <img className="aboutus-service-icon" src='/images/map-marker-alt-svgrepo-com.svg' alt="Tour Package" width="65" height="65" />
-                                <h4 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Tour Packages</h4>
+                                <h2 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Tour Packages</h2>
                                 <p className='aboutus-text' style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
                                 </p>
@@ -1578,7 +1578,7 @@ export default function LandingPage() {
                     <div className='contactus-container'>
                         <div className='contactus-section'>
                             <div className='contactus-section-left'>
-                                <h1 className='explore-text' style={{ marginBottom: 0, paddingBottom: 0 }}>Contact Us</h1>
+                                <h2 className='explore-text' style={{ marginBottom: 0, paddingBottom: 0 }}>Contact Us</h2>
                                 <div className='text-underline' style={{ backgroundColor: '#305797' }}></div>
                                 <p className='contactus-text'>
                                     Have questions or need assistance? Our friendly customer support team is here to help you with all your travel needs. Whether you’re looking for more information about our tour packages, need help with booking, or want to customize your itinerary, we’re just a message away. Contact us today and let us make your travel dreams a reality!
@@ -1688,7 +1688,7 @@ export default function LandingPage() {
                                             {contactErrors.email && <span className="error-text">{contactErrors.email}</span>}
                                         </div>
                                         <div className='contact-field'>
-                                            <span className='contact-field-label'>Subject</span>
+                                            <label className='contact-field-label'>Subject</label>
                                             <Select
                                                 placeholder="Select subject"
                                                 className='contact-input'
