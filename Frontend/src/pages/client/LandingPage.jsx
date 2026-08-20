@@ -1373,7 +1373,7 @@ export default function LandingPage() {
 
                             <div className='aboutus-service-item'>
                                 <img className="aboutus-service-icon" src='/images/map-marker-alt-svgrepo-com.svg' alt="Tour Package" width="65" height="65" />
-                                <h2 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Tour Packages</h2>
+                                <h3 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Tour Packages</h3>
                                 <p className='aboutus-text' style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
                                 </p>
@@ -1381,7 +1381,7 @@ export default function LandingPage() {
 
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <img className="aboutus-service-icon" src='/images/passport-svgrepo-com.svg' alt="Tour Package" width="65" height="65" />
-                                <h4 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Passport Assistance</h4>
+                                <h3 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Passport Assistance</h3>
                                 <p className='aboutus-text' style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
                                 </p>
@@ -1389,7 +1389,7 @@ export default function LandingPage() {
 
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <img className="aboutus-service-icon" src='/images/stamp-svgrepo-com.svg' alt="Tour Package" width="65" height="65" />
-                                <h4 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Visa Assistance</h4>
+                                <h3 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Visa Assistance</h3>
                                 <p className='aboutus-text' style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
                                 </p>
@@ -1397,7 +1397,7 @@ export default function LandingPage() {
 
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <img className="aboutus-service-icon" src='/images/file-signature-svgrepo-com.svg' alt="Tour Package" width="65" height="65" />
-                                <h4 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Quotations</h4>
+                                <h3 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Quotations</h3>
                                 <p className='aboutus-text' style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
                                 </p>
@@ -1688,8 +1688,9 @@ export default function LandingPage() {
                                             {contactErrors.email && <span className="error-text">{contactErrors.email}</span>}
                                         </div>
                                         <div className='contact-field'>
-                                            <label className='contact-field-label'>Subject</label>
+                                            <label htmlFor="contact-subject" className='contact-field-label'>Subject</label>
                                             <Select
+                                                id="contact-subject"
                                                 placeholder="Select subject"
                                                 className='contact-input'
                                                 status={contactErrors.subject ? 'error' : ''}
