@@ -11,6 +11,11 @@ export default function Logging() {
     const [actionFilter, setActionFilter] = useState('');
     const [searchText, setSearchText] = useState('');
 
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: 10,
+        total: 0,
+    });
 
     //role options for filtering
     const roleOptions = useMemo(() => {
@@ -32,31 +37,41 @@ export default function Logging() {
     useEffect(() => {
         const fetchLogs = async () => {
             try {
+                setLoading(true);
+
                 const response = await apiFetch.get('/logs/get-logs', {
-                    withCredentials: true
+                    params: {
+                        page: pagination.current,
+                        limit: pagination.pageSize,
+                        search: searchText,
+                        role: roleFilter,
+                        action: actionFilter,
+                    },
+                    withCredentials: true,
                 });
-                setLogs(response || []);
-                setLoading(false);
+
+                setLogs(response?.logs || []);
+
+                setPagination((prev) => ({
+                    ...prev,
+                    total: response?.pagination?.total || 0,
+                }));
+
             } catch (err) {
                 console.error("Failed to fetch logs", err);
+            } finally {
                 setLoading(false);
             }
         };
+
         fetchLogs();
-    }, []);
-
-    // filter logic for Search Bar
-    const filteredLogs = logs.filter(log => {
-        const searchLower = searchText.toLowerCase();
-        const matchesSearch = log.action?.toLowerCase().includes(searchLower) ||
-            log.performedBy?.username?.toLowerCase().includes(searchLower) ||
-            log.performedBy?.email?.toLowerCase().includes(searchLower);
-
-        const matchesRole = roleFilter ? log.performedBy?.role === roleFilter : true;
-        const matchesAction = actionFilter ? log.action === actionFilter : true;
-
-        return matchesSearch && matchesRole && matchesAction;
-    });
+    }, [
+        pagination.current,
+        pagination.pageSize,
+        searchText,
+        roleFilter,
+        actionFilter
+    ]);
 
 
     //table columns
@@ -181,6 +196,11 @@ export default function Logging() {
                                             .replace(/^\s+/, "");
 
                                         setSearchText(cleanedValue);
+
+                                        setPagination((prev) => ({
+                                            ...prev,
+                                            current: 1,
+                                        }));
                                     }}
                                 />
                             </div>
@@ -192,7 +212,14 @@ export default function Logging() {
                                     placeholder="All roles"
                                     className="logging-select"
                                     value={roleFilter || undefined}
-                                    onChange={(value) => setRoleFilter(value || '')}
+                                    onChange={(value) => {
+                                        setRoleFilter(value || '');
+
+                                        setPagination((prev) => ({
+                                            ...prev,
+                                            current: 1,
+                                        }));
+                                    }}
                                     options={roleOptions}
                                 />
                             </div>
@@ -204,7 +231,14 @@ export default function Logging() {
                                     placeholder="All actions"
                                     className="logging-select"
                                     value={actionFilter || undefined}
-                                    onChange={(value) => setActionFilter(value || '')}
+                                    onChange={(value) => {
+                                        setActionFilter(value || '');
+
+                                        setPagination((prev) => ({
+                                            ...prev,
+                                            current: 1,
+                                        }));
+                                    }}
                                     options={actionOptions}
                                     showSearch
                                     optionFilterProp="label"
@@ -218,13 +252,22 @@ export default function Logging() {
                     <Table
                         className="logging-table"
                         columns={columns}
-                        dataSource={filteredLogs}
+                        dataSource={logs}
                         rowKey="_id"
                         loading={loading}
                         scroll={{ x: "max-content" }}
                         pagination={{
-                            pageSize: 10,
-                            showSizeChanger: false
+                            current: pagination.current,
+                            pageSize: pagination.pageSize,
+                            total: pagination.total,
+                            showSizeChanger: false,
+                            onChange: (page, pageSize) => {
+                                setPagination((prev) => ({
+                                    ...prev,
+                                    current: page,
+                                    pageSize,
+                                }));
+                            },
                         }}
                     />
                 </Card>

@@ -11,22 +11,51 @@ export default function Auditing() {
     const [roleFilter, setRoleFilter] = useState('');
     const [actionFilter, setActionFilter] = useState('');
 
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: 10,
+        total: 0,
+    });
+
     //get audit logs from backend and map to state
     useEffect(() => {
         const fetchLogs = async () => {
             try {
+                setLoading(true);
+
                 const response = await apiFetch.get('/logs/get-audits', {
-                    withCredentials: true
+                    params: {
+                        page: pagination.current,
+                        limit: pagination.pageSize,
+                        search: searchText,
+                        role: roleFilter,
+                        action: actionFilter,
+                    },
+                    withCredentials: true,
                 });
 
-                setLogs(response || []);
-                setLoading(false);
+                setLogs(response?.audits || []);
+
+                setPagination((prev) => ({
+                    ...prev,
+                    total: response?.pagination?.total || 0,
+                }));
+
             } catch (err) {
                 console.error("Failed to fetch audit logs", err);
+            } finally {
+                setLoading(false);
             }
         };
+
         fetchLogs();
-    }, []);
+    }, [
+        pagination.current,
+        pagination.pageSize,
+        searchText,
+        roleFilter,
+        actionFilter
+    ]);
 
     //use memo - code only runs when logs changes
     //filters the logs by action
@@ -45,19 +74,6 @@ export default function Auditing() {
         return uniqueRoles.map((role) => ({ label: role, value: role }));
     }, [logs]);
 
-
-    // filter logic for Search Bar
-    const filteredLogs = logs.filter(log => {
-        const searchLower = searchText.toLowerCase();
-        const matchesSearch = log.action?.toLowerCase().includes(searchLower) ||
-            log.performedBy?.username?.toLowerCase().includes(searchLower) ||
-            log.performedBy?.email?.toLowerCase().includes(searchLower);
-
-        const matchesRole = roleFilter ? log.performedBy?.role === roleFilter : true;
-        const matchesAction = actionFilter ? log.action === actionFilter : true;
-
-        return matchesSearch && matchesRole && matchesAction;
-    });
 
 
     //columns for the audit logs table
@@ -176,6 +192,11 @@ export default function Auditing() {
                                             .replace(/^\s+/, "");
 
                                         setSearchText(cleanedValue);
+
+                                        setPagination((prev) => ({
+                                            ...prev,
+                                            current: 1,
+                                        }));
                                     }}
                                 />
                             </div>
@@ -187,7 +208,14 @@ export default function Auditing() {
                                     placeholder="All roles"
                                     className="auditing-select"
                                     value={roleFilter || undefined}
-                                    onChange={(value) => setRoleFilter(value || '')}
+                                    onChange={(value) => {
+                                        setRoleFilter(value || '');
+
+                                        setPagination((prev) => ({
+                                            ...prev,
+                                            current: 1,
+                                        }));
+                                    }}
                                     options={roleOptions}
                                 />
                             </div>
@@ -199,7 +227,14 @@ export default function Auditing() {
                                     placeholder="All actions"
                                     className="auditing-select"
                                     value={actionFilter || undefined}
-                                    onChange={(value) => setActionFilter(value || '')}
+                                    onChange={(value) => {
+                                        setActionFilter(value || '');
+
+                                        setPagination((prev) => ({
+                                            ...prev,
+                                            current: 1,
+                                        }));
+                                    }}
                                     options={actionFilters}
                                     showSearch
                                     optionFilterProp="label"
@@ -213,13 +248,22 @@ export default function Auditing() {
                     <Table
                         className="auditing-table"
                         columns={columns}
-                        dataSource={filteredLogs}
+                        dataSource={logs}
                         rowKey="_id"
                         loading={loading}
                         scroll={{ x: "max-content" }}
                         pagination={{
-                            pageSize: 10,
-                            showSizeChanger: false
+                            current: pagination.current,
+                            pageSize: pagination.pageSize,
+                            total: pagination.total,
+                            showSizeChanger: false,
+                            onChange: (page, pageSize) => {
+                                setPagination((prev) => ({
+                                    ...prev,
+                                    current: page,
+                                    pageSize,
+                                }));
+                            },
                         }}
                     />
                 </Card>
