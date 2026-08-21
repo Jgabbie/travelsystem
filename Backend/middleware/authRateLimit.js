@@ -35,8 +35,8 @@ export const otpVerificationLimiter = createLimiter({
 });
 
 export const signupLimiter = createLimiter({
-    windowMs: 60 * 60 * 1000,
-    limit: 3,
+    windowMs: 5 * 60 * 1000,
+    limit: 10,
     message: "Too many signup attempts. Please try again later."
 });
 
