@@ -94,6 +94,10 @@ const editUser = async (req, res) => {
             updatedFields.lastname = { from: user.lastname, to: resolvedLastName };
             changes.push("lastname");
         }
+        if (user.email !== email) {
+            updatedFields.email = { from: user.email, to: email };
+            changes.push("email");
+        }
         if (user.role !== role) {
             updatedFields.role = { from: user.role, to: role };
             changes.push("role");
