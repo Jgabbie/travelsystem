@@ -32,12 +32,12 @@ const getAdmins = async (req, res) => {
 //edit user function
 const editUser = async (req, res) => {
     const { id } = req.params;
-    const { username, name, firstname, lastname, role } = req.body;
+    const { username, name, firstname, lastname, email, role } = req.body;
 
     const resolvedFirstName = firstname || (name ? name.trim().split(/\s+/)[0] : "");
     const resolvedLastName = lastname || (name ? name.trim().split(/\s+/).slice(1).join(" ") : "");
 
-    if (!username || !resolvedFirstName || !resolvedLastName || !role) {
+    if (!username || !resolvedFirstName || !resolvedLastName || !email || !role) {
         return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -54,6 +54,17 @@ const editUser = async (req, res) => {
 
         if (existingUser) {
             return res.status(400).json({ message: "Username already exists" });
+        }
+
+        const existingEmail = await UserModel.findOne({
+            email: email.toLowerCase().trim(),
+            _id: { $ne: id }
+        });
+
+        if (existingEmail) {
+            return res.status(400).json({
+                message: "Email already exists"
+            });
         }
 
         if (role === "Admin" && user.role !== "Admin") {
@@ -91,6 +102,7 @@ const editUser = async (req, res) => {
         user.username = username;
         user.firstname = resolvedFirstName;
         user.lastname = resolvedLastName;
+        user.email = email;
         user.role = role;
 
         await user.save();

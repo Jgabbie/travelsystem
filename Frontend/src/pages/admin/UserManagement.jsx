@@ -312,6 +312,10 @@ export default function UserManagement() {
       errors.username = "Username is required";
     }
 
+    if (!editUserData.email?.trim()) {
+      errors.email = "Email is required";
+    }
+
     if (!editUserData.role) {
       errors.role = "Role is required";
     }
@@ -325,6 +329,17 @@ export default function UserManagement() {
 
     if (usernameExists) {
       errors.username = "Username already exists";
+    }
+
+    const emailExists = users.some(
+      (user) =>
+        user.id !== editingUser.id &&
+        user.email?.trim().toLowerCase() ===
+        editUserData.email.trim().toLowerCase()
+    );
+
+    if (emailExists) {
+      errors.email = "Email already exists";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -900,9 +915,31 @@ export default function UserManagement() {
             </label>
 
             <Input
-              disabled
+              maxLength={30}
               value={editUserData.email}
+              status={editErrors.email ? "error" : ""}
+              onChange={(event) => {
+                const cleanedValue = event.target.value
+                  .replace(/[^a-zA-Z0-9@.-]/g, "")
+                  .replace(/^\s+/, "");
+
+                setEditUserData((previous) => ({
+                  ...previous,
+                  email: cleanedValue,
+                }));
+
+                setEditErrors((previous) => ({
+                  ...previous,
+                  email: "",
+                }));
+              }}
             />
+
+            {editErrors.email && (
+              <span className="users-edit-error">
+                {editErrors.email}
+              </span>
+            )}
           </div>
 
           <div className="users-edit-field">
