@@ -354,14 +354,11 @@ const getAllTransactions = async (req, res) => {
 
         // Payment date filter
         if (paymentDate) {
-            const selectedDate = new Date(paymentDate);
+            const selectedDate = dayjs(paymentDate, "YYYY-MM-DD");
 
-            if (!Number.isNaN(selectedDate.getTime())) {
-                const startOfDay = new Date(selectedDate);
-                startOfDay.setHours(0, 0, 0, 0);
-
-                const endOfDay = new Date(selectedDate);
-                endOfDay.setHours(23, 59, 59, 999);
+            if (selectedDate.isValid()) {
+                const startOfDay = selectedDate.startOf("day").toDate();
+                const endOfDay = selectedDate.endOf("day").toDate();
 
                 transactionFilter.transactionDate = {
                     $gte: startOfDay,
