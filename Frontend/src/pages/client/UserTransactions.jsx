@@ -432,7 +432,7 @@ export default function UserTransactions() {
                                 <div className="receipt-details">
                                     <div className="detail-item">
                                         <span className="label-blue">Date</span>
-                                        <span>{selectedTransaction.reference}</span>
+                                        <span>{dayjs(selectedTransaction.date).format("MM-DD-YYYY")}</span>
                                     </div>
                                     <div className="detail-item amount-to-pay">
                                         <span className="label-blue">Amount to Pay</span>
