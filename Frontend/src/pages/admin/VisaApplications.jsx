@@ -62,10 +62,12 @@ export default function VisaApplications() {
             setIsFetchingApplications(true);
             const response = await apiFetch.get('/visa/applications')
 
+            console.log(response)
+
             const applications = response.map((a) => ({
                 key: a._id,
                 applicationNumber: a.applicationNumber,
-                applicantName: a.applicantName,
+                applicantName: a.userId?.username,
                 serviceName: a.serviceName,
                 preferredDate: a.preferredDate ? dayjs(a.preferredDate).format('MMM DD, YYYY') : 'Not Set',
                 preferredTime: a.preferredTime || 'Not Set',
