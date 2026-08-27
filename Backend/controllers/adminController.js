@@ -10,6 +10,8 @@ import PassportModel from "../models/passport.js";
 import VisaModel from "../models/visas.js";
 import LogModel from "../models/log.js";
 import AuditModel from "../models/audit.js";
+import transporter from "../config/nodemailer.js";
+import { buildBrandedEmail } from "../utils/emailTemplate.js";
 
 //get admins function
 const getAdmins = async (req, res) => {
@@ -47,19 +49,21 @@ const editUser = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const existingEmail = await UserModel.findOne({
+            email: normalizedEmail,
+            _id: { $ne: id }
+        });
+
         const existingUser = await UserModel.findOne({
-            username,
+            username: username.trim(),
             _id: { $ne: id }
         });
 
         if (existingUser) {
             return res.status(400).json({ message: "Username already exists" });
         }
-
-        const existingEmail = await UserModel.findOne({
-            email: email.toLowerCase().trim(),
-            _id: { $ne: id }
-        });
 
         if (existingEmail) {
             return res.status(400).json({
@@ -79,35 +83,78 @@ const editUser = async (req, res) => {
             }
         }
 
-        const updatedFields = {};
+        const oldValues = {
+            firstname: user.firstname || "",
+            lastname: user.lastname || "",
+            username: user.username || "",
+            email: user.email || "",
+            role: user.role || ""
+        };
+
+        const newValues = {
+            firstname: resolvedFirstName.trim(),
+            lastname: resolvedLastName.trim(),
+            username: username.trim(),
+            email: normalizedEmail,
+            role: role
+        };
+
         const changes = [];
 
-        if (user.username !== username) {
-            updatedFields.username = { from: user.username, to: username };
-            changes.push("username");
-        }
-        if (user.firstname !== resolvedFirstName) {
-            updatedFields.firstname = { from: user.firstname, to: resolvedFirstName };
-            changes.push("firstname");
-        }
-        if (user.lastname !== resolvedLastName) {
-            updatedFields.lastname = { from: user.lastname, to: resolvedLastName };
-            changes.push("lastname");
-        }
-        if (user.email !== email) {
-            updatedFields.email = { from: user.email, to: email };
-            changes.push("email");
-        }
-        if (user.role !== role) {
-            updatedFields.role = { from: user.role, to: role };
-            changes.push("role");
+        if (oldValues.firstname !== newValues.firstname) {
+            changes.push({
+                field: "First Name",
+                oldValue: oldValues.firstname || "Not set",
+                newValue: newValues.firstname
+            });
         }
 
-        user.username = username;
-        user.firstname = resolvedFirstName;
-        user.lastname = resolvedLastName;
-        user.email = email;
-        user.role = role;
+        if (oldValues.lastname !== newValues.lastname) {
+            changes.push({
+                field: "Last Name",
+                oldValue: oldValues.lastname || "Not set",
+                newValue: newValues.lastname
+            });
+        }
+
+        if (oldValues.username !== newValues.username) {
+            changes.push({
+                field: "Username",
+                oldValue: oldValues.username || "Not set",
+                newValue: newValues.username
+            });
+        }
+
+        if (
+            oldValues.email.toLowerCase() !==
+            newValues.email.toLowerCase()
+        ) {
+            changes.push({
+                field: "Email",
+                oldValue: oldValues.email || "Not set",
+                newValue: newValues.email
+            });
+        }
+
+        if (oldValues.role !== newValues.role) {
+            changes.push({
+                field: "Role",
+                oldValue: oldValues.role || "Not set",
+                newValue: newValues.role
+            });
+        }
+
+        if (changes.length === 0) {
+            return res.status(400).json({
+                message: "No changes were made"
+            });
+        }
+
+        user.firstname = newValues.firstname;
+        user.lastname = newValues.lastname;
+        user.username = newValues.username;
+        user.email = newValues.email;
+        user.role = newValues.role;
 
         await user.save();
 
@@ -120,6 +167,152 @@ const editUser = async (req, res) => {
             );
         }
 
+        const changesHtml = changes
+            .map(
+                change => `
+                    <tr>
+                        <td style="
+                            padding:12px;
+                            border:1px solid #e2e8f0;
+                            font-weight:600;
+                            color:#334155;
+                            background:#f8fafc;
+                        ">
+                            ${change.field}
+                        </td>
+
+                        <td style="
+                            padding:12px;
+                            border:1px solid #e2e8f0;
+                            color:#64748b;
+                        ">
+                            ${change.oldValue}
+                        </td>
+
+                        <td style="
+                            padding:12px;
+                            border:1px solid #e2e8f0;
+                            color:#334155;
+                            font-weight:600;
+                        ">
+                            ${change.newValue}
+                        </td>
+                    </tr>
+                `
+            )
+            .join("");
+
+        /*
+         * Send account update email.
+         *
+         * We intentionally do NOT allow an email failure
+         * to make the user update fail.
+         */
+        try {
+            const mailOptions = {
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+
+                to: oldValues.email,
+
+                subject:
+                    "M&RC Travel and Tours - Account Information Updated",
+
+                html: buildBrandedEmail({
+                    title: "Account Information Updated",
+
+                    introHtml: `
+                        Hello <strong>${user.firstname}</strong>,
+                    `,
+
+                    bodyHtml: `
+                        <p style="margin:0 0 12px;">
+                            Your account information has been updated
+                            by an administrator.
+                        </p>
+
+                        <p style="margin:0 0 18px;">
+                            The following changes were made to your account:
+                        </p>
+
+                        <div style="
+                            overflow-x:auto;
+                            margin:0 0 18px;
+                        ">
+                            <table style="
+                                width:100%;
+                                border-collapse:collapse;
+                                font-size:14px;
+                            ">
+                                <thead>
+                                    <tr>
+                                        <th style="
+                                            padding:12px;
+                                            border:1px solid #e2e8f0;
+                                            background:#f8fafc;
+                                            text-align:left;
+                                            color:#334155;
+                                        ">
+                                            Field
+                                        </th>
+
+                                        <th style="
+                                            padding:12px;
+                                            border:1px solid #e2e8f0;
+                                            background:#f8fafc;
+                                            text-align:left;
+                                            color:#334155;
+                                        ">
+                                            Previous
+                                        </th>
+
+                                        <th style="
+                                            padding:12px;
+                                            border:1px solid #e2e8f0;
+                                            background:#f8fafc;
+                                            text-align:left;
+                                            color:#334155;
+                                        ">
+                                            New
+                                        </th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    ${changesHtml}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <p style="
+                            margin:0 0 12px;
+                            font-size:13px;
+                            color:#64748b;
+                        ">
+                            If you did not expect these changes,
+                            please contact M&RC Travel and Tours.
+                        </p>
+
+                        <p style="
+                            margin:0;
+                            font-size:13px;
+                            color:#64748b;
+                        ">
+                            This is an automated notification.
+                            Please do not reply directly to this email.
+                        </p>
+                    `
+                })
+            };
+
+            await transporter.sendMail(mailOptions);
+
+        } catch (emailError) {
+            console.error(
+                "Failed to send user update email:",
+                emailError
+            );
+        }
+
         res.status(200).json({
             message: "User updated successfully",
             user: {
@@ -127,6 +320,7 @@ const editUser = async (req, res) => {
                 username: user.username,
                 firstname: user.firstname,
                 lastname: user.lastname,
+                email: user.email,
                 role: user.role
             }
         });

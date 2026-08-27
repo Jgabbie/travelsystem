@@ -5,6 +5,7 @@ import logAction from '../utils/logger.js';
 import baseTransporter from '../config/nodemailer.js';
 import { buildBrandedEmail } from '../utils/emailTemplate.js';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 
 //custom transporter that uses the baseTransporter but modifies the subject and html to include branding
@@ -61,6 +62,11 @@ const getUserData = async (req, res) => {
     }
 }
 
+const createOtp = () => {
+    return crypto
+        .randomInt(100000, 1000000)
+        .toString()
+}
 
 //update user data function
 const updateUserData = async (req, res) => {
@@ -75,7 +81,8 @@ const updateUserData = async (req, res) => {
             homeAddress,
             gender,
             birthdate,
-            nationality
+            nationality,
+            otp
         } = req.body
 
         if (!firstname || !lastname || !email || !phone) {
@@ -88,14 +95,36 @@ const updateUserData = async (req, res) => {
             return res.status(409).json({ message: "User not found" })
         }
 
+        const normalizedEmail =
+            String(email)
+                .trim()
+                .toLowerCase()
+
+        const currentEmail =
+            String(user.email || '')
+                .trim()
+                .toLowerCase()
+
+        const emailChanged =
+            normalizedEmail !== currentEmail
+
         // Normalize incoming phone once and check duplicates while excluding current user
         const cleanedPhoneNum = phone.replace(/\D/g, ''); // removed spaces
 
+
         // Check if email is already taken by another user (exclude current user)
-        if (email && email !== user.email) {
-            const existingUser = await UserModel.findOne({ email, _id: { $ne: userId } }) //$ne means "not equal"
+        if (emailChanged) {
+
+            const existingUser =
+                await UserModel.findOne({
+                    email: normalizedEmail,
+                    _id: { $ne: userId }
+                })
+
             if (existingUser) {
-                return res.status(400).json({ message: "Email already in use" })
+                return res.status(400).json({
+                    message: "Email already in use"
+                })
             }
         }
 
@@ -106,6 +135,234 @@ const updateUserData = async (req, res) => {
                 return res.status(400).json({ message: "Phone number already in use" })
             }
         }
+
+
+        if (emailChanged && !otp) {
+            if (
+                user.resetEmailOtpBlockedUntil &&
+                user.resetEmailOtpBlockedUntil > Date.now()
+            ) {
+
+                const remainingMinutes =
+                    Math.ceil(
+                        (
+                            user.resetEmailOtpBlockedUntil -
+                            Date.now()
+                        ) / 60000
+                    )
+
+                return res.status(429).json({
+                    message:
+                        `Too many OTP attempts. Please try again in ${remainingMinutes} minute(s).`
+                })
+            }
+
+            const generatedOtp = createOtp()
+
+            const hashedOtp =
+                await bcrypt.hash(
+                    generatedOtp,
+                    10
+                )
+
+            user.resetEmailOtp = hashedOtp
+
+            user.resetEmailOtpExpireAt =
+                Date.now() + 60 * 1000
+
+            user.resetEmailOtpAttempts = 0
+
+            user.resetEmailOtpBlockedUntil = 0
+
+            user.pendingEmail = normalizedEmail
+
+            await user.save()
+
+            await transporter.sendMail({
+
+                from:
+                    `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+
+                to: normalizedEmail,
+
+                subject:
+                    "M&RC Travel and Tours - Email Change OTP",
+
+                html: `
+                    <p style="
+                        color:#555;
+                        font-size:16px;
+                        margin-bottom:12px;
+                    ">
+                        Hello <b>${user.firstname || user.username || 'User'}</b>,
+                    </p>
+
+                    <p style="
+                        color:#555;
+                        font-size:15px;
+                        line-height:1.6;
+                    ">
+                        We received a request to change
+                        the email address associated with
+                        your M&RC Travel and Tours account.
+                    </p>
+
+                    <p style="
+                        color:#555;
+                        font-size:15px;
+                        line-height:1.6;
+                    ">
+                        Your verification code is:
+                    </p>
+
+                    <div style="
+                        margin:20px 0;
+                        padding:18px;
+                        text-align:center;
+                        background:#f5f7fa;
+                        border-radius:10px;
+                        border:1px dashed #cbd5e1;
+                    ">
+                        <span style="
+                            color:#992A46;
+                            font-size:32px;
+                            font-weight:700;
+                            letter-spacing:8px;
+                        ">
+                            ${generatedOtp}
+                        </span>
+                    </div>
+
+                    <p style="
+                        color:#555;
+                        font-size:14px;
+                        line-height:1.6;
+                    ">
+                        This OTP will expire in
+                        <b>1 minute</b>.
+                    </p>
+
+                    <p style="
+                        color:#777;
+                        font-size:13px;
+                        line-height:1.6;
+                    ">
+                        If you did not request this email change,
+                        please ignore this email.
+                    </p>
+                `
+            })
+
+            return res.status(200).json({
+                success: true,
+                requiresOTP: true,
+                message:
+                    "OTP sent to your new email"
+            })
+        }
+
+        if (emailChanged && otp) {
+
+            if (
+                !user.pendingEmail ||
+                user.pendingEmail !== normalizedEmail
+            ) {
+
+                return res.status(400).json({
+                    message:
+                        "No email change verification was requested"
+                })
+            }
+
+            if (
+                user.resetEmailOtpBlockedUntil &&
+                user.resetEmailOtpBlockedUntil > Date.now()
+            ) {
+
+                const remainingMinutes =
+                    Math.ceil(
+                        (
+                            user.resetEmailOtpBlockedUntil -
+                            Date.now()
+                        ) / 60000
+                    )
+
+                return res.status(429).json({
+                    message:
+                        `Too many OTP attempts. Please try again in ${remainingMinutes} minute(s).`
+                })
+            }
+
+            if (
+                !user.resetEmailOtp ||
+                !user.resetEmailOtpExpireAt ||
+                user.resetEmailOtpExpireAt < Date.now()
+            ) {
+
+                user.resetEmailOtp = ''
+                user.resetEmailOtpExpireAt = 0
+                user.resetEmailOtpAttempts = 0
+                user.resetEmailOtpBlockedUntil = 0
+                user.pendingEmail = ''
+
+                await user.save()
+
+                return res.status(400).json({
+                    message: "OTP expired"
+                })
+            }
+
+            const isValidOtp =
+                await bcrypt.compare(
+                    String(otp),
+                    user.resetEmailOtp
+                )
+
+            if (!isValidOtp) {
+
+                user.resetEmailOtpAttempts =
+                    (user.resetEmailOtpAttempts || 0) + 1
+
+                // Block after 3 failed attempts
+                if (
+                    user.resetEmailOtpAttempts >= 3
+                ) {
+
+                    user.resetEmailOtpBlockedUntil =
+                        Date.now() + 5 * 60 * 1000
+
+                    user.resetEmailOtpAttempts = 0
+
+                    await user.save()
+
+                    return res.status(429).json({
+                        message:
+                            "Too many incorrect OTP attempts. Please try again in 5 minutes."
+                    })
+                }
+
+                await user.save()
+
+                return res.status(400).json({
+                    message:
+                        "Invalid OTP"
+                })
+            }
+
+            user.email =
+                user.pendingEmail
+
+            user.resetEmailOtp = ''
+
+            user.resetEmailOtpExpireAt = 0
+
+            user.resetEmailOtpAttempts = 0
+
+            user.resetEmailOtpBlockedUntil = 0
+
+            user.pendingEmail = ''
+        }
+
 
         const updatedFields = {}
         const changes = []
@@ -152,7 +409,6 @@ const updateUserData = async (req, res) => {
 
         user.firstname = firstname
         user.lastname = lastname
-        user.email = email
         user.phone = cleanedPhone
         if (typeof profileImage === 'string') {
             user.profileImage = profileImage

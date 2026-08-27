@@ -284,63 +284,54 @@ export default function DestinationsPackages() {
             const days = String(item.days || '').toLowerCase()
             const budget = String(item.budget || '').toLowerCase()
             const slots = String(item.availableSlots || '').toLowerCase()
-            const tagsMatch = Array.isArray(item.tags) && item.tags.some((tag) => String(tag).toLowerCase().includes(q))
 
-            const matchesSearch = q.length > 0 && (
+            const tagsMatch =
+                Array.isArray(item.tags) &&
+                item.tags.some((tag) =>
+                    String(tag).toLowerCase().includes(q)
+                )
+
+            const matchesSearch =
+                !q ||
                 pkgName.includes(q) ||
                 pkgType.includes(q) ||
                 days.includes(q) ||
                 budget.includes(q) ||
                 slots.includes(q) ||
                 tagsMatch
-            )
 
             const matchesBudget =
-                item.discountedBudget >= budgetRange[0] && item.discountedBudget <= budgetRange[1]
+                item.discountedBudget >= budgetRange[0] &&
+                item.discountedBudget <= budgetRange[1]
 
             const matchesTags =
                 selectedTags.length === 0 ||
                 selectedTags.every((tag) => item.tags?.includes(tag))
 
-            const matchesType = tourType === 'All' || item.packageType === tourType
+            const matchesType =
+                tourType === 'All' ||
+                item.packageType === tourType
 
-            const matchesDays = item.days >= 1 && item.days <= daysValue
+            const matchesDays =
+                item.days >= 1 &&
+                item.days <= daysValue
 
             const matchesTravelers =
-                !Number.isFinite(travelersValue) || travelersValue <= 0 || item.availableSlots >= travelersValue
+                !Number.isFinite(travelersValue) ||
+                travelersValue <= 0 ||
+                item.availableSlots >= travelersValue
 
-            const otherFiltersPass = matchesBudget && matchesTags && matchesType && matchesDays && matchesTravelers
+            const otherFiltersPass =
+                matchesBudget &&
+                matchesTags &&
+                matchesType &&
+                matchesDays &&
+                matchesTravelers
 
-            return { matchesSearch, otherFiltersPass }
+            return matchesSearch && otherFiltersPass
         }
 
-        if (!q) {
-            // No search term -> return packages that pass filters only
-            return packages.filter((item) => computeMatches(item).otherFiltersPass)
-        }
-
-        const searchMatches = []
-        const filteredByOther = []
-        const seen = new Set()
-
-        for (const item of packages) {
-            const { matchesSearch } = computeMatches(item)
-            const key = String(item.id || item.packageCode || item.packageName)
-
-            if (matchesSearch) {
-                searchMatches.push(item)
-                seen.add(key)
-            }
-        }
-
-        for (const item of packages) {
-            const key = String(item.id || item.packageCode || item.packageName)
-            if (seen.has(key)) continue
-            const { otherFiltersPass } = computeMatches(item)
-            if (otherFiltersPass) filteredByOther.push(item)
-        }
-
-        return [...searchMatches, ...filteredByOther]
+        return packages.filter(computeMatches)
     })()
 
 

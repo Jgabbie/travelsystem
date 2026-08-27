@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Input, Button, notification, Spin, Card, Space, ConfigProvider } from 'antd';
+import { Input, Button, notification, Spin, Card, Space, ConfigProvider, Modal } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined, CheckCircleFilled } from '@ant-design/icons';
 import '../../style/client/profilepage.css'
 import apiFetch from '../../config/fetchConfig';
@@ -25,6 +25,11 @@ export default function AdminProfile() {
         email: '',
         phone: ''
     });
+
+    const [errorOTP, setErrorOTP] = useState('')
+    const [getOTP, setOTP] = useState('')
+    const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
+    const [timer, setTimer] = useState(0)
 
     const [recentActions, setRecentActions] = useState([])
     const [pendingApprovals, setPendingApprovals] = useState([])
@@ -205,6 +210,16 @@ export default function AdminProfile() {
         }
     }
 
+    useEffect(() => {
+        if (timer <= 0) return
+
+        const interval = setInterval(() => {
+            setTimer(prev => prev - 1)
+        }, 1000)
+
+        return () => clearInterval(interval)
+    }, [timer])
+
     //fetch user data, recent actions, and pending approvals on component mount
     useEffect(() => {
         fetchUserData()
@@ -275,8 +290,66 @@ export default function AdminProfile() {
             notificationApi.error({ title: 'Please fix the highlighted fields before saving.', placement: 'topRight' })
             return
         }
+
+        const emailChanged =
+            userData?.email?.trim().toLowerCase() !==
+            values.email?.trim().toLowerCase()
+
         try {
             setSaving(true)
+
+            if (emailChanged) {
+
+                const response =
+                    await apiFetch.put(
+                        '/user/data',
+                        {
+                            firstname:
+                                values.firstname,
+
+                            lastname:
+                                values.lastname,
+
+                            email:
+                                values.email,
+
+                            phone:
+                                values.phone,
+
+                            profileImage:
+                                profileImage || ''
+                        },
+                        {
+                            withCredentials: true,
+
+                            headers: {
+                                'Content-Type':
+                                    'application/json'
+                            }
+                        }
+                    )
+
+                // Backend sent OTP
+                if (response?.requiresOTP) {
+
+                    setOTP('')
+
+                    setErrorOTP('')
+
+                    setTimer(60)
+
+                    setIsOTPModalVisible(true)
+
+                    notificationApi.success({
+                        title:
+                            `OTP sent to ${values.email}`,
+                        placement: 'topRight'
+                    })
+                }
+
+                return
+            }
+
             const response = await apiFetch.put('/user/data', {
                 firstname: values.firstname,
                 lastname: values.lastname,
@@ -311,6 +384,161 @@ export default function AdminProfile() {
     }
 
 
+    const submitOTP = async (e) => {
+
+        e.preventDefault()
+
+        if (!getOTP || getOTP.length !== 6) {
+
+            setErrorOTP(
+                'Please enter the 6-digit OTP.'
+            )
+
+            return
+        }
+
+        try {
+
+            setSaving(true)
+
+            const response =
+                await apiFetch.put(
+                    '/user/data',
+                    {
+                        firstname:
+                            values.firstname,
+
+                        lastname:
+                            values.lastname,
+
+                        email:
+                            values.email,
+
+                        phone:
+                            values.phone,
+
+                        profileImage:
+                            profileImage || '',
+
+                        otp:
+                            getOTP
+                    },
+                    {
+                        withCredentials: true,
+
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        }
+                    }
+                )
+
+            const data = response
+
+            setUserData(data.userData)
+
+            setProfileImage(
+                data.userData?.profileImageUrl ||
+                data.userData?.profileImage ||
+                data.userData?.avatarUrl ||
+                profileImage ||
+                ''
+            )
+
+            setIsOTPModalVisible(false)
+
+            setOTP('')
+
+            setErrorOTP('')
+
+            setTimer(0)
+
+            setEditing(false)
+
+            notificationApi.success({
+                title:
+                    'Email verified and profile updated!',
+                placement: 'topRight'
+            })
+
+        } catch (error) {
+
+            console.error(
+                'OTP verification error:',
+                error
+            )
+
+            setErrorOTP(
+                error?.data?.message ||
+                'Invalid OTP'
+            )
+
+        } finally {
+            setSaving(false)
+        }
+    }
+
+
+    const resendOTP = async () => {
+
+        if (timer > 0) return
+
+        try {
+
+            const response =
+                await apiFetch.put(
+                    '/user/data',
+                    {
+                        firstname:
+                            values.firstname,
+
+                        lastname:
+                            values.lastname,
+
+                        email:
+                            values.email,
+
+                        phone:
+                            values.phone,
+
+                        profileImage:
+                            profileImage || ''
+                    },
+                    {
+                        withCredentials: true,
+
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        }
+                    }
+                )
+
+            if (response?.requiresOTP) {
+
+                setOTP('')
+
+                setErrorOTP('')
+
+                setTimer(60)
+
+                notificationApi.success({
+                    title:
+                        `A new OTP was sent to ${values.email}`,
+                    placement: 'topRight'
+                })
+            }
+
+        } catch (error) {
+
+            notificationApi.error({
+                title:
+                    error?.data?.message ||
+                    'Unable to resend OTP',
+                placement: 'topRight'
+            })
+        }
+    }
 
 
     return (
@@ -349,6 +577,11 @@ export default function AdminProfile() {
                                                             ? `${values.firstname} ${values.lastname}`.trim()
                                                             : values.username || 'User'}
                                                     </h3>
+
+                                                    <p className="profile-summary-username">
+                                                        {values.username || userData?.username || 'username'}
+                                                    </p>
+
                                                     <p className="profile-summary-meta">
                                                         <span>{userData?.role || 'Admin'}</span>
                                                     </p>
@@ -617,6 +850,103 @@ export default function AdminProfile() {
                             </Card>
                         </div>
                     </div>
+
+
+
+                    <Modal
+                        open={isOTPModalVisible}
+                        className="login-otp-modal"
+                        closable={{
+                            'aria-label': 'Custom Close Button'
+                        }}
+                        onCancel={() => {
+                            setIsOTPModalVisible(false)
+                            setOTP('')
+                            setErrorOTP('')
+                        }}
+                        footer={null}
+                        centered
+                        width={650}
+                    >
+                        <div className="login-otp-container-modal">
+
+                            <h1 className="login-otp-heading-modal">
+                                Verify OTP
+                            </h1>
+
+                            <p className='login-otp-secondary-heading-modal'>We've sent a verification code to your new <span style={{ color: "#992A46" }}>Email</span> that has been set.</p>
+
+                            <form onSubmit={submitOTP}>
+
+                                <Input.OTP
+                                    status={
+                                        errorOTP
+                                            ? 'error'
+                                            : ''
+                                    }
+
+                                    value={getOTP}
+
+                                    maxLength={6}
+
+                                    onChange={setOTP}
+
+                                    type="tel"
+
+                                    id="enterOTP"
+
+                                    name="enterOTP"
+
+                                    className="emailverify-input-fields-modal"
+
+                                    required
+                                />
+
+                                <p id="error-message-modal">
+                                    {errorOTP}
+                                </p>
+
+                                <Button
+                                    id="submit-otp-button"
+                                    htmlType="submit"
+                                    loading={saving}
+                                >
+                                    Submit
+                                </Button>
+
+                            </form>
+
+                            {timer > 0 ? (
+
+                                <p id="footer-text-modal">
+                                    Wait for{' '}
+
+                                    <span style={{ color: '#992A46' }}>
+                                        {timer}
+                                    </span>{' '}
+
+                                    sec to send OTP again
+                                </p>
+
+                            ) : (
+
+                                <p id="footer-text-modal">
+
+                                    Didn't get the code?{' '}
+
+                                    <Button
+                                        className="login-otp-button-links-modal-click-here"
+                                        type="link"
+                                        onClick={resendOTP}
+                                    >
+                                        Click here
+                                    </Button>
+
+                                </p>
+                            )}
+
+                        </div>
+                    </Modal>
                 </div>
             )}
 

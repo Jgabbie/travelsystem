@@ -664,7 +664,7 @@ export default function BookingProcess() {
                 notificationApi.error({ title: errorMessage, placement: 'topRight' });
                 return;
             }
-            notificationApi.error({ title: 'Please complete all required fields before proceeding. Check the console for details.', placement: 'topRight' });
+            notificationApi.error({ title: 'Please complete all required fields before proceeding.', placement: 'topRight' });
         }
     };
 
