@@ -861,7 +861,7 @@ export default function TransactionManagement() {
   const columns = [
     { title: "Invoice No.", dataIndex: "invoiceNumber" },
     { title: "Transaction Reference", dataIndex: "ref" },
-    { title: "Item", dataIndex: "package" },
+    { title: "Item Description", dataIndex: "package" },
     { title: "Customer Name", dataIndex: "username" },
     {
       title: "Payment Date & Time",
