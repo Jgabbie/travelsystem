@@ -366,6 +366,7 @@ const getAllTransactions = async (req, res) => {
                 };
             }
         }
+        //fix
 
         /*
          * Search username / firstname / lastname.
