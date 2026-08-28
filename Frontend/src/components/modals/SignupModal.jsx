@@ -35,6 +35,12 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     const blockClipboardKeys = (e) => {
         const isCtrlOrCmd = e.ctrlKey || e.metaKey;
 
+        if (e.altKey) {
+            e.preventDefault();
+            return;
+        }
+
+
         if (
             isCtrlOrCmd &&
             ["x"].includes(e.key.toLowerCase())

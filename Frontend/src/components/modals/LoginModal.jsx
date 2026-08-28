@@ -273,6 +273,12 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const blockClipboardKeys = (e) => {
         const isCtrlOrCmd = e.ctrlKey || e.metaKey;
 
+        if (e.altKey) {
+            e.preventDefault();
+            return;
+        }
+
+
         if (
             isCtrlOrCmd &&
             ["x"].includes(e.key.toLowerCase())

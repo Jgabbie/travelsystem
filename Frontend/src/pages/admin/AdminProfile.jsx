@@ -211,6 +211,21 @@ export default function AdminProfile() {
     }
 
     useEffect(() => {
+        const disableAltKey = (e) => {
+            if (e.key === "Alt" || e.altKey) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        };
+
+        window.addEventListener("keydown", disableAltKey, true);
+
+        return () => {
+            window.removeEventListener("keydown", disableAltKey, true);
+        };
+    }, []);
+
+    useEffect(() => {
         if (timer <= 0) return
 
         const interval = setInterval(() => {
