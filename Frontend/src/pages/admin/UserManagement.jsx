@@ -815,7 +815,7 @@ export default function UserManagement() {
                   status={editErrors.firstname ? "error" : ""}
                   onChange={(event) => {
                     const cleanedValue = event.target.value
-                      .replace(/[^a-zA-Z\s]/g, "")
+                      .replace(/[^a-zA-ZÑñ\s]/g, "")
                       .replace(/\s{2,}/g, " ")
                       .replace(/^\s+/, "");
 
@@ -851,7 +851,7 @@ export default function UserManagement() {
                   status={editErrors.lastname ? "error" : ""}
                   onChange={(event) => {
                     const cleanedValue = event.target.value
-                      .replace(/[^a-zA-Z\s]/g, "")
+                      .replace(/[^a-zA-ZÑñ\s]/g, "")
                       .replace(/\s{2,}/g, " ")
                       .replace(/^\s+/, "");
 

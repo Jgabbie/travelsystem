@@ -1461,7 +1461,7 @@ export default function BookingProcess() {
                                                     value={getTravelerValue(index, 'firstName') || ''}
                                                     onChange={(event) => updateTravelerField(index, 'firstName', event.target.value)}
                                                     onKeyDown={(e) => {
-                                                        const regex = /^[A-Za-z\s'-]$/;
+                                                        const regex = /^[A-Za-zÑñ\s'-]$/;
 
                                                         if (
                                                             e.key.length === 1 &&
@@ -1492,7 +1492,7 @@ export default function BookingProcess() {
                                                     value={getTravelerValue(index, 'lastName') || ''}
                                                     onChange={(event) => updateTravelerField(index, 'lastName', event.target.value)}
                                                     onKeyDown={(e) => {
-                                                        const regex = /^[A-Za-z\s'-]$/;
+                                                        const regex = /^[A-Za-zÑñ\s'-]$/;
 
                                                         if (
                                                             e.key.length === 1 &&

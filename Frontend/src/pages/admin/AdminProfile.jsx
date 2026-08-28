@@ -660,7 +660,7 @@ export default function AdminProfile() {
                                                     if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
 
                                                     if (
-                                                        !/^[A-Za-z ]$/.test(e.key) &&
+                                                        !/^[A-Za-zÑñ ]$/.test(e.key) &&
                                                         e.key !== "Backspace" &&
                                                         e.key !== "ArrowLeft" &&
                                                         e.key !== "ArrowRight"
@@ -694,7 +694,7 @@ export default function AdminProfile() {
                                                     if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
                                                     if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
                                                     if (
-                                                        !/^[A-Za-z -]$/.test(e.key) &&
+                                                        !/^[A-Za-zÑñ ]$/.test(e.key) &&
                                                         e.key !== "Backspace" &&
                                                         e.key !== "ArrowLeft" &&
                                                         e.key !== "ArrowRight"

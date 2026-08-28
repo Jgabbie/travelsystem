@@ -287,7 +287,7 @@ export default function BookingRegistrationDiet({
 
                         <div className="mrc-registration-insurance-answer-row">
                             <span>
-                                Do you agree to purchase a Travel Insurance from us?
+                                Do you already have a Travel Insurance?
                             </span>
                             <Form.Item
                                 name="purchaseInsurance"

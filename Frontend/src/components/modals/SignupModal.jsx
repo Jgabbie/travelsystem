@@ -454,7 +454,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                             if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
                                             if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
 
-                                            if (!/^[A-Za-z ]$/.test(e.key)) {
+                                            if (!/^[A-Za-zÑñ ]$/.test(e.key)) {
                                                 e.preventDefault();
                                             }
                                         }} value={values.firstname} type="text" id="firstname" className='signup-input-fields-modal-group' name="firstname" required />
@@ -498,7 +498,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                             if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
                                             if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
 
-                                            if (!/^[A-Za-z -]$/.test(e.key)) {
+                                            if (!/^[A-Za-zÑñ ]$/.test(e.key)) {
                                                 e.preventDefault();
                                             }
                                         }} value={values.lastname} type="text" id="lastname" className='signup-input-fields-modal-group' name="lastname" required />

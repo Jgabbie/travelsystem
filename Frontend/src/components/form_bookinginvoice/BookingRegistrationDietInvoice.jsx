@@ -195,7 +195,7 @@ export default function BookingRegistrationDietInvoice({
                         </p>
 
                         <div className="mrc-registration-insurance-answer-row">
-                            <span>Do you agree to purchase a Travel Insurance from us?</span>
+                            <span>Do you already have a Travel Insurance?</span>
                             <Form.Item
                                 name="purchaseInsurance"
                                 noStyle
@@ -211,6 +211,18 @@ export default function BookingRegistrationDietInvoice({
                             the insurance company. We can only provide the documents from our suppliers,
                             operators, and airlines' end if necessary.
                         </p>
+
+                        <div className="mrc-registration-insurance-answer-row">
+                            <span>Do you agree to purchase a Travel Insurance from us?</span>
+                            <Form.Item
+                                name="ownInsurance"
+                                noStyle
+                                rules={[{ required: true, message: 'Required' }]}
+                            >
+                                <Input className="mrc-registration-yes-no-input" readOnly />
+                            </Form.Item>
+                        </div>
+
 
                         <table className="mrc-registration-insurance-table">
                             <tbody>
