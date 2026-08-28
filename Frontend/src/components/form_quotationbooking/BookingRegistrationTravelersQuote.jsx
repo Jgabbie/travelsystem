@@ -108,8 +108,10 @@ export default function BookingRegistrationTravelersQuote({
                     homeAddress: userData.homeAddress,
                 };
 
+                const currentLeadTitle = form.getFieldValue('leadTitle');
+
                 form.setFieldsValue({
-                    leadTitle: form.getFieldValue('leadTitle') || 'MR',
+                    leadTitle: currentLeadTitle || 'MR',
                     leadFullName: user.fullName,
                     leadEmail: user.email,
                     leadContact: user.phone,
@@ -151,14 +153,20 @@ export default function BookingRegistrationTravelersQuote({
         const travelers = [...currentTravelers];
         const isSolo = bookingType === 'Solo Booking';
         const isGroup = bookingType === 'Group Booking';
+        const selectedTitle = travelers[0]?.title || 'MR';
 
         travelers[0] = {
             ...travelers[0],
-            title: 'MR',
+            title: selectedTitle,
             firstName: userProfile.firstName,
             lastName: userProfile.lastName,
             roomType: isSolo ? 'SINGLE' : travelers[0]?.roomType,
         };
+
+        form.setFieldsValue({
+            travelers,
+            leadTitle: selectedTitle
+        });
 
         let updatedTravelers = travelers.map((traveler) => ({
             ...traveler,
