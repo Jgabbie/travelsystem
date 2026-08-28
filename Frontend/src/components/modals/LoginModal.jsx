@@ -275,7 +275,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
 
         if (
             isCtrlOrCmd &&
-            ["x", "a"].includes(e.key.toLowerCase())
+            ["x"].includes(e.key.toLowerCase())
         ) {
             e.preventDefault();
         }
@@ -333,6 +333,18 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                                             <label className='login-labels-modal' htmlFor="username">Username or Email <span style={{ color: "#ff0000" }}>*</span></label>
                                             <Input status={error ? "error" : ""} maxLength={50} minLength={8} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off'
                                                 onKeyDown={(e) => {
+                                                    if (e.key === "Tab") {
+                                                        return;
+                                                    }
+
+                                                    // Allow Ctrl/Cmd+A
+                                                    if (
+                                                        (e.ctrlKey || e.metaKey) &&
+                                                        e.key.toLowerCase() === "a"
+                                                    ) {
+                                                        return;
+                                                    }
+
                                                     // Allow control/navigation keys
                                                     if (
                                                         [
@@ -364,6 +376,18 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                                         <div className='login-div-input-fields-modal'>
                                             <label className='login-labels-modal' htmlFor="password">Password <span style={{ color: "#ff0000" }}>*</span></label>
                                             <Input.Password status={error ? "error" : ""} maxLength={20} minLength={8} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' onKeyDown={(e) => {
+                                                if (e.key === "Tab") {
+                                                    return;
+                                                }
+
+                                                // Allow Ctrl/Cmd+A
+                                                if (
+                                                    (e.ctrlKey || e.metaKey) &&
+                                                    e.key.toLowerCase() === "a"
+                                                ) {
+                                                    return;
+                                                }
+
                                                 if (e.key === " " && e.key !== "Backspace") {
                                                     e.preventDefault()
                                                 }

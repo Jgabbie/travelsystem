@@ -37,7 +37,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
 
         if (
             isCtrlOrCmd &&
-            ["x", "a"].includes(e.key.toLowerCase())
+            ["x"].includes(e.key.toLowerCase())
         ) {
             e.preventDefault();
         }
@@ -384,6 +384,32 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                 <div className="signup-input-group-modal">
                                     <label className='signup-labels-modal'>Username <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input status={hasFieldError(error.username) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("username", e.target.value)} autoComplete='off' onKeyDown={(e) => {
+                                        if (e.key === "Tab") {
+                                            return;
+                                        }
+
+                                        // Allow Ctrl/Cmd+A
+                                        if (
+                                            (e.ctrlKey || e.metaKey) &&
+                                            e.key.toLowerCase() === "a"
+                                        ) {
+                                            return;
+                                        }
+
+                                        // Allow control/navigation keys
+                                        if (
+                                            [
+                                                "Backspace",
+                                                "Delete",
+                                                "ArrowLeft",
+                                                "ArrowRight",
+                                                "Home",
+                                                "End",
+                                            ].includes(e.key)
+                                        ) {
+                                            return;
+                                        }
+
                                         if (
                                             !/^[A-Za-z0-9]+$/.test(e.key) ||
                                             e.key === " "
@@ -398,16 +424,37 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                     <div className="signup-input-group-modal">
                                         <label className='signup-labels-modal'>First name <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input status={hasFieldError(error.firstname) ? "error" : ""} maxLength={20} onChange={(e) => { valueHandler("firstname", toProperCase(e.target.value)) }} autoComplete='off' onKeyDown={(e) => {
+                                            if (e.key === "Tab") {
+                                                return;
+                                            }
+
+                                            // Allow Ctrl/Cmd+A
+                                            if (
+                                                (e.ctrlKey || e.metaKey) &&
+                                                e.key.toLowerCase() === "a"
+                                            ) {
+                                                return;
+                                            }
+
+                                            // Allow control/navigation keys
+                                            if (
+                                                [
+                                                    "Backspace",
+                                                    "Delete",
+                                                    "ArrowLeft",
+                                                    "ArrowRight",
+                                                    "Home",
+                                                    "End",
+                                                ].includes(e.key)
+                                            ) {
+                                                return;
+                                            }
+
                                             const value = e.target.value;
                                             if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
                                             if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
 
-                                            if (
-                                                !/^[A-Za-z ]$/.test(e.key) &&
-                                                e.key !== "Backspace" &&
-                                                e.key !== "ArrowLeft" &&
-                                                e.key !== "ArrowRight"
-                                            ) {
+                                            if (!/^[A-Za-z ]$/.test(e.key)) {
                                                 e.preventDefault();
                                             }
                                         }} value={values.firstname} type="text" id="firstname" className='signup-input-fields-modal-group' name="firstname" required />
@@ -418,18 +465,40 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                     <div className="signup-input-group-modal">
                                         <label className='signup-labels-modal'>Last name <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input status={hasFieldError(error.lastname) ? "error" : ""} maxLength={20} onChange={(e) => { valueHandler("lastname", toProperCase(e.target.value)) }} autoComplete='off' onKeyDown={(e) => {
+
+                                            if (e.key === "Tab") {
+                                                return;
+                                            }
+
+                                            // Allow Ctrl/Cmd+A
+                                            if (
+                                                (e.ctrlKey || e.metaKey) &&
+                                                e.key.toLowerCase() === "a"
+                                            ) {
+                                                return;
+                                            }
+
+                                            if (
+                                                [
+                                                    "Backspace",
+                                                    "Delete",
+                                                    "ArrowLeft",
+                                                    "ArrowRight",
+                                                    "Home",
+                                                    "End",
+                                                ].includes(e.key)
+                                            ) {
+                                                return;
+                                            }
+
                                             const value = e.target.value;
                                             if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
                                             if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
                                             if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
                                             if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
                                             if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
-                                            if (
-                                                !/^[A-Za-z -]$/.test(e.key) &&
-                                                e.key !== "Backspace" &&
-                                                e.key !== "ArrowLeft" &&
-                                                e.key !== "ArrowRight"
-                                            ) {
+
+                                            if (!/^[A-Za-z -]$/.test(e.key)) {
                                                 e.preventDefault();
                                             }
                                         }} value={values.lastname} type="text" id="lastname" className='signup-input-fields-modal-group' name="lastname" required />
@@ -441,9 +510,38 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                 <div className="signup-input-group-modal">
                                     <label className='signup-labels-modal'>Email <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input status={hasFieldError(error.email) ? "error" : ""} maxLength={40} onChange={(e) => valueHandler("email", e.target.value)} autoComplete='off' onKeyDown={(e) => {
-                                        if (e.key === " " && e.key !== "Backspace") {
-                                            e.preventDefault()
+
+                                        if (e.key === "Tab") {
+                                            return;
                                         }
+
+                                        // Allow Ctrl/Cmd+A
+                                        if (
+                                            (e.ctrlKey || e.metaKey) &&
+                                            e.key.toLowerCase() === "a"
+                                        ) {
+                                            return;
+                                        }
+
+                                        // Allow control/navigation keys
+                                        if (
+                                            [
+                                                "Backspace",
+                                                "Delete",
+                                                "ArrowLeft",
+                                                "ArrowRight",
+                                                "Home",
+                                                "End",
+                                            ].includes(e.key)
+                                        ) {
+                                            return;
+                                        }
+
+                                        // Block spaces
+                                        if (!/^[A-Za-z0-9._%+\-@]$/.test(e.key)) {
+                                            e.preventDefault();
+                                        }
+
                                     }} value={values.email} type="email" id="email" className='signup-input-fields-modal' name="email" required />
 
                                     {renderErrorMessages(error.email, "email")}
@@ -481,8 +579,36 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                     <div className="signup-input-group-modal">
                                         <label className='signup-labels-modal'>Password <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input.Password status={hasFieldError(error.password) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' onKeyDown={(e) => {
-                                            if (e.key === " " && e.key !== "Backspace") {
-                                                e.preventDefault()
+                                            // Allow Tab
+                                            if (e.key === "Tab") {
+                                                return;
+                                            }
+
+                                            // Allow Ctrl/Cmd+A
+                                            if (
+                                                (e.ctrlKey || e.metaKey) &&
+                                                e.key.toLowerCase() === "a"
+                                            ) {
+                                                return;
+                                            }
+
+                                            // Allow control/navigation keys
+                                            if (
+                                                [
+                                                    "Backspace",
+                                                    "Delete",
+                                                    "ArrowLeft",
+                                                    "ArrowRight",
+                                                    "Home",
+                                                    "End",
+                                                ].includes(e.key)
+                                            ) {
+                                                return;
+                                            }
+
+                                            // Block spaces
+                                            if (e.key === " ") {
+                                                e.preventDefault();
                                             }
                                         }} visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }} value={values.password} type="password" id="password" className='signup-input-fields-modal-group' name="password" required />
 
@@ -492,8 +618,36 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                     <div className="signup-input-group-modal">
                                         <label className='signup-labels-modal'>Confirm Password <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input.Password status={hasFieldError(error.confirmPassword) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' onKeyDown={(e) => {
-                                            if (e.key === " " && e.key !== "Backspace") {
-                                                e.preventDefault()
+                                            // Allow Tab
+                                            if (e.key === "Tab") {
+                                                return;
+                                            }
+
+                                            // Allow Ctrl/Cmd+A
+                                            if (
+                                                (e.ctrlKey || e.metaKey) &&
+                                                e.key.toLowerCase() === "a"
+                                            ) {
+                                                return;
+                                            }
+
+                                            // Allow control/navigation keys
+                                            if (
+                                                [
+                                                    "Backspace",
+                                                    "Delete",
+                                                    "ArrowLeft",
+                                                    "ArrowRight",
+                                                    "Home",
+                                                    "End",
+                                                ].includes(e.key)
+                                            ) {
+                                                return;
+                                            }
+
+                                            // Block spaces
+                                            if (e.key === " ") {
+                                                e.preventDefault();
                                             }
                                         }} visibilityToggle={{ visible: showConfirmPassword, onVisibleChange: setShowConfirmPassword }} value={values.confirmPassword} type="password" id="confirmPassword" className='signup-input-fields-modal-group' name="confirmPassword" required />
 
