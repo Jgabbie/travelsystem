@@ -354,15 +354,21 @@ const getAllTransactions = async (req, res) => {
 
         // Payment date filter
         if (paymentDate) {
-            const selectedDate = dayjs(paymentDate, "YYYY-MM-DD");
+            const [year, month, day] = paymentDate.split("-").map(Number);
 
-            if (selectedDate.isValid()) {
-                const startOfDay = selectedDate.startOf("day").toDate();
-                const endOfDay = selectedDate.endOf("day").toDate();
+            if (year && month && day) {
+                // Philippine Time (UTC+8)
+                const startOfDay = new Date(
+                    Date.UTC(year, month - 1, day, 0, 0, 0, 0) - (8 * 60 * 60 * 1000)
+                );
+
+                const endOfDay = new Date(
+                    Date.UTC(year, month - 1, day, 23, 59, 59, 999) - (8 * 60 * 60 * 1000)
+                );
 
                 transactionFilter.transactionDate = {
                     $gte: startOfDay,
-                    $lte: endOfDay
+                    $lte: endOfDay,
                 };
             }
         }

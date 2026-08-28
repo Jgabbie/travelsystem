@@ -23,6 +23,11 @@ export default function DestinationsPackages() {
     const [wishlistedIds, setWishlistedIds] = useState(() => new Set())
     const [wishlistEntryMap, setWishlistEntryMap] = useState(() => new Map())
 
+
+    // Track whether optional filters were explicitly used
+    const [budgetFilterActive, setBudgetFilterActive] = useState(false)
+    const [daysFilterActive, setDaysFilterActive] = useState(false)
+
     const [notificationApi, notificationContextHolder] =
         notification.useNotification();
 
@@ -274,64 +279,101 @@ export default function DestinationsPackages() {
     }, [maxDuration, daysValue])
 
 
-    // search term appear first, followed by packages that pass the active filters.
     const filteredPackages = (() => {
-        const q = (search || '').trim().toLowerCase()
+        const q = (search || '').trim()
 
-        const computeMatches = (item) => {
-            const pkgName = String(item.packageName || '').toLowerCase()
-            const pkgType = String(item.packageType || '').toLowerCase()
-            const days = String(item.days || '').toLowerCase()
-            const budget = String(item.budget || '').toLowerCase()
-            const slots = String(item.availableSlots || '').toLowerCase()
+        const normalize = (value) =>
+            String(value || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]/g, '')
 
-            const tagsMatch =
+        const normalizedQuery = normalize(q)
+
+        return packages.filter((item) => {
+
+
+            const packageName = normalize(item.packageName)
+            const packageType = normalize(item.packageType)
+
+            const tagMatches =
                 Array.isArray(item.tags) &&
                 item.tags.some((tag) =>
-                    String(tag).toLowerCase().includes(q)
+                    normalize(tag).includes(normalizedQuery)
                 )
 
-            const matchesSearch =
-                !q ||
-                pkgName.includes(q) ||
-                pkgType.includes(q) ||
-                days.includes(q) ||
-                budget.includes(q) ||
-                slots.includes(q) ||
-                tagsMatch
+            const searchMatches =
+                !normalizedQuery ||
+                packageName.includes(normalizedQuery) ||
+                packageType.includes(normalizedQuery) ||
+                tagMatches
 
-            const matchesBudget =
-                item.discountedBudget >= budgetRange[0] &&
-                item.discountedBudget <= budgetRange[1]
+            // Search must match first
+            if (!searchMatches) {
+                return false
+            }
 
-            const matchesTags =
-                selectedTags.length === 0 ||
-                selectedTags.every((tag) => item.tags?.includes(tag))
 
-            const matchesType =
-                tourType === 'All' ||
-                item.packageType === tourType
+            if (budgetFilterActive) {
+                const price = Number(
+                    item.discountedBudget ?? item.budget ?? 0
+                )
 
-            const matchesDays =
-                item.days >= 1 &&
-                item.days <= daysValue
+                const minBudget = Number(budgetRange[0] ?? 0)
+                const maxBudget = Number(budgetRange[1] ?? 500000)
 
-            const matchesTravelers =
-                !Number.isFinite(travelersValue) ||
-                travelersValue <= 0 ||
-                item.availableSlots >= travelersValue
+                if (
+                    price < minBudget ||
+                    price > maxBudget
+                ) {
+                    return false
+                }
+            }
 
-            const otherFiltersPass =
-                matchesBudget &&
-                matchesTags &&
-                matchesType &&
-                matchesDays &&
-                matchesTravelers
 
-            return matchesSearch && otherFiltersPass
-        }
+            if (selectedTags.length > 0) {
+                const matchesTags = selectedTags.every((tag) =>
+                    item.tags?.includes(tag)
+                )
 
-        return packages.filter(computeMatches)
+                if (!matchesTags) {
+                    return false
+                }
+            }
+
+
+            if (
+                tourType !== 'All' &&
+                item.packageType !== tourType
+            ) {
+                return false
+            }
+
+
+            if (
+                Number.isFinite(travelersValue) &&
+                travelersValue > 0
+            ) {
+                if (item.availableSlots < travelersValue) {
+                    return false
+                }
+            }
+
+
+            if (daysFilterActive) {
+                const days = Number(item.days)
+
+                if (
+                    !Number.isFinite(days) ||
+                    days > Number(daysValue)
+                ) {
+                    return false
+                }
+            }
+
+
+            // Package passed all active filters
+            return true
+        })
     })()
 
 
@@ -394,12 +436,14 @@ export default function DestinationsPackages() {
                                     <Text className="destinations-label">Budget (₱)</Text>
                                     <div className="filter-range-inputs">
                                         <InputNumber
-                                            className='destinations-inputs'
+                                            className="destinations-inputs"
                                             min={0}
                                             max={500000}
-                                            maxLength={6}
                                             value={budgetRange[0]}
-                                            onChange={(value) => setBudgetRange([value, budgetRange[1]])}
+                                            onChange={(value) => {
+                                                setBudgetRange([value ?? 0, budgetRange[1]])
+                                                setBudgetFilterActive(true)
+                                            }}
                                             formatter={(value) => `₱${value}`}
                                             parser={(value) => Number(String(value).replace(/[^0-9]/g, ''))} // converts the value to a number and removes the non digit values like peso sign and commas
                                             onKeyDown={(e) => {
@@ -411,12 +455,14 @@ export default function DestinationsPackages() {
 
                                         <span className="filter-range-separator">to</span>
                                         <InputNumber
-                                            className='destinations-inputs'
+                                            className="destinations-inputs"
                                             min={0}
                                             max={500000}
-                                            maxLength={6}
                                             value={budgetRange[1]}
-                                            onChange={(value) => setBudgetRange([budgetRange[0], value])}
+                                            onChange={(value) => {
+                                                setBudgetRange([budgetRange[0], value ?? 500000])
+                                                setBudgetFilterActive(true)
+                                            }}
                                             formatter={(value) => `₱${value}`}
                                             parser={(value) => Number(String(value).replace(/[^0-9]/g, ''))}
                                             onKeyDown={(e) => {
@@ -431,7 +477,10 @@ export default function DestinationsPackages() {
                                         min={0}
                                         max={500000}
                                         value={budgetRange}
-                                        onChange={(value) => setBudgetRange(value)}
+                                        onChange={(value) => {
+                                            setBudgetRange(value)
+                                            setBudgetFilterActive(true)
+                                        }}
                                         tooltip={{ formatter: (value) => `₱${value}` }}
                                     />
                                     <Text className="filter-hint">
@@ -516,12 +565,14 @@ export default function DestinationsPackages() {
                                     <Text className="destinations-label">Days of Tour</Text>
                                     <div className="filter-range-inputs">
                                         <InputNumber
-                                            className='destinations-inputs'
+                                            className="destinations-inputs"
                                             min={1}
                                             max={maxDuration}
-                                            maxLength={3}
                                             value={daysValue}
-                                            onChange={setDaysValue}
+                                            onChange={(value) => {
+                                                setDaysValue(value)
+                                                setDaysFilterActive(true)
+                                            }}
                                             onKeyDown={(e) => {
                                                 if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                                                     e.preventDefault()
@@ -534,7 +585,10 @@ export default function DestinationsPackages() {
                                         min={1}
                                         max={maxDuration}
                                         value={daysValue}
-                                        onChange={setDaysValue}
+                                        onChange={(value) => {
+                                            setDaysValue(value)
+                                            setDaysFilterActive(true)
+                                        }}
                                         tooltip={{ formatter: (value) => `${value} day${value > 1 ? 's' : ''}` }}
                                     />
                                     <Text className="filter-hint">

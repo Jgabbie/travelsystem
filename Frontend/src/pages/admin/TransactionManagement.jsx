@@ -2,6 +2,9 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, Modal, ConfigProvider, Image, Spin, notification, Upload, Empty, message } from "antd";
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined, CheckCircleFilled, InboxOutlined, TransactionOutlined, UploadOutlined, SettingOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
 import { useNavigate } from "react-router-dom";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -10,6 +13,9 @@ import apiFetch from "../../config/fetchConfig";
 import { useAuth } from "../../hooks/useAuth";
 import "../../style/admin/transaction.css";
 import "../../style/components/modals/modaldesign.css";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 
 //function to convert image to base64
@@ -115,9 +121,13 @@ export default function TransactionManagement() {
     lastname: t.userId?.lastname || "",
     package: t.packageId?.packageName || t.applicationType,
     date: t.transactionDate
-      ? dayjs(t.transactionDate).format("YYYY-MM-DD HH:mm")
+      ? dayjs(t.transactionDate)
+        .tz("Asia/Manila")
+        .format("YYYY-MM-DD HH:mm")
       : t.createdAt
-        ? dayjs(t.createdAt).format("YYYY-MM-DD HH:mm")
+        ? dayjs(t.createdAt)
+          .tz("Asia/Manila")
+          .format("YYYY-MM-DD HH:mm")
         : "",
     price: `₱${Number(t.amount || 0).toLocaleString()}`,
     amountRaw: Number(t.amount || 0),
