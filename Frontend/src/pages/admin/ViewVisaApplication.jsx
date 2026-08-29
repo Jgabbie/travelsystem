@@ -79,9 +79,6 @@ export default function ViewVisaApplication() {
 
     const applicantName = `${application?.applicantName || application?.firstName || ''} ${application?.lastName || ''}`.trim();
 
-    const isBusy = loading || isSubmittingSlots || isUpdatingStatus;
-
-
     // fetch application and service details
     const fetchApplicationAndService = useCallback(async () => {
         try {
@@ -347,10 +344,6 @@ export default function ViewVisaApplication() {
 
     const submittedDocuments = buildDocumentList(application?.submittedDocuments || application?.documents);
 
-    if (!application) {
-        return null;
-    }
-
     // status update handler
     const handleStepChange = async (stepIdx) => {
         if (!progressEditable || isUpdatingStatus) return;
@@ -479,11 +472,18 @@ export default function ViewVisaApplication() {
     };
 
 
-    const defaultPreferredDate = dayjs().startOf('day').add(14, 'day');
+    const getNextAvailableWeekday = (date) => {
+        const day = date.day();
 
-    while (defaultPreferredDate.day() === 0 || defaultPreferredDate.day() === 6) {
-        defaultPreferredDate.add(1, 'day');
-    }
+        if (day === 6) return date.add(2, "day"); // Saturday
+        if (day === 0) return date.add(1, "day"); // Sunday
+
+        return date;
+    };
+
+    const defaultPreferredDate = getNextAvailableWeekday(
+        dayjs().startOf("day").add(14, "day")
+    );
 
     const isDefaultDateNextMonth =
         defaultPreferredDate.month() !== dayjs().month() ||
@@ -559,7 +559,7 @@ export default function ViewVisaApplication() {
         <ConfigProvider theme={{ token: { colorPrimary: "#305797" } }}>
 
             {notificationContextHolder}
-            {isBusy ? (
+            {loading || isSubmittingSlots || isUpdatingStatus ? (
                 <div
                     style={{
                         display: "flex",
