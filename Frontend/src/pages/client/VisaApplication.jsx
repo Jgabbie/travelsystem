@@ -775,11 +775,19 @@ export default function VisaApplication() {
     };
 
 
-    const defaultPreferredDate = dayjs().startOf('day').add(14, 'day');
+    const getNextAvailableWeekday = (date) => {
+        const day = date.day();
 
-    while (defaultPreferredDate.day() === 0 || defaultPreferredDate.day() === 6) {
-        defaultPreferredDate.add(1, 'day');
-    }
+        if (day === 6) return date.add(2, "day"); // Saturday
+        if (day === 0) return date.add(1, "day"); // Sunday
+
+        return date;
+    };
+
+    const defaultPreferredDate = getNextAvailableWeekday(
+        dayjs().startOf("day").add(14, "day")
+    );
+
 
     const isDefaultDateNextMonth =
         defaultPreferredDate.month() !== dayjs().month() ||
