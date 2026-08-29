@@ -62,7 +62,6 @@ export default function VisaApplications() {
             setIsFetchingApplications(true);
             const response = await apiFetch.get('/visa/applications')
 
-            console.log(response)
 
             const applications = response.map((a) => ({
                 key: a._id,

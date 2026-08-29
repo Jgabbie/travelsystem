@@ -68,7 +68,6 @@ export default function UserPreference() {
             await apiFetch.post('/user/login-once', {}, { withCredentials: true });
             await checkAuth();
             notificationApi.success({ title: 'Preferences saved', placement: 'topRight' });
-            console.log('Preferences saved:', selections);
             // Set flag in localStorage to show modal on homepage
             localStorage.setItem('showNextStepsModal', 'true');
             setIsLoading(false);

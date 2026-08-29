@@ -48,7 +48,6 @@ export default function ResetPassword() {
         try {
             await apiFetch.post('/auth/send-reset-otp', { email: getEmail })
             setIsLoading(false);
-            console.log(getEmail)
             showModal()
             setTimer(60)
         } catch (err) {

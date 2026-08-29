@@ -94,8 +94,6 @@ export default function CancellationRequests() {
 
             const response = await apiFetch.get('/booking/cancellations');
 
-            console.log('Cancellation API response:', response);
-
             const cancellations = response.map((c) => ({
                 key: c._id,
                 ref: c.reference,
