@@ -154,51 +154,192 @@ const searchKnowledge = async (queryEmbedding) => {
 // function to build package context for chatbot responses
 const buildPackageContext = async (message) => {
     const normalized = normalizeText(message);
-    const wantsPackages = /\b(package|packages|tour|tours|available|availability|price|rate|promo|deal)\b/.test(normalized);
 
-    if (!wantsPackages) return { text: '', names: [] };
+    const wantsPackages =
+        /\b(package|packages|tour|tours|available|availability|price|rate|promo|deal|cheap|cheapest|expensive|cost)\b/.test(
+            normalized
+        );
 
-    const packages = await PackageModel.find({}, {
-        packageName: 1,
-        packagePricePerPax: 1,
-        packageDuration: 1,
-        packageType: 1,
-        packageTags: 1,
-        packageDiscountPercent: 1,
-        visaRequired: 1,
-        packageInclusions: 1,
-        packageExclusions: 1,
-        packageSoloRate: 1,
-        packageChildRate: 1,
-        packageInfantRate: 1,
-        createdAt: 1
-    })
-        .sort({ createdAt: -1 })
-        .limit(5)
+    if (!wantsPackages) {
+        return {
+            text: '',
+            names: []
+        };
+    }
+
+    const packages = await PackageModel.find(
+        {},
+        {
+            packageName: 1,
+            packagePricePerPax: 1,
+            packageDuration: 1,
+            packageType: 1,
+            packageTags: 1,
+            packageDiscountPercent: 1,
+            visaRequired: 1,
+            packageInclusions: 1,
+            packageExclusions: 1,
+            packageSoloRate: 1,
+            packageChildRate: 1,
+            packageInfantRate: 1,
+            createdAt: 1
+        }
+    )
         .lean();
 
-    if (!packages.length) return { text: 'No packages are currently available.', names: [] };
+    if (!packages.length) {
+        return {
+            text: 'No packages are currently available.',
+            names: []
+        };
+    }
 
-    const text = packages
+    // Convert price safely into a number.
+    // Works even if your database stores values like:
+    // 15000
+    // "15000"
+    // "₱15,000"
+    // "PHP 15,000"
+    const getNumericPrice = (price) => {
+        if (typeof price === 'number') {
+            return Number.isFinite(price) ? price : null;
+        }
+
+        if (typeof price === 'string') {
+            const cleaned = price.replace(/[^0-9.-]/g, '');
+            const parsed = Number(cleaned);
+
+            return Number.isFinite(parsed) ? parsed : null;
+        }
+
+        return null;
+    };
+
+    // Only packages with valid prices are used for price comparisons.
+    const packagesWithPrice = packages
+        .map((pkg) => ({
+            ...pkg,
+            numericPrice: getNumericPrice(pkg.packagePricePerPax)
+        }))
+        .filter((pkg) => pkg.numericPrice !== null);
+
+    // Detect cheapest / most expensive questions.
+    const asksCheapest =
+        /\b(cheapest|cheap(?:est)?|lowest price|lowest priced|least expensive|most affordable|affordable)\b/.test(
+            normalized
+        );
+
+    const asksMostExpensive =
+        /\b(most expensive|highest price|highest priced|priciest|costliest|expensive package|expensive tour)\b/.test(
+            normalized
+        );
+
+    let priceComparisonContext = '';
+
+    if (packagesWithPrice.length > 0) {
+        const cheapestPrice = Math.min(
+            ...packagesWithPrice.map((pkg) => pkg.numericPrice)
+        );
+
+        const highestPrice = Math.max(
+            ...packagesWithPrice.map((pkg) => pkg.numericPrice)
+        );
+
+        // Handle ties correctly.
+        const cheapestPackages = packagesWithPrice.filter(
+            (pkg) => pkg.numericPrice === cheapestPrice
+        );
+
+        const expensivePackages = packagesWithPrice.filter(
+            (pkg) => pkg.numericPrice === highestPrice
+        );
+
+        if (asksCheapest) {
+            priceComparisonContext = [
+                'IMPORTANT PRICE COMPARISON:',
+                'The user is asking for the CHEAPEST package.',
+                `The lowest package price per pax is ₱${cheapestPrice.toLocaleString('en-PH')}.`,
+                `Cheapest package(s): ${cheapestPackages
+                    .map(
+                        (pkg) =>
+                            `${pkg.packageName} - ₱${pkg.numericPrice.toLocaleString('en-PH')} per pax`
+                    )
+                    .join(', ')}.`,
+                'Use this calculated result as the authoritative answer. Do not choose another package.'
+            ].join('\n');
+        }
+
+        if (asksMostExpensive) {
+            priceComparisonContext = [
+                'IMPORTANT PRICE COMPARISON:',
+                'The user is asking for the MOST EXPENSIVE package.',
+                `The highest package price per pax is ₱${highestPrice.toLocaleString('en-PH')}.`,
+                `Most expensive package(s): ${expensivePackages
+                    .map(
+                        (pkg) =>
+                            `${pkg.packageName} - ₱${pkg.numericPrice.toLocaleString('en-PH')} per pax`
+                    )
+                    .join(', ')}.`,
+                'Use this calculated result as the authoritative answer. Do not choose another package.'
+            ].join('\n');
+        }
+    }
+
+    const packageList = packages
         .map((pkg) => {
-            const tags = Array.isArray(pkg.packageTags) && pkg.packageTags.length > 0
-                ? ` Tags: ${pkg.packageTags.join(', ')}.`
-                : '';
+            const price = getNumericPrice(pkg.packagePricePerPax);
+
+            const tags =
+                Array.isArray(pkg.packageTags) &&
+                    pkg.packageTags.length > 0
+                    ? ` Tags: ${pkg.packageTags.join(', ')}.`
+                    : '';
+
             const discount = pkg.packageDiscountPercent
                 ? ` Discount: ${pkg.packageDiscountPercent}%.`
                 : '';
-            const visa = pkg.visaRequired === true ? ' Visa required.' : ' Visa not required.';
-            const inclusions = Array.isArray(pkg.packageInclusions) && pkg.packageInclusions.length > 0
-                ? ` Inclusions: ${pkg.packageInclusions.slice(0, 6).join(', ')}${pkg.packageInclusions.length > 6 ? ', ...' : ''}.`
-                : '';
-            const exclusions = Array.isArray(pkg.packageExclusions) && pkg.packageExclusions.length > 0
-                ? ` Exclusions: ${pkg.packageExclusions.slice(0, 6).join(', ')}${pkg.packageExclusions.length > 6 ? ', ...' : ''}.`
-                : '';
-            return `- ${pkg.packageName} (${pkg.packageType}). ${pkg.packageDuration} day(s). Price per pax: ${pkg.packagePricePerPax}. Solo: ${pkg.packageSoloRate}. Child: ${pkg.packageChildRate}. Infant: ${pkg.packageInfantRate}.${discount}${visa}${tags}${inclusions}${exclusions}`;
+
+            const visa =
+                pkg.visaRequired === true
+                    ? ' Visa required.'
+                    : ' Visa not required.';
+
+            const inclusions =
+                Array.isArray(pkg.packageInclusions) &&
+                    pkg.packageInclusions.length > 0
+                    ? ` Inclusions: ${pkg.packageInclusions
+                        .slice(0, 6)
+                        .join(', ')}${pkg.packageInclusions.length > 6 ? ', ...' : ''
+                    }.`
+                    : '';
+
+            const exclusions =
+                Array.isArray(pkg.packageExclusions) &&
+                    pkg.packageExclusions.length > 0
+                    ? ` Exclusions: ${pkg.packageExclusions
+                        .slice(0, 6)
+                        .join(', ')}${pkg.packageExclusions.length > 6 ? ', ...' : ''
+                    }.`
+                    : '';
+
+            return `- ${pkg.packageName} (${pkg.packageType}). ${pkg.packageDuration
+                } day(s). Price per pax: ${price !== null
+                    ? `₱${price.toLocaleString('en-PH')}`
+                    : pkg.packagePricePerPax
+                }. Solo: ${pkg.packageSoloRate}. Child: ${pkg.packageChildRate
+                }. Infant: ${pkg.packageInfantRate
+                }.${discount}${visa}${tags}${inclusions}${exclusions}`;
         })
         .join('\n');
 
-    return { text, names: packages.map((pkg) => pkg.packageName).filter(Boolean) };
+    const text = priceComparisonContext
+        ? `${priceComparisonContext}\n\nAVAILABLE PACKAGE DATA:\n${packageList}`
+        : packageList;
+
+    return {
+        text,
+        names: packages.map((pkg) => pkg.packageName).filter(Boolean)
+    };
 };
 
 
@@ -211,7 +352,6 @@ const buildVisaServiceContext = async () => {
         visaAdditionalRequirements: 1
     })
         .sort({ createdAt: -1 })
-        .limit(5)
         .lean();
 
     if (!services.length) return { text: 'No visa services are currently available.', names: [] };

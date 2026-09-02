@@ -410,6 +410,28 @@ export default function BookingProcess() {
     const passportFileInputs = useRef([]);
     const photoFileInputs = useRef([]);
 
+    const previewUrlsRef = useRef(new Set());
+
+    const createPreviewUrl = (file) => {
+        const fileObj = file?.originFileObj || file;
+
+        if (!(fileObj instanceof Blob)) {
+            return null;
+        }
+
+        const url = URL.createObjectURL(fileObj);
+        previewUrlsRef.current.add(url);
+
+        return url;
+    };
+
+    const removePreviewUrl = (url) => {
+        if (!url) return;
+
+        URL.revokeObjectURL(url);
+        previewUrlsRef.current.delete(url);
+    };
+
 
     //state for current step and PDF generation
     const [currentStep, setCurrentStep] = useState(0);
@@ -774,58 +796,70 @@ export default function BookingProcess() {
         setFileLists(newFileLists);
 
         const file = info.file;
+
         const newPreviews = [...previews];
 
-        if (file.status === 'removed') {
+        // Remove old preview only when replacing/removing this specific file
+        if (newPreviews[index]) {
+            removePreviewUrl(newPreviews[index]);
+        }
+
+        if (file.status === 'removed' || !info.fileList?.length) {
             newPreviews[index] = null;
         } else {
-            if (file instanceof File || (file.originFileObj instanceof File)) {
-                const previewUrl = URL.createObjectURL(file.originFileObj || file);
-                newPreviews[index] = previewUrl;
-            }
+            newPreviews[index] = createPreviewUrl(file);
         }
+
         setPreviews(newPreviews);
     };
 
 
-    //handle 2x2 photo upload changes for travelers
+    // 2x2 Photo
     const handlePhotoChange = (info, index) => {
         const newFileLists = [...photoFileLists];
         newFileLists[index] = info.fileList;
         setPhotoFileLists(newFileLists);
 
         const file = info.file;
+
         const newPreviews = [...photoPreviews];
 
-        if (file.status === 'removed') {
+        if (newPreviews[index]) {
+            removePreviewUrl(newPreviews[index]);
+        }
+
+        if (file.status === 'removed' || !info.fileList?.length) {
             newPreviews[index] = null;
         } else {
-            if (file instanceof File || (file.originFileObj instanceof File)) {
-                const previewUrl = URL.createObjectURL(file.originFileObj || file);
-                newPreviews[index] = previewUrl;
-            }
+            newPreviews[index] = createPreviewUrl(file);
         }
+
         setPhotoPreviews(newPreviews);
     };
 
 
-    //handle visa upload changes for travelers
+    // Visa
     const handleVisaChange = (info, index) => {
-        const newFileLists = [...visaFileLists]
-        newFileLists[index] = info.fileList
-        setVisaFileLists(newFileLists)
+        const newFileLists = [...visaFileLists];
+        newFileLists[index] = info.fileList;
+        setVisaFileLists(newFileLists);
 
-        const file = info.file
-        setVisaPreviews((prev) => {
-            const next = [...prev]
-            if (file.status === 'removed') {
-                next[index] = null
-            } else if (file instanceof File || (file.originFileObj instanceof File)) {
-                next[index] = URL.createObjectURL(file.originFileObj || file)
-            }
-            return next
-        })
-    }
+        const file = info.file;
+
+        const newPreviews = [...visaPreviews];
+
+        if (newPreviews[index]) {
+            removePreviewUrl(newPreviews[index]);
+        }
+
+        if (file.status === 'removed' || !info.fileList?.length) {
+            newPreviews[index] = null;
+        } else {
+            newPreviews[index] = createPreviewUrl(file);
+        }
+
+        setVisaPreviews(newPreviews);
+    };
 
 
     //update traveler field in form and booking data context
@@ -866,11 +900,13 @@ export default function BookingProcess() {
     //cleanup object URLs for previews when component unmounts or previews change
     useEffect(() => {
         return () => {
-            [...previews, ...photoPreviews, ...visaPreviews].forEach(url => {
-                if (url) URL.revokeObjectURL(url);
+            previewUrlsRef.current.forEach((url) => {
+                URL.revokeObjectURL(url);
             });
+
+            previewUrlsRef.current.clear();
         };
-    }, [previews, photoPreviews, visaPreviews]);
+    }, []);
 
 
     //functions to increase or decrease traveler counts, ensuring they stay within allowed limits
@@ -1413,587 +1449,610 @@ export default function BookingProcess() {
                         </div>
                     </div>
 
+                    {currentStep === 0 && (
+                        <>
+                            {/* UPLOAD SECTION */}
+                            <div className="booking-section-header" style={{ marginTop: 40 }}>
+                                <h2 className="upload-passport-title booking-section-title">Upload {travelDocumentLabel}</h2>
+                                <p className="upload-passport-text booking-section-subtitle">
+                                    Please upload a clear image of your {travelDocumentShortLabel} for each traveler.
+                                </p>
+                            </div>
+                            <div className="upload-passport-wrapper">
+                                {Array.from({
+                                    length: uploadTravelerCount
+                                }).map((_, index) => (
+                                    <div key={index} className="upload-card">
 
-                    {/* UPLOAD SECTION */}
-                    <div className="booking-section-header" style={{ marginTop: 40 }}>
-                        <h2 className="upload-passport-title booking-section-title">Upload {travelDocumentLabel}</h2>
-                        <p className="upload-passport-text booking-section-subtitle">
-                            Please upload a clear image of your {travelDocumentShortLabel} for each traveler.
-                        </p>
-                    </div>
-                    <div className="upload-passport-wrapper">
-                        {Array.from({
-                            length: uploadTravelerCount
-                        }).map((_, index) => (
-                            <div key={index} className="upload-card">
-
-                                <div className='upload-passport-left'>
-                                    <h4>
-                                        Traveler {index + 1} - {travelerTypeLabels[index] || 'Traveler'}
-                                    </h4>
-                                    <p style={{ fontSize: 12, color: '#888' }}>
-                                        Upload {travelDocumentShortLabel} and 2x2 ID photo
-                                    </p>
-                                    <div className="upload-passport-traveler-fields">
-                                        <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '90px 1fr 1fr' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label className='upload-passport-label'>TITLE <span style={{ color: "#ff0000" }}>*</span></label>
-                                                <Select
-                                                    style={{ height: 40 }}
-                                                    size="small"
-                                                    placeholder="Title"
-                                                    value={getTravelerValue(index, 'title')}
-                                                    onChange={(value) => updateTravelerField(index, 'title', value)}
-                                                    options={[
-                                                        { value: 'MR', label: 'MR' },
-                                                        { value: 'MS', label: 'MS' },
-                                                    ]}
-                                                />
-                                            </div>
-
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label className='upload-passport-label'>FIRST NAME <span style={{ color: "#ff0000" }}>*</span></label>
-                                                <Input
-                                                    style={{ height: 40 }}
-                                                    maxLength={30}
-                                                    size="small"
-                                                    placeholder="First name"
-                                                    value={getTravelerValue(index, 'firstName') || ''}
-                                                    onChange={(event) => updateTravelerField(index, 'firstName', event.target.value)}
-                                                    onKeyDown={(e) => {
-                                                        const regex = /^[A-Za-zÑñ\s'-]$/;
-
-                                                        if (
-                                                            e.key.length === 1 &&
-                                                            !regex.test(e.key)
-                                                        ) {
-                                                            e.preventDefault();
-                                                        }
-                                                    }}
-                                                    onBlur={(event) => {
-                                                        const value = event.currentTarget.value.trim();
-
-                                                        if (value.length < 2) {
-                                                            notificationApi.error({
-                                                                title: 'First name must be at least 2 characters',
-                                                                placement: 'topRight'
-                                                            });
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label className='upload-passport-label'>LAST NAME <span style={{ color: "#ff0000" }}>*</span></label>
-                                                <Input
-                                                    style={{ height: 40 }}
-                                                    maxLength={30}
-                                                    size="small"
-                                                    placeholder="Last name"
-                                                    value={getTravelerValue(index, 'lastName') || ''}
-                                                    onChange={(event) => updateTravelerField(index, 'lastName', event.target.value)}
-                                                    onKeyDown={(e) => {
-                                                        const regex = /^[A-Za-zÑñ\s'-]$/;
-
-                                                        if (
-                                                            e.key.length === 1 &&
-                                                            !regex.test(e.key)
-                                                        ) {
-                                                            e.preventDefault();
-                                                        }
-                                                    }}
-                                                    onBlur={(event) => {
-                                                        const value = event.currentTarget.value.trim();
-
-                                                        if (value.length < 2) {
-                                                            notificationApi.error({
-                                                                title: 'Last name must be at least 2 characters',
-                                                                placement: 'topRight'
-                                                            });
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label className='upload-passport-label'>ROOM TYPE <span style={{ color: "#ff0000" }}>*</span></label>
-                                                {(() => {
-                                                    const travelerType = travelerTypeLabels[index] || 'Adult'
-                                                    const isMinorTraveler = isMinorTravelerType(travelerType)
-                                                    return (
+                                        <div className='upload-passport-left'>
+                                            <h4>
+                                                Traveler {index + 1} - {travelerTypeLabels[index] || 'Traveler'}
+                                            </h4>
+                                            <p style={{ fontSize: 12, color: '#888' }}>
+                                                Upload {travelDocumentShortLabel} and 2x2 ID photo
+                                            </p>
+                                            <div className="upload-passport-traveler-fields">
+                                                <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '90px 1fr 1fr' }}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                        <label className='upload-passport-label'>TITLE <span style={{ color: "#ff0000" }}>*</span></label>
                                                         <Select
                                                             style={{ height: 40 }}
                                                             size="small"
-                                                            placeholder="Room type"
-                                                            value={
-                                                                isMinorTraveler
-                                                                    ? 'N/A'
-                                                                    : getTravelerValue(index, 'roomType')
-                                                            }
-                                                            onChange={(value) => updateTravelerField(index, 'roomType', value)}
-                                                            options={isMinorTraveler ? [{ value: 'N/A', label: 'N/A' }] : roomOptions}
-                                                            disabled={bookingType === 'Solo Booking' || isMinorTraveler}
+                                                            placeholder="Title"
+                                                            value={getTravelerValue(index, 'title')}
+                                                            onChange={(value) => updateTravelerField(index, 'title', value)}
+                                                            options={[
+                                                                { value: 'MR', label: 'MR' },
+                                                                { value: 'MS', label: 'MS' },
+                                                            ]}
                                                         />
-                                                    )
-                                                })()}
+                                                    </div>
+
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                        <label className='upload-passport-label'>FIRST NAME <span style={{ color: "#ff0000" }}>*</span></label>
+                                                        <Input
+                                                            style={{ height: 40 }}
+                                                            maxLength={30}
+                                                            size="small"
+                                                            placeholder="First name"
+                                                            value={getTravelerValue(index, 'firstName') || ''}
+                                                            onChange={(event) => updateTravelerField(index, 'firstName', event.target.value)}
+                                                            onKeyDown={(e) => {
+                                                                const regex = /^[A-Za-zÑñ\s'-]$/;
+
+                                                                if (
+                                                                    e.key.length === 1 &&
+                                                                    !regex.test(e.key)
+                                                                ) {
+                                                                    e.preventDefault();
+                                                                }
+                                                            }}
+                                                            onBlur={(event) => {
+                                                                const value = event.currentTarget.value.trim();
+
+                                                                if (value.length < 2) {
+                                                                    notificationApi.error({
+                                                                        title: 'First name must be at least 2 characters',
+                                                                        placement: 'topRight'
+                                                                    });
+                                                                }
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                        <label className='upload-passport-label'>LAST NAME <span style={{ color: "#ff0000" }}>*</span></label>
+                                                        <Input
+                                                            style={{ height: 40 }}
+                                                            maxLength={30}
+                                                            size="small"
+                                                            placeholder="Last name"
+                                                            value={getTravelerValue(index, 'lastName') || ''}
+                                                            onChange={(event) => updateTravelerField(index, 'lastName', event.target.value)}
+                                                            onKeyDown={(e) => {
+                                                                const regex = /^[A-Za-zÑñ\s'-]$/;
+
+                                                                if (
+                                                                    e.key.length === 1 &&
+                                                                    !regex.test(e.key)
+                                                                ) {
+                                                                    e.preventDefault();
+                                                                }
+                                                            }}
+                                                            onBlur={(event) => {
+                                                                const value = event.currentTarget.value.trim();
+
+                                                                if (value.length < 2) {
+                                                                    notificationApi.error({
+                                                                        title: 'Last name must be at least 2 characters',
+                                                                        placement: 'topRight'
+                                                                    });
+                                                                }
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                        <label className='upload-passport-label'>ROOM TYPE <span style={{ color: "#ff0000" }}>*</span></label>
+                                                        {(() => {
+                                                            const travelerType = travelerTypeLabels[index] || 'Adult'
+                                                            const isMinorTraveler = isMinorTravelerType(travelerType)
+                                                            return (
+                                                                <Select
+                                                                    style={{ height: 40 }}
+                                                                    size="small"
+                                                                    placeholder="Room type"
+                                                                    value={
+                                                                        isMinorTraveler
+                                                                            ? 'N/A'
+                                                                            : getTravelerValue(index, 'roomType')
+                                                                    }
+                                                                    onChange={(value) => updateTravelerField(index, 'roomType', value)}
+                                                                    options={isMinorTraveler ? [{ value: 'N/A', label: 'N/A' }] : roomOptions}
+                                                                    disabled={bookingType === 'Solo Booking' || isMinorTraveler}
+                                                                />
+                                                            )
+                                                        })()}
+                                                    </div>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                        <label className='upload-passport-label'>BIRTHDATE <span style={{ color: "#ff0000" }}>*</span></label>
+                                                        <DatePicker
+                                                            inputReadOnly
+                                                            showToday={false}
+                                                            style={{ height: 40 }}
+                                                            size="small"
+                                                            placeholder="Birthdate"
+                                                            defaultPickerValue={
+                                                                travelerTypeLabels[index] === 'Child'
+                                                                    ? dayjs().subtract(5, 'year')
+                                                                    : travelerTypeLabels[index] === 'Infant'
+                                                                        ? dayjs().subtract(1, 'year')
+                                                                        : dayjs().subtract(25, 'year')
+                                                            }
+                                                            format="MMMM D, YYYY"
+                                                            value={getTravelerDateValue(index, 'birthday')}
+                                                            onChange={(date) => {
+                                                                const travelerType = travelerTypeLabels[index] || 'Adult'
+                                                                if (date && !isDateAllowedForTraveler(date, travelerType)) {
+                                                                    const ageBounds = getBirthdayBounds(travelerType)
+                                                                    const ageLabel = ageBounds.minAge === 0 && ageBounds.maxAge === 2
+                                                                        ? '0-2'
+                                                                        : ageBounds.minAge === 3 && ageBounds.maxAge === 11
+                                                                            ? '3-11'
+                                                                            : '12+'
+                                                                    notificationApi.error({ title: `Please select a ${ageLabel} year old birthdate for ${travelerType.toLowerCase()}.`, placement: 'topRight' })
+                                                                    return
+                                                                }
+
+                                                                const age = date ? computeAge(date) : ''
+                                                                const ageCategory = date ? getAgeCategoryFromAge(age) : ''
+                                                                const isMinorTraveler = isMinorTravelerType(travelerType)
+                                                                const roomType = isMinorTraveler
+                                                                    ? 'N/A'
+                                                                    : bookingType === 'Solo Booking'
+                                                                        ? 'SINGLE'
+                                                                        : getTravelerValue(index, 'roomType')
+                                                                updateTravelerField(index, 'birthday', date, { age, ageCategory, roomType })
+                                                            }}
+                                                            disabledDate={(current) => {
+                                                                const travelerType = travelerTypeLabels[index] || 'Adult'
+                                                                const baseDisabled = getBirthdayDisabledDate(travelerType)(current)
+
+                                                                // For Adults, disable dates after 2014 (to ensure 12+ years old)
+                                                                if (travelerType === 'Adult' && current && current.year() > 2014) {
+                                                                    return true
+                                                                }
+
+                                                                // For Adults, disable dates before 1935 (to prevent ages over 90)
+                                                                if (travelerType === 'Adult' && current && current.year() < 1935) {
+                                                                    return true
+                                                                }
+
+                                                                return baseDisabled
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                {!isDomesticPackage && (
+                                                    <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                            <label className='upload-passport-label'>PASSPORT NUMBER (Ex. P1234567A)</label>
+                                                            <Input
+                                                                style={{ height: 40, textAlign: 'center', fontSize: 16, letterSpacing: '2px' }}
+                                                                maxLength={9}
+                                                                size="small"
+                                                                placeholder="P1234567A"
+                                                                value={String(
+                                                                    getTravelerValue(index, 'passportNo') || ''
+                                                                ).slice(0, 9)}
+                                                                onChange={(event) => {
+                                                                    const raw = String(event.target.value || '');
+                                                                    const cleaned = raw.replace(/^p/i, '');
+                                                                    const digits = (cleaned.match(/\d/g) || []).join('').slice(0, 7);
+                                                                    const lastChar = cleaned.replace(/\d/g, '').slice(-1);
+                                                                    const letter = /^[a-zA-Z]$/.test(lastChar) ? lastChar.toUpperCase() : '';
+                                                                    const passport = 'P' + digits + letter;
+                                                                    updateTravelerField(index, 'passportNo', passport);
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                            <label className='upload-passport-label'>PASSPORT EXPIRY</label>
+                                                            <DatePicker
+                                                                showToday={false}
+                                                                style={{ height: 40 }}
+                                                                size="small"
+                                                                placeholder="Passport expiry"
+                                                                format="MMMM D, YYYY"
+                                                                value={getTravelerDateValue(index, 'passportExpiry')}
+                                                                onChange={(date) => updateTravelerField(index, 'passportExpiry', date)}
+                                                                disabledDate={(current) => {
+                                                                    if (!current) return false
+                                                                    return current.isBefore(dayjs().endOf('year').add(1, 'day'), 'day')
+                                                                }}
+                                                                defaultPickerValue={dayjs().add(1, 'year')}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label className='upload-passport-label'>BIRTHDATE <span style={{ color: "#ff0000" }}>*</span></label>
-                                                <DatePicker
-                                                    inputReadOnly
-                                                    showToday={false}
-                                                    style={{ height: 40 }}
-                                                    size="small"
-                                                    placeholder="Birthdate"
-                                                    defaultPickerValue={
-                                                        travelerTypeLabels[index] === 'Child'
-                                                            ? dayjs().subtract(5, 'year')
-                                                            : travelerTypeLabels[index] === 'Infant'
-                                                                ? dayjs().subtract(1, 'year')
-                                                                : dayjs().subtract(25, 'year')
-                                                    }
-                                                    format="MMMM D, YYYY"
-                                                    value={getTravelerDateValue(index, 'birthday')}
-                                                    onChange={(date) => {
-                                                        const travelerType = travelerTypeLabels[index] || 'Adult'
-                                                        if (date && !isDateAllowedForTraveler(date, travelerType)) {
-                                                            const ageBounds = getBirthdayBounds(travelerType)
-                                                            const ageLabel = ageBounds.minAge === 0 && ageBounds.maxAge === 2
-                                                                ? '0-2'
-                                                                : ageBounds.minAge === 3 && ageBounds.maxAge === 11
-                                                                    ? '3-11'
-                                                                    : '12+'
-                                                            notificationApi.error({ title: `Please select a ${ageLabel} year old birthdate for ${travelerType.toLowerCase()}.`, placement: 'topRight' })
-                                                            return
+                                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+
+                                                {/* PASSPORT UPLOAD - Hidden if file exists */}
+                                                {(!fileLists[index] || fileLists[index].length === 0) && (
+                                                    <Upload
+                                                        fileList={fileLists[index]}
+                                                        beforeUpload={validateFile}
+                                                        onChange={(info) => handleChange(info, index)}
+                                                        accept="image/jpeg,image/png,.pdf"
+                                                        maxCount={1}
+                                                        showUploadList={false} // Hidden because you have a custom preview
+                                                    >
+                                                        <Button className='upload-passport-button' type='primary'>Upload {travelDocumentLabel}</Button>
+                                                    </Upload>
+                                                )}
+
+                                                {/* 2X2 PHOTO UPLOAD - Hidden if file exists */}
+                                                {(!photoFileLists[index] || photoFileLists[index].length === 0) && (
+                                                    <Upload
+                                                        fileList={photoFileLists[index]}
+                                                        beforeUpload={validateFile}
+                                                        onChange={(info) => handlePhotoChange(info, index)}
+                                                        accept="image/jpeg,image/png,.pdf"
+                                                        maxCount={1}
+                                                        showUploadList={false}
+                                                    >
+                                                        <Button className='upload-passport-button' type='primary'>Upload 2x2 Photo</Button>
+                                                    </Upload>
+                                                )}
+
+                                                {fileLists[index]?.length > 0 && (
+                                                    <Button
+                                                        type='primary'
+                                                        className='upload-passport-remove-button'
+                                                        size="small"
+                                                        onClick={() => passportFileInputs.current[index]?.click()}
+                                                    >
+                                                        {isDomesticPackage ? 'Change Valid ID' : 'Change Passport'}
+                                                    </Button>
+                                                )}
+
+                                                {photoFileLists[index]?.length > 0 && (
+                                                    <Button
+                                                        type='primary'
+                                                        className='upload-passport-remove-button'
+                                                        size="small"
+                                                        onClick={() => photoFileInputs.current[index]?.click()}
+                                                        style={{ marginLeft: fileLists[index]?.length > 0 ? 8 : 0 }}
+                                                    >
+                                                        Change 2x2 Photo
+                                                    </Button>
+                                                )}
+
+                                                <input
+                                                    type="file"
+                                                    accept="image/jpeg,image/png,.pdf"
+                                                    style={{ display: 'none' }}
+                                                    ref={(el) => (passportFileInputs.current[index] = el)}
+                                                    onChange={(e) => {
+                                                        const f = e.target.files && e.target.files[0];
+                                                        if (!f) return;
+
+                                                        if (validateFile(f) === Upload.LIST_IGNORE) {
+                                                            e.target.value = '';
+                                                            return;
                                                         }
 
-                                                        const age = date ? computeAge(date) : ''
-                                                        const ageCategory = date ? getAgeCategoryFromAge(age) : ''
-                                                        const isMinorTraveler = isMinorTravelerType(travelerType)
-                                                        const roomType = isMinorTraveler
-                                                            ? 'N/A'
-                                                            : bookingType === 'Solo Booking'
-                                                                ? 'SINGLE'
-                                                                : getTravelerValue(index, 'roomType')
-                                                        updateTravelerField(index, 'birthday', date, { age, ageCategory, roomType })
+                                                        handleChange({
+                                                            file: f,
+                                                            fileList: [{
+                                                                uid: `${Date.now()}-${f.name}`,
+                                                                name: f.name,
+                                                                type: f.type,
+                                                                size: f.size,
+                                                                status: 'done',
+                                                                originFileObj: f,
+                                                            }]
+                                                        }, index);
+
+                                                        e.target.value = '';
                                                     }}
-                                                    disabledDate={(current) => {
-                                                        const travelerType = travelerTypeLabels[index] || 'Adult'
-                                                        const baseDisabled = getBirthdayDisabledDate(travelerType)(current)
+                                                />
 
-                                                        // For Adults, disable dates after 2014 (to ensure 12+ years old)
-                                                        if (travelerType === 'Adult' && current && current.year() > 2014) {
-                                                            return true
+                                                <input
+                                                    type="file"
+                                                    accept="image/jpeg,image/png,.pdf"
+                                                    style={{ display: 'none' }}
+                                                    ref={(el) => (photoFileInputs.current[index] = el)}
+                                                    onChange={(e) => {
+                                                        const f = e.target.files && e.target.files[0];
+                                                        if (!f) return;
+
+                                                        if (validateFile(f) === Upload.LIST_IGNORE) {
+                                                            e.target.value = '';
+                                                            return;
                                                         }
 
-                                                        // For Adults, disable dates before 1935 (to prevent ages over 90)
-                                                        if (travelerType === 'Adult' && current && current.year() < 1935) {
-                                                            return true
-                                                        }
+                                                        handlePhotoChange({
+                                                            file: f,
+                                                            fileList: [{
+                                                                uid: `${Date.now()}-${f.name}`,
+                                                                name: f.name,
+                                                                type: f.type,
+                                                                size: f.size,
+                                                                status: 'done',
+                                                                originFileObj: f,
+                                                            }]
+                                                        }, index);
 
-                                                        return baseDisabled
+                                                        e.target.value = '';
                                                     }}
                                                 />
                                             </div>
-                                        </div>
-                                        {!isDomesticPackage && (
-                                            <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                    <label className='upload-passport-label'>PASSPORT NUMBER (Ex. P1234567A)</label>
-                                                    <Input
-                                                        style={{ height: 40, textAlign: 'center', fontSize: 16, letterSpacing: '2px' }}
-                                                        maxLength={9}
-                                                        size="small"
-                                                        placeholder="P1234567A"
-                                                        value={String(
-                                                            getTravelerValue(index, 'passportNo') || ''
-                                                        ).slice(0, 9)}
-                                                        onChange={(event) => {
-                                                            const raw = String(event.target.value || '');
-                                                            const cleaned = raw.replace(/^p/i, '');
-                                                            const digits = (cleaned.match(/\d/g) || []).join('').slice(0, 7);
-                                                            const lastChar = cleaned.replace(/\d/g, '').slice(-1);
-                                                            const letter = /^[a-zA-Z]$/.test(lastChar) ? lastChar.toUpperCase() : '';
-                                                            const passport = 'P' + digits + letter;
-                                                            updateTravelerField(index, 'passportNo', passport);
-                                                        }}
-                                                    />
-                                                </div>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                    <label className='upload-passport-label'>PASSPORT EXPIRY</label>
-                                                    <DatePicker
-                                                        showToday={false}
-                                                        style={{ height: 40 }}
-                                                        size="small"
-                                                        placeholder="Passport expiry"
-                                                        format="MMMM D, YYYY"
-                                                        value={getTravelerDateValue(index, 'passportExpiry')}
-                                                        onChange={(date) => updateTravelerField(index, 'passportExpiry', date)}
-                                                        disabledDate={(current) => {
-                                                            if (!current) return false
-                                                            return current.isBefore(dayjs().endOf('year').add(1, 'day'), 'day')
-                                                        }}
-                                                        defaultPickerValue={dayjs().add(1, 'year')}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-
-                                        {/* PASSPORT UPLOAD - Hidden if file exists */}
-                                        {(!fileLists[index] || fileLists[index].length === 0) && (
-                                            <Upload
-                                                fileList={fileLists[index]}
-                                                beforeUpload={validateFile}
-                                                onChange={(info) => handleChange(info, index)}
-                                                accept="image/jpeg,image/png,.pdf"
-                                                maxCount={1}
-                                                showUploadList={false} // Hidden because you have a custom preview
-                                            >
-                                                <Button className='upload-passport-button' type='primary'>Upload {travelDocumentLabel}</Button>
-                                            </Upload>
-                                        )}
-
-                                        {/* 2X2 PHOTO UPLOAD - Hidden if file exists */}
-                                        {(!photoFileLists[index] || photoFileLists[index].length === 0) && (
-                                            <Upload
-                                                fileList={photoFileLists[index]}
-                                                beforeUpload={validateFile}
-                                                onChange={(info) => handlePhotoChange(info, index)}
-                                                accept="image/jpeg,image/png,.pdf"
-                                                maxCount={1}
-                                                showUploadList={false}
-                                            >
-                                                <Button className='upload-passport-button' type='primary'>Upload 2x2 Photo</Button>
-                                            </Upload>
-                                        )}
-
-                                        {fileLists[index]?.length > 0 && (
-                                            <Button
-                                                type='primary'
-                                                className='upload-passport-remove-button'
-                                                size="small"
-                                                onClick={() => passportFileInputs.current[index]?.click()}
-                                            >
-                                                {isDomesticPackage ? 'Change Valid ID' : 'Change Passport'}
-                                            </Button>
-                                        )}
-
-                                        {photoFileLists[index]?.length > 0 && (
-                                            <Button
-                                                type='primary'
-                                                className='upload-passport-remove-button'
-                                                size="small"
-                                                onClick={() => photoFileInputs.current[index]?.click()}
-                                                style={{ marginLeft: fileLists[index]?.length > 0 ? 8 : 0 }}
-                                            >
-                                                Change 2x2 Photo
-                                            </Button>
-                                        )}
-
-                                        <input
-                                            type="file"
-                                            accept="image/jpeg,image/png,.pdf"
-                                            style={{ display: 'none' }}
-                                            ref={(el) => (passportFileInputs.current[index] = el)}
-                                            onChange={(e) => {
-                                                const f = e.target.files && e.target.files[0];
-                                                if (!f) return;
-
-                                                if (validateFile(f) === Upload.LIST_IGNORE) {
-                                                    e.target.value = '';
-                                                    return;
-                                                }
-
-                                                handleChange({
-                                                    file: f,
-                                                    fileList: [{
-                                                        uid: `${Date.now()}-${f.name}`,
-                                                        name: f.name,
-                                                        type: f.type,
-                                                        size: f.size,
-                                                        status: 'done',
-                                                        originFileObj: f,
-                                                    }]
-                                                }, index);
-
-                                                e.target.value = '';
-                                            }}
-                                        />
-
-                                        <input
-                                            type="file"
-                                            accept="image/jpeg,image/png,.pdf"
-                                            style={{ display: 'none' }}
-                                            ref={(el) => (photoFileInputs.current[index] = el)}
-                                            onChange={(e) => {
-                                                const f = e.target.files && e.target.files[0];
-                                                if (!f) return;
-
-                                                if (validateFile(f) === Upload.LIST_IGNORE) {
-                                                    e.target.value = '';
-                                                    return;
-                                                }
-
-                                                handlePhotoChange({
-                                                    file: f,
-                                                    fileList: [{
-                                                        uid: `${Date.now()}-${f.name}`,
-                                                        name: f.name,
-                                                        type: f.type,
-                                                        size: f.size,
-                                                        status: 'done',
-                                                        originFileObj: f,
-                                                    }]
-                                                }, index);
-
-                                                e.target.value = '';
-                                            }}
-                                        />
-                                    </div>
-                                    {requiresVisa && !isDomesticPackage && (
-                                        <div className="visa-question-card">
-                                            <p className="visa-question-title">
-                                                Do you have a visa for this tour package?
-                                            </p>
-                                            <div className="visa-question-actions">
-                                                <Button
-                                                    type={visaSelections[index] === 'yes' ? 'primary' : 'default'}
-                                                    size="small"
-                                                    onClick={() =>
-                                                        setVisaSelections((prev) => {
-                                                            const next = [...prev]
-                                                            next[index] = 'yes'
-                                                            return next
-                                                        })
-                                                    }
-                                                >
-                                                    Yes
-                                                </Button>
-                                                <Button
-                                                    type={visaSelections[index] === 'no' ? 'primary' : 'default'}
-                                                    size="small"
-                                                    onClick={() =>
-                                                        setVisaSelections((prev) => {
-                                                            const next = [...prev]
-                                                            next[index] = 'no'
-                                                            return next
-                                                        })
-                                                    }
-                                                >
-                                                    No
-                                                </Button>
-                                            </div>
-                                            {visaSelections[index] === 'yes' && (
-                                                <div className="visa-upload-row">
-                                                    {(!visaFileLists[index] || visaFileLists[index].length === 0) && (
-                                                        <Upload
-                                                            fileList={visaFileLists[index]}
-                                                            beforeUpload={validateFile}
-                                                            onChange={(info) => handleVisaChange(info, index)}
-                                                            accept="image/jpeg,image/png,.pdf"
-                                                            maxCount={1}
-                                                            showUploadList={false}
-                                                        >
-                                                            <Button className='upload-passport-button' type='primary'>
-                                                                Upload Visa
-                                                            </Button>
-                                                        </Upload>
-                                                    )}
-                                                    {visaFileLists[index]?.length > 0 && (
+                                            {requiresVisa && !isDomesticPackage && (
+                                                <div className="visa-question-card">
+                                                    <p className="visa-question-title">
+                                                        Do you have a visa for this tour package?
+                                                    </p>
+                                                    <div className="visa-question-actions">
                                                         <Button
-                                                            type='primary'
-                                                            className='upload-passport-remove-button'
+                                                            type={visaSelections[index] === 'yes' ? 'primary' : 'default'}
+                                                            size="small"
+                                                            onClick={() =>
+                                                                setVisaSelections((prev) => {
+                                                                    const next = [...prev]
+                                                                    next[index] = 'yes'
+                                                                    return next
+                                                                })
+                                                            }
+                                                        >
+                                                            Yes
+                                                        </Button>
+                                                        <Button
+                                                            type={visaSelections[index] === 'no' ? 'primary' : 'default'}
                                                             size="small"
                                                             onClick={() => {
-                                                                setVisaFileLists((prev) => {
-                                                                    const next = [...prev]
-                                                                    next[index] = []
-                                                                    return next
-                                                                })
+                                                                // Set visa selection to NO
+                                                                setVisaSelections((prev) => {
+                                                                    const next = [...prev];
+                                                                    next[index] = 'no';
+                                                                    return next;
+                                                                });
+
+                                                                // Remove existing preview URL
                                                                 setVisaPreviews((prev) => {
-                                                                    const next = [...prev]
-                                                                    next[index] = null
-                                                                    return next
-                                                                })
+                                                                    const next = [...prev];
+
+                                                                    if (next[index]) {
+                                                                        removePreviewUrl(next[index]);
+                                                                    }
+
+                                                                    next[index] = null;
+                                                                    return next;
+                                                                });
+
+                                                                // Remove uploaded visa file
+                                                                setVisaFileLists((prev) => {
+                                                                    const next = [...prev];
+                                                                    next[index] = [];
+                                                                    return next;
+                                                                });
                                                             }}
                                                         >
-                                                            Change Visa
+                                                            No
                                                         </Button>
+                                                    </div>
+                                                    {visaSelections[index] === 'yes' && (
+                                                        <div className="visa-upload-row">
+                                                            {(!visaFileLists[index] || visaFileLists[index].length === 0) && (
+                                                                <Upload
+                                                                    fileList={visaFileLists[index]}
+                                                                    beforeUpload={validateFile}
+                                                                    onChange={(info) => handleVisaChange(info, index)}
+                                                                    accept="image/jpeg,image/png,.pdf"
+                                                                    maxCount={1}
+                                                                    showUploadList={false}
+                                                                >
+                                                                    <Button className='upload-passport-button' type='primary'>
+                                                                        Upload Visa
+                                                                    </Button>
+                                                                </Upload>
+                                                            )}
+                                                            {visaFileLists[index]?.length > 0 && (
+                                                                <Button
+                                                                    type='primary'
+                                                                    className='upload-passport-remove-button'
+                                                                    size="small"
+                                                                    onClick={() => {
+                                                                        setVisaFileLists((prev) => {
+                                                                            const next = [...prev]
+                                                                            next[index] = []
+                                                                            return next
+                                                                        })
+                                                                        setVisaPreviews((prev) => {
+                                                                            const next = [...prev]
+                                                                            next[index] = null
+                                                                            return next
+                                                                        })
+                                                                    }}
+                                                                >
+                                                                    Change Visa
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    {visaSelections[index] === 'yes' && (
+                                                        <div className="visa-preview-wrapper">
+                                                            {visaPreviews[index] && visaFileLists[index]?.[0]?.type === 'application/pdf' ? (
+                                                                <div className="visa-preview">
+                                                                    <a
+                                                                        href={visaPreviews[index]}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                    >
+                                                                        View PDF
+                                                                    </a>
+                                                                </div>
+                                                            ) : visaPreviews[index] ? (
+                                                                <div className="visa-preview">
+                                                                    <img
+                                                                        src={visaPreviews[index]}
+                                                                        alt={`Visa Preview ${index + 1}`}
+                                                                        className="visa-preview-image"
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="visa-preview image-placeholder" aria-hidden="true">
+                                                                    <span>visa image</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    {visaSelections[index] === 'no' && (
+                                                        <p className="visa-question-warning">
+                                                            This travel package requires a visa, we highly recommend for you to get one first before booking to avoid travel issues.
+                                                        </p>
                                                     )}
                                                 </div>
-                                            )}
-                                            {visaSelections[index] === 'yes' && (
-                                                <div className="visa-preview-wrapper">
-                                                    {visaPreviews[index] && visaFileLists[index]?.[0]?.type === 'application/pdf' ? (
-                                                        <div className="visa-preview">
-                                                            <a
-                                                                href={visaPreviews[index]}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                            >
-                                                                View PDF
-                                                            </a>
-                                                        </div>
-                                                    ) : visaPreviews[index] ? (
-                                                        <div className="visa-preview">
-                                                            <img
-                                                                src={visaPreviews[index]}
-                                                                alt={`Visa Preview ${index + 1}`}
-                                                                className="visa-preview-image"
-                                                            />
-                                                        </div>
-                                                    ) : (
-                                                        <div className="visa-preview image-placeholder" aria-hidden="true">
-                                                            <span>visa image</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                            {visaSelections[index] === 'no' && (
-                                                <p className="visa-question-warning">
-                                                    This travel package requires a visa, we highly recommend for you to get one first before booking to avoid travel issues.
-                                                </p>
                                             )}
                                         </div>
-                                    )}
+
+                                        <div className="upload-passport-right">
+                                            {previews[index] && fileLists[index]?.[0]?.type === 'application/pdf' ? (
+                                                <div
+                                                    className={`passport-preview passport-preview-pdf ${isDomesticPackage ? 'passport-preview-domestic' : ''
+                                                        }`}
+                                                >
+                                                    <a
+                                                        href={previews[index]}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="passport-preview-pdf-link"
+                                                    >
+                                                        View PDF
+                                                    </a>
+                                                </div>
+                                            ) : previews[index] ? (
+                                                <div
+                                                    className={`passport-preview ${isDomesticPackage ? 'passport-preview-domestic' : ''
+                                                        }`}
+                                                >
+                                                    <img
+                                                        src={previews[index]}
+                                                        alt={`Passport Preview ${index + 1}`}
+                                                        className="passport-preview-image"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    className={`passport-preview image-placeholder ${isDomesticPackage ? 'passport-preview-domestic' : ''
+                                                        }`}
+                                                    aria-hidden="true"
+                                                >
+                                                    <span>{travelDocumentLabel} preview</span>
+                                                </div>
+                                            )}
+
+                                            {photoPreviews[index] && photoFileLists[index]?.[0]?.type === 'application/pdf' ? (
+                                                <div
+                                                    className="photo-preview"
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        backgroundColor: '#f0f0f0',
+                                                        borderRadius: '4px',
+                                                    }}
+                                                >
+                                                    <a
+                                                        href={photoPreviews[index]}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{
+                                                            padding: '10px 20px',
+                                                            backgroundColor: '#305797',
+                                                            color: 'white',
+                                                            borderRadius: '4px',
+                                                            textDecoration: 'none',
+                                                            cursor: 'pointer',
+                                                            fontWeight: '500',
+                                                        }}
+                                                    >
+                                                        View PDF
+                                                    </a>
+                                                </div>
+                                            ) : photoPreviews[index] ? (
+                                                <div className="photo-preview">
+                                                    <img
+                                                        src={photoPreviews[index]}
+                                                        alt={`2x2 Preview ${index + 1}`}
+                                                        className="photo-preview-image"
+                                                    />
+                                                </div>
+                                            ) : null}
+                                            {!photoPreviews[index] && (
+                                                <div className="photo-preview image-placeholder" aria-hidden="true">
+                                                    <span>2x2 photo</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className='upload-passport-notes'>
+
+                                <div>
+                                    <strong >Note for Room Type:</strong>
+                                    <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
+                                        <li>TWIN and DOUBLE rooms require two travelers to be listed</li>
+                                        <li>TRIPLE rooms require three travelers to be listed</li>
+                                        <li>If the rooms are not properly set, the employee will be the one assigning the rooms</li>
+                                        <li>In the Passenger List below, those travelers who are assign in "TWIN 1", "TWIN 2" and so on are considered "Roommates"</li>
+                                        <li>Child and Infant do not have a assigned room type or bed, if you want your child to have a bed, please add number for "Adult" rather than "Child"</li>
+                                    </ul>
                                 </div>
 
-                                <div className="upload-passport-right">
-                                    {previews[index] && fileLists[index]?.[0]?.type === 'application/pdf' ? (
-                                        <div
-                                            className={`passport-preview passport-preview-pdf ${isDomesticPackage ? 'passport-preview-domestic' : ''
-                                                }`}
-                                        >
-                                            <a
-                                                href={previews[index]}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="passport-preview-pdf-link"
-                                            >
-                                                View PDF
-                                            </a>
-                                        </div>
-                                    ) : previews[index] ? (
-                                        <div
-                                            className={`passport-preview ${isDomesticPackage ? 'passport-preview-domestic' : ''
-                                                }`}
-                                        >
-                                            <img
-                                                src={previews[index]}
-                                                alt={`Passport Preview ${index + 1}`}
-                                                className="passport-preview-image"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div
-                                            className={`passport-preview image-placeholder ${isDomesticPackage ? 'passport-preview-domestic' : ''
-                                                }`}
-                                            aria-hidden="true"
-                                        >
-                                            <span>{travelDocumentLabel} preview</span>
-                                        </div>
-                                    )}
+                                <div style={{ marginTop: 15 }}>
+                                    <strong>Note for Valid ID/Passport:</strong>
+                                    <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
 
-                                    {photoPreviews[index] && photoFileLists[index]?.[0]?.type === 'application/pdf' ? (
-                                        <div
-                                            className="photo-preview"
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                backgroundColor: '#f0f0f0',
-                                                borderRadius: '4px',
-                                            }}
-                                        >
-                                            <a
-                                                href={photoPreviews[index]}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                style={{
-                                                    padding: '10px 20px',
-                                                    backgroundColor: '#305797',
-                                                    color: 'white',
-                                                    borderRadius: '4px',
-                                                    textDecoration: 'none',
-                                                    cursor: 'pointer',
-                                                    fontWeight: '500',
-                                                }}
-                                            >
-                                                View PDF
-                                            </a>
-                                        </div>
-                                    ) : photoPreviews[index] ? (
-                                        <div className="photo-preview">
-                                            <img
-                                                src={photoPreviews[index]}
-                                                alt={`2x2 Preview ${index + 1}`}
-                                                className="photo-preview-image"
-                                            />
-                                        </div>
-                                    ) : null}
-                                    {!photoPreviews[index] && (
-                                        <div className="photo-preview image-placeholder" aria-hidden="true">
-                                            <span>2x2 photo</span>
-                                        </div>
-                                    )}
+                                        {isDomesticPackage ? (
+                                            <li>Upload a clear image of the valid ID</li>
+                                        ) : (
+                                            <li>Upload a clear image of the passport bio page</li>
+                                        )}
+                                        <li>Accepted formats: JPG, PNG, PDF</li>
+                                        <li>Maximum file size: 5MB</li>
+                                        <li>Blurry or cropped images may delay booking confirmation</li>
+                                    </ul>
+                                </div>
+
+                                <div style={{ marginTop: 15 }}>
+                                    <strong >Note for 2x2 ID Photos:</strong>
+                                    <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
+                                        <li>Upload a clear image of the 2x2 ID photo</li>
+                                        <li>The photo must have a white plain background</li>
+                                        <li>Face should be clearly visible and not covered by any accessories (e.g., glasses, hat)</li>
+                                        <li>No Fullnames or any names printed in the photo</li>
+                                        <li>Accepted formats: JPG, PNG, PDF</li>
+                                        <li>Maximum file size: 5MB</li>
+                                        <li>Blurry or cropped images may delay booking confirmation</li>
+                                    </ul>
                                 </div>
 
                             </div>
-                        ))}
-                    </div>
+                        </>
 
-                    <div className='upload-passport-notes'>
-
-                        <div>
-                            <strong >Note for Room Type:</strong>
-                            <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
-                                <li>TWIN and DOUBLE rooms require two travelers to be listed</li>
-                                <li>TRIPLE rooms require three travelers to be listed</li>
-                                <li>If the rooms are not properly set, the employee will be the one assigning the rooms</li>
-                                <li>In the Passenger List below, those travelers who are assign in "TWIN 1", "TWIN 2" and so on are considered "Roommates"</li>
-                                <li>Child and Infant do not have a assigned room type or bed, if you want your child to have a bed, please add number for "Adult" rather than "Child"</li>
-                            </ul>
-                        </div>
-
-                        <div style={{ marginTop: 15 }}>
-                            <strong>Note for Valid ID/Passport:</strong>
-                            <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
-
-                                {isDomesticPackage ? (
-                                    <li>Upload a clear image of the valid ID</li>
-                                ) : (
-                                    <li>Upload a clear image of the passport bio page</li>
-                                )}
-                                <li>Accepted formats: JPG, PNG, PDF</li>
-                                <li>Maximum file size: 5MB</li>
-                                <li>Blurry or cropped images may delay booking confirmation</li>
-                            </ul>
-                        </div>
-
-                        <div style={{ marginTop: 15 }}>
-                            <strong >Note for 2x2 ID Photos:</strong>
-                            <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
-                                <li>Upload a clear image of the 2x2 ID photo</li>
-                                <li>The photo must have a white plain background</li>
-                                <li>Face should be clearly visible and not covered by any accessories (e.g., glasses, hat)</li>
-                                <li>No Fullnames or any names printed in the photo</li>
-                                <li>Accepted formats: JPG, PNG, PDF</li>
-                                <li>Maximum file size: 5MB</li>
-                                <li>Blurry or cropped images may delay booking confirmation</li>
-                            </ul>
-                        </div>
-
-                    </div>
-
+                    )}
 
 
                     <div className="booking-form-stepper-container" style={{ marginTop: 40 }}>
                         <div className="booking-section-header" style={{ marginBottom: 30 }}>
                             <h2 className="upload-passport-title booking-section-title" style={{ textAlign: "left" }}>Booking Registration</h2>
                             <p className="upload-passport-text booking-section-subtitle" style={{ textAlign: "left" }}>
-                                Please upload a clear image of your {travelDocumentShortLabel} for each traveler.
+                                Kindly check carefully the details in the booking registration form
                             </p>
                         </div>
 
