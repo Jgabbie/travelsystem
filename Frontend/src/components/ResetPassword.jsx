@@ -194,7 +194,7 @@ export default function ResetPassword() {
             if (!/\d/.test(value)) return ["Password must have at least one number."]
             if (!/[a-z]/.test(value)) return ["Password must have at least one lowercase character."]
             if (!/[A-Z]/.test(value)) return ["Password must have at least one uppercase character."]
-            if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return ["Password must contain a special character."]
+            if (!/[^\w\s]|_/.test(value)) return ["Password must contain a special character."]
             return []
         }
 
