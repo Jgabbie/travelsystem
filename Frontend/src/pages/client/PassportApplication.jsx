@@ -927,7 +927,7 @@ export default function PassportApplication() {
                                                 {dayjs(application.createdAt).format('MMM D, YYYY')}
                                             </Descriptions.Item>
                                             <Descriptions.Item label="Applicant Name" labelStyle={{ color: '#305797', fontWeight: 700 }}>
-                                                {application.username}
+                                                {application?.userId?.firstname} {application?.userId?.lastname}
                                             </Descriptions.Item>
                                             <Descriptions.Item label="DFA Location" labelStyle={{ color: '#305797', fontWeight: 700 }}>
                                                 {application.dfaLocation || 'N/A'}
