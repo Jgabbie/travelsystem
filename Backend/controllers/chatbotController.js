@@ -163,9 +163,17 @@ const buildPackageContext = async (message) => {
         packagePricePerPax: 1,
         packageDuration: 1,
         packageType: 1,
-        packageTags: 1
+        packageTags: 1,
+        packageDiscountPercent: 1,
+        visaRequired: 1,
+        packageInclusions: 1,
+        packageExclusions: 1,
+        packageSoloRate: 1,
+        packageChildRate: 1,
+        packageInfantRate: 1,
+        createdAt: 1
     })
-        .sort({ packageName: 1 })
+        .sort({ createdAt: -1 })
         .limit(5)
         .lean();
 
@@ -202,7 +210,7 @@ const buildVisaServiceContext = async () => {
         visaRequirements: 1,
         visaAdditionalRequirements: 1
     })
-        .sort({ visaName: 1 })
+        .sort({ createdAt: -1 })
         .limit(5)
         .lean();
 
