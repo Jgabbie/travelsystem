@@ -565,6 +565,36 @@ export default function BookingProcess() {
             await form.validateFields();
 
             if (currentStep === 0) {
+
+                const missingVisaSelection = requiresVisa && !isDomesticPackage &&
+                    visaSelections.slice(0, uploadTravelerCount).some(
+                        selection => selection !== 'yes' && selection !== 'no'
+                    );
+
+                if (missingVisaSelection) {
+                    notificationApi.error({
+                        title: 'Please select Yes or No for "Do you have a visa?" for all travelers.',
+                        placement: 'topRight'
+                    });
+                    return;
+                }
+
+                const missingVisaUpload = requiresVisa && !isDomesticPackage &&
+                    visaSelections.slice(0, uploadTravelerCount).some(
+                        (selection, index) =>
+                            selection === 'yes' &&
+                            (!visaFileLists[index] || visaFileLists[index].length === 0)
+                    );
+
+                if (missingVisaUpload) {
+                    notificationApi.error({
+                        title: 'Please upload a visa for every traveler who selected Yes.',
+                        placement: 'topRight'
+                    });
+                    return;
+                }
+
+
                 const missingUploads = fileLists.some(list => !list || list.length === 0);
                 const missingPhotos = photoFileLists.some(list => !list || list.length === 0);
 

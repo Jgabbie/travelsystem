@@ -710,6 +710,36 @@ export default function QuotationBookingProcess() {
             await form.validateFields();
 
             if (currentStep === 0) {
+
+                const missingVisaSelection = visaRequired && !isDomesticPackage &&
+                    visaSelections.slice(0, uploadTravelerCount).some(
+                        selection => selection !== 'yes' && selection !== 'no'
+                    );
+
+                if (missingVisaSelection) {
+                    notificationApi.error({
+                        title: 'Please select Yes or No for "Do you have a visa?" for all travelers.',
+                        placement: 'topRight'
+                    });
+                    return;
+                }
+
+                // If traveler selects YES, visa upload is required
+                const missingVisaUpload = visaRequired && !isDomesticPackage &&
+                    visaSelections.slice(0, uploadTravelerCount).some(
+                        (selection, index) =>
+                            selection === 'yes' &&
+                            (!visaFileLists[index] || visaFileLists[index].length === 0)
+                    );
+
+                if (missingVisaUpload) {
+                    notificationApi.error({
+                        title: 'Please upload a visa for every traveler who selected Yes.',
+                        placement: 'topRight'
+                    });
+                    return;
+                }
+
                 const missingUploads = fileLists.some(list => !list || list.length === 0);
                 const missingPhotos = photoFileLists.some(list => !list || list.length === 0);
 
@@ -785,7 +815,12 @@ export default function QuotationBookingProcess() {
                 );
 
                 visaFilesFormatted = await Promise.all(
-                    visaFileLists.map(async (list) => {
+                    visaFileLists.map(async (list, index) => {
+
+                        if (visaSelections[index] !== 'yes') {
+                            return null;
+                        }
+
                         const uploadFile = list?.[0];
 
                         if (!uploadFile) {
@@ -813,7 +848,10 @@ export default function QuotationBookingProcess() {
                 ...traveler,
                 passportFile: passportFilesFormatted[index] || null,
                 photoFile: photoFilesFormatted[index] || null,
-                visaFile: visaFilesFormatted[index] || null
+                visaFile:
+                    visaSelections[index] === 'yes'
+                        ? visaFilesFormatted[index] || null
+                        : null
             }));
 
             form.setFieldsValue({ travelers: travelersWithDocuments });
@@ -891,13 +929,70 @@ export default function QuotationBookingProcess() {
             await form.validateFields();
             const finalFormValues = form.getFieldsValue();
 
-            // Final save to context before navigating
+            const fallbackTravelers =
+                quotationBookingData?.travelers || [];
+
+            const finalTravelers =
+                Array.isArray(finalFormValues.travelers) &&
+                    finalFormValues.travelers.length
+                    ? finalFormValues.travelers
+                    : fallbackTravelers;
+
+            const finalPassportFiles =
+                quotationBookingData?.passportFiles || [];
+
+            const finalPhotoFiles =
+                quotationBookingData?.photoFiles || [];
+
+            const storedVisaFiles =
+                quotationBookingData?.visaFiles || [];
+
+            // Make sure NO selections never keep a visa value
+            const finalVisaFiles = storedVisaFiles.map((visa, index) =>
+                visaSelections[index] === 'yes'
+                    ? visa || null
+                    : null
+            );
+
+            const travelersWithDocuments = finalTravelers.map(
+                (traveler, index) => ({
+                    ...traveler,
+
+                    passportFile:
+                        traveler?.passportFile ||
+                        finalPassportFiles[index] ||
+                        null,
+
+                    photoFile:
+                        traveler?.photoFile ||
+                        finalPhotoFiles[index] ||
+                        null,
+
+                    visaFile:
+                        visaSelections[index] === 'yes'
+                            ? (
+                                traveler?.visaFile ||
+                                finalVisaFiles[index] ||
+                                null
+                            )
+                            : null
+                })
+            );
+
             setQuotationBookingData(prev => ({
                 ...prev,
                 ...finalFormValues,
+
+                travelers: travelersWithDocuments,
+
+                passportFiles: finalPassportFiles,
+                photoFiles: finalPhotoFiles,
+                visaFiles: finalVisaFiles,
+
                 status: 'pending_payment',
                 submittedAt: new Date().toISOString()
             }));
+
 
             const previousStep = currentStep;
 
