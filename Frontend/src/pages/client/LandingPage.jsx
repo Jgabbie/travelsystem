@@ -17,6 +17,19 @@ const Chatbot = lazy(() =>
 );
 
 
+const landingTheme = {
+    token: {
+        colorPrimary: '#305797',
+        colorInfo: '#305797',
+        colorSuccess: '#4CAF50',
+        colorError: '#F44336',
+        colorWarning: '#FF9800',
+        colorText: '#333',
+        colorBgContainer: '#fff',
+    },
+};
+
+
 export default function LandingPage() {
     const navigate = useNavigate()
     const { auth, authLoading } = useAuth()
@@ -701,17 +714,7 @@ export default function LandingPage() {
 
     return (
         <ConfigProvider
-            theme={{
-                token: {
-                    colorPrimary: '#305797',
-                    colorInfo: '#305797',
-                    colorSuccess: '#4CAF50',
-                    colorError: '#F44336',
-                    colorWarning: '#FF9800',
-                    colorText: '#333',
-                    colorBgContainer: '#fff',
-                },
-            }}
+            theme={landingTheme}
         >
             <div className="landing-container">
 
@@ -1296,6 +1299,9 @@ export default function LandingPage() {
                                             <img
                                                 src={tour.image || tour}
                                                 alt={`Recent Tour ${index + 1}`}
+                                                loading="lazy"
+                                                decoding="async"
+                                                fetchPriority="low"
                                             />
                                         </div>
 
@@ -1345,6 +1351,9 @@ export default function LandingPage() {
                                     <img
                                         src={slide.src}
                                         alt={slide.title}
+                                        loading="lazy"
+                                        decoding="async"
+                                        fetchPriority="low"
                                         draggable={false}
                                     />
                                     <div className="explore-carousel-overlay"></div>
@@ -1471,6 +1480,9 @@ export default function LandingPage() {
                                 height="400"
                                 alt="example"
                                 src="/images/Homepage1.webp"
+                                loading="lazy"
+                                decoding="async"
+                                fetchPriority="low"
                             />
                         </div>
 
@@ -1849,11 +1861,15 @@ export default function LandingPage() {
                     </div>
                 </div>
 
-                <LoginModal
-                    isOpenLogin={isLoginVisible}
-                    isCloseLogin={() => setIsLoginVisible(false)}
-                    onLoginSuccess={() => navigate('/destinations-packages')}
-                />
+                {isLoginVisible && (
+                    <Suspense fallback={null}>
+                        <LoginModal
+                            isOpenLogin={isLoginVisible}
+                            isCloseLogin={() => setIsLoginVisible(false)}
+                            onLoginSuccess={() => navigate('/destinations-packages')}
+                        />
+                    </Suspense>
+                )}
 
                 {auth && (
                     <>
