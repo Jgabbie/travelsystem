@@ -1418,23 +1418,27 @@
 /* CONTACT US */
 .contactus-container {
     display: flex;
-    flex-direction: row;
-    gap: 40px;
+    justify-content: center;
+    width: 100%;
     padding: 0 16px;
-    flex-wrap: wrap;
+    box-sizing: border-box;
 }
 
 .contactus-section {
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin-top: 40px;
-    margin-bottom: 40px;
-    margin-left: 40px;
-    flex-wrap: wrap;
+    justify-content: center;
+
     width: 100%;
-    gap: 30px;
+    max-width: 1400px;
+
+    margin: 40px auto;
+
+    gap: 40px;
+    flex-wrap: wrap;
 }
+
 
 .contactus-text {
     font-family: "Montserrat", sans-serif;
@@ -1444,34 +1448,42 @@
     margin-left: 24px;
     margin-right: 24px;
     width: 100%;
-    max-width: 650px;
+    max-width: 600px;
     text-align: justify;
     line-height: 1.5;
 }
 
+.contactus-section-left {
+    flex: 1;
+    max-width: 650px;
+    margin-bottom: 50px;
+}
+
 .contactus-section-right {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-.contactus-section-left {
-    margin-bottom: 50px;
-    max-width: 650px;
+    max-width: 700px;
 }
 
 .contactus-section-right-card {
-    width: 700px;
+    width: 100%;
+    max-width: 700px;
+
     background-color: #ffffff;
     border-radius: 18px;
     box-shadow: 0 14px 30px rgba(20, 30, 50, 0.12);
+
     display: flex;
     flex-direction: row;
     align-items: stretch;
+
     gap: 0;
-    margin-bottom: 20px;
-    margin-left: 40px;
-    max-width: 100%;
+
+    /* centered */
+    margin: 0 auto 20px;
+
     overflow: hidden;
 }
 
