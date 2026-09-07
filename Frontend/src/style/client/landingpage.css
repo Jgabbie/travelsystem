@@ -2213,6 +2213,70 @@
         overflow-wrap: anywhere;
     }
 
+    .recent-tours-section {
+        padding: 56px 20px;
+    }
+
+    .recent-tours-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
+    }
+
+    .recent-tours-title {
+        font-size: 28px;
+        line-height: 1.2;
+    }
+
+    .recent-tours-subtitle {
+        margin: 0;
+        width: 100%;
+        font-size: 13px;
+        line-height: 1.7;
+        text-align: center;
+    }
+
+    .recent-tours-carousel {
+        display: block;
+        width: 100%;
+        max-width: 500px;
+        position: relative;
+    }
+
+    .recent-tours-viewport {
+        width: 100%;
+        max-width: none;
+        border-radius: 16px;
+    }
+
+    .recent-tours-carousel .recent-tours-button {
+        position: absolute;
+        top: 50%;
+        z-index: 6;
+
+        width: 38px !important;
+        min-width: 38px !important;
+        height: 38px !important;
+
+        transform: translateY(-50%);
+        background-color: rgba(255, 255, 255, 0.92) !important;
+    }
+
+    .recent-tours-button-prev {
+        left: 10px;
+    }
+
+    .recent-tours-button-next {
+        right: 10px;
+    }
+
+    .recent-tours-dots {
+        bottom: 12px;
+        max-width: calc(100% - 100px);
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
 
 }
 
@@ -2377,6 +2441,39 @@
     .footer-text,
     .footer-text-link {
         font-size: 12px;
+    }
+
+
+    .recent-tours-section {
+        padding: 46px 16px;
+    }
+
+    .recent-tours-title {
+        font-size: 24px;
+        margin-bottom: 0px;
+    }
+
+    .recent-tours-subtitle {
+        font-size: 12.5px;
+        line-height: 1.65;
+    }
+
+    .recent-tours-viewport {
+        border-radius: 12px;
+    }
+
+    .recent-tours-carousel .recent-tours-button {
+        width: 34px !important;
+        min-width: 34px !important;
+        height: 34px !important;
+    }
+
+    .recent-tours-button-prev {
+        left: 8px;
+    }
+
+    .recent-tours-button-next {
+        right: 8px;
     }
 }
 
