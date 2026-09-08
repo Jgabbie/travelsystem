@@ -2506,17 +2506,12 @@
 }
 
 
-/* =========================================================
-   ACCESSIBILITY - COLOR CONTRAST FIXES
-   ========================================================= */
 
 
-/* -----------------------------------------
-   HERO SECTION
-   Give axe a deterministic dark background
-   and strengthen overlay over bright images.
------------------------------------------- */
 
+
+
+/* 
 .hero-section {
     background-color: #142a4a;
     color: #ffffff;
@@ -2535,9 +2530,7 @@
 }
 
 
-/* -----------------------------------------
-   PACKAGES HERO
------------------------------------------- */
+
 
 .hero-section-packages {
     background-color: #142a4a;
@@ -2557,10 +2550,6 @@
 }
 
 
-/* -----------------------------------------
-   ABOUT US HERO
------------------------------------------- */
-
 .hero-section-aboutus {
     background-color: #142a4a;
     color: #ffffff;
@@ -2579,9 +2568,7 @@
 }
 
 
-/* -----------------------------------------
-   CONTACT INFORMATION CARD
------------------------------------------- */
+
 
 .contact-card-left {
     background-color: #305797;
@@ -2596,17 +2583,11 @@
     color: #ffffff;
 }
 
-/* Avoid reduced opacity affecting contrast */
 .contact-card-subtitle,
 .contact-info-heading {
     opacity: 1;
 }
 
-
-/* -----------------------------------------
-   ANT DESIGN SELECT PLACEHOLDER
-   Supports both old and newer Ant Design DOM
------------------------------------------- */
 
 .contactus-section-right-card .ant-select-placeholder,
 .contactus-section-right-card .ant-select-selection-placeholder,
@@ -2617,15 +2598,12 @@
 }
 
 
-/* Selected Select value */
 .contact-input .ant-select-selection-item {
     color: #1f2937 !important;
 }
 
 
-/* -----------------------------------------
-   FOOTER
------------------------------------------- */
+
 
 .footer-section {
     background-color: #305797;
@@ -2642,9 +2620,6 @@
 }
 
 
-/* =========================================================
-   FOOTER - ACCESSIBILITY COLOR CONTRAST FIX
-   ========================================================= */
 
 .landingpage-footer {
     background-color: #305797;
@@ -2655,7 +2630,6 @@
     color: #ffffff !important;
 }
 
-/* Footer headings and normal text */
 .landingpage-footer .footer-header,
 .landingpage-footer .footer-text,
 .landingpage-footer .footer-text-link,
@@ -2664,19 +2638,19 @@
     opacity: 1 !important;
 }
 
-/* Ant Design social icons */
+
 .landingpage-footer .socials-icon {
     color: #ffffff !important;
     opacity: 1 !important;
 }
 
-/* Force SVG icons to inherit the accessible white color */
+
 .landingpage-footer .socials-icon svg {
     color: #ffffff !important;
     fill: currentColor !important;
 }
 
-/* Footer divider */
+
 .landingpage-footer .footer-divider {
     border: 0;
     border-top: 1px solid rgba(255, 255, 255, 0.75);
@@ -2684,9 +2658,8 @@
     opacity: 1;
 }
 
-/* Social links */
 .landingpage-footer .footer-text-link:hover,
 .landingpage-footer .footer-text-link:focus {
     color: #ffffff !important;
     text-decoration: underline;
-}
+} */
