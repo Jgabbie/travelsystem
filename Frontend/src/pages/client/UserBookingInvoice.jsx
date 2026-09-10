@@ -465,9 +465,17 @@ export default function UserBookingInvoice() {
 
     //file upload validation
     const beforeDocumentUpload = (file) => {
-        const isImage = file.type === "image/jpeg" || file.type === "image/png";
-        if (!isImage) {
-            notificationApi.error({ title: "Invalid File Type", message: "Only JPG/PNG files are allowed", placement: 'topRight' });
+        const isAllowed =
+            file.type === "image/jpeg" ||
+            file.type === "image/png" ||
+            file.type === "application/pdf";
+
+        if (!isAllowed) {
+            notificationApi.error({
+                title: "Invalid File Type",
+                message: "Only JPG/PNG/PDF files are allowed",
+                placement: "topRight"
+            });
             return Upload.LIST_IGNORE;
         }
 
@@ -2162,7 +2170,7 @@ export default function UserBookingInvoice() {
                                                                         fileList={passportUploadLists[index] || []}
                                                                         beforeUpload={beforeDocumentUpload}
                                                                         onChange={(info) => handlePassportUploadChange(index, info)}
-                                                                        accept="image/jpeg,image/png"
+                                                                        accept="image/jpeg,image/png,application/pdf"
                                                                         maxCount={1}
                                                                     >
                                                                         <Button type="primary" className="user-invoice-form-button">
@@ -2174,7 +2182,7 @@ export default function UserBookingInvoice() {
                                                                         fileList={photoUploadLists[index] || []}
                                                                         beforeUpload={beforeDocumentUpload}
                                                                         onChange={(info) => handlePhotoUploadChange(index, info)}
-                                                                        accept="image/jpeg,image/png"
+                                                                        accept="image/jpeg,image/png,application/pdf"
                                                                         maxCount={1}
                                                                     >
                                                                         <Button type="primary" className="user-invoice-form-button">
