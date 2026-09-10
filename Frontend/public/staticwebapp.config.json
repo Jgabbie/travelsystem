@@ -14,7 +14,12 @@
         }
     ],
     "globalHeaders": {
-        "Cache-Control": "no-cache"
+        "Cache-Control": "no-cache",
+        "Content-Security-Policy": "default-src 'self' https://*.clarity.ms https://c.bing.com; script-src 'self' 'unsafe-inline' https://www.clarity.ms https://*.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://res.cloudinary.com https://*.tile.openstreetmap.org https://*.clarity.ms https://c.bing.com; connect-src 'self' https://*.clarity.ms https://c.bing.com; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';",
+        "X-Frame-Options": "SAMEORIGIN",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=(self), payment=()",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
     },
     "navigationFallback": {
         "rewrite": "/index.html",
