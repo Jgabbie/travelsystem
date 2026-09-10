@@ -2107,45 +2107,41 @@ export default function UserBookingInvoice() {
                                                             </div>
 
                                                             <div style={{ display: "flex", flexDirection: "row", gap: 50, flexWrap: "wrap", marginTop: 24 }}>
-                                                                {(needsResubmission
-                                                                    ? passportUploadLists[index]?.[0]?.preview || passportUploadLists[index]?.[0]?.thumbUrl
-                                                                    : traveler?.passportFile) && (
-                                                                        <div style={{ marginBottom: 16 }}>
-                                                                            <h1 className="user-invoice-section-header">Passport / Valid ID</h1>
-                                                                            <div>
-                                                                                <a
-                                                                                    href={needsResubmission
-                                                                                        ? (passportUploadLists[index]?.[0]?.preview || passportUploadLists[index]?.[0]?.thumbUrl)
-                                                                                        : traveler.passportFile}
-                                                                                    target="_blank"
-                                                                                    rel="noopener noreferrer"
-                                                                                    className="user-invoice-file-link"
-                                                                                >
-                                                                                    View Passport
-                                                                                </a>
-                                                                            </div>
+                                                                {(!needsResubmission && traveler?.passportFile) && (
+                                                                    <div style={{ marginBottom: 16 }}>
+                                                                        <h1 className="user-invoice-section-header">Passport / Valid ID</h1>
+                                                                        <div>
+                                                                            <a
+                                                                                href={needsResubmission
+                                                                                    ? (passportUploadLists[index]?.[0]?.preview || passportUploadLists[index]?.[0]?.thumbUrl)
+                                                                                    : traveler.passportFile}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="user-invoice-file-link"
+                                                                            >
+                                                                                View Passport
+                                                                            </a>
                                                                         </div>
-                                                                    )}
+                                                                    </div>
+                                                                )}
 
-                                                                {(needsResubmission
-                                                                    ? photoUploadLists[index]?.[0]?.preview || photoUploadLists[index]?.[0]?.thumbUrl
-                                                                    : traveler?.photoFile) && (
-                                                                        <div style={{ marginBottom: 16 }}>
-                                                                            <h1 className="user-invoice-section-header">2 X 2 PHOTO:</h1>
-                                                                            <div>
-                                                                                <a
-                                                                                    href={needsResubmission
-                                                                                        ? (photoUploadLists[index]?.[0]?.preview || photoUploadLists[index]?.[0]?.thumbUrl)
-                                                                                        : traveler.photoFile}
-                                                                                    target="_blank"
-                                                                                    rel="noopener noreferrer"
-                                                                                    className="user-invoice-file-link"
-                                                                                >
-                                                                                    View Photo
-                                                                                </a>
-                                                                            </div>
+                                                                {(!needsResubmission && traveler?.passportFile) && (
+                                                                    <div style={{ marginBottom: 16 }}>
+                                                                        <h1 className="user-invoice-section-header">2 X 2 PHOTO:</h1>
+                                                                        <div>
+                                                                            <a
+                                                                                href={needsResubmission
+                                                                                    ? (photoUploadLists[index]?.[0]?.preview || photoUploadLists[index]?.[0]?.thumbUrl)
+                                                                                    : traveler.photoFile}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="user-invoice-file-link"
+                                                                            >
+                                                                                View Photo
+                                                                            </a>
                                                                         </div>
-                                                                    )}
+                                                                    </div>
+                                                                )}
 
                                                                 {traveler?.visaFile && (
                                                                     <div style={{ marginBottom: 16 }}>
