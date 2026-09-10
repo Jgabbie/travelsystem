@@ -15,7 +15,7 @@
     ],
     "globalHeaders": {
         "Cache-Control": "no-cache",
-        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.clarity.ms https://*.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://res.cloudinary.com https://*.tile.openstreetmap.org https://*.clarity.ms https://c.bing.com; connect-src 'self' https://api.mrctravelandtours.com https://*.clarity.ms https://c.bing.com; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.clarity.ms https://*.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://res.cloudinary.com https://*.tile.openstreetmap.org https://*.clarity.ms https://c.bing.com; media-src 'self' data: blob: https://res.cloudinary.com; connect-src 'self' data: blob: https://api.mrctravelandtours.com https://res.cloudinary.com https://*.clarity.ms https://c.bing.com; worker-src 'self' blob:; frame-src 'self' data: blob: https://api.mrctravelandtours.com https://res.cloudinary.com; object-src 'self' data: blob: https://api.mrctravelandtours.com https://res.cloudinary.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self';",
         "X-Frame-Options": "SAMEORIGIN",
         "Permissions-Policy": "camera=(), microphone=(), geolocation=(self), payment=()",
         "X-Content-Type-Options": "nosniff",
