@@ -1946,64 +1946,67 @@ export default function VisaApplication() {
 
 
                                                 {/* DOCUMENTS UPLOADED */}
-                                                {statusValue && statusValue.toLowerCase() === 'documents uploaded' && (
-                                                    <div className='visaapplication-uploaded-documents' style={{ marginTop: 32, marginBottom: 32 }}>
-                                                        <h3 style={{ marginTop: 0 }}>Uploaded Documents</h3>
-                                                        {application.submittedDocuments && (
-                                                            <div style={{ display: 'flex', flexDirection: 'row', gap: 50, flexWrap: 'wrap', justifyContent: 'center' }}>
-                                                                {Object.entries(application.submittedDocuments).map(([key, value], entryIndex) => {
-                                                                    if (!value) return null;
-                                                                    const label = getRequirementLabel(key, entryIndex);
+                                                {statusValue && statusValue.toLowerCase() !== "application submitted" &&
+                                                    statusValue.toLowerCase() !== 'application approved' &&
+                                                    statusValue.toLowerCase() !== 'payment completed' &&
+                                                    statusValue.toLowerCase() !== 'rejected' && (
+                                                        <div className='visaapplication-uploaded-documents' style={{ marginTop: 32, marginBottom: 32 }}>
+                                                            <h3 style={{ marginTop: 0 }}>Uploaded Documents</h3>
+                                                            {application.submittedDocuments && (
+                                                                <div style={{ display: 'flex', flexDirection: 'row', gap: 50, flexWrap: 'wrap', justifyContent: 'center' }}>
+                                                                    {Object.entries(application.submittedDocuments).map(([key, value], entryIndex) => {
+                                                                        if (!value) return null;
+                                                                        const label = getRequirementLabel(key, entryIndex);
 
-                                                                    const isPdf = (url) => typeof url === 'string' && url.toLowerCase().endsWith('.pdf');
-                                                                    const renderFilePreview = (url, identifier) => {
-                                                                        const isPdfFile = isPdf(url);
+                                                                        const isPdf = (url) => typeof url === 'string' && url.toLowerCase().endsWith('.pdf');
+                                                                        const renderFilePreview = (url, identifier) => {
+                                                                            const isPdfFile = isPdf(url);
+
+                                                                            return (
+                                                                                <div key={identifier} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                                                    {url ? (
+                                                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                                                                                            <Button
+                                                                                                className="visa-requirement-file-preview-button"
+                                                                                                type="default"
+                                                                                                icon={isPdfFile ? <FilePdfOutlined /> : <EyeOutlined />}
+                                                                                                onClick={() => handlePreview(url)}
+                                                                                            >
+                                                                                                Preview
+                                                                                            </Button>
+
+                                                                                            {/* Download disabled */}
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        <div style={{ fontSize: 13, color: '#6b7280' }}>No file</div>
+                                                                                    )}
+                                                                                </div>
+                                                                            );
+                                                                        };
 
                                                                         return (
-                                                                            <div key={identifier} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                                                                {url ? (
-                                                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                                                                                        <Button
-                                                                                            className="visa-requirement-file-preview-button"
-                                                                                            type="default"
-                                                                                            icon={isPdfFile ? <FilePdfOutlined /> : <EyeOutlined />}
-                                                                                            onClick={() => handlePreview(url)}
-                                                                                        >
-                                                                                            Preview
-                                                                                        </Button>
-
-                                                                                        {/* Download disabled */}
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    <div style={{ fontSize: 13, color: '#6b7280' }}>No file</div>
-                                                                                )}
+                                                                            <div key={key}>
+                                                                                <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>{label}:</b>
+                                                                                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                                                                                    {Array.isArray(value) ? (
+                                                                                        <Image.PreviewGroup>
+                                                                                            {value.map((url, idx) => (
+                                                                                                <div key={`${key}-${idx}`}>
+                                                                                                    {renderFilePreview(url, idx)}
+                                                                                                </div>
+                                                                                            ))}
+                                                                                        </Image.PreviewGroup>
+                                                                                    ) : (
+                                                                                        renderFilePreview(value, 'single')
+                                                                                    )}
+                                                                                </div>
                                                                             </div>
                                                                         );
-                                                                    };
-
-                                                                    return (
-                                                                        <div key={key}>
-                                                                            <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>{label}:</b>
-                                                                            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                                                                                {Array.isArray(value) ? (
-                                                                                    <Image.PreviewGroup>
-                                                                                        {value.map((url, idx) => (
-                                                                                            <div key={`${key}-${idx}`}>
-                                                                                                {renderFilePreview(url, idx)}
-                                                                                            </div>
-                                                                                        ))}
-                                                                                    </Image.PreviewGroup>
-                                                                                ) : (
-                                                                                    renderFilePreview(value, 'single')
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                })}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )}
+                                                                    })}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                             </div>
 
 
