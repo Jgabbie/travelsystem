@@ -839,8 +839,8 @@
     font-size: 35px;
     font-weight: 600;
     color: #000000;
-    line-height: .5;
-    padding-bottom: 0;
+    line-height: 0.5;
+    margin-bottom: 0px;
 }
 
 .recent-tours-subtitle {
