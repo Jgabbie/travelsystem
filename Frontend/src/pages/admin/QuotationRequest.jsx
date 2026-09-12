@@ -415,6 +415,11 @@ export default function QuotationRequest() {
         const totalPrice = parseFloat(currentTotalPrice) || 0;
         const totalDeposit = parseFloat(formData.totalDeposit) || 0;
 
+        const totalTravelerCount = travelerCounts.total;
+
+        const totalDepositAmount =
+            totalDeposit * totalTravelerCount;
+
 
         // Adult rate
         if (!formData.totalRate.trim()) {
@@ -452,11 +457,13 @@ export default function QuotationRequest() {
 
         // Deposit
         if (!formData.totalDeposit.trim()) {
-            errors.totalDeposit = "Total deposit is required.";
+            errors.totalDeposit = "Deposit per PAX is required.";
         } else if (totalDeposit < 5000) {
-            errors.totalDeposit = "Deposit must be at least ₱5,000.";
-        } else if (totalDeposit > currentTotalPrice) {
-            errors.totalDeposit = "Deposit amount must not be greater than the Total Price.";
+            errors.totalDeposit = "Deposit per PAX must be at least ₱5,000.";
+        } else if (totalDepositAmount > totalPrice) {
+            errors.totalDeposit =
+                `Total deposit for ${totalTravelerCount} traveler${totalTravelerCount > 1 ? 's' : ''} ` +
+                `must not exceed the Total Price.`;
         }
 
 

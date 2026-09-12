@@ -102,7 +102,9 @@ export default function UploadBookingInvoice() {
     );
     const [invoiceNumber, setInvoiceNumber] = useState("");
     const [transactions, setTransactions] = useState([]);
-    const [isRequestingResubmission, setIsRequestingResubmission] = useState(false);
+    const [resubmittingTravelerIndex, setResubmittingTravelerIndex] = useState(null);
+    const [requestedTravelerIndexes, setRequestedTravelerIndexes] = useState([]);
+    const [isRequestingAllResubmission, setIsRequestingAllResubmission] = useState(false);
     const reference = booking?.reference || booking?.ref || booking?._id;
     const bookingId = booking?.bookingItem ?? booking?._id ?? booking?.id ?? booking?.bookingId ?? booking?.reference ?? booking?.ref ?? null;
 
@@ -339,22 +341,74 @@ export default function UploadBookingInvoice() {
     //handle request document resubmission
     const handleRequestDocumentsResubmission = async (travelerIndex = null) => {
         if (!bookingId) {
-            notificationApi.error({ title: "Booking ID not found.", placement: "topRight" });
+            notificationApi.error({
+                title: "Booking ID not found.",
+                placement: "topRight"
+            });
             return;
         }
 
-        setIsRequestingResubmission(true);
+        const isSpecificTraveler = Number.isInteger(travelerIndex);
+
+        // prevent clicking the same traveler again
+        if (
+            isSpecificTraveler &&
+            requestedTravelerIndexes.includes(travelerIndex)
+        ) {
+            return;
+        }
+
+        if (isSpecificTraveler) {
+            setResubmittingTravelerIndex(travelerIndex);
+        } else {
+            setIsRequestingAllResubmission(true);
+        }
+
         try {
-            const response = await apiFetch.post(`/booking/${bookingId}/request-document-resubmission`,
-                Number.isInteger(travelerIndex) ? { travelerIndex } : {}
+            const response = await apiFetch.post(
+                `/booking/${bookingId}/request-document-resubmission`,
+                isSpecificTraveler
+                    ? { travelerIndex }
+                    : {}
             );
+
             const updatedBooking = response?.booking || booking;
             setBooking(updatedBooking);
-            notificationApi.success({ title: "Document resubmission request sent to customer.", placement: "topRight" });
+
+            // IMPORTANT:
+            // permanently disable only the traveler that was requested
+            if (isSpecificTraveler) {
+                setRequestedTravelerIndexes((prev) => {
+                    if (prev.includes(travelerIndex)) {
+                        return prev;
+                    }
+
+                    return [...prev, travelerIndex];
+                });
+            }
+
+            notificationApi.success({
+                title: isSpecificTraveler
+                    ? `Resubmission request sent for Traveler ${travelerIndex + 1}.`
+                    : "Document resubmission request sent to all travelers.",
+                placement: "topRight"
+            });
+
         } catch (error) {
-            notificationApi.error({ title: error?.data?.message || "Unable to request resubmission.", placement: "topRight" });
+            notificationApi.error({
+                title:
+                    error?.data?.message ||
+                    "Unable to request resubmission.",
+                placement: "topRight"
+            });
         } finally {
-            setIsRequestingResubmission(false);
+            // This only stops the loading spinner.
+            // requestedTravelerIndexes keeps the clicked button disabled.
+            if (isSpecificTraveler) {
+                setResubmittingTravelerIndex(null);
+            } else {
+                setIsRequestingAllResubmission(false);
+            }
         }
     };
 
@@ -1270,10 +1324,16 @@ export default function UploadBookingInvoice() {
                                                         type="primary"
                                                         className="upload-invoice-form-button"
                                                         onClick={() => handleRequestDocumentsResubmission(index)}
-                                                        loading={isRequestingResubmission}
-                                                        disabled={!bookingId || isRequestingResubmission || isForResubmission}
+                                                        loading={resubmittingTravelerIndex === index}
+                                                        disabled={
+                                                            !bookingId ||
+                                                            resubmittingTravelerIndex === index ||
+                                                            requestedTravelerIndexes.includes(index)
+                                                        }
                                                     >
-                                                        Resubmit Traveler
+                                                        {requestedTravelerIndexes.includes(index)
+                                                            ? "Resubmission Requested"
+                                                            : "Resubmit Traveler"}
                                                     </Button>
                                                 </div>
                                                 <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13 }}>
@@ -1389,8 +1449,13 @@ export default function UploadBookingInvoice() {
                                         type="primary"
                                         className="upload-invoice-form-button"
                                         onClick={() => handleRequestDocumentsResubmission()}
-                                        loading={isRequestingResubmission}
-                                        disabled={!bookingId || isRequestingResubmission || isForResubmission}
+                                        loading={isRequestingAllResubmission}
+                                        disabled={
+                                            !bookingId ||
+                                            isRequestingAllResubmission ||
+                                            resubmittingTravelerIndex !== null ||
+                                            isForResubmission
+                                        }
                                     >
                                         Resubmit All
                                     </Button>
