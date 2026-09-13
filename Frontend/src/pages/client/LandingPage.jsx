@@ -1813,7 +1813,9 @@ export default function LandingPage() {
                                 {/* test */}
                                 <iframe
                                     title="M&RC Travel and Tours Location"
-                                    src="https://www.google.com/maps/embed?pb=..."
+                                    src={`https://www.google.com/maps?q=${encodeURIComponent(
+                                        '2nd Floor #1 Cor Fatima Street, San Antonio Avenue Valley 1, Brgy. San Antonio, Parañaque, Philippines, 1715'
+                                    )}&output=embed`}
                                     className="contactus-google-map"
                                     loading="lazy"
                                     allowFullScreen
