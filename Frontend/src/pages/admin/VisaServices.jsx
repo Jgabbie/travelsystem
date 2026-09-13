@@ -100,6 +100,7 @@ export default function VisaServices() {
 
     useEffect(() => {
         getServices();
+        getArchivedServices();
         getFAQs();
     }, []);
 
@@ -278,7 +279,7 @@ export default function VisaServices() {
                                 <Card className="visaservice-management-card">
                                     <Statistic
                                         title="Total Visa Services"
-                                        value={totalServices}
+                                        value={servicesData.length + archivedServices.length}
                                         prefix={<AppstoreOutlined />}
                                     />
                                 </Card>
@@ -287,8 +288,8 @@ export default function VisaServices() {
                             <Col xs={24} sm={8}>
                                 <Card className="visaservice-management-card">
                                     <Statistic
-                                        title="Tourist Visas"
-                                        value={servicesData.filter(service => service.visaType === "Tourist").length}
+                                        title="Active Visas"
+                                        value={servicesData.length}
                                     />
                                 </Card>
                             </Col>
@@ -296,8 +297,8 @@ export default function VisaServices() {
                             <Col xs={24} sm={8}>
                                 <Card className="visaservice-management-card">
                                     <Statistic
-                                        title="Express Processing"
-                                        value={servicesData.filter(service => service.processing === "Express").length}
+                                        title="Inactive Visas"
+                                        value={archivedServices.length}
                                     />
                                 </Card>
                             </Col>
