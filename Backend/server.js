@@ -192,7 +192,7 @@ if (!isServerless) {
     //fixed
     app.set('io', io);
 
-    const PORT = Number(process.env.PORT) || 8000;
+    const PORT = Number(process.env.PORT) || 8080;
 
     const shutdown = (signal) => {
         console.log(`${signal} received. Closing HTTP server...`);
