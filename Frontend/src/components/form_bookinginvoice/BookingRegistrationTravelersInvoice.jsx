@@ -8,8 +8,11 @@ export default function BookingRegistrationTravelersInvoice({
     onValuesChange,
     summaryInvoice,
     totalCount,
+    registrationDate
 }) {
     const hasLeadAddress = Boolean(String(summaryInvoice?.leadAddress || '').trim());
+
+    console.log(registrationDate)
 
     const normalizeRoomType = (value) => String(value || '').trim().replace(/\s+\d+$/, '');
 
@@ -96,14 +99,20 @@ export default function BookingRegistrationTravelersInvoice({
             leadAddress: summaryInvoice.leadAddress,
             leadTitle: summaryInvoice.leadTitle,
             travelersSignature: summaryInvoice.leadFullName,
-            dateOfRegistration: dayjs().format('MMMM D, YYYY'),
+            dateOfRegistration:
+                registrationDate && dayjs(registrationDate).isValid()
+                    ? dayjs(registrationDate).format('MMMM D, YYYY')
+                    : '',
             tourPackageTitle: summaryInvoice.tourPackageTitle || 'N/A',
             tourPackageVia: summaryInvoice.tourPackageVia || 'N/A',
             packageTravelDate: formatTravelDate(summaryInvoice.travelDate),
-            travelersDate: dayjs().format('MMMM D, YYYY'),
+            travelersDate:
+                registrationDate && dayjs(registrationDate).isValid()
+                    ? dayjs(registrationDate).format('MMMM D, YYYY')
+                    : '',
             travelers: travelersData,
         });
-    }, [summaryInvoice, totalCount, form]);
+    }, [summaryInvoice, totalCount, form, registrationDate]);
 
     const passengerCellClass = 'mrc-registration-passenger-cell';
     const passengerInputClass = 'mrc-registration-passenger-input';

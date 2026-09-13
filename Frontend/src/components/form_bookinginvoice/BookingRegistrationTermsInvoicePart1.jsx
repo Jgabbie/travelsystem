@@ -7,6 +7,7 @@ export default function BookingRegistrationTermsInvoicePart1({
     form,
     onValuesChange,
     summaryInvoice,
+    registrationDate
 }) {
     useEffect(() => {
         if (!summaryInvoice) return;
@@ -17,9 +18,11 @@ export default function BookingRegistrationTermsInvoicePart1({
             leadContact: summaryInvoice.leadContact,
             leadAddress: summaryInvoice.leadAddress,
             travelersSignature: summaryInvoice.travelersSignature,
-            termsDate: dayjs().format('MMMM D, YYYY'),
+            termsDate: registrationDate && dayjs(registrationDate).isValid()
+                ? dayjs(registrationDate).format('MMMM D, YYYY')
+                : '',
         });
-    }, [form, summaryInvoice]);
+    }, [form, summaryInvoice, registrationDate]);
 
     return (
         <div className="mrc-overlay-wrapper">

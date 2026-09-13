@@ -1015,12 +1015,96 @@ export default function UserBookingInvoice() {
         infantRate
     ]);
 
+    const successfulTransactions = useMemo(() => {
+        return transactions
+            .filter(
+                (txn) =>
+                    txn.status === "Paid" ||
+                    txn.status === "Successful" ||
+                    txn.status === "Fully Paid"
+            )
+            .sort(
+                (a, b) =>
+                    dayjs(a.createdAt).valueOf() -
+                    dayjs(b.createdAt).valueOf()
+            );
+    }, [transactions]);
+
+
+    // Generate the ORIGINAL payment schedule without considering payments yet
+    const baseInstallmentData = useMemo(() => {
+        return runInstallmentLogic(
+            invoice,
+            bookingDetails,
+            0,
+            issueDate
+        );
+    }, [invoice, bookingDetails, issueDate]);
+
+
+    // Calculate how much SHOULD have been paid without penalties
+    const expectedBasePaid = useMemo(() => {
+        const schedule = baseInstallmentData?.paymentSchedule || [];
+
+        return successfulTransactions.reduce((sum, txn, index) => {
+            const scheduledPayment = schedule[index];
+
+            if (!scheduledPayment) {
+                return sum;
+            }
+
+            return sum + Number(scheduledPayment.amount || 0);
+        }, 0);
+    }, [successfulTransactions, baseInstallmentData]);
+
+
+    // Determine how much of the stored penalty has ALREADY been paid.
+    //
+    // Example:
+    // Installment = 1,000
+    // Actual successful payment = 1,200
+    //
+    // 1,200 - 1,000 = 200 penalty already paid
+    const paidPenaltyAmount = Math.min(
+        persistedPenalty,
+        Math.max(paidAmount - expectedBasePaid, 0)
+    );
+
+
+    // Only this amount should still be added to the NEXT payment
+    const outstandingPenalty = Math.max(
+        persistedPenalty - paidPenaltyAmount,
+        0
+    );
+
+
+    // Remove already-paid penalty from paidAmount when checking
+    // which actual installment has been completed.
+    const paidBaseAmount = Math.max(
+        paidAmount - paidPenaltyAmount,
+        0
+    );
+
+
+    // Calculate installment statuses using BASE payments only
     const installmentData = useMemo(() => {
-        return runInstallmentLogic(invoice, bookingDetails, paidAmount, issueDate);
-    }, [invoice, bookingDetails, paidAmount, issueDate]);
+        return runInstallmentLogic(
+            invoice,
+            bookingDetails,
+            paidBaseAmount,
+            issueDate
+        );
+    }, [
+        invoice,
+        bookingDetails,
+        paidBaseAmount,
+        issueDate
+    ]);
+
 
     const installmentsOnly = installmentData.paymentSchedule?.filter(
-        (item) => item.label.toLowerCase().includes("installment")
+        (item) =>
+            item.label.toLowerCase().includes("installment")
     );
 
     const lastInstallment = installmentsOnly?.length
@@ -1031,15 +1115,36 @@ export default function UserBookingInvoice() {
         ? dayjs(lastInstallment.date).format("MMMM D, YYYY")
         : null;
 
-    const totalPriceWithPenalty = totalPrice + persistedPenalty;
-    const remainingBalance = Math.max(totalPriceWithPenalty - paidAmount, 0);
-    const amountToPayNow = paymentMode === "Deposit"
-        ? (Number(currentUnpaidInstallment?.amount || 0) + persistedPenalty)
-        : totalPriceWithPenalty;
 
-    const paymentStatusWithPenalty = remainingBalance <= 0
-        ? { label: "Fully Paid", color: "green" }
-        : { label: "Balance Due", color: "orange" };
+    // Total booking price still includes all penalties that were assessed
+    const totalPriceWithPenalty =
+        totalPrice + persistedPenalty;
+
+
+    // Remaining balance automatically accounts for penalties
+    // that have already been paid because paidAmount contains them.
+    const remainingBalance = Math.max(
+        totalPriceWithPenalty - paidAmount,
+        0
+    );
+
+
+    // IMPORTANT:
+    // Add only the UNPAID penalty to the current installment,
+    // instead of adding persistedPenalty every single time.
+    const amountToPayNow =
+        paymentMode === "Deposit"
+            ? (
+                Number(currentUnpaidInstallment?.amount || 0) +
+                outstandingPenalty
+            )
+            : remainingBalance;
+
+
+    const paymentStatusWithPenalty =
+        remainingBalance <= 0
+            ? { label: "Fully Paid", color: "green" }
+            : { label: "Balance Due", color: "orange" };
 
     invoice.invoice.dueDate = lastInstallmentDate ? dayjs(lastInstallmentDate).format("MMMM D, YYYY") : null;
 
@@ -2301,6 +2406,7 @@ export default function UserBookingInvoice() {
                                                 totalCount={
                                                     bookingDetails?.travelerCounts?.total || 1
                                                 }
+                                                registrationDate={booking?.bookingDate || booking?.createdAt}
                                             />
                                         </div>
 
@@ -2308,6 +2414,7 @@ export default function UserBookingInvoice() {
                                             <BookingRegistrationDietInvoice
                                                 form={captureForm}
                                                 summaryInvoice={summaryInvoice}
+                                                registrationDate={booking?.bookingDate || booking?.createdAt}
                                             />
                                         </div>
 
@@ -2315,6 +2422,7 @@ export default function UserBookingInvoice() {
                                             <BookingRegistrationTermsInvoicePart1
                                                 form={captureForm}
                                                 summaryInvoice={summaryInvoice}
+                                                registrationDate={booking?.bookingDate || booking?.createdAt}
                                             />
                                         </div>
 
@@ -2322,6 +2430,7 @@ export default function UserBookingInvoice() {
                                             <BookingRegistrationTermsInvoicePart2
                                                 form={captureForm}
                                                 summaryInvoice={summaryInvoice}
+                                                registrationDate={booking?.bookingDate || booking?.createdAt}
                                             />
                                         </div>
                                     </div>
@@ -2376,6 +2485,7 @@ export default function UserBookingInvoice() {
                                                     form={form}
                                                     summaryInvoice={summaryInvoice}
                                                     totalCount={bookingDetails?.travelerCounts?.total || 1}
+                                                    registrationDate={booking?.bookingDate || booking?.createdAt}
                                                 />
                                             )}
 
@@ -2383,6 +2493,7 @@ export default function UserBookingInvoice() {
                                                 <BookingRegistrationDietInvoice
                                                     form={form}
                                                     summaryInvoice={summaryInvoice}
+                                                    registrationDate={booking?.bookingDate || booking?.createdAt}
                                                 />
                                             )}
 
@@ -2390,6 +2501,7 @@ export default function UserBookingInvoice() {
                                                 <BookingRegistrationTermsInvoicePart1
                                                     form={form}
                                                     summaryInvoice={summaryInvoice}
+                                                    registrationDate={booking?.bookingDate || booking?.createdAt}
                                                 />
                                             )}
 
@@ -2397,6 +2509,7 @@ export default function UserBookingInvoice() {
                                                 <BookingRegistrationTermsInvoicePart2
                                                     form={form}
                                                     summaryInvoice={summaryInvoice}
+                                                    registrationDate={booking?.bookingDate || booking?.createdAt}
                                                 />
                                             )}
                                         </div>

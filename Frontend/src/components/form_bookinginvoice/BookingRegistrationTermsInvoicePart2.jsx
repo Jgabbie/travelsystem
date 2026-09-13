@@ -7,13 +7,17 @@ export default function BookingRegistrationTermsInvoicePart2({
     form,
     onValuesChange,
     summaryInvoice,
+    registrationDate
 }) {
     useEffect(() => {
         form.setFieldsValue({
             leadFullName: summaryInvoice?.leadFullName || form.getFieldValue('leadFullName'),
-            waiverDate: dayjs().format('MMMM D, YYYY'),
+            waiverDate:
+                registrationDate && dayjs(registrationDate).isValid()
+                    ? dayjs(registrationDate).format('MMMM D, YYYY')
+                    : '',
         });
-    }, [form, summaryInvoice]);
+    }, [form, summaryInvoice, registrationDate]);
 
     return (
         <div className="mrc-overlay-wrapper">

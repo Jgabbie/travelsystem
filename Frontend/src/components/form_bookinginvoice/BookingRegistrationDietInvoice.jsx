@@ -9,6 +9,7 @@ export default function BookingRegistrationDietInvoice({
     form,
     onValuesChange,
     summaryInvoice,
+    registrationDate
 }) {
     const formatTravelDate = (value) => {
         if (!value) return '';
@@ -42,9 +43,11 @@ export default function BookingRegistrationDietInvoice({
             emergencyName: summaryInvoice.emergencyName,
             emergencyRelation: summaryInvoice.emergencyRelation,
             emergencyTitle: summaryInvoice.emergencyTitle,
-            signatureDate: dayjs().format('MMMM D, YYYY'),
+            signatureDate: registrationDate && dayjs(registrationDate).isValid()
+                ? dayjs(registrationDate).format('MMMM D, YYYY')
+                : '',
         });
-    }, [summaryInvoice, form]);
+    }, [summaryInvoice, form, registrationDate]);
 
     return (
         <div className="mrc-overlay-wrapper">

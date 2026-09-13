@@ -321,7 +321,7 @@ const getBookingByReference = async (req, res) => {
 
         const transactionData = await TransactionModel.find({ bookingId: bookingData._id })
             .sort({ createdAt: -1 })
-            .select('-__v -_id -bookingId -packageId -userId -createdAt -updatedAt')
+            .select('-__v -_id -bookingId -packageId -userId -updatedAt')
             .lean();
 
         const { packageId, _id, ...restOfBooking } = bookingData;

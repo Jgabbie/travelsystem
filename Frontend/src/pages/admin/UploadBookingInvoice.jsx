@@ -969,9 +969,6 @@ export default function UploadBookingInvoice() {
 
 
 
-
-
-
     return (
         <ConfigProvider
             theme={{
@@ -1274,7 +1271,7 @@ export default function UploadBookingInvoice() {
                                                 <Card key={index} size="small">
                                                     <Row justify="space-between">
                                                         <Col>
-                                                            <div className="upload-invoice-transactiontext"><strong>Date:</strong> {dayjs(txn.createdAt).format("MMM D, YYYY")}</div>
+                                                            <strong>Date:</strong> {dayjs(txn.createdAt).format("MMM D, YYYY")}
                                                             <div className="upload-invoice-transactiontext"><strong>Method:</strong> {txn.method || "N/A"}</div>
                                                         </Col>
                                                         <Col style={{ textAlign: "right" }}>
@@ -1486,6 +1483,7 @@ export default function UploadBookingInvoice() {
                                                 form={captureForm}
                                                 summaryInvoice={summaryInvoice}
                                                 totalCount={bookingDetails?.travelerCounts?.total || 1}
+                                                registrationDate={booking?.bookingDate || booking?.createdAt}
                                             />
                                         </div>
 
@@ -1493,6 +1491,7 @@ export default function UploadBookingInvoice() {
                                             <BookingRegistrationDietInvoice
                                                 form={captureForm}
                                                 summaryInvoice={summaryInvoice}
+                                                registrationDate={booking?.bookingDate || booking?.createdAt}
                                             />
                                         </div>
 
@@ -1500,6 +1499,7 @@ export default function UploadBookingInvoice() {
                                             <BookingRegistrationTermsInvoicePart1
                                                 form={captureForm}
                                                 summaryInvoice={summaryInvoice}
+                                                registrationDate={booking?.bookingDate || booking?.createdAt}
                                             />
                                         </div>
 
@@ -1507,6 +1507,7 @@ export default function UploadBookingInvoice() {
                                             <BookingRegistrationTermsInvoicePart2
                                                 form={captureForm}
                                                 summaryInvoice={summaryInvoice}
+                                                registrationDate={booking?.bookingDate || booking?.createdAt}
                                             />
                                         </div>
                                     </div>
@@ -1551,6 +1552,7 @@ export default function UploadBookingInvoice() {
                                                     form={form}
                                                     summaryInvoice={summaryInvoice}
                                                     totalCount={bookingDetails?.travelerCounts?.total || 1}
+                                                    registrationDate={booking?.bookingDate || booking?.createdAt}
                                                 />
                                             )}
 
@@ -1558,6 +1560,7 @@ export default function UploadBookingInvoice() {
                                                 <BookingRegistrationDietInvoice
                                                     form={form}
                                                     summaryInvoice={summaryInvoice}
+                                                    registrationDate={booking?.bookingDate || booking?.createdAt}
                                                 />
                                             )}
 
@@ -1565,6 +1568,7 @@ export default function UploadBookingInvoice() {
                                                 <BookingRegistrationTermsInvoicePart1
                                                     form={form}
                                                     summaryInvoice={summaryInvoice}
+                                                    registrationDate={booking?.bookingDate || booking?.createdAt}
                                                 />
                                             )}
 
@@ -1572,6 +1576,7 @@ export default function UploadBookingInvoice() {
                                                 <BookingRegistrationTermsInvoicePart2
                                                     form={form}
                                                     summaryInvoice={summaryInvoice}
+                                                    registrationDate={booking?.bookingDate || booking?.createdAt}
                                                 />
                                             )}
                                         </div>
