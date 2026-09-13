@@ -160,20 +160,55 @@ export default function ViewPassportApplication() {
         if (isUpdatingStatus) return;
 
         if (!documentKey) {
-            notificationApi.warning({ title: "Please select a document to resubmit.", placement: "topRight" });
+            notificationApi.warning({
+                title: "Please select a document to resubmit.",
+                placement: "topRight"
+            });
             return;
         }
 
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/passport/applications/${applicationId}/resubmit-documents`, {
-                documentKey
-            });
+
+            await apiFetch.put(
+                `/passport/applications/${applicationId}/resubmit-documents`,
+                {
+                    documentKey
+                }
+            );
+
             await fetchApplication();
 
+            // Hide only the document requested for resubmission
+            setApplication((prev) => {
+                if (!prev) return prev;
+
+                const currentDocuments = {
+                    ...(prev.submittedDocuments || prev.documents || {
+                        birthCertificate: prev.birthCertificate,
+                        applicationForm: prev.applicationForm,
+                        govId: prev.govId
+                    })
+                };
+
+                delete currentDocuments[documentKey];
+
+                return {
+                    ...prev,
+                    submittedDocuments: currentDocuments,
+
+                    // Prevent legacy fallback from showing the file again
+                    [documentKey]: null
+                };
+            });
+
             setIsResubmitDocumentsSentModalOpen(true);
+
         } catch (error) {
-            notificationApi.error({ title: "Failed to update status", placement: "topRight" });
+            notificationApi.error({
+                title: "Failed to update status",
+                placement: "topRight"
+            });
         } finally {
             setIsUpdatingStatus(false);
         }

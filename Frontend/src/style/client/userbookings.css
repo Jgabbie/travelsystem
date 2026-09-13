@@ -203,6 +203,22 @@
     color: #fff !important;
 }
 
+.user-bookings-upload-btn:disabled,
+.user-bookings-upload-btn.ant-btn-disabled {
+    background-color: #f5f5f5 !important;
+    color: #a6a6a6 !important;
+    border-color: #d9d9d9 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}
+
+.user-bookings-upload-btn:disabled:hover,
+.user-bookings-upload-btn.ant-btn-disabled:hover {
+    background-color: #f5f5f5 !important;
+    color: #a6a6a6 !important;
+    border-color: #d9d9d9 !important;
+}
+
 .user-bookings-upload-note {
     font-size: 12px;
     color: #6b7280;

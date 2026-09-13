@@ -24,7 +24,8 @@ export default function UserBookings() {
     const [cancelImages, setCancelImages] = useState([])
     const [cancelComments, setCancelComments] = useState('')
     const [previewImage, setPreviewImage] = useState(null)
-
+    const [previewPdf, setPreviewPdf] = useState(null)
+    const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false)
     const [searchText, setSearchText] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [bookingDateFilter, setBookingDateFilter] = useState(null);
@@ -124,7 +125,14 @@ export default function UserBookings() {
             URL.revokeObjectURL(previewImage);
         }
 
+        if (previewPdf) {
+            URL.revokeObjectURL(previewPdf);
+        }
+
         setPreviewImage(null);
+        setPreviewPdf(null);
+        setPdfPreviewOpen(false);
+
         setCancelReason('');
         setCancelOtherReason('');
         setCancelImages([]);
@@ -150,9 +158,16 @@ export default function UserBookings() {
 
         if (!file) return;
 
-        if (!file.type.startsWith('image/')) {
+        const allowedTypes = [
+            'image/png',
+            'image/jpeg',
+            'application/pdf'
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
             notificationApi.error({
-                title: 'Please select a valid image file.',
+                title: 'Invalid file type',
+                description: 'Please upload a PNG, JPG, JPEG, or PDF file.',
                 placement: 'topRight'
             });
 
@@ -160,9 +175,11 @@ export default function UserBookings() {
             return;
         }
 
-        if (file.size > 2 * 1024 * 1024) {
+        // Maximum file size: 5MB
+        if (file.size > 5 * 1024 * 1024) {
             notificationApi.error({
-                title: 'Image must be 2MB or less.',
+                title: 'File is too large',
+                description: 'File must be 5MB or less.',
                 placement: 'topRight'
             });
 
@@ -174,8 +191,19 @@ export default function UserBookings() {
             URL.revokeObjectURL(previewImage);
         }
 
+        if (previewPdf) {
+            URL.revokeObjectURL(previewPdf);
+        }
+
         setCancelImages([file]);
-        setPreviewImage(URL.createObjectURL(file));
+
+        if (file.type.startsWith('image/')) {
+            setPreviewImage(URL.createObjectURL(file));
+        }
+
+        if (file.type === 'application/pdf') {
+            setPreviewPdf(URL.createObjectURL(file));
+        }
     };
 
 
@@ -587,41 +615,100 @@ export default function UserBookings() {
                                     ref={fileInputRef}
                                     className="package-image-input"
                                     type="file"
-                                    accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                                    accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf"
                                     onChange={handleImageChange}
                                     style={{ display: "none" }}
                                 />
                                 <Button
                                     className="user-bookings-upload-btn"
-                                    type='primary'
-                                    onClick={() => fileInputRef.current.click()}
+                                    type="primary"
+                                    onClick={() => fileInputRef.current?.click()}
                                     icon={<UploadOutlined />}
                                     block
+                                    disabled={cancelImages.length > 0}
                                 >
-                                    Upload file
+                                    {cancelImages.length > 0 ? 'File Selected' : 'Upload File'}
                                 </Button>
 
-                                {previewImage && (
+                                {cancelImages.length > 0 && (
                                     <div style={{ marginTop: 12, textAlign: 'center' }}>
-                                        <img
-                                            src={previewImage}
-                                            alt="Preview"
+
+                                        {/* Image Preview */}
+                                        {previewImage && (
+                                            <img
+                                                src={previewImage}
+                                                alt="Preview"
+                                                style={{
+                                                    maxWidth: '100%',
+                                                    maxHeight: '150px',
+                                                    borderRadius: '8px',
+                                                    border: '1px solid #d9d9d9',
+                                                    padding: '4px'
+                                                }}
+                                            />
+                                        )}
+
+                                        {/* File Name */}
+                                        <div
                                             style={{
-                                                maxWidth: '100%',
-                                                maxHeight: '150px',
-                                                borderRadius: '8px',
-                                                border: '1px solid #d9d9d9',
-                                                padding: '4px'
+                                                fontSize: '12px',
+                                                color: '#666',
+                                                marginTop: '6px'
                                             }}
-                                        />
-                                        <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                                        >
                                             {cancelImages[0]?.name}
+                                        </div>
+
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                gap: '8px',
+                                                marginTop: '8px'
+                                            }}
+                                        >
+                                            {/* PDF Preview */}
+                                            {cancelImages[0]?.type === 'application/pdf' && previewPdf && (
+                                                <Button
+                                                    type="default"
+                                                    icon={<EyeOutlined />}
+                                                    onClick={() => setPdfPreviewOpen(true)}
+                                                >
+                                                    Preview PDF
+                                                </Button>
+                                            )}
+
+                                            {/* Remove File */}
+                                            <Button
+                                                danger
+                                                onClick={() => {
+                                                    if (previewImage) {
+                                                        URL.revokeObjectURL(previewImage);
+                                                    }
+
+                                                    if (previewPdf) {
+                                                        URL.revokeObjectURL(previewPdf);
+                                                    }
+
+                                                    setCancelImages([]);
+                                                    setPreviewImage(null);
+                                                    setPreviewPdf(null);
+                                                    setPdfPreviewOpen(false);
+
+                                                    if (fileInputRef.current) {
+                                                        fileInputRef.current.value = '';
+                                                    }
+                                                }}
+                                            >
+                                                Remove File
+                                            </Button>
                                         </div>
                                     </div>
                                 )}
 
                                 <div className="user-bookings-upload-note">
-                                    Uploading at least one file is required.
+                                    Uploading one supporting file is required.
+                                    Accepted formats: PNG, JPG, JPEG, or PDF (maximum 5MB).
                                 </div>
                             </div>
 
@@ -630,20 +717,20 @@ export default function UserBookings() {
                                 <Button
                                     type="primary"
                                     className="modal-button"
-                                    onClick={closeCancellationModal}
-                                    disabled={loadingCancel}
-                                >
-                                    Keep Booking
-                                </Button>
-
-                                <Button
-                                    type="primary"
-                                    className="modal-button-cancel"
                                     onClick={confirmCancelBooking}
                                     loading={loadingCancel}
                                     disabled={loadingCancel}
                                 >
                                     Cancel Booking
+                                </Button>
+
+                                <Button
+                                    type="primary"
+                                    className="modal-button-cancel"
+                                    onClick={closeCancellationModal}
+                                    disabled={loadingCancel}
+                                >
+                                    Keep Booking
                                 </Button>
 
                             </div>
@@ -686,7 +773,28 @@ export default function UserBookings() {
                     </Modal>
 
 
-
+                    <Modal
+                        open={pdfPreviewOpen}
+                        onCancel={() => setPdfPreviewOpen(false)}
+                        footer={null}
+                        width={800}
+                        centered
+                        title="PDF Preview"
+                        destroyOnHidden
+                    >
+                        {previewPdf && (
+                            <iframe
+                                src={previewPdf}
+                                title="Cancellation Proof PDF"
+                                style={{
+                                    width: '100%',
+                                    height: '70vh',
+                                    border: 'none',
+                                    borderRadius: '8px'
+                                }}
+                            />
+                        )}
+                    </Modal>
 
 
 

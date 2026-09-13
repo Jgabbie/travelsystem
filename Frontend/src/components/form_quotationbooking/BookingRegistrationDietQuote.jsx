@@ -126,8 +126,8 @@ export default function BookingRegistrationDietQuote({
     ];
 
     const compactSelectStyle = {
-        width: 42,
-        minWidth: 42,
+        width: 50,
+        minWidth: 50,
         borderRadius: 0,
     };
 
