@@ -1812,11 +1812,16 @@ export default function LandingPage() {
                             <div className="contactus-map-container">
                                 <iframe
                                     title="M&RC Travel and Tours Location"
-                                    src="https://www.google.com/maps?q=M%26RC%20Travel%20and%20Tours%20Paranaque&output=embed"
+                                    src={`https://www.google.com/maps/embed/v1/place?key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}&q=M%26RC+Travel+and+Tours,+Paranaque,+Philippines`}
                                     className="contactus-google-map"
                                     loading="lazy"
                                     allowFullScreen
-                                    referrerPolicy="no-referrer-when-downgrade"
+                                    referrerPolicy="strict-origin-when-cross-origin"
+                                    style={{
+                                        border: 0,
+                                        width: '100%',
+                                        height: '100%'
+                                    }}
                                 ></iframe>
                             </div>
 
