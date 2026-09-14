@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Input, Button, notification, Spin, Card, Space, ConfigProvider, Modal } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined, CheckCircleFilled } from '@ant-design/icons';
 import '../../style/client/profilepage.css'
+import '../../style/components/modals/loginmodal.css';
 import apiFetch from '../../config/fetchConfig';
 import dayjs from 'dayjs';
 
