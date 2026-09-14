@@ -463,9 +463,9 @@ export default function QuotationManagement() {
     const archivedColumns = columns
 
     const totalRequests = filteredData.length;
+    const totalPending = filteredData.filter(item => item.status === "Pending").length;
+    const totalBooked = filteredData.filter(item => item.status === "Booked").length;
     const totalUnderReview = filteredData.filter(item => item.status === "Under Review").length;
-    const totalAccepted = filteredData.filter(item => item.status === "Accepted").length;
-    const totalExpired = filteredData.filter(item => item.status === "Expired").length;
 
     const EditableCell = ({
         editing,
@@ -527,30 +527,33 @@ export default function QuotationManagement() {
                                     />
                                 </Card>
                             </Col>
+
+                            <Col xs={24} sm={6}>
+                                <Card className="quotation-management-card">
+                                    <Statistic
+                                        title="Pending"
+                                        value={totalPending}
+                                        prefix={<FileTextOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+
+                            <Col xs={24} sm={6}>
+                                <Card className="quotation-management-card">
+                                    <Statistic
+                                        title="Booked"
+                                        value={totalBooked}
+                                        prefix={<CheckCircleOutlined />}
+                                    />
+                                </Card>
+                            </Col>
+
                             <Col xs={24} sm={6}>
                                 <Card className="quotation-management-card">
                                     <Statistic
                                         title="Under Review"
                                         value={totalUnderReview}
                                         prefix={<FileTextOutlined />}
-                                    />
-                                </Card>
-                            </Col>
-                            <Col xs={24} sm={6}>
-                                <Card className="quotation-management-card">
-                                    <Statistic
-                                        title="Accepted"
-                                        value={totalAccepted}
-                                        prefix={<CheckCircleOutlined />}
-                                    />
-                                </Card>
-                            </Col>
-                            <Col xs={24} sm={6}>
-                                <Card className="quotation-management-card">
-                                    <Statistic
-                                        title="Expired"
-                                        value={totalExpired}
-                                        prefix={<CloseCircleOutlined />}
                                     />
                                 </Card>
                             </Col>

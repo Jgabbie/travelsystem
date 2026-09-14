@@ -290,7 +290,53 @@ export default function TransactionManagement() {
   //filter functions
   const currentData = showArchived ? archivedData : data;
 
-  const filteredData = currentData;
+  const filteredData = showArchived
+    ? archivedData.filter((item) => {
+      const search = searchText.trim().toLowerCase();
+
+      // Search filter
+      const matchesSearch =
+        !search ||
+        [
+          item.invoiceNumber,
+          item.ref,
+          item.package,
+          item.username,
+          item.firstname,
+          item.lastname,
+          item.method,
+          item.status,
+        ].some((value) =>
+          String(value || "")
+            .toLowerCase()
+            .includes(search)
+        );
+
+      // Payment method filter
+      const matchesMethod =
+        !methodFilter ||
+        String(item.method || "").toLowerCase() ===
+        String(methodFilter).toLowerCase();
+
+      // Status filter
+      const matchesStatus =
+        !statusFilter ||
+        item.status === statusFilter;
+
+      // Payment date filter
+      const matchesDate =
+        !paymentDateFilter ||
+        dayjs(item.date).format("YYYY-MM-DD") ===
+        dayjs(paymentDateFilter).format("YYYY-MM-DD");
+
+      return (
+        matchesSearch &&
+        matchesMethod &&
+        matchesStatus &&
+        matchesDate
+      );
+    })
+    : data;
 
   const totalTransactions = showArchived
     ? archivedData.length
@@ -395,51 +441,64 @@ export default function TransactionManagement() {
   };
 
 
-  //generate PDF function
+  // generate PDF function
   const generatePDF = async () => {
     try {
       notificationApi.info({
-        title: "Preparing all transaction data...",
+        title: "Preparing transaction data...",
         key: "pdf",
         placement: "topRight",
       });
 
-      /*
-       * Fetch ALL matching records.
-       *
-       * Notice that we intentionally do NOT send page/limit.
-       * export=true tells the backend not to paginate.
-       */
-      const params = new URLSearchParams({
-        export: "true",
-      });
+      let allTransactions = [];
 
-      if (searchText.trim()) {
-        params.append("search", searchText.trim());
+      if (showArchived) {
+        allTransactions = filteredData;
       }
 
-      if (methodFilter) {
-        params.append("method", methodFilter);
-      }
+      else {
+        const params = new URLSearchParams({
+          export: "true",
+        });
 
-      if (statusFilter) {
-        params.append("status", statusFilter);
-      }
+        if (searchText.trim()) {
+          params.append("search", searchText.trim());
+        }
 
-      if (paymentDateFilter) {
-        params.append(
-          "paymentDate",
-          dayjs(paymentDateFilter).format("YYYY-MM-DD")
+        if (methodFilter) {
+          params.append("method", methodFilter);
+        }
+
+        if (statusFilter) {
+          params.append("status", statusFilter);
+        }
+
+        if (paymentDateFilter) {
+          params.append(
+            "paymentDate",
+            dayjs(paymentDateFilter).format("YYYY-MM-DD")
+          );
+        }
+
+        const response = await apiFetch.get(
+          `/transaction/all-transactions?${params.toString()}`
+        );
+
+        allTransactions = mapTransactions(
+          response.transactions || []
         );
       }
 
-      const response = await apiFetch.get(
-        `/transaction/all-transactions?${params.toString()}`
-      );
+      // Prevent empty PDF
+      if (allTransactions.length === 0) {
+        notificationApi.warning({
+          title: "No transactions found for the selected filters.",
+          key: "pdf",
+          placement: "topRight",
+        });
 
-      const allTransactions = mapTransactions(
-        response.transactions || []
-      );
+        return;
+      }
 
       const doc = new jsPDF("p", "mm", "a4");
 
@@ -461,23 +520,23 @@ export default function TransactionManagement() {
         ? `Transaction_Archives_Report_${dayjs().format("YYYY-MM-DD")}.pdf`
         : `Transaction_Report_${dayjs().format("YYYY-MM-DD")}.pdf`;
 
-      /*
-       * ALL records are used here.
-       * This is not filteredData, which only contains the current page.
-       */
-      const tableRows = allTransactions.map(item => [
+
+      const tableRows = allTransactions.map((item) => [
         item.invoiceNumber || "N/A",
         item.ref || "N/A",
         item.package || "N/A",
+
         item.date
           ? dayjs(item.date).format("MMM DD, YYYY hh:mm A")
           : "N/A",
+
         `PHP ${Number(item.amountRaw || 0).toLocaleString("en-PH", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })}`,
+
         item.method || "N/A",
-        item.status || "N/A"
+        item.status || "N/A",
       ]);
 
       const generatedBy =
@@ -486,9 +545,6 @@ export default function TransactionManagement() {
           .join(" ")
           .trim() || "Administrator";
 
-      /*
-       * Logo
-       */
       try {
         const imgData = await getBase64ImageFromURL(
           "/images/Logo.png"
@@ -508,9 +564,6 @@ export default function TransactionManagement() {
         );
       }
 
-      /*
-       * Header
-       */
       doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
 
@@ -544,9 +597,7 @@ export default function TransactionManagement() {
       doc.setDrawColor(48, 87, 151);
       doc.line(14, 38, 196, 38);
 
-      /*
-       * Report title
-       */
+
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(48, 87, 151);
@@ -567,9 +618,6 @@ export default function TransactionManagement() {
         55
       );
 
-      /*
-       * Record count
-       */
       doc.setTextColor(0, 0, 0);
 
       doc.text(
@@ -580,14 +628,11 @@ export default function TransactionManagement() {
 
       let tableStartY = 68;
 
-      /*
-       * Filters
-       */
       const filters = [];
 
-      if (searchText) {
+      if (searchText.trim()) {
         filters.push(
-          `Search: "${searchText}"`
+          `Search: "${searchText.trim()}"`
         );
       }
 
@@ -613,6 +658,7 @@ export default function TransactionManagement() {
 
       if (filters.length > 0) {
         doc.setFont("helvetica", "bold");
+
         doc.text(
           "Filters Applied:",
           14,
@@ -632,9 +678,6 @@ export default function TransactionManagement() {
         tableStartY += 6 + filters.length * 6;
       }
 
-      /*
-       * Generate the table using ALL records.
-       */
       autoTable(doc, {
         head: [tableColumn],
         body: tableRows,
@@ -692,6 +735,7 @@ export default function TransactionManagement() {
           );
 
           doc.setFontSize(8);
+
           doc.setTextColor(
             100,
             100,
@@ -715,9 +759,6 @@ export default function TransactionManagement() {
         }
       });
 
-      /*
-       * Save PDF
-       */
       doc.save(fileName);
 
       notificationApi.success({
@@ -1355,15 +1396,18 @@ export default function TransactionManagement() {
                   type="primary"
                   onClick={() => {
                     const nextValue = !showArchived;
+
                     setShowArchived(nextValue);
                     setSearchText("");
                     setMethodFilter("");
                     setStatusFilter("");
                     setPaymentDateFilter(null);
+                    setCurrentPage(1);
+
                     if (nextValue) {
                       fetchArchivedTransactions();
                     } else {
-                      fetchTransactions();
+                      fetchTransactions(1);
                     }
                   }}
                 >
@@ -1385,7 +1429,7 @@ export default function TransactionManagement() {
                   current: currentPage,
                   pageSize: pageSize,
                   total: showArchived
-                    ? archivedData.length
+                    ? filteredData.length
                     : totalTransactionsCount,
                   showSizeChanger: false,
                   onChange: (page) => {
