@@ -312,8 +312,13 @@ export default function UserManagement() {
       errors.username = "Username is required";
     }
 
-    if (!editUserData.email?.trim()) {
+    const trimmedEmail = editUserData.email?.trim() || "";
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+    if (!trimmedEmail) {
       errors.email = "Email is required";
+    } else if (!emailPattern.test(trimmedEmail)) {
+      errors.email = "Please enter a valid email address";
     }
 
     if (!editUserData.role) {
@@ -335,7 +340,7 @@ export default function UserManagement() {
       (user) =>
         user.id !== editingUser.id &&
         user.email?.trim().toLowerCase() ===
-        editUserData.email.trim().toLowerCase()
+        trimmedEmail.toLowerCase()
     );
 
     if (emailExists) {
@@ -354,7 +359,7 @@ export default function UserManagement() {
           firstname: editUserData.firstname.trim(),
           lastname: editUserData.lastname.trim(),
           username: editUserData.username.trim(),
-          email: editUserData.email,
+          email: trimmedEmail,
           role: editUserData.role,
         },
         { withCredentials: true }
@@ -664,20 +669,22 @@ export default function UserManagement() {
                   />
                 </div>
 
-                <div className="usermanagement-actions-field">
-                  <label className="usermanagement-label">Role</label>
-                  <Select
-                    placeholder="Role"
-                    className="usermanagement-select"
-                    allowClear
-                    onChange={(v) => setRoleFilter(v || "")}
-                    options={[
-                      { value: "Admin", label: "Admin" },
-                      { value: "Customer", label: "Customer" },
-                      { value: "Employee", label: "Employee" }
-                    ]}
-                  />
-                </div>
+                {activeTab !== "customers" && (
+                  <div className="usermanagement-actions-field">
+                    <label className="usermanagement-label">Role</label>
+                    <Select
+                      placeholder="Role"
+                      className="usermanagement-select"
+                      allowClear
+                      value={roleFilter || undefined}
+                      onChange={(v) => setRoleFilter(v || "")}
+                      options={[
+                        { value: "Admin", label: "Admin" },
+                        { value: "Employee", label: "Employee" }
+                      ]}
+                    />
+                  </div>
+                )}
 
                 <div className="usermanagement-actions-field">
                   <label className="usermanagement-label">Status</label>
@@ -742,7 +749,13 @@ export default function UserManagement() {
             <Form form={form} component={false}>
               <Tabs
                 activeKey={activeTab}
-                onChange={setActiveTab}
+                onChange={(key) => {
+                  setActiveTab(key);
+
+                  if (key === "customers") {
+                    setRoleFilter("");
+                  }
+                }}
                 items={tabItems}
               />
             </Form>
@@ -911,17 +924,22 @@ export default function UserManagement() {
 
           <div className="users-edit-field">
             <label className="users-edit-label">
-              Email
+              Email <span style={{ color: "#ff0000" }}>*</span>
             </label>
 
             <Input
-              maxLength={30}
+              maxLength={40}
               value={editUserData.email}
               status={editErrors.email ? "error" : ""}
+              onKeyDown={(event) => {
+                if (event.key === " ") {
+                  event.preventDefault();
+                }
+              }}
               onChange={(event) => {
                 const cleanedValue = event.target.value
-                  .replace(/[^a-zA-Z0-9@.-]/g, "")
-                  .replace(/^\s+/, "");
+                  .replace(/\s/g, "")
+                  .replace(/[^a-zA-Z0-9@._+-]/g, "");
 
                 setEditUserData((previous) => ({
                   ...previous,
