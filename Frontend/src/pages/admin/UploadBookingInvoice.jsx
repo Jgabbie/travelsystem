@@ -1310,90 +1310,176 @@ export default function UploadBookingInvoice() {
                                 {travelersWithDocs.length === 0 && passportFiles.length === 0 && photoFiles.length === 0 ? (
                                     <AntText type="secondary">No documents uploaded yet.</AntText>
                                 ) : travelersWithDocs.length ? (
+
+
+
                                     <div>
-                                        {travelersWithDocs.map((traveler, index) => (
-                                            <div key={index} style={{ marginBottom: 24 }}>
-                                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
-                                                    <h4 style={{ marginBottom: 0 }}>
-                                                        Traveler {index + 1}: {traveler?.firstName} {traveler?.lastName}
-                                                    </h4>
-                                                    <Button
-                                                        type="primary"
-                                                        className="upload-invoice-form-button"
-                                                        onClick={() => handleRequestDocumentsResubmission(index)}
-                                                        loading={resubmittingTravelerIndex === index}
-                                                        disabled={
-                                                            !bookingId ||
-                                                            resubmittingTravelerIndex === index ||
-                                                            requestedTravelerIndexes.includes(index)
-                                                        }
-                                                    >
-                                                        {requestedTravelerIndexes.includes(index)
-                                                            ? "Resubmission Requested"
-                                                            : "Resubmit Traveler"}
-                                                    </Button>
-                                                </div>
-                                                <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13 }}>
-                                                    <div><strong>Title:</strong> {traveler?.title || "N/A"}</div>
-                                                    <div><strong>Room:</strong> {traveler?.roomType || "N/A"}</div>
-                                                    <div><strong>Birthday:</strong> {traveler?.birthday ? dayjs(traveler.birthday).format("MMM D, YYYY") : "N/A"}</div>
-                                                    <div><strong>Age:</strong> {traveler?.age ?? "N/A"}</div>
-                                                    <div><strong>Passenger Type:</strong> {traveler?.ageCategory ?? "N/A"}</div>
-                                                    <div><strong>Passport #:</strong> {traveler?.passportNo || "N/A"}</div>
-                                                    <div><strong>Expiry:</strong> {traveler?.passportExpiry === 'N/A' ? 'N/A' : dayjs(traveler.passportExpiry).format("MMM D, YYYY")}</div>
-                                                </div>
+                                        {travelersWithDocs.map((traveler, index) => {
 
-                                                <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap", marginTop: 12 }}>
-                                                    {traveler?.passportFile && (
-                                                        <div style={{ marginBottom: 16 }}>
-                                                            <AntText strong>Passport / Valid ID:</AntText>
-                                                            <div style={{ marginTop: 8 }}>
-                                                                <a
-                                                                    href={traveler.passportFile}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
-                                                                >
-                                                                    View Passport
-                                                                </a>
+                                            const passportExpiryDate =
+                                                traveler?.passportExpiry &&
+                                                    traveler.passportExpiry !== "N/A" &&
+                                                    dayjs(traveler.passportExpiry).isValid()
+                                                    ? dayjs(traveler.passportExpiry).startOf("day")
+                                                    : null;
+
+                                            const travelerTravelStartDate =
+                                                travelStart && dayjs(travelStart).isValid()
+                                                    ? dayjs(travelStart).startOf("day")
+                                                    : null;
+
+                                            const sixMonthsAfterTravel =
+                                                travelerTravelStartDate
+                                                    ? travelerTravelStartDate.add(6, "month")
+                                                    : null;
+
+                                            const passportExpiresWithinSixMonths =
+                                                passportExpiryDate &&
+                                                travelerTravelStartDate &&
+                                                sixMonthsAfterTravel &&
+                                                !passportExpiryDate.isBefore(travelerTravelStartDate, "day") &&
+                                                (
+                                                    passportExpiryDate.isSame(sixMonthsAfterTravel, "day") ||
+                                                    passportExpiryDate.isBefore(sixMonthsAfterTravel, "day")
+                                                );
+
+                                            return (
+
+                                                <div key={index} style={{ marginBottom: 24 }}>
+                                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+                                                        <h4 style={{ marginBottom: 0 }}>
+                                                            Traveler {index + 1}: {traveler?.firstName} {traveler?.lastName}
+                                                        </h4>
+                                                        <Button
+                                                            type="primary"
+                                                            className="upload-invoice-form-button"
+                                                            onClick={() => handleRequestDocumentsResubmission(index)}
+                                                            loading={resubmittingTravelerIndex === index}
+                                                            disabled={
+                                                                !bookingId ||
+                                                                resubmittingTravelerIndex === index ||
+                                                                requestedTravelerIndexes.includes(index)
+                                                            }
+                                                        >
+                                                            {requestedTravelerIndexes.includes(index)
+                                                                ? "Resubmission Requested"
+                                                                : "Resubmit Traveler"}
+                                                        </Button>
+                                                    </div>
+                                                    <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13 }}>
+                                                        <div><strong>Title:</strong> {traveler?.title || "N/A"}</div>
+                                                        <div><strong>Room:</strong> {traveler?.roomType || "N/A"}</div>
+                                                        <div><strong>Birthday:</strong> {traveler?.birthday ? dayjs(traveler.birthday).format("MMM D, YYYY") : "N/A"}</div>
+                                                        <div><strong>Age:</strong> {traveler?.age ?? "N/A"}</div>
+                                                        <div><strong>Passenger Type:</strong> {traveler?.ageCategory ?? "N/A"}</div>
+                                                        <div><strong>Passport #:</strong> {traveler?.passportNo || "N/A"}</div>
+                                                        <div><strong>Expiry:</strong> {traveler?.passportExpiry === 'N/A' ? 'N/A' : dayjs(traveler.passportExpiry).format("MMM D, YYYY")}</div>
+                                                    </div>
+
+                                                    {passportExpiresWithinSixMonths && (
+                                                        <div
+                                                            style={{
+                                                                marginTop: 14,
+                                                                backgroundColor: "#fffbe6",
+                                                                border: "1px solid #ffe58f",
+                                                                borderLeft: "5px solid #faad14",
+                                                                borderRadius: 8,
+                                                                padding: "12px 16px",
+                                                                color: "#ad6800"
+                                                            }}
+                                                        >
+                                                            <strong
+                                                                style={{
+                                                                    display: "block",
+                                                                    marginBottom: 4
+                                                                }}
+                                                            >
+                                                                Passport Expiry Notice
+                                                            </strong>
+
+                                                            <div>
+                                                                This traveler's Passport is about to expire in less than 6 months.
+                                                                We recommend a renewal.
+                                                            </div>
+
+                                                            <div
+                                                                style={{
+                                                                    marginTop: 5,
+                                                                    fontSize: 13
+                                                                }}
+                                                            >
+                                                                Passport Expiry:{" "}
+                                                                <strong>
+                                                                    {passportExpiryDate.format("MMMM D, YYYY")}
+                                                                </strong>
+                                                            </div>
+
+                                                            <div
+                                                                style={{
+                                                                    marginTop: 3,
+                                                                    fontSize: 13
+                                                                }}
+                                                            >
+                                                                Travel Start Date:{" "}
+                                                                <strong>
+                                                                    {travelerTravelStartDate.format("MMMM D, YYYY")}
+                                                                </strong>
                                                             </div>
                                                         </div>
                                                     )}
 
-                                                    {traveler?.photoFile && (
-                                                        <div style={{ marginBottom: 16 }}>
-                                                            <AntText strong>2x2 Photo:</AntText>
-                                                            <div style={{ marginTop: 8 }}>
-                                                                <a
-                                                                    href={traveler.photoFile}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
-                                                                >
-                                                                    View 2x2 Photo
-                                                                </a>
+                                                    <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap", marginTop: 12 }}>
+                                                        {traveler?.passportFile && (
+                                                            <div style={{ marginBottom: 16 }}>
+                                                                <AntText strong>Passport / Valid ID:</AntText>
+                                                                <div style={{ marginTop: 8 }}>
+                                                                    <a
+                                                                        href={traveler.passportFile}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                    >
+                                                                        View Passport
+                                                                    </a>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    )}
+                                                        )}
 
-                                                    {traveler?.visaFile && (
-                                                        <div style={{ marginBottom: 16 }}>
-                                                            <AntText strong>Visa File:</AntText>
-                                                            <div style={{ marginTop: 8 }}>
-                                                                <a
-                                                                    href={traveler.visaFile}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
-                                                                >
-                                                                    View Visa
-                                                                </a>
+                                                        {traveler?.photoFile && (
+                                                            <div style={{ marginBottom: 16 }}>
+                                                                <AntText strong>2x2 Photo:</AntText>
+                                                                <div style={{ marginTop: 8 }}>
+                                                                    <a
+                                                                        href={traveler.photoFile}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                    >
+                                                                        View 2x2 Photo
+                                                                    </a>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    )}
+                                                        )}
+
+                                                        {traveler?.visaFile && (
+                                                            <div style={{ marginBottom: 16 }}>
+                                                                <AntText strong>Visa File:</AntText>
+                                                                <div style={{ marginTop: 8 }}>
+                                                                    <a
+                                                                        href={traveler.visaFile}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                    >
+                                                                        View Visa
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            )
+                                        })}
                                     </div>
                                 ) : (
                                     <div>

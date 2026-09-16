@@ -240,6 +240,13 @@ export default function ProfilePage() {
                 (item) => String(item).trim().toLowerCase() === normalizedKey
             );
 
+            if (key === 'tours') {
+                return {
+                    ...prev,
+                    tours: exists ? [] : [normalizedValue]
+                };
+            }
+
             if (!exists && limit && current.length >= limit) {
                 notificationApi.warning({
                     title: `You can only select up to ${limit} options.`,
@@ -276,7 +283,7 @@ export default function ProfilePage() {
 
         if ((preferences.tours || []).length < 1) {
             notificationApi.error({
-                title: 'Please select at least 1 tour type preference.',
+                title: 'Please select exactly 1 tour type preference.',
                 placement: 'topRight'
             });
             return;
@@ -623,7 +630,7 @@ export default function ProfilePage() {
                     tours: cleanSavedSelections(
                         savedPreferences.tours,
                         tourOptions,
-                        2
+                        1
                     )
                 };
 
@@ -1527,7 +1534,7 @@ export default function ProfilePage() {
                                         {/* TOURS */}
                                         <div className="preference-block" style={{ marginTop: '20px' }}>
                                             <h3>What type of tour do you like?</h3>
-                                            <p>Choose 1 or 2</p>
+                                            <p>Choose exactly 1</p>
 
                                             <div className="preference-chip-grid">
                                                 {tourOptions.map((option) => (
@@ -1540,7 +1547,7 @@ export default function ProfilePage() {
                                                                 ? 'preference-chip is-selected'
                                                                 : 'preference-chip'
                                                         }
-                                                        onClick={() => togglePreference('tours', option, 2)}
+                                                        onClick={() => togglePreference('tours', option, 1)}
                                                     >
                                                         {option}
                                                     </button>

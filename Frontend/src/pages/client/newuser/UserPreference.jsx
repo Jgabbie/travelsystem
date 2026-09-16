@@ -48,6 +48,14 @@ export default function UserPreference() {
         setSelections((prev) => {
             const current = prev[key];
             const exists = current.includes(value);
+
+            if (key === 'tours') {
+                return {
+                    ...prev,
+                    tours: exists ? [] : [value]
+                };
+            }
+
             if (!exists && limit && current.length >= limit) {
                 return prev;
             }
@@ -58,7 +66,9 @@ export default function UserPreference() {
         });
     };
 
-    const canContinue = selections.moods.length === 3 && selections.tours.length >= 1 && selections.tours.length <= 2;
+    const canContinue =
+        selections.moods.length === 3 &&
+        selections.tours.length === 1;
 
     const handleContinue = async () => {
         if (!canContinue) return;
@@ -101,7 +111,7 @@ export default function UserPreference() {
                             Pick a few vibes and tour styles so we can personalize your feed.
                         </p>
                         <div className="preference-progress">
-                            <span>Moods: {selections.moods.length}/3 | Tours: {selections.tours.length}/2</span>
+                            <span> Moods: {selections.moods.length}/3 | Tours: {selections.tours.length}/1</span>
                             <span className="preference-progress-divider" />
                             <span>{canContinue ? '✓ Ready' : 'Complete selections'}</span>
                         </div>
@@ -145,7 +155,7 @@ export default function UserPreference() {
                 <div className="preference-card">
                     <div className="preference-question">
                         <h2>What type of tour do you like?</h2>
-                        <p>Choose 1 or 2.</p>
+                        <p>Choose exactly 1.</p>
                     </div>
                     <div className="preference-chip-grid">
                         {tourOptions.map((option) => (

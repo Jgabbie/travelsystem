@@ -358,6 +358,50 @@ export default function UserBookingInvoice() {
         [bookingDetails, booking]
     );
 
+    const passportExpiryWarningTravelers = useMemo(() => {
+        if (!travelStart || !dayjs(travelStart).isValid()) {
+            return [];
+        }
+
+        const travelStartDate = dayjs(travelStart).startOf('day');
+        const sixMonthsAfterTravel = travelStartDate.add(6, 'month');
+
+        return travelersWithDocs
+            .map((traveler, index) => {
+                const passportExpiry = traveler?.passportExpiry;
+
+                if (
+                    !passportExpiry ||
+                    passportExpiry === 'N/A' ||
+                    !dayjs(passportExpiry).isValid()
+                ) {
+                    return null;
+                }
+
+                const expiryDate = dayjs(passportExpiry).startOf('day');
+
+                // Do not include passports already expired before travel.
+                // This banner is only for the 6-month warning.
+                const expiresWithinSixMonths =
+                    !expiryDate.isBefore(travelStartDate, 'day') &&
+                    (
+                        expiryDate.isSame(sixMonthsAfterTravel, 'day') ||
+                        expiryDate.isBefore(sixMonthsAfterTravel, 'day')
+                    );
+
+                if (!expiresWithinSixMonths) {
+                    return null;
+                }
+
+                return {
+                    travelerNumber: index + 1,
+                    expiryDate
+                };
+            })
+            .filter(Boolean);
+
+    }, [travelStart, travelersWithDocs]);
+
     const passportFiles = useMemo(
         () => booking?.passportFiles ?? [],
         [booking]
@@ -2162,6 +2206,33 @@ export default function UserBookingInvoice() {
                                             {(() => {
                                                 const needsResubmission = traveler?.documentsResubmissionRequired || resubmissionTravelerIndexes.includes(index);
 
+                                                const passportExpiryDate =
+                                                    traveler?.passportExpiry &&
+                                                        traveler.passportExpiry !== 'N/A' &&
+                                                        dayjs(traveler.passportExpiry).isValid()
+                                                        ? dayjs(traveler.passportExpiry).startOf('day')
+                                                        : null;
+
+                                                const travelerTravelStartDate =
+                                                    travelStart && dayjs(travelStart).isValid()
+                                                        ? dayjs(travelStart).startOf('day')
+                                                        : null;
+
+                                                const sixMonthsAfterTravel =
+                                                    travelerTravelStartDate
+                                                        ? travelerTravelStartDate.add(6, 'month')
+                                                        : null;
+
+                                                const passportExpiresWithinSixMonths =
+                                                    passportExpiryDate &&
+                                                    travelerTravelStartDate &&
+                                                    sixMonthsAfterTravel &&
+                                                    !passportExpiryDate.isBefore(travelerTravelStartDate, 'day') &&
+                                                    (
+                                                        passportExpiryDate.isSame(sixMonthsAfterTravel, 'day') ||
+                                                        passportExpiryDate.isBefore(sixMonthsAfterTravel, 'day')
+                                                    );
+
                                                 return (
                                                     <>
                                                         <h2 className="user-invoice-travler-header">
@@ -2210,6 +2281,46 @@ export default function UserBookingInvoice() {
                                                                     <div>{traveler?.passportExpiry === 'N/A' ? 'N/A' : dayjs(traveler.passportExpiry).format('MMM D, YYYY')}</div>
                                                                 </div>
                                                             </div>
+
+                                                            {passportExpiresWithinSixMonths && (
+                                                                <div
+                                                                    style={{
+                                                                        marginTop: 16,
+                                                                        backgroundColor: '#fffbe6',
+                                                                        border: '1px solid #ffe58f',
+                                                                        borderLeft: '5px solid #faad14',
+                                                                        borderRadius: 8,
+                                                                        padding: '12px 16px',
+                                                                        color: '#ad6800'
+                                                                    }}
+                                                                >
+                                                                    <strong
+                                                                        style={{
+                                                                            display: 'block',
+                                                                            marginBottom: 4
+                                                                        }}
+                                                                    >
+                                                                        Passport Expiry Notice
+                                                                    </strong>
+
+                                                                    <div>
+                                                                        Your Passport is about to expire in less than 6 months.
+                                                                        We recommend a renewal.
+                                                                    </div>
+
+                                                                    <div
+                                                                        style={{
+                                                                            marginTop: 5,
+                                                                            fontSize: 13
+                                                                        }}
+                                                                    >
+                                                                        Passport Expiry:{' '}
+                                                                        <strong>
+                                                                            {passportExpiryDate.format('MMMM D, YYYY')}
+                                                                        </strong>
+                                                                    </div>
+                                                                </div>
+                                                            )}
 
                                                             <div style={{ display: "flex", flexDirection: "row", gap: 50, flexWrap: "wrap", marginTop: 24 }}>
                                                                 {(!needsResubmission && traveler?.passportFile) && (

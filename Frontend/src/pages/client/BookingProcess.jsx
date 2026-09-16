@@ -574,6 +574,20 @@ export default function BookingProcess() {
 
             if (currentStep === 0) {
 
+                const travelersForPassportValidation =
+                    form.getFieldValue('travelers') ||
+                    bookingData?.travelers ||
+                    []
+
+                if (
+                    !validatePassportExpiriesBeforeProceeding(
+                        travelersForPassportValidation,
+                        true
+                    )
+                ) {
+                    return
+                }
+
                 const missingVisaSelection = requiresVisa && !isDomesticPackage &&
                     visaSelections.slice(0, uploadTravelerCount).some(
                         selection => selection !== 'yes' && selection !== 'no'
@@ -800,6 +814,16 @@ export default function BookingProcess() {
             const finalPassportFiles = bookingData?.passportFiles || []
             const finalPhotoFiles = bookingData?.photoFiles || []
             const finalVisaFiles = bookingData?.visaFiles || []
+
+            if (
+                !validatePassportExpiriesBeforeProceeding(
+                    finalTravelers,
+                    false
+                )
+            ) {
+                return
+            }
+
             const travelersWithDocuments = finalTravelers.map((traveler, index) => ({
                 ...traveler,
                 passportFile: traveler?.passportFile || finalPassportFiles[index] || null,
@@ -971,9 +995,143 @@ export default function BookingProcess() {
     const increaseInfant = () => setCounts(prev => ({ ...prev, infant: Math.min(prev.infant + 1, maxInfants) }));
     const decreaseInfant = () => setCounts(prev => ({ ...prev, infant: Math.max(0, prev.infant - 1) }));
 
+
+    const travelStartDate = data?.travelDate?.startDate
+        ? dayjs(data.travelDate.startDate).startOf('day')
+        : null
+
+    const startDateTravel = travelStartDate
+        ? travelStartDate.format('MMMM D, YYYY')
+        : 'N/A'
+
+    const endDateTravel = data?.travelDate?.endDate
+        ? dayjs(data.travelDate.endDate).format('MMMM D, YYYY')
+        : 'N/A'
+
+
+    // validate passport expiry against the selected travel date
+    const getPassportExpiryStatus = (passportExpiry) => {
+        if (isDomesticPackage || !passportExpiry || !travelStartDate) {
+            return 'valid'
+        }
+
+        const expiryDate = dayjs(passportExpiry).startOf('day')
+
+        if (!expiryDate.isValid()) {
+            return 'valid'
+        }
+
+        // Passport expires BEFORE travel date
+        if (expiryDate.isBefore(travelStartDate, 'day')) {
+            return 'expired-before-travel'
+        }
+
+        // Passport expires within 6 months from travel date
+        const sixMonthsAfterTravel = travelStartDate.add(6, 'month')
+
+        if (
+            expiryDate.isSame(sixMonthsAfterTravel, 'day') ||
+            expiryDate.isBefore(sixMonthsAfterTravel, 'day')
+        ) {
+            return 'within-six-months'
+        }
+
+        return 'valid'
+    }
+
+
+    const validatePassportExpiriesBeforeProceeding = (
+        travelerList = [],
+        showWarnings = true
+    ) => {
+
+        if (isDomesticPackage || !travelStartDate) {
+            return true
+        }
+
+        for (let index = 0; index < travelerList.length; index += 1) {
+
+            const passportExpiry = travelerList[index]?.passportExpiry
+
+            if (!passportExpiry) continue
+
+            const status = getPassportExpiryStatus(passportExpiry)
+
+            if (status === 'expired-before-travel') {
+
+                notificationApi.error({
+                    title: `Traveler ${index + 1}'s passport expires before the travel date.`,
+                    description: `Passport expiry must be on or after ${travelStartDate.format(
+                        'MMMM D, YYYY'
+                    )}.`,
+                    placement: 'topRight'
+                })
+
+                return false
+            }
+
+            if (
+                showWarnings &&
+                status === 'within-six-months'
+            ) {
+
+                notificationApi.warning({
+                    title: `Traveler ${index + 1}'s passport expires within six months of travel.`,
+                    description:
+                        'Please consider renewing the passport before the trip.',
+                    placement: 'topRight'
+                })
+            }
+        }
+
+        return true
+    }
+
+
+    const passportExpiryBannerData = (() => {
+        if (isDomesticPackage || !travelStartDate) {
+            return {
+                expiredBeforeTravel: [],
+                withinSixMonths: []
+            }
+        }
+
+        const travelerList = bookingData?.travelers || []
+
+        const expiredBeforeTravel = []
+        const withinSixMonths = []
+
+        travelerList.forEach((traveler, index) => {
+            const passportExpiry = traveler?.passportExpiry
+
+            if (!passportExpiry) return
+
+            const status = getPassportExpiryStatus(passportExpiry)
+
+            if (status === 'expired-before-travel') {
+                expiredBeforeTravel.push(index + 1)
+            } else if (status === 'within-six-months') {
+                withinSixMonths.push(index + 1)
+            }
+        })
+
+        return {
+            expiredBeforeTravel,
+            withinSixMonths
+        }
+    })()
+
+    const hasPassportExpiredBeforeTravel =
+        passportExpiryBannerData.expiredBeforeTravel.length > 0
+
+    const hasPassportWithinSixMonths =
+        passportExpiryBannerData.withinSixMonths.length > 0
+
+
     if (!hasBookingData) {
         return null;
     }
+
 
 
 
@@ -1728,7 +1886,48 @@ export default function BookingProcess() {
                                                                 placeholder="Passport expiry"
                                                                 format="MMMM D, YYYY"
                                                                 value={getTravelerDateValue(index, 'passportExpiry')}
-                                                                onChange={(date) => updateTravelerField(index, 'passportExpiry', date)}
+                                                                onChange={(date) => {
+
+                                                                    updateTravelerField(
+                                                                        index,
+                                                                        'passportExpiry',
+                                                                        date
+                                                                    )
+
+                                                                    if (!date) return
+
+                                                                    const status =
+                                                                        getPassportExpiryStatus(date)
+
+                                                                    if (
+                                                                        status === 'expired-before-travel'
+                                                                    ) {
+
+                                                                        notificationApi.error({
+                                                                            title:
+                                                                                'Passport expires before the travel date.',
+                                                                            description:
+                                                                                `Traveler ${index + 1}'s passport must be valid on ${travelStartDate?.format(
+                                                                                    'MMMM D, YYYY'
+                                                                                ) ||
+                                                                                'the selected travel date'
+                                                                                }.`,
+                                                                            placement: 'topRight'
+                                                                        })
+
+                                                                    } else if (
+                                                                        status === 'within-six-months'
+                                                                    ) {
+
+                                                                        notificationApi.warning({
+                                                                            title:
+                                                                                'Passport expires within six months of travel.',
+                                                                            description:
+                                                                                `Traveler ${index + 1} may need to renew the passport before the trip.`,
+                                                                            placement: 'topRight'
+                                                                        })
+                                                                    }
+                                                                }}
                                                                 disabledDate={(current) => {
                                                                     if (!current) return false
                                                                     return current.isBefore(dayjs().endOf('year').add(1, 'day'), 'day')
@@ -2112,6 +2311,76 @@ export default function BookingProcess() {
 
 
                     <div className="booking-form-stepper-container" style={{ marginTop: 40 }}>
+                        {hasPassportExpiredBeforeTravel && (
+                            <div
+                                style={{
+                                    backgroundColor: '#fff2f0',
+                                    border: '1px solid #ffccc7',
+                                    borderLeft: '5px solid #ff4d4f',
+                                    borderRadius: '8px',
+                                    padding: '14px 16px',
+                                    marginBottom: '15px',
+                                    color: '#cf1322'
+                                }}
+                            >
+                                <strong>Passport Expiry Invalid</strong>
+
+                                <div style={{ marginTop: '4px' }}>
+                                    {passportExpiryBannerData.expiredBeforeTravel.length === 1 ? (
+                                        <>
+                                            Traveler {passportExpiryBannerData.expiredBeforeTravel[0]}'s
+                                            passport expires before the travel start date of{' '}
+                                            <strong>{startDateTravel}</strong>. Please renew the passport
+                                            before proceeding with the trip.
+                                        </>
+                                    ) : (
+                                        <>
+                                            Travelers{' '}
+                                            {passportExpiryBannerData.expiredBeforeTravel.join(', ')} have
+                                            passports that expire before the travel start date of{' '}
+                                            <strong>{startDateTravel}</strong>. Please renew the passports
+                                            before proceeding with the trip.
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+
+                        {/* PASSPORT EXPIRES WITHIN 6 MONTHS */}
+                        {hasPassportWithinSixMonths && (
+                            <div
+                                style={{
+                                    backgroundColor: '#fffbe6',
+                                    border: '1px solid #ffe58f',
+                                    borderLeft: '5px solid #faad14',
+                                    borderRadius: '8px',
+                                    padding: '14px 16px',
+                                    marginBottom: '15px',
+                                    color: '#ad6800'
+                                }}
+                            >
+                                <strong>Passport Expiry Notice</strong>
+
+                                <div style={{ marginTop: '4px' }}>
+                                    {passportExpiryBannerData.withinSixMonths.length === 1 ? (
+                                        <>
+                                            Traveler {passportExpiryBannerData.withinSixMonths[0]}:
+                                            Your Passport is about to expire in less than 6 months.
+                                            We recommend a renewal.
+                                        </>
+                                    ) : (
+                                        <>
+                                            Travelers {passportExpiryBannerData.withinSixMonths.join(', ')}:
+                                            Your Passports are about to expire in less than 6 months.
+                                            We recommend a renewal.
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+
                         <div className="booking-section-header" style={{ marginBottom: 30 }}>
                             <h2 className="upload-passport-title booking-section-title" style={{ textAlign: "left" }}>Booking Registration</h2>
                             <p className="upload-passport-text booking-section-subtitle" style={{ textAlign: "left" }}>
