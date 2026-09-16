@@ -468,34 +468,46 @@ export default function BookingManagement() {
     },
     {
       title: "Actions",
-      render: (_, record) => (
-        <Space>
-          <Button
-            className='bookingmanagement-view-button'
-            type="primary"
-            icon={<EyeOutlined />}
-            onClick={() => handleView(record.key)}
-          >
-          </Button>
-          <Button
-            className='bookingmanagement-edit-button'
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => edit(record)}
-          >
-          </Button>
-          <Button
-            className='bookingmanagement-remove-button'
-            type='primary'
-            icon={<DeleteOutlined />}
-            onClick={() => {
-              setEditingBooking(record);
-              setIsDeleteModalOpen(true);
-            }}
-          >
-          </Button>
-        </Space>
-      )
+      render: (_, record) => {
+        const normalizedStatus = (record.status || "").toLowerCase();
+
+        const isFullyPaid =
+          normalizedStatus === "fully paid" ||
+          normalizedStatus === "successful" ||
+          normalizedStatus === "confirmed";
+
+        const isCancelled = normalizedStatus === "cancelled";
+
+        return (
+          <Space>
+            <Button
+              className='bookingmanagement-view-button'
+              type="primary"
+              icon={<EyeOutlined />}
+              onClick={() => handleView(record.key)}
+            />
+
+            <Button
+              className='bookingmanagement-edit-button'
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => edit(record)}
+              disabled={isCancelled}
+            />
+
+            <Button
+              className='bookingmanagement-remove-button'
+              type='primary'
+              icon={<DeleteOutlined />}
+              disabled={isFullyPaid}
+              onClick={() => {
+                setEditingBooking(record);
+                setIsDeleteModalOpen(true);
+              }}
+            />
+          </Space>
+        );
+      }
     }
   ];
 
@@ -636,8 +648,8 @@ export default function BookingManagement() {
                       { value: "Fully Paid", label: "Fully Paid" },
                       { value: "Pending", label: "Pending" },
                       { value: "Cancelled", label: "Cancelled" },
-                      { value: "Not Paid", label: "Not Paid"},
-                      { value: "Cancellation Requested", label: "Cancellation Requested"}
+                      { value: "Not Paid", label: "Not Paid" },
+                      { value: "Cancellation Requested", label: "Cancellation Requested" }
                     ]}
                   />
                 </div>

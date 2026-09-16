@@ -140,6 +140,10 @@ const deleteQuotation = async (req, res) => {
             return res.status(404).json({ message: 'Quotation not found' })
         }
 
+        const user = await UserModel.findById(quotation.userId)
+            .select('email username firstname')
+            .lean()
+
         await ArchivedQuotationModel.create({
             originalQuotationId: quotation._id,
             packageId: quotation.packageId,
@@ -154,6 +158,86 @@ const deleteQuotation = async (req, res) => {
         })
 
         await QuotationModel.findByIdAndDelete(id)
+
+        if (user?.email) {
+            try {
+                const recipientName =
+                    user.firstname ||
+                    user.username ||
+                    'Customer'
+
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: `Quotation Archived - ${quotation.reference}`,
+                    html: buildBrandedEmail({
+                        title: 'Quotation Archived',
+
+                        introHtml: `
+                            Hello <strong>${recipientName}</strong>,
+                        `,
+
+                        bodyHtml: `
+                            <p style="
+                                margin:0 0 12px;
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                            ">
+                                Your quotation has been temporarily removed from our active records.
+                            </p>
+
+                            <div style="
+                                margin:16px 0;
+                                padding:14px 16px;
+                                background:#f8fafc;
+                                border:1px solid #e2e8f0;
+                                border-radius:10px;
+                            ">
+                                <p style="margin:0 0 8px;">
+                                    <strong>Quotation Reference:</strong>
+                                    ${quotation.reference || 'N/A'}
+                                </p>
+
+                                <p style="margin:0;">
+                                    <strong>Status:</strong>
+                                    ${quotation.status || 'N/A'}
+                                </p>
+                            </div>
+
+                            <p style="
+                                margin:16px 0 0;
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                            ">
+                                Your quotation information remains recorded
+                                in our system for record-keeping purposes.
+                            </p>
+
+                            <p style="
+                                margin:20px 0 0;
+                                color:#777;
+                                font-size:13px;
+                            ">
+                                If you have questions regarding this quotation,
+                                please contact M&RC Travel and Tours.
+                            </p>
+                        `
+                    })
+                })
+
+                console.log(
+                    `Quotation archive email sent to ${user.email}`
+                )
+
+            } catch (emailError) {
+                console.error(
+                    'Failed to send quotation archive email:',
+                    emailError
+                )
+            }
+        }
 
         logAction('QUOTATION_ARCHIVED', req.userId, { "Quotation Archived": `Reference: ${quotation.reference}` })
         res.status(200).json({ message: 'Quotation archived' })

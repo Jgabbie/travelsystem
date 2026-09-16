@@ -708,6 +708,13 @@ const delUsers = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
+        const recipientEmail = user.email;
+
+        const recipientName =
+            user.firstname ||
+            user.username ||
+            'User';
+
         await ArchivedUserModel.create({
             originalUserId: user._id,
             username: user.username,
@@ -722,6 +729,90 @@ const delUsers = async (req, res) => {
         });
 
         await UserModel.findByIdAndDelete(id);
+
+        if (recipientEmail) {
+            try {
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: recipientEmail,
+                    subject: `Account Archived - M&RC Travel and Tours`,
+                    html: `
+                        <div style="
+                            max-width:560px;
+                            margin:0 auto;
+                            background:#ffffff;
+                            padding:30px 32px;
+                            text-align:left;
+                        ">
+                            <p style="
+                                color:#555;
+                                font-size:16px;
+                            ">
+                                Hello <b>${recipientName}</b>,
+                            </p>
+
+                            <p style="
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                            ">
+                                Your M&RC Travel and Tours account has been
+                                temporarily removed from our active records.
+                            </p>
+
+                            <p style="
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                            ">
+                                <b>Username:</b>
+                                ${user.username || 'N/A'}<br/>
+
+                                <b>Email:</b>
+                                ${user.email || 'N/A'}<br/>
+
+                                <b>Account Role:</b>
+                                ${user.role || 'N/A'}
+                            </p>
+
+                            <p style="
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                                margin-top:20px;
+                            ">
+                                Your account information remains recorded
+                                in our system for record-keeping purposes.
+                            </p>
+
+                            <p style="
+                                color:#777;
+                                font-size:13px;
+                                margin-top:30px;
+                            ">
+                                If you believe your account was archived by
+                                mistake or you have questions regarding your
+                                account, please contact M&RC Travel and Tours.
+                            </p>
+                        </div>
+                    `
+                });
+
+                console.log(
+                    `User archive email sent to ${recipientEmail}`
+                );
+
+            } catch (emailError) {
+                console.error(
+                    'Failed to send user archive email:',
+                    emailError
+                );
+            }
+        } else {
+            console.log(
+                `No email found for archived user ${user._id}`
+            );
+        }
 
         await logAction(
             "ADMIN_DELETED_USER",

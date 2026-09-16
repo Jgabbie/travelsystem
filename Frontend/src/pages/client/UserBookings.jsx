@@ -17,6 +17,7 @@ export default function UserBookings() {
 
     const [policyModalOpen, setPolicyModalOpen] = useState(false)
     const [cancelModalOpen, setCancelModalOpen] = useState(false)
+    const [cancelConfirmationModalOpen, setCancelConfirmationModalOpen] = useState(false)
     const [cancellationRequestedModalOpen, setCancellationRequestedModalOpen] = useState(false)
     const [cancelReason, setCancelReason] = useState('')
     const [cancelOtherReason, setCancelOtherReason] = useState('')
@@ -147,6 +148,7 @@ export default function UserBookings() {
     //close cancellation modal and reset state
     const closeCancellationModal = () => {
         setCancelModalOpen(false);
+        setCancelConfirmationModalOpen(false);
         setCancelTargetKey(null);
         clearCancellationForm();
     };
@@ -312,6 +314,43 @@ export default function UserBookings() {
         } finally {
             setLoadingCancel(false);
         }
+    };
+
+    const openCancelConfirmationModal = () => {
+        if (!cancelTargetKey) {
+            notificationApi.error({
+                title: 'Booking could not be identified',
+                description: 'Please close the cancellation form and try again.',
+                placement: 'topRight'
+            });
+            return;
+        }
+
+        if (!cancelReason) {
+            notificationApi.warning({
+                title: 'Please select a cancellation reason',
+                placement: 'topRight'
+            });
+            return;
+        }
+
+        if (cancelReason === 'Other' && !cancelOtherReason.trim()) {
+            notificationApi.warning({
+                title: 'Please provide a cancellation reason',
+                placement: 'topRight'
+            });
+            return;
+        }
+
+        if (!cancelImages.length || !cancelImages[0]) {
+            notificationApi.warning({
+                title: 'Please upload a supporting file',
+                placement: 'topRight'
+            });
+            return;
+        }
+
+        setCancelConfirmationModalOpen(true);
     };
 
 
@@ -717,8 +756,7 @@ export default function UserBookings() {
                                 <Button
                                     type="primary"
                                     className="modal-button"
-                                    onClick={confirmCancelBooking}
-                                    loading={loadingCancel}
+                                    onClick={openCancelConfirmationModal}
                                     disabled={loadingCancel}
                                 >
                                     Cancel Booking
@@ -798,7 +836,61 @@ export default function UserBookings() {
 
 
 
+                    <Modal
+                        open={cancelConfirmationModalOpen}
+                        onCancel={() => setCancelConfirmationModalOpen(false)}
+                        footer={null}
+                        centered
+                        closable={!loadingCancel}
+                        maskClosable={!loadingCancel}
+                    >
+                        <div
+                            className="modal-container"
+                            style={{ textAlign: 'center' }}
+                        >
+                            <h1 className="modal-heading">
+                                Confirm Cancellation
+                            </h1>
 
+                            <p className="modal-text">
+                                This cancellation can be UNDONE, do you still want to proceed with this cancellation of booking?
+                            </p>
+
+                            <div
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    gap: "10px",
+                                    justifyContent: "flex-end",
+                                    marginTop: "20px"
+                                }}
+                            >
+                                <Button
+                                    type="primary"
+                                    className="modal-button"
+                                    loading={loadingCancel}
+                                    disabled={loadingCancel}
+                                    onClick={async () => {
+                                        setCancelConfirmationModalOpen(false);
+                                        await confirmCancelBooking();
+                                    }}
+                                >
+                                    Proceed Cancellation
+                                </Button>
+
+                                <Button
+                                    type="primary"
+                                    className="modal-button-cancel"
+                                    disabled={loadingCancel}
+                                    onClick={() => {
+                                        setCancelConfirmationModalOpen(false);
+                                    }}
+                                >
+                                    Go Back
+                                </Button>
+                            </div>
+                        </div>
+                    </Modal>
 
 
 

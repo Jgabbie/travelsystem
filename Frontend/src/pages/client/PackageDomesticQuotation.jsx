@@ -132,7 +132,7 @@ export default function PackageDomesticQuotation() {
     const [packageCategory, setPackageCategory] = useState('All in Package')
     const [, setTravelers] = useState(1)
     const [travelerType, setTravelerType] = useState('solo')
-    const [adultCount, setAdultCount] = useState(2)
+    const [adultCount, setAdultCount] = useState(1)
     const [childCount, setChildCount] = useState(0)
     const [infantCount, setInfantCount] = useState(0)
     const [preferredAirlines, setPreferredAirlines] = useState('')
@@ -179,11 +179,6 @@ export default function PackageDomesticQuotation() {
         setError({});
     }, [packageCategory, minBudget, maxBudget, itineraryLabels]);
 
-    useEffect(() => {
-        if (travelerType === 'group' && adultCount < 2) {
-            setAdultCount(2);
-        }
-    }, [travelerType, adultCount]);
 
     useEffect(() => {
         if (travelerType === 'solo') {
@@ -216,7 +211,7 @@ export default function PackageDomesticQuotation() {
         nextChild -= childReduction
         excess -= childReduction
 
-        const adultReduction = Math.min(excess, Math.max(0, nextAdult - 2))
+        const adultReduction = Math.min(excess, Math.max(0, nextAdult - 1))
         nextAdult -= adultReduction
 
         setInfantCount(nextInfant)
@@ -246,6 +241,24 @@ export default function PackageDomesticQuotation() {
     const travelerSlotsRemaining = selectedDateSlots ? Math.max(selectedDateSlots - totalTravelers, 0) : null
 
 
+    useEffect(() => {
+        setError((prev) => {
+            const nextErrors = { ...prev }
+
+            if (travelerType === 'group' && totalTravelers < 2) {
+                nextErrors.travelers = 'Group booking requires at least 2 travelers.'
+            } else if (selectedDateSlots && totalTravelers > selectedDateSlots) {
+                nextErrors.travelers =
+                    `The selected date only has ${selectedDateSlots} slot${selectedDateSlots === 1 ? '' : 's'} left.`
+            } else {
+                delete nextErrors.travelers
+            }
+
+            return nextErrors
+        })
+    }, [travelerType, totalTravelers, selectedDateSlots])
+
+
     //cancel button handler for booking success modal
     const onCancelModal = () => {
         setIsBookingSuccessOpen(false)
@@ -272,6 +285,9 @@ export default function PackageDomesticQuotation() {
 
         if (!totalTravelers || totalTravelers < 1) {
             newErrors.travelers = 'Please enter the number of travelers'
+        }
+        if (travelerType === 'group' && totalTravelers < 2) {
+            newErrors.travelers = 'Group booking requires at least 2 travelers.'
         }
         if (selectedDateSlots && totalTravelers > selectedDateSlots) {
             newErrors.travelers = `The selected date only has ${selectedDateSlots} slot${selectedDateSlots === 1 ? '' : 's'} left.`
@@ -495,35 +511,84 @@ export default function PackageDomesticQuotation() {
                                         </div>
 
                                         {travelerType === 'group' && (
-                                            <div className="traveler-counters">
-                                                {[
-                                                    { label: 'Adult', value: adultCount, setter: setAdultCount, min: 2 },
-                                                    { label: 'Child', value: childCount, setter: setChildCount, min: 0 },
-                                                    { label: 'Infant', value: infantCount, setter: setInfantCount, min: 0 }
-                                                ].map((row) => (
-                                                    <div key={row.label} className="traveler-counter-row">
-                                                        <span className="traveler-counter-label">{row.label}</span>
-                                                        <div className="traveler-counter-controls">
-                                                            <Button
-                                                                size="small"
-                                                                className="traveler-counter-btn"
-                                                                onClick={() => handleTravelerCounterChange(row.setter, row.value, row.min)}
-                                                            >
-                                                                -
-                                                            </Button>
-                                                            <span className="traveler-counter-value">{row.value}</span>
-                                                            <Button
-                                                                size="small"
-                                                                className="traveler-counter-btn"
-                                                                onClick={() => handleTravelerIncrease(row.setter, row.value)}
-                                                                disabled={Boolean(travelerSlotsRemaining === 0)}
-                                                            >
-                                                                +
-                                                            </Button>
+                                            <>
+                                                <div className="traveler-counters">
+                                                    {[
+                                                        {
+                                                            label: 'Adult',
+                                                            value: adultCount,
+                                                            setter: setAdultCount,
+                                                            min: 1
+                                                        },
+                                                        {
+                                                            label: 'Child',
+                                                            value: childCount,
+                                                            setter: setChildCount,
+                                                            min: 0
+                                                        },
+                                                        {
+                                                            label: 'Infant',
+                                                            value: infantCount,
+                                                            setter: setInfantCount,
+                                                            min: 0
+                                                        }
+                                                    ].map((row) => (
+                                                        <div
+                                                            key={row.label}
+                                                            className="traveler-counter-row"
+                                                        >
+                                                            <span className="traveler-counter-label">
+                                                                {row.label}
+                                                            </span>
+
+                                                            <div className="traveler-counter-controls">
+                                                                <Button
+                                                                    size="small"
+                                                                    className="traveler-counter-btn"
+                                                                    onClick={() =>
+                                                                        handleTravelerCounterChange(
+                                                                            row.setter,
+                                                                            row.value,
+                                                                            row.min
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    -
+                                                                </Button>
+
+                                                                <span className="traveler-counter-value">
+                                                                    {row.value}
+                                                                </span>
+
+                                                                <Button
+                                                                    size="small"
+                                                                    className="traveler-counter-btn"
+                                                                    onClick={() =>
+                                                                        handleTravelerIncrease(
+                                                                            row.setter,
+                                                                            row.value
+                                                                        )
+                                                                    }
+                                                                    disabled={Boolean(
+                                                                        travelerSlotsRemaining === 0
+                                                                    )}
+                                                                >
+                                                                    +
+                                                                </Button>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                ))}
-                                            </div>
+                                                    ))}
+                                                </div>
+
+                                                {error.travelers && (
+                                                    <p
+                                                        className="package-quotation-error"
+                                                        style={{ marginTop: 8 }}
+                                                    >
+                                                        {error.travelers}
+                                                    </p>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </div>

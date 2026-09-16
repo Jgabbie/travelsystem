@@ -588,6 +588,11 @@ const deleteBooking = async (req, res) => {
             return res.status(404).json({ message: 'Booking not found' })
         }
 
+        const user = await UserModel.findById(booking.userId)
+            .select('email username')
+            .lean()
+
+
         await ArchivedBookingModel.create({
             originalBookingId: booking._id,
             packageId: booking.packageId,
@@ -611,6 +616,81 @@ const deleteBooking = async (req, res) => {
         })
 
         await BookingModel.findByIdAndDelete(id)
+
+        // Send archive email to booking owner
+        // Send archive email to booking owner
+        if (user?.email) {
+            try {
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: `Booking Archived - ${booking.reference}`,
+                    html: `
+                        <div style="
+                            max-width:560px;
+                            margin:0 auto;
+                            background:#ffffff;
+                            padding:30px 32px;
+                            text-align:left;
+                        ">
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username || 'Customer'}</b>,
+                            </p>
+
+                            <p style="
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                            ">
+                                Your booking has been temporarily removed from our active records.
+                            </p>
+
+                            <p style="
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                            ">
+                                <b>Booking Reference:</b>
+                                ${booking.reference}<br/>
+
+                                <b>Booking Status:</b>
+                                ${booking.status || 'N/A'}
+                            </p>
+
+                            <p style="
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                                margin-top:20px;
+                            ">
+                                Your booking information remains recorded
+                                in our system for record-keeping purposes.
+                            </p>
+
+                            <p style="
+                                color:#777;
+                                font-size:13px;
+                                margin-top:30px;
+                            ">
+                                If you have questions regarding this booking,
+                                please contact M&RC Travel and Tours.
+                            </p>
+                        </div>
+                    `
+                })
+
+                console.log(
+                    `Booking archive email sent to ${user.email}`
+                )
+
+            } catch (emailError) {
+                console.error(
+                    'Failed to send booking archive email:',
+                    emailError
+                )
+            }
+        }
+
 
         logAction('BOOKING_ARCHIVED', req.userId, { "Booking Archived": `Booking Reference: ${booking.reference}` })
         res.status(200).json({ message: 'Booking archived' })
@@ -957,6 +1037,18 @@ const archiveCancellation = async (req, res) => {
             return res.status(404).json({ message: 'Cancellation request not found' })
         }
 
+        // Get cancellation request owner
+        const user = await UserModel.findById(cancellation.userId)
+            .select('email username firstname')
+            .lean()
+
+        // Get booking for booking reference
+        const booking = cancellation.bookingId
+            ? await BookingModel.findById(cancellation.bookingId)
+                .select('reference')
+                .lean()
+            : null
+
         await ArchivedCancellationModel.create({
             originalCancellationId: cancellation._id,
             bookingId: cancellation.bookingId,
@@ -971,6 +1063,93 @@ const archiveCancellation = async (req, res) => {
         })
 
         await CancellationModel.findByIdAndDelete(id)
+
+        if (user?.email) {
+            try {
+                const recipientName =
+                    user.firstname ||
+                    user.username ||
+                    'Customer'
+
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: `Cancellation Request Archived - ${cancellation.reference}`,
+                    html: `
+                        <div style="
+                            max-width:560px;
+                            margin:0 auto;
+                            background:#ffffff;
+                            padding:30px 32px;
+                            text-align:left;
+                        ">
+                            <p style="
+                                color:#555;
+                                font-size:16px;
+                            ">
+                                Hello <b>${recipientName}</b>,
+                            </p>
+
+                            <p style="
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                            ">
+                                Your cancellation request has been temporarily
+                                removed from our active records.
+                            </p>
+
+                            <p style="
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                            ">
+                                <b>Cancellation Reference:</b>
+                                ${cancellation.reference || 'N/A'}<br/>
+
+                                <b>Booking Reference:</b>
+                                ${booking?.reference || 'N/A'}<br/>
+
+                                <b>Status:</b>
+                                ${cancellation.status || 'N/A'}<br/>
+
+                                <b>Reason:</b>
+                                ${cancellation.cancellationReason || 'N/A'}
+                            </p>
+
+                            <p style="
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                                margin-top:20px;
+                            ">
+                                Your cancellation request information remains
+                                recorded in our system for record-keeping purposes.
+                            </p>
+
+                            <p style="
+                                color:#777;
+                                font-size:13px;
+                                margin-top:30px;
+                            ">
+                                If you have questions regarding this cancellation
+                                request, please contact M&RC Travel and Tours.
+                            </p>
+                        </div>
+                    `
+                })
+
+                console.log(
+                    `Cancellation archive email sent to ${user.email}`
+                )
+
+            } catch (emailError) {
+                console.error(
+                    'Failed to send cancellation archive email:',
+                    emailError
+                )
+            }
+        }
 
         logAction('CANCELLATION_ARCHIVED', req.userId, { "Cancellation Archived": `Cancellation Reference: ${cancellation.reference}` })
         res.status(200).json({ message: 'Cancellation archived' })

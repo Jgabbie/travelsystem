@@ -194,6 +194,26 @@
   box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.bookingmanagement-edit-button:disabled,
+.bookingmanagement-edit-button.ant-btn-disabled,
+.bookingmanagement-edit-button[disabled] {
+  background-color: #305797 !important;
+  color: #fff !important;
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.bookingmanagement-edit-button:disabled:hover,
+.bookingmanagement-edit-button.ant-btn-disabled:hover,
+.bookingmanagement-edit-button[disabled]:hover {
+  background-color: #305797 !important;
+  color: #fff !important;
+  border: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .bookingmanagement-export-button {
   font-family: "Montserrat", sans-serif;
   font-size: 12px;
@@ -231,6 +251,26 @@
   height: 30px;
   border: none !important;
   box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.bookingmanagement-remove-button:disabled,
+.bookingmanagement-remove-button.ant-btn-disabled,
+.bookingmanagement-remove-button[disabled] {
+  background-color: #992A46 !important;
+  color: #fff !important;
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.bookingmanagement-remove-button:disabled:hover,
+.bookingmanagement-remove-button.ant-btn-disabled:hover,
+.bookingmanagement-remove-button[disabled]:hover {
+  background-color: #992A46 !important;
+  color: #fff !important;
+  border: none !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .bookingmanagement-restore-button {

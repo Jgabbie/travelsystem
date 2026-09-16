@@ -18,7 +18,7 @@ import BookingRegistrationTermsPart2 from '../../components/form/BookingRegistra
 
 //initial count for group booking
 const INITIAL_COUNTS = {
-    adult: 2,
+    adult: 1,
     child: 0,
     infant: 0,
 }
@@ -564,6 +564,14 @@ export default function BookingProcess() {
         try {
             await form.validateFields();
 
+            if (selectedSoloGrouped === 'group' && travelersTotal < 2) {
+                notificationApi.error({
+                    title: 'Group booking requires at least 2 travelers.',
+                    placement: 'topRight'
+                });
+                return;
+            }
+
             if (currentStep === 0) {
 
                 const missingVisaSelection = requiresVisa && !isDomesticPackage &&
@@ -723,6 +731,14 @@ export default function BookingProcess() {
 
     //go to next step of registration, with verification modal for first step
     const next = async () => {
+        if (selectedSoloGrouped === 'group' && travelersTotal < 2) {
+            notificationApi.error({
+                title: 'Group booking requires at least 2 travelers.',
+                placement: 'topRight'
+            });
+            return;
+        }
+
         if (currentStep === 0) {
             setIsVerifyModalOpen(true);
             return;
@@ -765,6 +781,14 @@ export default function BookingProcess() {
     //final submission of the form, with validation and navigation to payment
     const handleFinalSubmit = async () => {
         setIsProceedModalOpen(false);
+
+        if (selectedSoloGrouped === 'group' && travelersTotal < 2) {
+            notificationApi.error({
+                title: 'Group booking requires at least 2 travelers.',
+                placement: 'topRight'
+            });
+            return;
+        }
 
         try {
             await form.validateFields();
@@ -941,7 +965,7 @@ export default function BookingProcess() {
 
     //functions to increase or decrease traveler counts, ensuring they stay within allowed limits
     const increaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.min(prev.adult + 1, maxAdults) }));
-    const decreaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.max(2, prev.adult - 1) }));
+    const decreaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.max(1, prev.adult - 1) }));
     const increaseChild = () => setCounts(prev => ({ ...prev, child: Math.min(prev.child + 1, maxChildren) }));
     const decreaseChild = () => setCounts(prev => ({ ...prev, child: Math.max(0, prev.child - 1) }));
     const increaseInfant = () => setCounts(prev => ({ ...prev, infant: Math.min(prev.infant + 1, maxInfants) }));
@@ -1208,71 +1232,72 @@ export default function BookingProcess() {
                     </div>
 
 
+                    {currentStep === 0 && (
+                        <div className="solo-group-content" style={{ marginTop: 40 }}>
 
-                    <div className="solo-group-content" style={{ marginTop: 40 }}>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '15px',
+                            }}>
 
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '15px',
-                        }}>
+                                <div>
+                                    <h1 className='solo-group-heading booking-section-title' style={{ textAlign: "left" }}>
+                                        Select Your Package Arrangement
+                                    </h1>
+                                    <p className="upload-passport-text booking-section-subtitle" style={{ marginTop: 10, textAlign: "left" }}>
+                                        Kindly select if you are traveling alone or with a group.
+                                    </p>
+                                </div>
 
-                            <div>
-                                <h1 className='solo-group-heading booking-section-title' style={{ textAlign: "left" }}>
-                                    Select Your Package Arrangement
-                                </h1>
-                                <p className="upload-passport-text booking-section-subtitle" style={{ marginTop: 10, textAlign: "left" }}>
-                                    Kindly select if you are traveling alone or with a group.
-                                </p>
+
                             </div>
+                            <div className="solo-group-cards">
+                                <button
+                                    type="button"
+                                    className={`solo-group-card${selectedSoloGrouped === 'solo' ? ' is-selected' : ''}`}
+                                    onClick={() => setSelectedSoloGrouped('solo')}
+                                >
+                                    {selectedSoloGrouped === 'solo' && (
+                                        <span className="solo-group-selected-tag">
+                                            Selected
+                                        </span>
+                                    )}
 
+                                    <div className="solo-group-image solo" />
+                                    <h3>Single Supplement / Solo Booking</h3>
+                                    <p className="booking-summary-overview-text">Book for yourself with a single traveler setup.</p>
+                                    <p className="booking-summary-overview-text-note" >Note: A single supplement fee may apply which can be more than the usual rate. The per pax rate only apply to group with minimum of 2 travelers.</p>
+                                </button>
 
+                                <button
+                                    type="button"
+                                    className={`solo-group-card${selectedSoloGrouped === 'group' ? ' is-selected' : ''} ${isGroupDisabled ? ' is-disabled' : ''}`}
+                                    onClick={() => {
+                                        if (isGroupDisabled) return
+                                        setSelectedSoloGrouped('group')
+                                    }}
+                                    disabled={isGroupDisabled}
+                                >
+                                    {selectedSoloGrouped === 'group' && (
+                                        <span className="solo-group-selected-tag">
+                                            Selected
+                                        </span>
+                                    )}
+
+                                    <div className="solo-group-image group" />
+                                    <h3>Grouped Booking</h3>
+                                    <p className="booking-summary-overview-text">Plan a trip for a group with shared activities.</p>
+                                    <p className="booking-summary-overview-text-note" >Note: Group booking should have a minimum of 2 travelers.</p>
+                                </button>
+                            </div>
                         </div>
-                        <div className="solo-group-cards">
-                            <button
-                                type="button"
-                                className={`solo-group-card${selectedSoloGrouped === 'solo' ? ' is-selected' : ''}`}
-                                onClick={() => setSelectedSoloGrouped('solo')}
-                            >
-                                {selectedSoloGrouped === 'solo' && (
-                                    <span className="solo-group-selected-tag">
-                                        Selected
-                                    </span>
-                                )}
-
-                                <div className="solo-group-image solo" />
-                                <h3>Single Supplement / Solo Booking</h3>
-                                <p className="booking-summary-overview-text">Book for yourself with a single traveler setup.</p>
-                                <p className="booking-summary-overview-text-note" >Note: A single supplement fee may apply which can be more than the usual rate. The per pax rate only apply to group with minimum of 2 travelers.</p>
-                            </button>
-
-                            <button
-                                type="button"
-                                className={`solo-group-card${selectedSoloGrouped === 'group' ? ' is-selected' : ''} ${isGroupDisabled ? ' is-disabled' : ''}`}
-                                onClick={() => {
-                                    if (isGroupDisabled) return
-                                    setSelectedSoloGrouped('group')
-                                }}
-                                disabled={isGroupDisabled}
-                            >
-                                {selectedSoloGrouped === 'group' && (
-                                    <span className="solo-group-selected-tag">
-                                        Selected
-                                    </span>
-                                )}
-
-                                <div className="solo-group-image group" />
-                                <h3>Grouped Booking</h3>
-                                <p className="booking-summary-overview-text">Plan a trip for a group with shared activities.</p>
-                                <p className="booking-summary-overview-text-note" >Note: Group booking should have a minimum of 2 travelers.</p>
-                            </button>
-                        </div>
-                    </div>
+                    )}
 
 
 
                     {/* TRAVELER COUNTER */}
-                    {selectedSoloGrouped === 'group' && (
+                    {selectedSoloGrouped === 'group' && currentStep === 0 && (
 
                         <div className="travelers-content" style={{ marginTop: 40 }}>
                             <h3 className="travelers-title booking-section-title" style={{ textAlign: "left" }}>
@@ -1298,12 +1323,20 @@ export default function BookingProcess() {
                                         <button
                                             type="button"
                                             onClick={decreaseAdult}
-                                            disabled={counts.adult <= 2}
+                                            disabled={counts.adult <= 1}
                                         >
                                             -
                                         </button>
+
                                         <span>{counts.adult}</span>
-                                        <button type="button" onClick={increaseAdult} disabled={isTravelerLimitReached}>+</button>
+
+                                        <button
+                                            type="button"
+                                            onClick={increaseAdult}
+                                            disabled={isTravelerLimitReached}
+                                        >
+                                            +
+                                        </button>
                                     </div>
                                 </div>
                                 <div className="traveler-card">

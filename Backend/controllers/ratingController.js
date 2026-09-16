@@ -5,6 +5,9 @@ import mongoose from 'mongoose';
 import logAction from '../utils/logger.js';
 import { scheduleRetrain } from '../utils/recommendationRetrainQueue.js';
 import OpenAI from "openai";
+import UserModel from '../models/user.js';
+import transporter from '../config/nodemailer.js';
+import { buildBrandedEmail } from '../utils/emailTemplate.js';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
@@ -297,7 +300,7 @@ const adminDeleteRating = async (req, res) => {
     try {
         const rating = await Rating.findById(id)
             .populate('packageId', 'packageName')
-            .populate('userId', 'username')
+            .populate('userId', 'username firstname email')
         if (!rating) {
             return res.status(404).json({ message: "Rating not found" })
         }
@@ -307,6 +310,17 @@ const adminDeleteRating = async (req, res) => {
 
         const packageId = rating?.packageId?._id || rating?.packageId
         const userId = rating?.userId?._id || rating?.userId || null
+
+        const recipientEmail =
+            rating?.userId?.email ||
+            rating?.guestEmail ||
+            null
+
+        const recipientName =
+            rating?.userId?.firstname ||
+            rating?.userId?.username ||
+            rating?.guestName ||
+            'Customer'
 
         const archivedRating = await ArchivedRatingModel.create({
             originalRatingId: rating._id,
@@ -320,6 +334,87 @@ const adminDeleteRating = async (req, res) => {
         })
 
         await rating.deleteOne()
+
+        if (recipientEmail) {
+            try {
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: recipientEmail,
+                    subject: `Review Archived - ${packageName}`,
+                    html: buildBrandedEmail({
+                        title: 'Review Archived',
+
+                        introHtml: `
+                            Hello <strong>${recipientName}</strong>,
+                        `,
+
+                        bodyHtml: `
+                            <p style="
+                                margin:0 0 12px;
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                            ">
+                                Your review has been temporarily removed
+                                from our active records.
+                            </p>
+
+                            <div style="
+                                margin:16px 0;
+                                padding:14px 16px;
+                                background:#f8fafc;
+                                border:1px solid #e2e8f0;
+                                border-radius:10px;
+                            ">
+                                <p style="margin:0 0 8px;">
+                                    <strong>Tour Package:</strong>
+                                    ${packageName}
+                                </p>
+
+                                <p style="margin:0 0 8px;">
+                                    <strong>Rating:</strong>
+                                    ${rating.rating || 'N/A'} / 5
+                                </p>
+
+                                <p style="margin:0;">
+                                    <strong>Review:</strong>
+                                    ${rating.review || 'No review provided'}
+                                </p>
+                            </div>
+
+                            <p style="
+                                margin:16px 0 0;
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                            ">
+                                Your review information remains recorded
+                                in our system for record-keeping purposes.
+                            </p>
+
+                            <p style="
+                                margin:20px 0 0;
+                                color:#777;
+                                font-size:13px;
+                            ">
+                                If you have questions regarding your review,
+                                please contact M&RC Travel and Tours.
+                            </p>
+                        `
+                    })
+                })
+
+                console.log(
+                    `Rating archive email sent to ${recipientEmail}`
+                )
+
+            } catch (emailError) {
+                console.error(
+                    'Failed to send rating archive email:',
+                    emailError
+                )
+            }
+        }
 
         logAction('RATING_ARCHIVED_BY_ADMIN', req.userId, { "Rating Archived by Admin": `Customer Name: ${userName} | Package Name: ${packageName}` })
         queueRetrainSafely(`rating-archived:${archivedRating._id}`)

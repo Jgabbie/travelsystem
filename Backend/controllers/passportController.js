@@ -1378,6 +1378,11 @@ const archivePassportApplication = async (req, res) => {
             return res.status(404).json({ message: "Passport application not found" });
         }
 
+        const user = await UserModel.findById(application.userId)
+            .select('email username firstname')
+            .lean();
+
+
         await ArchivedPassportApplicationModel.create({
             originalPassportApplicationId: application._id,
             userId: application.userId,
@@ -1399,6 +1404,98 @@ const archivePassportApplication = async (req, res) => {
         });
 
         await application.deleteOne();
+
+        if (user?.email) {
+            try {
+                const recipientName =
+                    user.firstname ||
+                    user.username ||
+                    'Customer';
+
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: `Passport Application Archived - ${application.applicationNumber}`,
+                    html: `
+                        <div style="
+                            max-width:560px;
+                            margin:0 auto;
+                            background:#ffffff;
+                            padding:30px 32px;
+                            text-align:left;
+                        ">
+                            <p style="
+                                color:#555;
+                                font-size:16px;
+                            ">
+                                Hello <b>${recipientName}</b>,
+                            </p>
+
+                            <p style="
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                            ">
+                                Your passport application has been temporarily
+                                removed from our active records.
+                            </p>
+
+                            <p style="
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                            ">
+                                <b>Application Number:</b>
+                                ${application.applicationNumber || 'N/A'}<br/>
+
+                                <b>Application Type:</b>
+                                ${application.applicationType || 'N/A'}<br/>
+
+                                <b>DFA Location:</b>
+                                ${application.dfaLocation || 'N/A'}<br/>
+
+                                <b>Status:</b>
+                                ${application.status || 'N/A'}
+                            </p>
+
+                            <p style="
+                                color:#555;
+                                font-size:15px;
+                                line-height:1.6;
+                                margin-top:20px;
+                            ">
+                                Your passport application information remains
+                                recorded in our system for record-keeping purposes.
+                            </p>
+
+                            <p style="
+                                color:#777;
+                                font-size:13px;
+                                margin-top:30px;
+                            ">
+                                If you have questions regarding your passport
+                                application, please contact M&RC Travel and Tours.
+                            </p>
+                        </div>
+                    `
+                });
+
+                console.log(
+                    `Passport archive email sent to ${user.email}`
+                );
+
+            } catch (emailError) {
+                console.error(
+                    'Failed to send passport archive email:',
+                    emailError
+                );
+            }
+        } else {
+            console.log(
+                'No email found for passport application user:',
+                application.userId
+            );
+        }
 
         logAction('PASSPORT_APPLICATION_ARCHIVED', req.userId, { "Passport Application Archived": `Application Number: ${application.applicationNumber}` });
 
