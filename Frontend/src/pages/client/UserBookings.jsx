@@ -853,7 +853,7 @@ export default function UserBookings() {
                             </h1>
 
                             <p className="modal-text">
-                                This cancellation cannot be UNDONE, do you still want to proceed with this cancellation of booking?
+                                This cancellation request cannot be UNDONE, do you still want to proceed with this cancellation of booking?
                             </p>
 
                             <div
