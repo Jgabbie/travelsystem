@@ -53,8 +53,7 @@ const PASSPORT_TERMINAL_STATUSES = new Set([
     'Documents Submitted',
     'Processing by DFA',
     'DFA Approved',
-    'Passport Released',
-    'Rejected'
+    'Passport Released'
 ]);
 
 
@@ -392,7 +391,7 @@ const sendPassportPenaltyNotification = async (application, deadlineInfo) => {
                     <p style="color:#555; font-size:16px;">Hello <b>${displayName}</b>,</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">Your passport application <b>${applicationNumber}</b> is on penalty because <b>${deadlineInfo.status}</b> was not completed on time.</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">Penalty fee: <b>PHP ${PENALTY_AMOUNT.toLocaleString('en-PH')}</b></p>
-                    <p style="color:#555; font-size:15px; line-height:1.6;">Pay within <b>1 day</b> to avoid rejection. Deadline: <b>${deadlineLabel}</b></p>
+                    <p style="color:#555; font-size:15px; line-height:1.6;">Pay within <b>1 day</b> to keep your application moving. Deadline: <b>${deadlineLabel}</b></p>
 
                     <a href="https://mrctravelandtours.com/home"
                         style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
@@ -404,99 +403,6 @@ const sendPassportPenaltyNotification = async (application, deadlineInfo) => {
     });
 
     return { sent: true, application };
-};
-
-
-//rejects the passport application for the given deadlineInfo, updates the status to 'Rejected', and sends notification and email to the user.
-const rejectPassportApplicationForDeadline = async (application, deadlineInfo, reachedSecondDeadline = false) => {
-    if (!application || !deadlineInfo) {
-        return { rejected: false, application };
-    }
-
-    const currentStatus = String(application.status || '').trim();
-
-    if (
-        !currentStatus ||
-        currentStatus === 'Rejected' ||
-        PASSPORT_TERMINAL_STATUSES.has(currentStatus) ||
-        !isPassportPenaltyEligibleStatus(currentStatus)
-    ) {
-        return { rejected: false, application };
-    }
-
-    const populatedUser = application.userId && typeof application.userId === 'object' ? application.userId : null;
-    const userId = populatedUser?._id || application.userId;
-    const user = populatedUser && populatedUser.email
-        ? populatedUser
-        : await UserModel.findById(userId).select('email username firstname lastname');
-
-    application.reachedSecondDeadline = Boolean(reachedSecondDeadline);
-    application.status = 'Rejected';
-
-    try {
-        application.statusHistory = application.statusHistory || [];
-        application.statusHistory.push({
-            status: 'Rejected',
-            changedAt: new Date(),
-            changedBy: null,
-            changedByName: reachedSecondDeadline ? 'System Auto-Rejection (Penalty Deadline)' : 'System Auto-Rejection',
-        });
-    } catch (error) {
-        console.error('Failed to record passport rejection history:', error);
-    }
-
-    if (typeof application.save === 'function') {
-        await application.save();
-    }
-
-    if (user && user._id) {
-        await NotificationModel.create({
-            userId: user._id,
-            title: 'Passport Application Automatically Rejected',
-            message: reachedSecondDeadline
-                ? `Your passport application ${application.applicationNumber || ''} was automatically rejected because the extra 3-day period after paying the penalty expired.`
-                : `Your passport application ${application.applicationNumber || ''} was automatically rejected because the penalty fee was not paid within 1 day.`,
-            type: 'passport',
-            link: '/user-applications',
-            metadata: {
-                applicationId: application._id,
-                applicationNumber: application.applicationNumber,
-                status: 'Rejected',
-                rejectedForStatus: deadlineInfo.status,
-                deadlineDate: deadlineInfo.deadlineDate.format('YYYY-MM-DD'),
-                reachedSecondDeadline: Boolean(reachedSecondDeadline),
-            },
-            pushStatus: 'pending',
-        });
-    }
-
-    if (user && user.email) {
-        try {
-            await transporter.sendMail({
-                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
-                to: user.email,
-                subject: `Passport Application Automatically Rejected: ${application.applicationNumber || 'Application'}`,
-                html: `
-                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-                            
-                            <p style="color:#555; font-size:16px;">Hello <b>${user.firstname || user.username || 'Customer'}</b>,</p>
-                            <p style="color:#555; font-size:15px; line-height:1.6;">Your passport application <b>${application.applicationNumber || ''}</b> was automatically rejected because ${reachedSecondDeadline ? 'the extra 3-day period after penalty payment expired' : 'the penalty fee was not paid within 1 day'}.</p>
-                            <p style="color:#555; font-size:15px; line-height:1.6;">Please contact our office if you need assistance or wish to submit a new application.</p>
-
-                            <a href="https://mrctravelandtours.com/home"
-                                style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
-                                Login to Your Account
-                            </a>
-
-                        </div>
-                `,
-            });
-        } catch (emailError) {
-            console.error('Failed to send passport rejection email:', emailError);
-        }
-    }
-
-    return { rejected: true, application };
 };
 
 
@@ -514,8 +420,7 @@ const markPassportApplicationOnPenalty = async (application, deadlineInfo = null
 
     if (
         application.onPenalty ||
-        application.secondChance ||
-        currentStatus === 'Rejected'
+        application.secondChance
     ) {
         return { penalized: false, application };
     }
@@ -566,14 +471,13 @@ const markPassportApplicationOnPenalty = async (application, deadlineInfo = null
 };
 
 
-//checks deadlines for the passport application, sends warnings if applicable, and handles penalty or rejection if overdue.
+//checks deadlines for the passport application, sends warnings and penalty notices if overdue.
 const processPassportDeadlineAction = async (application) => {
     if (!application) {
         return {
             application,
             warned: false,
             penalized: false,
-            rejected: false
         };
     }
 
@@ -605,7 +509,6 @@ const processPassportDeadlineAction = async (application) => {
             application,
             warned: false,
             penalized: false,
-            rejected: false
         };
     }
 
@@ -616,28 +519,7 @@ const processPassportDeadlineAction = async (application) => {
             application,
             warned: false,
             penalized: false,
-            rejected: false
         };
-    }
-
-    if (application.secondChance && deadlineInfo.isOverdue) {
-        return rejectPassportApplicationForDeadline(
-            application,
-            deadlineInfo,
-            true
-        );
-    }
-
-    if (
-        application.onPenalty &&
-        !application.secondChance &&
-        deadlineInfo.isOverdue
-    ) {
-        return rejectPassportApplicationForDeadline(
-            application,
-            deadlineInfo,
-            false
-        );
     }
 
     if (
@@ -663,7 +545,6 @@ const processPassportDeadlineAction = async (application) => {
             ...warningResult,
             warned: true,
             penalized: false,
-            rejected: false
         };
     }
 
@@ -671,7 +552,6 @@ const processPassportDeadlineAction = async (application) => {
         application,
         warned: false,
         penalized: false,
-        rejected: false
     };
 };
 
@@ -882,10 +762,6 @@ const updatePassportApplicationWithDocs = async (req, res) => {
             console.error('Failed to process passport deadline action before document upload:', error);
             return null;
         });
-
-        if (deadlineActionResult?.rejected || String(application.status || '').trim() === 'Rejected') {
-            return res.status(400).json({ message: "Passport application has been rejected due to a missed deadline." });
-        }
 
         // Only owner or staff can update
         if (application.userId.toString() !== userId.toString()) {
@@ -1266,8 +1142,7 @@ const updatePassportStatus = async (req, res) => {
             'Documents Submitted',
             'Processing by DFA',
             'DFA Approved',
-            'Passport Released',
-            'Rejected'
+            'Passport Released'
         ];
         if (!status || !validStatuses.includes(status)) {
             return res.status(400).json({ message: "Invalid or missing status" });

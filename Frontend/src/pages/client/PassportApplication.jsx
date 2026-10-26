@@ -31,8 +31,6 @@ const getStatusColor = (status) => {
             return 'green';
         case 'passport released':
             return 'success';
-        case 'rejected':
-            return 'red';
         default:
             return 'default';
     }
@@ -834,19 +832,6 @@ export default function PassportApplication() {
                             </div>
                         )}
 
-                    {/* APPLICATION DENIED */}
-                    {application?.status && application?.status?.toLowerCase() === 'rejected' && (
-                        <div style={{ marginBottom: 24, borderLeft: '4px solid #ff4d4f', backgroundColor: '#fff1f0', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#ff4d4f' }}>APPLICATION DENIED</h2>
-                            <p style={{ margin: 0, fontSize: 14 }}>
-                                Unfortunately, your application has been denied.
-                                You may contact our support team for further assistance or clarification regarding your application.
-                                For now, your documents will be delivered back to you.
-                                Please check your email for the details of the document return process.
-                            </p>
-                        </div>
-                    )}
-
                     {/* ON PENALTY */}
                     {application?.onPenalty && application.secondChance === false &&
                         (application?.status?.toLowerCase() === 'payment completed' ||
@@ -1285,7 +1270,7 @@ export default function PassportApplication() {
 
 
                                         {/* PAYMENT PENALTY*/}
-                                        {application?.status && application?.onPenalty === true && application?.status.toLowerCase() !== 'rejected' && (
+                                        {application?.status && application?.onPenalty === true && (
                                             <div style={{ marginBottom: 32, marginTop: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
                                                 <h3 style={{ marginTop: 0 }}>Penalty Payment {pendingManualPayment && <Tag color="orange">Pending Payment</Tag>}</h3>
 
@@ -1680,7 +1665,7 @@ export default function PassportApplication() {
                                         {application?.status && application?.status?.toLowerCase() !== 'application submitted' &&
                                             application?.status?.toLowerCase() !== 'application approved' &&
                                             application?.status?.toLowerCase() !== 'payment completed' &&
-                                            application?.status?.toLowerCase() !== 'rejected' && (
+                                            (
                                                 <div className='passport-document-uploaded-section' style={{ marginTop: 20 }}>
                                                     <h3 style={{ marginTop: 0 }}>Uploaded Documents</h3>
                                                     <div className='passport-uploaded-documents-container'>
@@ -1739,7 +1724,7 @@ export default function PassportApplication() {
                                             </div>
                                         </div>
 
-                                        {application?.status && application?.status?.toLowerCase() !== 'rejected' && (
+                                        {application?.status && (
                                             <div style={{ border: '1px solid #dde4ef', borderRadius: 10, padding: 12, background: '#ffffff', minHeight: 180 }}>
                                                 <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Progress Tracker</h3>
                                                 {currentStatusSetDate && (

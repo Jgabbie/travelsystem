@@ -25,7 +25,6 @@ const statusSteps = [
 const PASSPORT_STATUS_COLORS = {
     Pending: "orange",
     Approved: "green",
-    Rejected: "red",
     "Application Submitted": "blue",
     "Application Approved": "green",
     "Payment Completed": "green",
@@ -45,7 +44,6 @@ const PASSPORT_DEADLINE_STOP_STATUSES = new Set([
     "Processing by DFA",
     "DFA Approved",
     "Passport Released",
-    "Rejected",
 ]);
 
 export default function ViewPassportApplication() {
@@ -66,7 +64,6 @@ export default function ViewPassportApplication() {
     const [isSuggestedDatesSentModalOpen, setIsSuggestedDatesSentModalOpen] = useState(false);
     const [isResubmitDocumentsSentModalOpen, setIsResubmitDocumentsSentModalOpen] = useState(false);
     const [descriptionColumn, setDescriptionColumn] = useState(2);
-    const [hasProcessedRejection, setHasProcessedRejection] = useState(false);
 
     const [notificationApi, notificationContextHolder] =
         notification.useNotification();
@@ -278,42 +275,6 @@ export default function ViewPassportApplication() {
                 : null;
 
 
-    // auto-reject application if deadline is passed
-    useEffect(() => {
-        if (!application || !statusDeadlineDate || hasProcessedRejection) return;
-
-        if (
-            PASSPORT_DEADLINE_STOP_STATUSES.has(
-                String(application.status || "").trim()
-            )
-        ) {
-            return;
-        }
-
-        const isDeadlinePassed = statusDeadlineDate.isBefore(dayjs(), 'day');
-        if (isDeadlinePassed) {
-            setHasProcessedRejection(true);
-            const updateStatus = async () => {
-                try {
-                    await apiFetch.put(
-                        `/passport/applications/${applicationId}/status`,
-                        { status: 'Rejected' },
-                        { withCredentials: true }
-                    );
-                    notificationApi.warning({
-                        title: 'Application Rejected',
-                        description: 'Application has been auto-rejected due to missed deadline.',
-                        placement: 'topRight'
-                    });
-                    setApplication(prev => ({ ...prev, status: 'Rejected' }));
-                } catch (err) {
-                    console.error('Failed to auto-reject application:', err);
-                }
-            };
-            updateStatus();
-        }
-    }, [statusDeadlineDate, application, hasProcessedRejection, applicationId, notificationApi]);
-
 
     //get when a particular step/status was set from statusHistory (fallback none)
     const getStepSetDateForTitle = (app, title) => {
@@ -491,21 +452,6 @@ export default function ViewPassportApplication() {
     };
 
 
-    //dfa rejected handler
-    const handleDFARejected = async () => {
-        try {
-            setIsUpdatingStatus(true);
-            await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: "Rejected" });
-            await fetchApplication();
-            notificationApi.success({ title: "Application marked as DFA Rejected", placement: "topRight" });
-        } catch (err) {
-            notificationApi.error({ title: "Failed to update status", placement: "topRight" });
-        } finally {
-            setIsUpdatingStatus(false);
-        }
-    };
-
-
     //dfa approved handler
     const handleDFAApproved = async () => {
         try {
@@ -664,41 +610,41 @@ export default function ViewPassportApplication() {
 
                                     {application?.passportDetails && (
                                         <div style={{ marginTop: 20 }}>
-                                        <Title level={4}>Submitted Passport Information</Title>
-                                        <Title level={5}>Personal Information</Title>
-                                        <Descriptions bordered column={descriptionColumn} size="middle" labelStyle={{ color: "#305797", fontWeight: 700 }}>
-                                            <Descriptions.Item label="Name">{[application.passportDetails.givenName, application.passportDetails.middleName, application.passportDetails.lastName, application.passportDetails.suffix].filter(Boolean).join(" ") || "N/A"}</Descriptions.Item>
-                                            <Descriptions.Item label="Date of Birth">{application.passportDetails.dateOfBirth ? dayjs(application.passportDetails.dateOfBirth).format("MMM DD, YYYY") : "N/A"}</Descriptions.Item>
-                                            <Descriptions.Item label="Gender">{application.passportDetails.gender || "N/A"}</Descriptions.Item>
-                                            <Descriptions.Item label="Civil Status">{application.passportDetails.civilStatus || "N/A"}</Descriptions.Item>
-                                            <Descriptions.Item label="Citizenship">{application.passportDetails.citizenship || "N/A"}</Descriptions.Item>
-                                            <Descriptions.Item label="Birth Legitimacy">{application.passportDetails.birthLegitimacy || "N/A"}</Descriptions.Item>
-                                            <Descriptions.Item label="Birth Information">{[application.passportDetails.cityMunicipalityOfBirth, application.passportDetails.provinceOfBirth, application.passportDetails.countryOfBirth].filter(Boolean).join(", ") || "N/A"}</Descriptions.Item>
-                                        </Descriptions>
-                                        <Title level={5} style={{ marginTop: 20 }}>Contact Information</Title>
-                                        <Descriptions bordered column={descriptionColumn} size="middle" labelStyle={{ color: "#305797", fontWeight: 700 }}>
-                                            <Descriptions.Item label="Phone Number">{application.passportDetails.phoneNumber || "N/A"}</Descriptions.Item>
-                                            <Descriptions.Item label="Mobile Number">{application.passportDetails.mobileNumber || "N/A"}</Descriptions.Item>
-                                            <Descriptions.Item label="Email Address">{application.passportDetails.emailAddress || "N/A"}</Descriptions.Item>
-                                            <Descriptions.Item label="Travelling Companion">{[application.passportDetails.companionName, application.passportDetails.companionRelationship].filter(Boolean).join(" - ") || "N/A"}{application.passportDetails.companionContactNumber ? ` (${application.passportDetails.companionContactNumber})` : ""}</Descriptions.Item>
-                                            <Descriptions.Item label="Emergency Contact">{application.passportDetails.emergencyContactPerson || "N/A"}{application.passportDetails.emergencyContactNumber ? ` (${application.passportDetails.emergencyContactNumber})` : ""}</Descriptions.Item>
-                                            <Descriptions.Item label="Current Address">{[application.passportDetails.currentAddress, application.passportDetails.barangay, application.passportDetails.currentCity, application.passportDetails.currentProvince, application.passportDetails.zipCode].filter(Boolean).join(", ") || "N/A"}</Descriptions.Item>
-                                            <Descriptions.Item label="Occupation">{application.passportDetails.occupation || "N/A"}</Descriptions.Item>
-                                            <Descriptions.Item label="Office Number">{application.passportDetails.officeNumber || "N/A"}</Descriptions.Item>
-                                            <Descriptions.Item label="Office Address">{application.passportDetails.officeAddress || "N/A"}</Descriptions.Item>
-                                        </Descriptions>
-                                        <Title level={5} style={{ marginTop: 20 }}>Family Information</Title>
-                                        <Descriptions bordered column={descriptionColumn} size="middle" labelStyle={{ color: "#305797", fontWeight: 700 }}>
-                                            <Descriptions.Item label="Father's Information">{[application.passportDetails.fatherGivenName, application.passportDetails.fatherMiddleName, application.passportDetails.fatherLastName].filter(Boolean).join(" ") || "N/A"}{application.passportDetails.fatherCitizenship ? ` (${application.passportDetails.fatherCitizenship})` : ""}</Descriptions.Item>
-                                            <Descriptions.Item label="Mother's Information">{[application.passportDetails.motherGivenName, application.passportDetails.motherMiddleName, application.passportDetails.motherMaidenLastName].filter(Boolean).join(" ") || "N/A"}{application.passportDetails.motherCitizenship ? ` (${application.passportDetails.motherCitizenship})` : ""}</Descriptions.Item>
-                                            {application.applicationType === "Renewal Passport" && (
-                                                <>
-                                                    <Descriptions.Item label="Old Passport">{application.passportDetails.oldPassportNumber || "N/A"}</Descriptions.Item>
-                                                    <Descriptions.Item label="Date of Issue">{application.passportDetails.oldPassportDateOfIssue ? dayjs(application.passportDetails.oldPassportDateOfIssue).format("MMM DD, YYYY") : "N/A"}</Descriptions.Item>
-                                                    <Descriptions.Item label="Issuing Authority">{application.passportDetails.oldPassportIssuingAuthority || "N/A"}</Descriptions.Item>
-                                                </>
-                                            )}
-                                        </Descriptions>
+                                            <Title level={4}>Submitted Passport Information</Title>
+                                            <Title level={5}>Personal Information</Title>
+                                            <Descriptions bordered column={descriptionColumn} size="middle" labelStyle={{ color: "#305797", fontWeight: 700 }}>
+                                                <Descriptions.Item label="Name">{[application.passportDetails.givenName, application.passportDetails.middleName, application.passportDetails.lastName, application.passportDetails.suffix].filter(Boolean).join(" ") || "N/A"}</Descriptions.Item>
+                                                <Descriptions.Item label="Date of Birth">{application.passportDetails.dateOfBirth ? dayjs(application.passportDetails.dateOfBirth).format("MMM DD, YYYY") : "N/A"}</Descriptions.Item>
+                                                <Descriptions.Item label="Gender">{application.passportDetails.gender || "N/A"}</Descriptions.Item>
+                                                <Descriptions.Item label="Civil Status">{application.passportDetails.civilStatus || "N/A"}</Descriptions.Item>
+                                                <Descriptions.Item label="Citizenship">{application.passportDetails.citizenship || "N/A"}</Descriptions.Item>
+                                                <Descriptions.Item label="Birth Legitimacy">{application.passportDetails.birthLegitimacy || "N/A"}</Descriptions.Item>
+                                                <Descriptions.Item label="Birth Information">{[application.passportDetails.cityMunicipalityOfBirth, application.passportDetails.provinceOfBirth, application.passportDetails.countryOfBirth].filter(Boolean).join(", ") || "N/A"}</Descriptions.Item>
+                                            </Descriptions>
+                                            <Title level={5} style={{ marginTop: 20 }}>Contact Information</Title>
+                                            <Descriptions bordered column={descriptionColumn} size="middle" labelStyle={{ color: "#305797", fontWeight: 700 }}>
+                                                <Descriptions.Item label="Phone Number">{application.passportDetails.phoneNumber || "N/A"}</Descriptions.Item>
+                                                <Descriptions.Item label="Mobile Number">{application.passportDetails.mobileNumber || "N/A"}</Descriptions.Item>
+                                                <Descriptions.Item label="Email Address">{application.passportDetails.emailAddress || "N/A"}</Descriptions.Item>
+                                                <Descriptions.Item label="Travelling Companion">{[application.passportDetails.companionName, application.passportDetails.companionRelationship].filter(Boolean).join(" - ") || "N/A"}{application.passportDetails.companionContactNumber ? ` (${application.passportDetails.companionContactNumber})` : ""}</Descriptions.Item>
+                                                <Descriptions.Item label="Emergency Contact">{application.passportDetails.emergencyContactPerson || "N/A"}{application.passportDetails.emergencyContactNumber ? ` (${application.passportDetails.emergencyContactNumber})` : ""}</Descriptions.Item>
+                                                <Descriptions.Item label="Current Address">{[application.passportDetails.currentAddress, application.passportDetails.barangay, application.passportDetails.currentCity, application.passportDetails.currentProvince, application.passportDetails.zipCode].filter(Boolean).join(", ") || "N/A"}</Descriptions.Item>
+                                                <Descriptions.Item label="Occupation">{application.passportDetails.occupation || "N/A"}</Descriptions.Item>
+                                                <Descriptions.Item label="Office Number">{application.passportDetails.officeNumber || "N/A"}</Descriptions.Item>
+                                                <Descriptions.Item label="Office Address">{application.passportDetails.officeAddress || "N/A"}</Descriptions.Item>
+                                            </Descriptions>
+                                            <Title level={5} style={{ marginTop: 20 }}>Family Information</Title>
+                                            <Descriptions bordered column={descriptionColumn} size="middle" labelStyle={{ color: "#305797", fontWeight: 700 }}>
+                                                <Descriptions.Item label="Father's Information">{[application.passportDetails.fatherGivenName, application.passportDetails.fatherMiddleName, application.passportDetails.fatherLastName].filter(Boolean).join(" ") || "N/A"}{application.passportDetails.fatherCitizenship ? ` (${application.passportDetails.fatherCitizenship})` : ""}</Descriptions.Item>
+                                                <Descriptions.Item label="Mother's Information">{[application.passportDetails.motherGivenName, application.passportDetails.motherMiddleName, application.passportDetails.motherMaidenLastName].filter(Boolean).join(" ") || "N/A"}{application.passportDetails.motherCitizenship ? ` (${application.passportDetails.motherCitizenship})` : ""}</Descriptions.Item>
+                                                {application.applicationType === "Renewal Passport" && (
+                                                    <>
+                                                        <Descriptions.Item label="Old Passport">{application.passportDetails.oldPassportNumber || "N/A"}</Descriptions.Item>
+                                                        <Descriptions.Item label="Date of Issue">{application.passportDetails.oldPassportDateOfIssue ? dayjs(application.passportDetails.oldPassportDateOfIssue).format("MMM DD, YYYY") : "N/A"}</Descriptions.Item>
+                                                        <Descriptions.Item label="Issuing Authority">{application.passportDetails.oldPassportIssuingAuthority || "N/A"}</Descriptions.Item>
+                                                    </>
+                                                )}
+                                            </Descriptions>
                                         </div>
                                     )}
 
@@ -708,9 +654,6 @@ export default function ViewPassportApplication() {
                                             <h3 style={{ marginTop: 0 }}>DFA Processing Actions</h3>
                                             <Button type="primary" onClick={handleDFAApproved} className="viewpassportapplication-dfa-processing-approve-button">
                                                 DFA Approved
-                                            </Button>
-                                            <Button type="primary" onClick={handleDFARejected} className="viewpassportapplication-dfa-processing-reject-button" style={{ marginLeft: 8 }}>
-                                                DFA Rejected
                                             </Button>
                                         </div>
                                     )}

@@ -123,8 +123,7 @@ const PassportSchema = new mongoose.Schema({
             'Documents Submitted',
             'Processing by DFA',
             'DFA Approved',
-            'Passport Released',
-            'Rejected'
+            'Passport Released'
         ],
         default: 'Application Submitted'
     },

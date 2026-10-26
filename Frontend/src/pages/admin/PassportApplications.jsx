@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Space, ConfigProvider, Input, Select, DatePicker, Modal, notification, Popconfirm, message, Spin } from "antd";
-import { FileTextOutlined, TeamOutlined, InboxOutlined, DeleteOutlined, CheckCircleFilled, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined, EditOutlined, PlusOutlined, EnvironmentOutlined } from "@ant-design/icons";
+import { FileTextOutlined, TeamOutlined, InboxOutlined, DeleteOutlined, CheckCircleFilled, CheckCircleOutlined, ClockCircleOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined, EditOutlined, PlusOutlined, EnvironmentOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -164,14 +164,6 @@ export default function PassportApplications() {
             : item.status;
 
         return status === "Application Approved";
-    }).length;
-
-    const rejected = passportApplications.filter((item) => {
-        const status = Array.isArray(item.status)
-            ? item.status[item.status.length - 1]
-            : item.status;
-
-        return status === "Rejected";
     }).length;
 
 
@@ -419,7 +411,6 @@ export default function PassportApplications() {
                 const colorMap = {
                     Pending: "orange",
                     Approved: "green",
-                    Rejected: "red",
                     'Application Submitted': 'blue',
                     'Application Approved': 'green',
                     'Payment Completed': 'green',
@@ -622,15 +613,6 @@ export default function PassportApplications() {
                                         title="Approved"
                                         value={approved}
                                         prefix={<CheckCircleOutlined />}
-                                    />
-                                </Card>
-                            </Col>
-                            <Col xs={24} sm={6}>
-                                <Card className="passportapps-management-card">
-                                    <Statistic
-                                        title="Rejected"
-                                        value={rejected}
-                                        prefix={<CloseCircleOutlined />}
                                     />
                                 </Card>
                             </Col>

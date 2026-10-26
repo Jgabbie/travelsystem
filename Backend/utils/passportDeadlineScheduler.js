@@ -3,7 +3,7 @@ import { processPassportDeadlineAction } from '../controllers/passportController
 
 const processPassportDeadlines = async () => {
     const applications = await PassportModel.find({
-        status: { $nin: ['DFA Approved', 'Passport Released', 'Rejected'] },
+        status: { $nin: ['DFA Approved', 'Passport Released'] },
     });
 
     for (const application of applications) {
