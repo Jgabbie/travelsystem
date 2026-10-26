@@ -1072,7 +1072,7 @@ export default function PassportApplication() {
                                                         <Radio.Button
                                                             value="paymongo"
                                                             className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                                            style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                            style={{ display: "none", flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                         >
                                                             {method === "paymongo" && (
                                                                 <span className="payment-card-selected-tag">
@@ -1262,7 +1262,7 @@ export default function PassportApplication() {
                                                         <Radio.Button
                                                             value="paymongo"
                                                             className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                                            style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                            style={{ display: "none", flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                         >
                                                             {method === "paymongo" && (
                                                                 <span className="payment-card-selected-tag">

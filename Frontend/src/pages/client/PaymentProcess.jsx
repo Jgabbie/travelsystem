@@ -52,7 +52,7 @@ export default function PaymentProcess() {
     const [method, setMethod] = useState(() => {
         try {
             const savedState = sessionStorage.getItem(PAYMENT_STATE_KEY);
-            return savedState ? JSON.parse(savedState).method ?? null : null;
+            return 'manual';
         } catch {
             return null;
         }
@@ -189,7 +189,7 @@ export default function PaymentProcess() {
             navigate('/home', { replace: true });
         }
         const methodParam = searchParams.get('method');
-        if (methodParam === 'manual' || methodParam === 'paymongo') {
+        if (methodParam === 'manual') {
             setMethod(methodParam);
         }
     }, [hasBookingData, navigate, searchParams]);
@@ -1014,7 +1014,7 @@ export default function PaymentProcess() {
                                     <Radio.Button
                                         value="paymongo"
                                         className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                        style={{ flex: 1, height: 'auto', padding: '20px' }}
+                                        style={{ display: "none", flex: 1, height: 'auto', padding: '20px' }}
                                     >
                                         {method === "paymongo" && (
                                             <span className="payment-card-selected-tag">

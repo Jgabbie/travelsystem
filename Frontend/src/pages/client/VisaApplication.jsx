@@ -327,7 +327,7 @@ export default function VisaApplication() {
     //automatically switch to paymongo if the delivery fee is unavailable and the user has selected manual payment
     useEffect(() => {
         if (isDeliveryFeeStage && isDeliveryFeeUnavailable && method === 'manual') {
-            setMethod('paymongo');
+            setMethod('manual');
         }
     }, [isDeliveryFeeStage, isDeliveryFeeUnavailable, method]);
 
@@ -1285,7 +1285,7 @@ export default function VisaApplication() {
                                                                 <Radio.Button
                                                                     value="paymongo"
                                                                     className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                                                    style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                                    style={{ display: "none", flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                                 >
                                                                     {method === "paymongo" && (
                                                                         <span className="payment-card-selected-tag">
@@ -1479,7 +1479,7 @@ export default function VisaApplication() {
                                                                 <Radio.Button
                                                                     value="paymongo"
                                                                     className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                                                    style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                                    style={{ display: "none", flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                                 >
 
                                                                     {method === "paymongo" && (
@@ -1677,7 +1677,7 @@ export default function VisaApplication() {
                                                                 <Radio.Button
                                                                     value="paymongo"
                                                                     className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                                                    style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                                    style={{ display: "none", flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                                 >
                                                                     {method === "paymongo" && (
                                                                         <span className="payment-card-selected-tag">

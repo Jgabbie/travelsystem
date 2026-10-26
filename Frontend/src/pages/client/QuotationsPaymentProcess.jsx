@@ -48,7 +48,7 @@ export default function QuotationsPaymentProcess() {
     const [method, setMethod] = useState(() => {
         try {
             const savedState = sessionStorage.getItem(PAYMENT_STATE_KEY);
-            return savedState ? JSON.parse(savedState).method ?? null : null;
+            return 'manual';
         } catch {
             return null;
         }
@@ -170,7 +170,7 @@ export default function QuotationsPaymentProcess() {
             navigate('/home', { replace: true });
         }
         const methodParam = searchParams.get('method');
-        if (methodParam === 'manual' || methodParam === 'paymongo') {
+        if (methodParam === 'manual') {
             setMethod(methodParam);
         }
     }, [hasQuotationBookingData, navigate, searchParams]);
@@ -975,7 +975,7 @@ export default function QuotationsPaymentProcess() {
                                 <Radio.Button
                                     value="paymongo"
                                     className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                    style={{ flex: 1, height: 'auto', padding: '20px' }}
+                                    style={{ display: "none", flex: 1, height: 'auto', padding: '20px' }}
                                 >
                                     {method === "paymongo" && (
                                         <span className="payment-card-selected-tag">

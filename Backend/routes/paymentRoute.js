@@ -4,58 +4,78 @@ import userAuth from '../middleware/userAuth.js';
 
 const router = express.Router();
 
+/* PayMongo disabled: manual payments only.
 router.post(
     '/webhook/paymongo',
     express.raw({ type: 'application/json' }),
     paymentController.handlePayMongoWebhook
 );
+*/
 
 router.use(userAuth);
 
+/* PayMongo disabled: manual payments only.
 router.post(
     '/create-checkout-session',
     paymentController.createCheckoutSession
 );
+*/
 
+/* PayMongo disabled: manual payments only.
 router.post(
     '/create-checkout-session-quotation',
     paymentController.createCheckoutSessionQuotation
 );
+*/
 
+/* PayMongo disabled: manual payments only.
 router.post(
     '/create-checkout-session-passport',
     paymentController.createCheckoutSessionPassport
 );
+*/
 
+/* PayMongo disabled: manual payments only.
 router.post(
     '/create-checkout-session-visa',
     paymentController.createCheckoutSessionVisa
 );
+*/
 
+/* PayMongo disabled: manual payments only.
 router.post(
     '/create-checkout-session-visa-penalty',
     paymentController.createCheckoutSessionVisaPenalty
 );
+*/
 
+/* PayMongo disabled: manual payments only.
 router.post(
     '/create-checkout-session-passport-penalty',
     paymentController.createCheckoutSessionPassportPenalty
 );
+*/
 
+/* PayMongo disabled: manual payments only.
 router.post(
     '/create-checkout-session-deposit',
     paymentController.createCheckoutSessionDeposit
 );
+*/
 
+/* PayMongo disabled: manual payments only.
 router.post(
     '/create-checkout-session-delivery-fee',
     paymentController.createCheckoutSessionDeliveryFee
 );
+*/
 
+/* PayMongo disabled: manual payments only.
 router.post(
     '/create-checkout-token',
     paymentController.createCheckoutToken
 );
+*/
 
 
 
