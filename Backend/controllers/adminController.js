@@ -202,12 +202,6 @@ const editUser = async (req, res) => {
             )
             .join("");
 
-        /*
-         * Send account update email.
-         *
-         * We intentionally do NOT allow an email failure
-         * to make the user update fail.
-         */
         try {
             const mailOptions = {
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,

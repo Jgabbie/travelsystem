@@ -343,7 +343,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                                                         return;
                                                     }
 
-                                                    // Allow Ctrl/Cmd+A
+
                                                     if (
                                                         (e.ctrlKey || e.metaKey) &&
                                                         e.key.toLowerCase() === "a"
@@ -351,7 +351,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                                                         return;
                                                     }
 
-                                                    // Allow control/navigation keys
+
                                                     if (
                                                         [
                                                             "Backspace",
@@ -366,13 +366,13 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                                                         return;
                                                     }
 
-                                                    // Block spaces
+
                                                     if (e.key === " ") {
                                                         e.preventDefault();
                                                         return;
                                                     }
 
-                                                    // Allow letters, numbers, @, and .
+
                                                     if (!/^[A-Za-z0-9@.]$/.test(e.key)) {
                                                         e.preventDefault();
                                                     }

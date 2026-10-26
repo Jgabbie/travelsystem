@@ -19,8 +19,6 @@ export default function SuccessfulPaymentVisa() {
         }
 
 
-
-        // Call backend API to verify payment using token
         apiFetch.post(`/visa/verify-payment`, { token })
             .then(res => {
 

@@ -233,7 +233,6 @@
     text-align: center;
 }
 
-/* Card image */
 .destinations-reference-cover {
     position: relative;
     width: 100%;
@@ -267,7 +266,6 @@
     font-weight: 600;
 }
 
-/* Discount ribbon */
 .destinations-reference-ribbon {
     position: absolute;
     top: 16px;
@@ -288,7 +286,6 @@
     pointer-events: none;
 }
 
-/* Wishlist button */
 .destinations-reference-wishlist {
     position: absolute;
     top: 12px;
@@ -323,7 +320,7 @@
     color: #cf1322;
 }
 
-/* Availability badge */
+
 .destinations-reference-status {
     position: absolute;
     left: 12px;
@@ -344,7 +341,6 @@
     background-color: #8c8c8c;
 }
 
-/* Package name */
 .destinations-reference-title {
     width: 100%;
     min-height: 44px;
@@ -358,7 +354,7 @@
     overflow-wrap: anywhere;
 }
 
-/* Price */
+
 .destinations-reference-pricing {
     display: flex;
     align-items: baseline;
@@ -391,7 +387,6 @@
     font-size: 11px;
 }
 
-/* Duration and type */
 .destinations-reference-details {
     display: flex;
     align-items: center;
@@ -410,7 +405,6 @@
     color: #b0b0b0;
 }
 
-/* Package tags */
 .destinations-reference-tags {
     display: flex;
     align-items: center;
@@ -431,7 +425,6 @@
     font-weight: 600;
 }
 
-/* Slots and rating container */
 .destinations-reference-information {
     display: flex;
     align-items: center;
@@ -441,7 +434,6 @@
     margin-bottom: 18px;
 }
 
-/* Shared badge design */
 .destinations-reference-slots,
 .destinations-reference-rating {
     display: inline-flex;
@@ -458,13 +450,11 @@
     box-shadow: 0 4px 10px rgba(31, 42, 68, 0.12);
 }
 
-/* Slots badge */
 .destinations-reference-slots {
     color: #ffffff;
     background-color: #305797;
 }
 
-/* Rating badge */
 .destinations-reference-rating {
     gap: 6px;
     color: #ffffff;
@@ -477,7 +467,6 @@
     filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
 }
 
-/* Book button */
 .destinations-reference-button {
     display: inline-flex;
     flex-shrink: 0;
@@ -515,7 +504,6 @@
     transform: none;
 }
 
-/* Unavailable card */
 .destinations-reference-card-disabled {
     cursor: not-allowed !important;
     opacity: 0.65;

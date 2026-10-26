@@ -108,7 +108,6 @@ export default function Wishlist() {
     }, [wishlistItems, averageRatings])
 
 
-    // memoized category options for the category filter
     const categoryOptions = useMemo(() => ([
         { value: 'All', label: 'All' },
         { value: 'Domestic', label: 'Domestic' },
@@ -116,7 +115,6 @@ export default function Wishlist() {
     ]), [])
 
 
-    // memoized filtered packages based on search, category, availability, and price range
     const filteredPackages = useMemo(() => {
         const query = search.trim().toLowerCase();
         const normalizedCategory = category.toLowerCase();

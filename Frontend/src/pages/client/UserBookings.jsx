@@ -177,7 +177,6 @@ export default function UserBookings() {
             return;
         }
 
-        // Maximum file size: 5MB
         if (file.size > 5 * 1024 * 1024) {
             notificationApi.error({
                 title: 'File is too large',
@@ -213,7 +212,6 @@ export default function UserBookings() {
     const confirmCancelBooking = async () => {
         if (loadingCancel) return;
 
-        // Validate before closing the modal or showing the loading screen
         if (!cancelTargetKey) {
             notificationApi.error({
                 title: 'Booking could not be identified',
@@ -261,7 +259,6 @@ export default function UserBookings() {
                 }
             );
 
-            // Supports both a direct response and a regular Axios response
             const imageUrl =
                 uploadResponse?.url ||
                 uploadResponse?.data?.url;
@@ -284,7 +281,6 @@ export default function UserBookings() {
                 payload
             );
 
-            // Immediately update the displayed status
             setBookings((currentBookings) =>
                 currentBookings.map((booking) =>
                     booking.key === cancelTargetKey
@@ -672,7 +668,6 @@ export default function UserBookings() {
                                 {cancelImages.length > 0 && (
                                     <div style={{ marginTop: 12, textAlign: 'center' }}>
 
-                                        {/* Image Preview */}
                                         {previewImage && (
                                             <img
                                                 src={previewImage}
@@ -687,7 +682,6 @@ export default function UserBookings() {
                                             />
                                         )}
 
-                                        {/* File Name */}
                                         <div
                                             style={{
                                                 fontSize: '12px',
@@ -706,7 +700,6 @@ export default function UserBookings() {
                                                 marginTop: '8px'
                                             }}
                                         >
-                                            {/* PDF Preview */}
                                             {cancelImages[0]?.type === 'application/pdf' && previewPdf && (
                                                 <Button
                                                     type="default"
@@ -717,7 +710,6 @@ export default function UserBookings() {
                                                 </Button>
                                             )}
 
-                                            {/* Remove File */}
                                             <Button
                                                 danger
                                                 onClick={() => {

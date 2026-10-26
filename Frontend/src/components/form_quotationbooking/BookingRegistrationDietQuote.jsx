@@ -19,7 +19,7 @@ export default function BookingRegistrationDietQuote({
 
         if (!travelDate) return '____________________';
 
-        // Handle a travel date stored as a string
+
         if (typeof travelDate === 'string') {
             const dateText = travelDate.trim();
 

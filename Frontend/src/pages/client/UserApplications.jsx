@@ -22,7 +22,6 @@ export default function UserApplications() {
         const fetchApplications = async () => {
             setLoading(true);
             try {
-                // Fetch passport applications
                 const passportRes = await apiFetch.get('/passport/user-applications');
                 const passportApps = (passportRes || []).map(app => ({
                     key: app._id,
@@ -33,7 +32,6 @@ export default function UserApplications() {
                     date: app.createdAt,
                     details: app,
                 }));
-                // Fetch visa applications
                 const visaRes = await apiFetch.get('/visa/user-applications');
                 const visaApps = (visaRes || []).map(app => ({
                     key: app._id,

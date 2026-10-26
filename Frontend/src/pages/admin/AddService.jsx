@@ -237,7 +237,6 @@ export default function AddService() {
             visaImage: ""
         }));
 
-        // Prevent Ant Design from automatically uploading it.
         return false;
     };
 
@@ -285,11 +284,7 @@ export default function AddService() {
 
         let uploadedImageUrl = values.visaImage || "";
 
-        /*
-         * Upload the image separately.
-         * Do not manually set Content-Type because the browser must add
-         * the multipart boundary.
-         */
+
         if (values.imageFile) {
             try {
                 const imageFormData = new FormData();
@@ -777,7 +772,6 @@ export default function AddService() {
 
                         <div className={errors.processSteps ? "add-service-card-error" : "add-service-section"}>
                             <h2 className="section-headers">Process Steps (Standard)</h2>
-                            {/* Render merged preview: standard before insert point, then custom steps, then remaining standard steps */}
                             {(() => {
                                 const sourceStandard = values.standardProcessSteps?.length
                                     ? values.standardProcessSteps
@@ -924,7 +918,6 @@ export default function AddService() {
                         </div>
                     </div>
 
-                    {/* Reminders Bulleted List */}
 
                     <div style={{ marginTop: 40 }} className={errors.reminders ? "add-service-card-error" : "add-service-section"}>
                         <h2 className="section-headers" >Reminders</h2>

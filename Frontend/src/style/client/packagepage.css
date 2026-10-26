@@ -186,7 +186,6 @@
     margin-bottom: 12px;
 }
 
-/* New: style the Day header as a pill and give the day block a soft background */
 .itinerary-day {
     background: #eef6fb;
     padding: 14px;
@@ -197,18 +196,15 @@
     margin: 0;
     padding-left: 22px;
     list-style: none;
-    /* hide default markers to use a custom marker */
 }
 
 .itinerary-day ul li {
     margin-bottom: 8px;
     color: #1f2a44;
-    /* keep body text dark */
     position: relative;
     padding-left: 18px;
 }
 
-/* Use Roboto regular for the small itinerary texts */
 .itinerary-day ul,
 .itinerary-day ul li,
 .itinerary-day ul li div {
@@ -217,7 +213,6 @@
     font-size: 14px;
 }
 
-/* Fallback-safe custom bullet */
 .itinerary-day ul li::before {
     content: '';
     position: absolute;
@@ -230,7 +225,6 @@
     border-radius: 50%;
 }
 
-/* Make list bullets (markers) use the brand blue while keeping text color dark */
 .itinerary-day h2 {
     display: block;
     margin: 8px -14px 6px;
@@ -246,7 +240,6 @@
     font-family: "Montserrat", sans-serif;
 }
 
-/* Day header with icon and text */
 .itinerary-day-header {
     display: flex;
     align-items: center;
@@ -257,7 +250,6 @@
     border-radius: 999px;
     padding: 8px 18px;
     width: calc(100% + 28px);
-    /* account for the negative margins */
 }
 
 .itinerary-day-header strong {
@@ -281,7 +273,6 @@
     display: block;
 }
 
-/* Section headers for Inclusions, Exclusions, and Terms - match DAY pill style */
 .section-header-packagepage,
 .section-header {
     display: block;
@@ -298,7 +289,6 @@
     font-family: "Montserrat", sans-serif;
 }
 
-/* Inclusions and Exclusions Containers - match Itinerary styling */
 .inclusions-container,
 .exclusions-container,
 .terms-container {
@@ -431,8 +421,6 @@
     color: #1f2a44;
 }
 
-/* New styling for Package Details small boxes: header band + value */
-/* Header band: only the direct child span used as the label */
 .package-detail-item>span {
     display: block;
     padding: 10px 12px;
@@ -452,7 +440,6 @@
     color: #305797;
 }
 
-/* Ensure any spans inside the value don't inherit the header band styling */
 .package-detail-item strong span {
     display: inline;
     padding: 0;

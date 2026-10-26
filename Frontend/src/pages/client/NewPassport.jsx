@@ -278,7 +278,6 @@ export default function NewPassport() {
                             New Passport
                         </p>
 
-                        {/* First row: Requirements and Reminders */}
                         <section className="passport-grid">
                             <div className="passport-panel">
                                 <h3>Requirements</h3>
@@ -309,7 +308,6 @@ export default function NewPassport() {
                             </div>
                         </section>
 
-                        {/* Second row: Process and Application Details */}
                         <section className="passport-grid">
                             <div className="passport-panel">
                                 <h3>Step-by-step process</h3>

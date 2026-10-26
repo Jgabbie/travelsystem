@@ -12,7 +12,6 @@ export const normalizePackageTags = (tags = []) => {
 
         const normalizedName = cleanedTag.toLowerCase();
 
-        // Preserve the first capitalization entered by the user
         if (!uniqueTags.has(normalizedName)) {
             uniqueTags.set(normalizedName, cleanedTag);
         }
@@ -63,7 +62,7 @@ export const saveReusablePackageTags = async (tags = []) => {
         .lean();
 };
 
-// GET /package-tags
+
 export const getPackageTags = async (req, res) => {
     try {
         const tags = await PackageTag.find()
@@ -85,7 +84,6 @@ export const getPackageTags = async (req, res) => {
     }
 };
 
-// POST /package-tags
 export const createPackageTags = async (req, res) => {
     try {
         const { tags } = req.body;
@@ -101,7 +99,6 @@ export const createPackageTags = async (req, res) => {
 
         await saveReusablePackageTags(cleanedTags);
 
-        // Return the complete list so the frontend suggestions stay updated
         const allTags = await PackageTag.find()
             .sort({ name: 1 })
             .select("name normalizedName")

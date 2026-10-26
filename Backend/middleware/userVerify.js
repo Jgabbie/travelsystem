@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken"
 import User from '../models/user.js'
 
-//This checks if user is verified
+//this checks if user is verified
 const userVerify = async (req, res, next) => {
     const { token } = req.cookies
     if (!token) {

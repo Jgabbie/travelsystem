@@ -14,7 +14,6 @@
   box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
-/* Make statistic/cards use primary blue and ensure readable contrast */
 .booking-management-card {
   background-color: #305797 !important;
   color: #ffffff !important;
@@ -117,7 +116,6 @@
   font-weight: 600;
 }
 
-/* Ensure header icons / sorter arrows remain visible on dark background */
 .booking-management-container .ant-table-thead>tr>th .ant-table-column-title,
 .booking-management-container .ant-table-thead>tr>th .ant-table-column-sorters,
 .booking-management-container .ant-table-thead>tr>th .anticon {
@@ -167,7 +165,6 @@
   color: #888;
 }
 
-/* BUTTONS CSS */
 .bookingmanagement-view-button {
   font-family: "Montserrat", sans-serif;
   font-size: 13px;
@@ -321,7 +318,6 @@
 }
 
 
-/* Modal content styling */
 .booking-edit-modal .ant-modal-content {
   border-radius: 16px;
   padding: 24px;

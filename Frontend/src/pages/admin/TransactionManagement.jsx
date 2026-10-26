@@ -385,14 +385,12 @@ export default function TransactionManagement() {
       );
 
       const canvas = await html2canvas(element, {
-        scale: 3, // Higher scale for crisp text
+        scale: 3,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: "#ffffff", // Ensures background isn't transparent/black
+        backgroundColor: "#ffffff",
         logging: false,
-        // This tells html2canvas to wait for images to load
         onclone: (clonedDoc) => {
-          // You can manually adjust styles of the cloned element here if needed
           const clonedElement = clonedDoc.querySelector(".receipt-container");
           if (clonedElement) {
             clonedElement.style.padding = "20px";
@@ -489,7 +487,7 @@ export default function TransactionManagement() {
         );
       }
 
-      // Prevent empty PDF
+
       if (allTransactions.length === 0) {
         notificationApi.warning({
           title: "No transactions found for the selected filters.",
@@ -1453,7 +1451,6 @@ export default function TransactionManagement() {
 
           >
             <Form form={editForm} layout="vertical" className="transaction-edit-form">
-              {/* Package, Payment Date and Amount removed - only Method and Status remain */}
 
               <Row gutter={12}>
                 <Col span={24}>
@@ -2117,7 +2114,6 @@ export default function TransactionManagement() {
             width={950}
           >
             <Row gutter={24}>
-              {/* LEFT SIDE - FORM */}
               <Col span={10}>
 
                 <div style={{ marginBottom: 10 }}>
@@ -2292,7 +2288,6 @@ export default function TransactionManagement() {
                 </Space>
               </Col>
 
-              {/* RIGHT SIDE - LIST */}
 
               <Col span={14}>
                 <div

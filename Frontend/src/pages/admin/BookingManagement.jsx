@@ -729,7 +729,6 @@ export default function BookingManagement() {
             className="booking-edit-modal"
           >
             <Form form={editForm} layout="vertical" className="booking-edit-form">
-              {/* Package and Booking Date inputs removed per request */}
 
               <Row gutter={12}>
                 <Col span={24}>

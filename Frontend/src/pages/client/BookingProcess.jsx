@@ -1021,12 +1021,10 @@ export default function BookingProcess() {
             return 'valid'
         }
 
-        // Passport expires BEFORE travel date
         if (expiryDate.isBefore(travelStartDate, 'day')) {
             return 'expired-before-travel'
         }
 
-        // Passport expires within 6 months from travel date
         const sixMonthsAfterTravel = travelStartDate.add(6, 'month')
 
         if (
@@ -1839,12 +1837,11 @@ export default function BookingProcess() {
                                                                 const travelerType = travelerTypeLabels[index] || 'Adult'
                                                                 const baseDisabled = getBirthdayDisabledDate(travelerType)(current)
 
-                                                                // For Adults, disable dates after 2014 (to ensure 12+ years old)
+
                                                                 if (travelerType === 'Adult' && current && current.year() > 2014) {
                                                                     return true
                                                                 }
 
-                                                                // For Adults, disable dates before 1935 (to prevent ages over 90)
                                                                 if (travelerType === 'Adult' && current && current.year() < 1935) {
                                                                     return true
                                                                 }
@@ -1940,7 +1937,6 @@ export default function BookingProcess() {
                                             </div>
                                             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
 
-                                                {/* PASSPORT UPLOAD - Hidden if file exists */}
                                                 {(!fileLists[index] || fileLists[index].length === 0) && (
                                                     <Upload
                                                         fileList={fileLists[index]}
@@ -1948,13 +1944,12 @@ export default function BookingProcess() {
                                                         onChange={(info) => handleChange(info, index)}
                                                         accept="image/jpeg,image/png,.pdf"
                                                         maxCount={1}
-                                                        showUploadList={false} // Hidden because you have a custom preview
+                                                        showUploadList={false}
                                                     >
                                                         <Button className='upload-passport-button' type='primary'>Upload {travelDocumentLabel}</Button>
                                                     </Upload>
                                                 )}
 
-                                                {/* 2X2 PHOTO UPLOAD - Hidden if file exists */}
                                                 {(!photoFileLists[index] || photoFileLists[index].length === 0) && (
                                                     <Upload
                                                         fileList={photoFileLists[index]}
@@ -2074,14 +2069,13 @@ export default function BookingProcess() {
                                                             type={visaSelections[index] === 'no' ? 'primary' : 'default'}
                                                             size="small"
                                                             onClick={() => {
-                                                                // Set visa selection to NO
                                                                 setVisaSelections((prev) => {
                                                                     const next = [...prev];
                                                                     next[index] = 'no';
                                                                     return next;
                                                                 });
 
-                                                                // Remove existing preview URL
+
                                                                 setVisaPreviews((prev) => {
                                                                     const next = [...prev];
 
@@ -2093,7 +2087,6 @@ export default function BookingProcess() {
                                                                     return next;
                                                                 });
 
-                                                                // Remove uploaded visa file
                                                                 setVisaFileLists((prev) => {
                                                                     const next = [...prev];
                                                                     next[index] = [];

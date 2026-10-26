@@ -1226,7 +1226,6 @@ export default function PackagePage() {
                         }}
                     />
 
-                    {/* PASSPORT CONFIRMATION MODAL: Ask if user already has a passport for this trip */}
                     <Modal
                         open={isPassportConfirmModalOpen}
                         className='signup-success-modal'
@@ -1270,7 +1269,6 @@ export default function PackagePage() {
                         </div>
                     </Modal>
 
-                    {/* PASSPORT RECOMMENDATION MODAL: Recommend getting a passport before booking or proceed to passport services */}
                     <Modal
                         open={isPassportRecommendModalOpen}
                         className='signup-success-modal'
@@ -1314,7 +1312,6 @@ export default function PackagePage() {
                         </div>
                     </Modal>
 
-                    {/* VISA CONFIRMATION MODAL: Ask if user already has a visa for this trip */}
                     <Modal
                         open={isVisaConfirmModalOpen}
                         className='signup-success-modal'
@@ -1352,7 +1349,6 @@ export default function PackagePage() {
                         </div>
                     </Modal>
 
-                    {/* VISA RECOMMENDATION MODAL: Recommend getting a visa before booking or proceed to visa services */}
                     <Modal
                         open={isVisaRecommendModalOpen}
                         className='signup-success-modal'

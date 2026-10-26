@@ -12,7 +12,6 @@ export default function SuccessfulPaymentPassport() {
     const [countdown, setCountdown] = useState(10);
 
     useEffect(() => {
-        // token handled outside render; this effect assumes token exists
         const token = searchParams.get('token');
         if (!token) {
             navigate('/home', { replace: true });
@@ -20,9 +19,6 @@ export default function SuccessfulPaymentPassport() {
         }
 
 
-
-
-        // Call backend API to verify payment using token
         apiFetch.post(`/passport/verify-payment`, { token })
             .then(res => {
                 if (res.success) {
@@ -50,7 +46,6 @@ export default function SuccessfulPaymentPassport() {
         return () => clearInterval(timer);
     }, [navigate, searchParams]);
 
-    // Prevent initial render flash when token is missing — compute synchronously
     const token = searchParams.get('token');
     if (!token) return null;
 

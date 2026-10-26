@@ -179,7 +179,6 @@ export default function ViewPassportApplication() {
 
             await fetchApplication();
 
-            // Hide only the document requested for resubmission
             setApplication((prev) => {
                 if (!prev) return prev;
 
@@ -197,7 +196,6 @@ export default function ViewPassportApplication() {
                     ...prev,
                     submittedDocuments: currentDocuments,
 
-                    // Prevent legacy fallback from showing the file again
                     [documentKey]: null
                 };
             });
@@ -249,10 +247,8 @@ export default function ViewPassportApplication() {
     //get the date when the current status was set, using statusHistory or fallback to timestamps
     const getStatusSetDate = (app) => {
         if (!app) return null;
-        // prefer explicit status history entry
         const history = app.statusHistory;
         if (Array.isArray(history) && history.length > 0) {
-            // find last entry matching current status
             for (let i = history.length - 1; i >= 0; i--) {
                 const h = history[i];
                 if (String(h.status).toLowerCase() === String(app.status).toLowerCase()) {
@@ -260,7 +256,6 @@ export default function ViewPassportApplication() {
                 }
             }
         }
-        // fallback to explicit timestamp fields
         if (app.statusUpdatedAt) return dayjs(app.statusUpdatedAt);
         if (app.updatedAt) return dayjs(app.updatedAt);
         if (app.createdAt) return dayjs(app.createdAt);
@@ -382,7 +377,6 @@ export default function ViewPassportApplication() {
 
     //render a read-only file preview with download option
     const renderReadOnlyFile = (url, label) => {
-        // Check if the URL contains '.pdf' (case insensitive)
         const isPdf = typeof url === 'string' && url.toLowerCase().split(/[?#]/)[0].endsWith('.pdf');
 
         if (!url) return <div style={{ fontSize: 13, color: '#6b7280' }}>No file</div>;
@@ -403,8 +397,6 @@ export default function ViewPassportApplication() {
                         'Preview'
                     )}
                 </Button>
-
-                {/* Download disabled */}
             </div>
         );
     };
@@ -483,13 +475,11 @@ export default function ViewPassportApplication() {
     // status update handler
     const handleStepChange = async (stepIdx) => {
         if (!progressEditable || isUpdatingStatus) return;
-        // Map step index to status string
         const statusArr = statusSteps.map(step => step.title);
         const newStatus = statusArr[stepIdx];
         if (!newStatus || newStatus === application.status) return;
         try {
             setIsUpdatingStatus(true);
-            // You should update this endpoint to PATCH/PUT to your backend for real update
             await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: newStatus });
             await fetchApplication();
             notificationApi.success({ title: `Status updated to ${newStatus}`, placement: "topRight" });
@@ -863,10 +853,8 @@ export default function ViewPassportApplication() {
                                             className="passport-progress-steps"
                                             orientation="vertical"
                                             current={currentStep}
-                                            // This single handler manages everything
                                             onChange={progressEditable && !isUpdatingStatus ? handleStepChange : undefined}
                                             items={statusSteps.map((step, idx) => {
-                                                // Prefer processSteps data from backend
                                                 const processStepInfo = getProcessStepInfo(step.title);
                                                 const stepSetDate = processStepInfo.setDate || getStepSetDateForTitle(application, step.title);
                                                 const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
@@ -874,7 +862,6 @@ export default function ViewPassportApplication() {
 
                                                 let stepDeadlineDate = processStepInfo.deadlineDate || null;
 
-                                                // If backend didn't provide deadline, fall back to previous client logic
                                                 if (!stepDeadlineDate) {
                                                     if (application?.statusDeadlineDate && String(application.status) === String(step.title)) {
                                                         stepDeadlineDate = dayjs(application.statusDeadlineDate);

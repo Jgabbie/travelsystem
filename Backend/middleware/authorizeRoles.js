@@ -9,8 +9,6 @@ const authorizeRoles = (...allowedRoles) => {
                 });
             }
 
-            // Get the role from the database instead of trusting
-            // a role supplied by the frontend.
             const authenticatedUser = await UserModel.findById(req.userId)
                 .select("_id role isActive")
                 .lean();

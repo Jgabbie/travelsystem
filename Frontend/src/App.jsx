@@ -14,7 +14,6 @@ import { QuotationBookingProvider } from "./context/BookingQuotationContext";
 import { ConfigProvider } from "antd";
 
 
-//Layouts
 const AdminLayout = lazy(() =>
   import("./components/layout/AdminLayout")
 );
@@ -28,7 +27,6 @@ const Layout = lazy(() =>
 );
 
 
-//Public and authentication pages
 const ResetPassword = lazy(() =>
   import("./components/ResetPassword")
 );
@@ -42,7 +40,6 @@ const VerifyEmail = lazy(() =>
 );
 
 
-//Guest and client pages
 const LandingPage = lazy(() =>
   import("./pages/client/LandingPage")
 );
@@ -156,7 +153,6 @@ const VisaApplication = lazy(() =>
 );
 
 
-//Admin and employee pages
 const Logging = lazy(() =>
   import("./pages/admin/Logging")
 );
@@ -242,7 +238,6 @@ const AddService = lazy(() =>
 );
 
 
-//Loading fallback
 const RouteLoadingFallback = () => (
   <div
     style={{
@@ -279,7 +274,6 @@ function App() {
                 element={<Navigate to="/home" replace />}
               />
 
-              {/* Guest and user-accessible routes */}
               <Route element={<GuestsUsersRoute />}>
                 <Route element={<Layout />}>
                   <Route
@@ -329,7 +323,6 @@ function App() {
                 </Route>
               </Route>
 
-              {/* Public-only routes */}
               <Route element={<PublicRoute />}>
                 <Route
                   path="/reset-password"
@@ -347,7 +340,6 @@ function App() {
                 />
               </Route>
 
-              {/* Admin routes */}
               <Route element={<AdminRoute />}>
                 <Route element={<AdminLayout />}>
                   <Route
@@ -472,7 +464,6 @@ function App() {
                 </Route>
               </Route>
 
-              {/* Employee routes */}
               <Route element={<EmployeeRoute />}>
                 <Route
                   path="/employee"
@@ -585,7 +576,6 @@ function App() {
                 </Route>
               </Route>
 
-              {/* Authenticated user routes */}
               <Route element={<ProtectedRoute />}>
                 <Route
                   path="/user-preferences"

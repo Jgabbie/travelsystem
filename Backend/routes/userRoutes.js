@@ -29,7 +29,6 @@ router.post(
 );
 
 
-// Admin and Employee can view users
 router.get(
     '/getUsers',
     userAuth,
@@ -44,7 +43,6 @@ router.get(
     userController.getArchivedUsers
 );
 
-// Only Admin can create, archive, or restore accounts
 router.post(
     '/createUsers',
     userAuth,

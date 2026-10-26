@@ -236,7 +236,6 @@ const getBookingsTotalBaseOnMonth = async (req, res) => {
             return res.status(200).json({ invoiceNumber, sequence, month: monthKey });
         }
 
-        // No reference provided: return total bookings for current month (legacy behavior)
         const startOfMonth = dayjs().startOf('month').toDate();
         const endOfMonth = dayjs().endOf('month').toDate();
 
@@ -309,7 +308,6 @@ const getBookingByReference = async (req, res) => {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
-        // Ensure penalty/reminder computation is up to date before returning invoice data.
         await processBillingForBookingId(bookingMatch._id);
 
         const bookingData = await BookingModel.findOne(
@@ -617,7 +615,6 @@ const deleteBooking = async (req, res) => {
 
         await BookingModel.findByIdAndDelete(id)
 
-        // Send archive email to booking owner
         // Send archive email to booking owner
         if (user?.email) {
             try {

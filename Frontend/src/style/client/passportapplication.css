@@ -109,7 +109,6 @@
 }
 
 
-/* Suggested appointment selected card */
 .passportapplication-suggestedoption-card {
     position: relative;
     overflow: hidden;
@@ -146,7 +145,6 @@
     pointer-events: none;
 }
 
-/* Payment method selected card */
 .payment-card {
     position: relative !important;
     overflow: hidden;

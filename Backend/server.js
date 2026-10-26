@@ -212,7 +212,7 @@ if (!isServerless) {
         console.error('HTTP server error:', error);
     });
 
-    // Remove the 'production' check so it actually runs on the cloud
+    // remove the 'production' check so it actually runs on the cloud
     server.listen(PORT, '0.0.0.0', () => {
         console.log(`Server is up and running on port ${PORT}`);
 

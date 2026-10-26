@@ -176,7 +176,6 @@ export default function UserBookingInvoice() {
                 setBooking(fetchedBooking);
                 setTransactions(fetchedTransactions);
 
-                // Fetch the package to determine whether a visa is required
                 const packageIdentifier =
                     typeof fetchedBooking?.packageItem === "object"
                         ? fetchedBooking.packageItem?._id ||
@@ -290,7 +289,7 @@ export default function UserBookingInvoice() {
         .reduce((sum, txn) => {
             const amount = Number(txn.amount || 0);
             return sum + amount;
-        }, 0) * 100) / 100; // Round to 2 decimal places
+        }, 0) * 100) / 100;
 
 
     const packageName =
@@ -330,7 +329,6 @@ export default function UserBookingInvoice() {
 
     const summaryInvoice = bookingDetails
 
-    // Check the actual visa requirement configured for the package
     const rawVisaRequired =
         packageDetails?.visaRequired ??
         booking?.visaRequired ??
@@ -380,8 +378,6 @@ export default function UserBookingInvoice() {
 
                 const expiryDate = dayjs(passportExpiry).startOf('day');
 
-                // Do not include passports already expired before travel.
-                // This banner is only for the 6-month warning.
                 const expiresWithinSixMonths =
                     !expiryDate.isBefore(travelStartDate, 'day') &&
                     (
@@ -434,8 +430,7 @@ export default function UserBookingInvoice() {
             }
         });
 
-        // Fallback: if booking-level resubmission is true but traveler-level flags are missing,
-        // request resubmission only for travelers with missing document images.
+
         if (!normalizedIndexes.size && booking?.documentsResubmissionRequired) {
             travelersWithDocs.forEach((traveler, index) => {
                 const hasPassport = Boolean(traveler?.passportFile || passportFiles?.[index]);
@@ -679,7 +674,6 @@ export default function UserBookingInvoice() {
 
 
     //download booking registration pdf
-    //download booking registration pdf
     const handleFinalSubmit = async () => {
         try {
             setDownloading(true);
@@ -701,21 +695,15 @@ export default function UserBookingInvoice() {
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
 
-            // Fixed footer positioning
             const footerMarginX = 28;
             const footerTextY = pdfHeight - 18;
             const footerLineY = footerTextY - 11;
 
-            // Prevent page content from overlapping the footer
             const maxContentHeight = footerLineY - 6;
 
             for (let i = 0; i < pages.length; i += 1) {
                 const pageEl = pages[i];
 
-                /*
-                 * Hide the existing HTML footer during capture because
-                 * the footer will be drawn directly through jsPDF.
-                 */
                 const htmlFooters = pageEl.querySelectorAll(
                     ".mrc-booking-invoice-footer"
                 );
@@ -737,7 +725,6 @@ export default function UserBookingInvoice() {
                         backgroundColor: "#ffffff"
                     });
                 } finally {
-                    // Restore footer visibility after capturing
                     htmlFooters.forEach((footer, footerIndex) => {
                         footer.style.visibility =
                             previousFooterVisibility[footerIndex];
@@ -748,10 +735,6 @@ export default function UserBookingInvoice() {
                     pdf.addPage();
                 }
 
-                /*
-                 * Scale the captured page so that it fits inside the
-                 * available space above the fixed PDF footer.
-                 */
                 const scale = Math.min(
                     pdfWidth / canvas.width,
                     maxContentHeight / canvas.height
@@ -772,7 +755,6 @@ export default function UserBookingInvoice() {
                     imgHeight
                 );
 
-                // Footer separator line
                 pdf.setDrawColor(210, 210, 210);
                 pdf.setLineWidth(0.5);
 
@@ -783,7 +765,6 @@ export default function UserBookingInvoice() {
                     footerLineY
                 );
 
-                // Footer text
                 pdf.setFont("helvetica", "normal");
                 pdf.setFontSize(8);
                 pdf.setTextColor(85, 85, 85);
@@ -850,7 +831,7 @@ export default function UserBookingInvoice() {
 
     //disable payment button if there are pending transactions
     const disablePayment = useMemo(() => {
-        if (!transactions || transactions.length === 0) return false; // No transactions yet
+        if (!transactions || transactions.length === 0) return false;
         return transactions[0].status === "Pending";
     }, [transactions]);
 
@@ -910,7 +891,7 @@ export default function UserBookingInvoice() {
                 }
 
                 const formData = new FormData();
-                formData.append("file", file); // 
+                formData.append("file", file);
 
                 const uploadRes = await apiFetch.post(
                     "/upload/upload-receipt",
@@ -1075,7 +1056,6 @@ export default function UserBookingInvoice() {
     }, [transactions]);
 
 
-    // Generate the ORIGINAL payment schedule without considering payments yet
     const baseInstallmentData = useMemo(() => {
         return runInstallmentLogic(
             invoice,
@@ -1086,7 +1066,6 @@ export default function UserBookingInvoice() {
     }, [invoice, bookingDetails, issueDate]);
 
 
-    // Calculate how much SHOULD have been paid without penalties
     const expectedBasePaid = useMemo(() => {
         const schedule = baseInstallmentData?.paymentSchedule || [];
 
@@ -1102,35 +1081,24 @@ export default function UserBookingInvoice() {
     }, [successfulTransactions, baseInstallmentData]);
 
 
-    // Determine how much of the stored penalty has ALREADY been paid.
-    //
-    // Example:
-    // Installment = 1,000
-    // Actual successful payment = 1,200
-    //
-    // 1,200 - 1,000 = 200 penalty already paid
     const paidPenaltyAmount = Math.min(
         persistedPenalty,
         Math.max(paidAmount - expectedBasePaid, 0)
     );
 
 
-    // Only this amount should still be added to the NEXT payment
     const outstandingPenalty = Math.max(
         persistedPenalty - paidPenaltyAmount,
         0
     );
 
 
-    // Remove already-paid penalty from paidAmount when checking
-    // which actual installment has been completed.
     const paidBaseAmount = Math.max(
         paidAmount - paidPenaltyAmount,
         0
     );
 
 
-    // Calculate installment statuses using BASE payments only
     const installmentData = useMemo(() => {
         return runInstallmentLogic(
             invoice,
@@ -1160,22 +1128,16 @@ export default function UserBookingInvoice() {
         : null;
 
 
-    // Total booking price still includes all penalties that were assessed
     const totalPriceWithPenalty =
         totalPrice + persistedPenalty;
 
 
-    // Remaining balance automatically accounts for penalties
-    // that have already been paid because paidAmount contains them.
     const remainingBalance = Math.max(
         totalPriceWithPenalty - paidAmount,
         0
     );
 
 
-    // IMPORTANT:
-    // Add only the UNPAID penalty to the current installment,
-    // instead of adding persistedPenalty every single time.
     const amountToPayNow =
         paymentMode === "Deposit"
             ? (
@@ -1421,7 +1383,6 @@ export default function UserBookingInvoice() {
                                 maximumFractionDigits: 2
                             })}</Text>
                         </View>
-                        {/* Highlighting the Remaining Balance */}
                         <View style={[styles.totalDueRow, { backgroundColor: '#f3f4f6', padding: 5 }]}>
                             <Text style={[styles.totalDueLabel, { color: '#b91c1c' }]}>REMAINING BAL.</Text>
                             <Text style={[styles.totalDueValue, { color: '#b91c1c' }]}>PHP {Number(remainingBalance).toLocaleString('en-PH', {
@@ -2035,7 +1996,6 @@ export default function UserBookingInvoice() {
                                                     Select a payment method to complete your booking.
                                                 </p>
                                             </div>
-                                            {/* Displaying balance here for clarity during checkout */}
                                             <div style={{ textAlign: 'right' }}>
                                                 <AntText type="secondary">Amount to Pay:</AntText>
                                                 <div className="payment-amount-to-pay">
@@ -2077,7 +2037,6 @@ export default function UserBookingInvoice() {
                                             </Radio.Button>
                                         </Radio.Group>
 
-                                        {/* Proceed Button */}
                                         <div style={{ display: 'flex', justifyContent: 'flex-end', padding: 0, margin: 0 }}>
                                             <Button
                                                 className="user-invoice-checkout-button"

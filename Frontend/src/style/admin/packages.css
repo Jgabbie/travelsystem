@@ -7,7 +7,6 @@
   margin-bottom: 20px;
 }
 
-/* Statistic / management card styling */
 .package-management-card {
   background-color: #305797 !important;
   color: #ffffff !important;
@@ -168,7 +167,6 @@
   justify-content: center;
 }
 
-/* Discount badge overlay on image */
 .package-media {
   position: relative;
 }
@@ -242,7 +240,6 @@
 }
 
 
-/* BUTTONS CSS */
 .packagemanagement-view-button {
   font-family: "Montserrat", sans-serif;
   font-size: 12px;
@@ -394,8 +391,6 @@
 
 
 
-
-/* MODAL DESIGN */
 .package-details-modal .ant-modal-content {
   border-radius: 16px;
   padding: 16px;

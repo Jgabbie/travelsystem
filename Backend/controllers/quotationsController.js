@@ -394,7 +394,6 @@ const uploadQuotationPDF = async (req, res) => {
         }
 
         // Send email notification
-        // Send email notification
         let emailSent = false
         let emailErrorMessage = null
 

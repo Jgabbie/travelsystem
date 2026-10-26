@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
-// 'storage' is used to persist booking data across page reloads within the same session. It uses sessionStorage, which is cleared when the browser tab is closed.
+
 const BookingContext = createContext();
 const STORAGE_KEY = "bookingData";
 const storage = typeof window !== "undefined" ? window.sessionStorage : null;
@@ -28,7 +28,6 @@ export const BookingProvider = ({ children }) => {
         }
     }, [bookingData]);
 
-    //CLEAR BOOKING DATA FROM CONTEXT AND STORAGE, USE THIS WHEN BOOKING IS COMPLETED OR CANCELLED TO PREVENT STALE DATA
 
     const clearBookingData = () => {
         setBookingData(null);

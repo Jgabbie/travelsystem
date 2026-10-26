@@ -36,7 +36,7 @@ export default function QuotationsPaymentProcess() {
         } catch {
             return null;
         }
-    }); // 'deposit' or 'full'
+    });
     const [frequency, setFrequency] = useState(() => {
         try {
             const savedState = sessionStorage.getItem(PAYMENT_STATE_KEY);
@@ -103,14 +103,11 @@ export default function QuotationsPaymentProcess() {
 
     //browser back button
     useEffect(() => {
-        // Push ONE history entry when component mounts
         window.history.pushState({ page: "payment" }, "", window.location.pathname);
 
         const handlePopState = () => {
-            // Show modal immediately
             setIsCancelProcessModalOpen(true);
 
-            // Push again so user stays on page
             window.history.pushState({ page: "payment" }, "", window.location.pathname);
         };
 
@@ -229,15 +226,15 @@ export default function QuotationsPaymentProcess() {
         const formData = new FormData();
 
         const passportFileObjs = (passportFiles || [])
-            .filter(f => f && f.base64) // Filter null values first, then check base64
+            .filter(f => f && f.base64)
             .map(file => base64ToFile(file.base64, file.name, file.type));
 
         const photoFileObjs = (photoFiles || [])
-            .filter(f => f && f.base64) // Filter null values first, then check base64
+            .filter(f => f && f.base64)
             .map(file => base64ToFile(file.base64, file.name, file.type));
 
         const visaFileObjs = (visaFiles || [])
-            .filter(f => f && f.base64) // Filter null values first, then check base64
+            .filter(f => f && f.base64)
             .map(file => base64ToFile(file.base64, file.name, file.type));
 
         [...passportFileObjs, ...photoFileObjs, ...visaFileObjs].forEach(file => {
@@ -271,7 +268,7 @@ export default function QuotationsPaymentProcess() {
     //redirect if no booking data
     if (!hasQuotationBookingData) {
         navigate('/home');
-        return null; // Prevent rendering if no booking data
+        return null;
     }
 
 
@@ -426,13 +423,12 @@ export default function QuotationsPaymentProcess() {
                         paymentMode,
                         passportFiles: passportUrls,
                         photoFiles: photoUrls,
-                        amount: amountToCharge //for checkoutToken
+                        amount: amountToCharge
                     }
                 });
 
                 const { paymentToken, expiresAt } = bookingRes;
 
-                // Expiry check (extra safety)
                 if (dayjs().isAfter(dayjs(expiresAt))) {
                     setLoading(false);
                     notificationApi.error({ title: "Booking session expired. Please try again.", placement: 'topRight' });
@@ -460,7 +456,7 @@ export default function QuotationsPaymentProcess() {
                 }
 
                 const formData = new FormData();
-                formData.append("file", file); // 
+                formData.append("file", file);
 
                 const uploadRes = await apiFetch.post(
                     "/upload/upload-receipt",
@@ -634,7 +630,6 @@ export default function QuotationsPaymentProcess() {
     const MyDocument = () => (
         <Document>
             <Page size="A4" style={styles.page}>
-                {/* Header Section: Logo and Company Info */}
                 <View style={styles.header}>
                     <View style={styles.headerCompany}>
                         <Image src={"images/Logo.png"} style={styles.logo} />
@@ -652,7 +647,6 @@ export default function QuotationsPaymentProcess() {
                     </View>
                 </View>
 
-                {/* Billing and Payment Summary Row */}
                 <View style={styles.divider}></View>
 
                 <View style={styles.billRow}>
@@ -684,7 +678,6 @@ export default function QuotationsPaymentProcess() {
                     </View>
                 </View>
 
-                {/* Main Table */}
                 <View style={styles.table}>
                     <View style={styles.tableHeader}>
                         <Text style={[styles.cell, { flex: 1.5 }]}>DATE</Text>
@@ -717,7 +710,6 @@ export default function QuotationsPaymentProcess() {
                     ))}
                 </View>
 
-                {/* Footer with Bank Details */}
                 <View style={styles.footerSection}>
                     <View style={styles.bankInfo}>
                         <Text style={styles.muted}>Payment to be deposited in below bank details:</Text>

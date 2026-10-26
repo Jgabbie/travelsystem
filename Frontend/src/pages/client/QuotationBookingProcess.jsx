@@ -121,11 +121,9 @@ const getBirthdayDisabledDate = (travelerType) => {
 }
 
 
-// Normalize the quotation travel date into a start/end date object
 const normalizeTravelDate = (value) => {
     if (!value) return null;
 
-    // Handle object values
     if (typeof value === 'object' && !Array.isArray(value)) {
         const startValue =
             value.startDate ||
@@ -154,7 +152,6 @@ const normalizeTravelDate = (value) => {
         return null;
     }
 
-    // Handle array values
     if (Array.isArray(value)) {
         return normalizeTravelDate({
             startDate: value[0],
@@ -162,14 +159,12 @@ const normalizeTravelDate = (value) => {
         });
     }
 
-    // Handle string values
     const dateText = String(value).trim();
 
     if (!dateText || dateText.toUpperCase() === 'N/A') {
         return null;
     }
 
-    // Split the date range without splitting ISO date hyphens
     const dateParts = dateText.split(/\s+(?:-|–|—|to)\s+/i);
 
     const start = dayjs(dateParts[0]?.trim());
@@ -281,9 +276,7 @@ export default function QuotationBookingProcess() {
         : null
 
 
-    // Check passport expiry against travel date
     const getPassportExpiryStatus = (passportExpiry) => {
-        // No passport validation for domestic packages
         if (isDomesticPackage || !passportExpiry || !travelStartDate) {
             return 'valid'
         }
@@ -294,12 +287,10 @@ export default function QuotationBookingProcess() {
             return 'valid'
         }
 
-        // BLOCK if passport expires BEFORE the travel date
         if (expiryDate.isBefore(travelStartDate, 'day')) {
             return 'expired-before-travel'
         }
 
-        // WARNING if passport expires within 6 months from travel date
         const sixMonthsAfterTravel = travelStartDate.add(6, 'month')
 
         if (
@@ -313,7 +304,6 @@ export default function QuotationBookingProcess() {
     }
 
 
-    // Validate all traveler passport expiry dates
     const validatePassportExpiriesBeforeProceeding = (
         travelerList = [],
         showWarnings = true
@@ -329,7 +319,6 @@ export default function QuotationBookingProcess() {
 
             const status = getPassportExpiryStatus(passportExpiry)
 
-            // HARD STOP
             if (status === 'expired-before-travel') {
                 notificationApi.error({
                     title: `Traveler ${index + 1}'s passport expires before the travel date.`,
@@ -340,7 +329,6 @@ export default function QuotationBookingProcess() {
                 return false
             }
 
-            // WARNING ONLY
             if (showWarnings && status === 'within-six-months') {
                 notificationApi.warning({
                     title: `Traveler ${index + 1}'s passport expires within 6 months of travel.`,
@@ -648,7 +636,6 @@ export default function QuotationBookingProcess() {
     const passportFileInputs = useRef([]);
     const photoFileInputs = useRef([]);
 
-    // Keep track of blob URLs so we only revoke them when necessary
     const previewUrlsRef = useRef(new Set());
 
     const createPreviewUrl = (file) => {
@@ -1092,7 +1079,6 @@ export default function QuotationBookingProcess() {
             const storedVisaFiles =
                 quotationBookingData?.visaFiles || [];
 
-            // Make sure NO selections never keep a visa value
             const finalVisaFiles = storedVisaFiles.map((visa, index) =>
                 visaSelections[index] === 'yes'
                     ? visa || null
@@ -1169,7 +1155,6 @@ export default function QuotationBookingProcess() {
 
         const newPreviews = [...previews];
 
-        // Remove old preview only when replacing/removing this specific file
         if (newPreviews[index]) {
             removePreviewUrl(newPreviews[index]);
         }
@@ -1731,12 +1716,10 @@ export default function QuotationBookingProcess() {
                                                                 const travelerType = travelerTypeLabels[index] || 'Adult'
                                                                 const baseDisabled = getBirthdayDisabledDate(travelerType)(current)
 
-                                                                // For Adults, disable dates after 2014 (to ensure 12+ years old)
                                                                 if (travelerType === 'Adult' && current && current.year() > 2014) {
                                                                     return true
                                                                 }
 
-                                                                // For Adults, disable dates before 1935 (to prevent ages over 90)
                                                                 if (travelerType === 'Adult' && current && current.year() < 1935) {
                                                                     return true
                                                                 }
@@ -1791,7 +1774,6 @@ export default function QuotationBookingProcess() {
 
                                                                     const status = getPassportExpiryStatus(date)
 
-                                                                    // PASSPORT EXPIRES BEFORE TRAVEL
                                                                     if (status === 'expired-before-travel') {
                                                                         notificationApi.error({
                                                                             title: 'Passport expires before the travel date.',
@@ -1806,7 +1788,6 @@ export default function QuotationBookingProcess() {
                                                                         return
                                                                     }
 
-                                                                    // PASSPORT EXPIRES WITHIN SIX MONTHS
                                                                     if (status === 'within-six-months') {
                                                                         notificationApi.warning({
                                                                             title: 'Passport expires within 6 months of travel.',
@@ -1830,7 +1811,6 @@ export default function QuotationBookingProcess() {
                                             </div>
                                             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
 
-                                                {/* PASSPORT UPLOAD - Hidden if file exists */}
                                                 {(!fileLists[index] || fileLists[index].length === 0) && (
                                                     <Upload
                                                         fileList={fileLists[index]}
@@ -1838,13 +1818,12 @@ export default function QuotationBookingProcess() {
                                                         onChange={(info) => handleChange(info, index)}
                                                         accept="image/jpeg,image/png,.pdf"
                                                         maxCount={1}
-                                                        showUploadList={false} // Hidden because you have a custom preview
+                                                        showUploadList={false}
                                                     >
                                                         <Button className='upload-passport-button' type='primary'>Upload {travelDocumentLabel}</Button>
                                                     </Upload>
                                                 )}
 
-                                                {/* 2X2 PHOTO UPLOAD - Hidden if file exists */}
                                                 {(!photoFileLists[index] || photoFileLists[index].length === 0) && (
                                                     <Upload
                                                         fileList={photoFileLists[index]}
@@ -1881,7 +1860,6 @@ export default function QuotationBookingProcess() {
                                                     </Button>
                                                 )}
 
-                                                {/* Hidden native inputs to trigger file pickers */}
                                                 <input
                                                     type="file"
                                                     accept="image/jpeg,image/png,.pdf"
@@ -1931,14 +1909,12 @@ export default function QuotationBookingProcess() {
                                                             type={visaSelections[index] === 'no' ? 'primary' : 'default'}
                                                             size="small"
                                                             onClick={() => {
-                                                                // Set visa selection to NO
                                                                 setVisaSelections((prev) => {
                                                                     const next = [...prev];
                                                                     next[index] = 'no';
                                                                     return next;
                                                                 });
 
-                                                                // Remove existing preview URL
                                                                 setVisaPreviews((prev) => {
                                                                     const next = [...prev];
 
@@ -1950,7 +1926,6 @@ export default function QuotationBookingProcess() {
                                                                     return next;
                                                                 });
 
-                                                                // Remove uploaded visa file
                                                                 setVisaFileLists((prev) => {
                                                                     const next = [...prev];
                                                                     next[index] = [];

@@ -77,8 +77,6 @@ const apiFetch = async (endpoint, options = {}) => {
 
     clearTimeout(timeoutId);
 
-    // Fetch doesn't throw on 4xx/5xx errors,
-    // so handle them manually.
     if (!response.ok) {
         const errorData =
             await response.json().catch(() => ({}));

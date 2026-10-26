@@ -58,7 +58,7 @@ export default function PassportApplication() {
     const { applicationId } = location.state || {};
     const navigate = useNavigate();
 
-    const id = applicationId; // Use applicationId from location state instead of URL params
+    const id = applicationId;
 
     const [notificationApi, notificationContextHolder] =
         notification.useNotification();
@@ -70,7 +70,7 @@ export default function PassportApplication() {
     const [govIdList, setGovIdList] = useState([]);
     const [applicationFormList, setApplicationFormList] = useState([]);
 
-    const [method, setMethod] = useState(null); // default selected payment method  
+    const [method, setMethod] = useState(null);
     const [fileList, setFileList] = useState([]);
     const [paymentCompleted, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
@@ -397,8 +397,6 @@ export default function PassportApplication() {
                 setPaymentCompleted(true);
 
             } else if (method === 'paymongo') {
-                // Make sure application exists
-
 
                 if (!application) {
                     notificationApi.error({ title: "Application not found.", placement: 'topRight' });
@@ -413,13 +411,11 @@ export default function PassportApplication() {
                 };
 
 
-                // Send request to create checkout session
                 const endpoint = isPenaltyPayment
                     ? '/payment/create-checkout-session-passport-penalty'
                     : '/payment/create-checkout-session-passport';
                 const paymongoResponse = await apiFetch.post(endpoint, payload);
                 const checkoutUrl = paymongoResponse?.data?.attributes?.checkout_url;
-                // Redirect user to PayMongo checkout
 
                 if (checkoutUrl) {
                     window.location.href = checkoutUrl;
@@ -456,7 +452,6 @@ export default function PassportApplication() {
                     Preview File
                 </Button>
 
-                {/* Download disabled */}
             </div>
         );
     };
@@ -587,7 +582,6 @@ export default function PassportApplication() {
             );
 
             const uploaded = res.urls;
-            // Map uploaded urls back to the fields we appended in order
             const payload = {};
             let urlIndex = 0;
             appendedOrder.forEach((key) => {
@@ -656,7 +650,6 @@ export default function PassportApplication() {
                 time: timeToSend
             });
 
-            // optional: keep state in sync
             setSelectedDate(dateToSend);
             setSelectedTime(timeToSend);
 
@@ -756,7 +749,6 @@ export default function PassportApplication() {
                         <p >Monitor progress, payment, and document actions with a cleaner workflow view.</p>
                     </div>
 
-                    {/* Status timeline banner */}
 
 
 
@@ -981,7 +973,6 @@ export default function PassportApplication() {
                                                                 );
                                                             })}
 
-                                                            {/* "Others" Option Card */}
                                                             <div
                                                                 onClick={() => setSelectedSuggestedIndex('others')}
                                                                 className={`passportapplication-suggestedoption-card ${selectedSuggestedIndex === 'others' ? 'selected' : ''
@@ -1013,7 +1004,7 @@ export default function PassportApplication() {
                                                                             disabledDate={disableDates}
                                                                             placeholder="Select Date"
                                                                             onChange={(date) => setCustomDateTime(prev => ({ ...prev, date }))}
-                                                                            onClick={(e) => e.stopPropagation()} // Prevents card click trigger issues
+                                                                            onClick={(e) => e.stopPropagation()}
                                                                         />
                                                                         <TimePicker
                                                                             className='passportapplication-suggestedoptions-timepicker'
@@ -1719,7 +1710,6 @@ export default function PassportApplication() {
                                                             const stepSetDate = processStepInfo.setDate || getStepSetDateForTitle(application, step.title);
                                                             const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
 
-                                                            // Prefer processSteps data from backend
                                                             const stepDeadlineDate =
                                                                 processStepInfo.deadlineDate || null;
 

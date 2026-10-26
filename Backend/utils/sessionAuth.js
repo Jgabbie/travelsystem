@@ -57,17 +57,8 @@ const isProduction = process.env.NODE_ENV === 'production';
 const COOKIE_OPTIONS = {
     httpOnly: true,
 
-    // HTTPS is required in production.
-    // Keep this false on localhost.
     secure: isProduction,
 
-    /*
-     * Use "none" in production when the frontend and backend
-     * are hosted on different domains, such as:
-     *
-     * frontend: your-app.vercel.app
-     * backend: your-api.ondigitalocean.app
-     */
     sameSite: isProduction ? 'none' : 'lax',
 
     path: '/',

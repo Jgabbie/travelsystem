@@ -24,11 +24,9 @@ const getRecommendations = async (req, res) => {
 
         //console.log(`[Recommendations] Fetching recommendations for user: ${userId}`);
 
-        // Call the Python AI service
         const response = await aiService.get(`/recommend/${userId}`);
         //console.log(`[Recommendations] AI response status: ${response.status}, method: ${response.data?.method || 'n/a'}, count: ${response.data?.recommendations?.length || 0}`)
 
-        // Check if there was an error from the AI service
         if (response.data.error) {
             console.warn(`[Recommendations] AI Service error: ${response.data.error}`);
             return res.status(503).json({
@@ -48,7 +46,6 @@ const getRecommendations = async (req, res) => {
 
         //console.log(`[Recommendations] Retrieved ${recommendations.length} recommendations using ${response.data.method}`);
 
-        // Convert recommended id strings to ObjectId where valid
         const objectIds = recommendedIds
             .map(id => (mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null))
             .filter(Boolean);
@@ -58,10 +55,9 @@ const getRecommendations = async (req, res) => {
             packagesFromDb = await PackageModel.find({ _id: { $in: objectIds } }).lean().exec();
         }
 
-        // Map by stringified _id for quick lookup
         const pkgMap = new Map(packagesFromDb.map(p => [String(p._id), p]));
 
-        // Build ordered list preserving AI order. If DB record missing, keep a minimal fallback object.
+
         const orderedPackages = recommendations
             .map((rec) => {
                 const recId = rec.packageId || rec._id || null;

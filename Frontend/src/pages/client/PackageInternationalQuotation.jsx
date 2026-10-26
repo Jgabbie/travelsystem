@@ -216,7 +216,6 @@ export default function PackageInternationalQuotation() {
     }, [selectedDateSlots, travelerType, adultCount, childCount, infantCount])
 
 
-    //
     const handleTravelerCounterChange = (setter, currentValue, minValue) => {
         setter(Math.max(minValue, currentValue - 1))
     }

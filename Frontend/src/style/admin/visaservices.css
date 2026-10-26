@@ -7,7 +7,6 @@
     margin-bottom: 20px;
 }
 
-/* Statistic / management card styling */
 .visaservice-management-card {
     background-color: #305797 !important;
     color: #ffffff !important;
@@ -114,7 +113,6 @@
     line-height: 1.4;
     color: #111111;
 
-    /* Prevent very long names from changing card height */
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
@@ -137,7 +135,6 @@
     color: #252525;
     text-align: left;
 
-    /* Keep every card at the same height */
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
@@ -152,10 +149,6 @@
     gap: 10px;
     flex-wrap: wrap;
 
-    /*
-     * This pushes the buttons to the bottom regardless
-     * of the description length.
-     */
     margin-top: auto;
     padding-top: 18px;
 }
@@ -242,7 +235,6 @@
 }
 
 
-/* BUTTONS CSS */
 .visaservices-view-button {
     font-family: "Montserrat", sans-serif;
     font-size: 12px;
@@ -374,7 +366,6 @@
 }
 
 
-/* MODAL CSS */
 .visa-details-modal .ant-modal-content {
     border-radius: 16px;
     padding: 16px;

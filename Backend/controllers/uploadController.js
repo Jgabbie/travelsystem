@@ -197,10 +197,6 @@ const uploadServiceImage = async (req, res) => {
             'service-images'
         );
 
-        /*
-         * Since your Cloudinary uploads use type: 'private',
-         * use the backend private-file route first instead of secure_url.
-         */
         const imageUrl =
             buildPrivateAccessUrl(req, uploadResult) ||
             uploadResult?.secure_url;

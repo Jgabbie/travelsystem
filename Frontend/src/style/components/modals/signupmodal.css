@@ -212,7 +212,6 @@ body {
     text-align: left;
 }
 
-/* single error slot */
 .signup-error-slot {
     min-height: 14px;
 }
@@ -572,7 +571,6 @@ body {
     }
 }
 
-/* --- Signup Success Modal --- */
 
 .ant .signup-success-modal .ant-modal-content {
     border-radius: 16px;

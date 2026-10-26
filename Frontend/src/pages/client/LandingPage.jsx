@@ -94,7 +94,6 @@ export default function LandingPage() {
 
         let isValid = true;
 
-        // NAME
         if (!contactValues.name.trim()) {
             errors.name = 'Name is required';
             isValid = false;
@@ -103,7 +102,6 @@ export default function LandingPage() {
             isValid = false;
         }
 
-        // EMAIL
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!contactValues.email.trim()) {
             errors.email = 'Email is required';
@@ -113,13 +111,11 @@ export default function LandingPage() {
             isValid = false;
         }
 
-        // SUBJECT
         if (!contactValues.subject.trim()) {
             errors.subject = 'Subject is required';
             isValid = false;
         }
 
-        // MESSAGE
         if (!contactValues.message.trim()) {
             errors.message = 'Message is required';
             isValid = false;
@@ -357,7 +353,6 @@ export default function LandingPage() {
             try {
                 const response = await apiFetch.get('/recommendations')
                 const packages = (response?.packages || response?.tours || []).map((pkg) => {
-                    // Supports both a direct package object and a populated packageItem object
                     const packageData =
                         pkg?.packageItem && typeof pkg.packageItem === 'object'
                             ? pkg.packageItem
@@ -465,12 +460,10 @@ export default function LandingPage() {
     };
 
 
-    // Check for next steps modal flag from preferences
     useEffect(() => {
         const shouldShowModal = localStorage.getItem('showNextStepsModal');
         if (shouldShowModal === 'true') {
             setShowNextStepsModal(true);
-            // Remove the flag so it doesn't show on subsequent visits
             localStorage.removeItem('showNextStepsModal');
         }
     }, []);
@@ -637,11 +630,9 @@ export default function LandingPage() {
                     console.error(err);
                 }
 
-                // Wait 1 second before checking again
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
 
-            // Still not paid after 10 seconds
             setOpenPaymentCancelledModal(true);
 
             sessionStorage.removeItem("paymentToken");
@@ -1971,7 +1962,7 @@ export default function LandingPage() {
                 </div>
             </Modal>
 
-            {/* Next Steps Modal - Shown after User Preferences */}
+
             <Modal
                 title={null}
                 centered={true}

@@ -34,7 +34,6 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         notification.useNotification();
 
 
-    // RESET FIELDS AND ERRORS WHEN MODAL OPENS OR ROLE TO ADD CHANGES -----------------------------
     useEffect(() => {
         if (isOpen) {
             const nextRole = roleToAdd || 'Customer';
@@ -61,7 +60,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         }
     }, [isOpen, roleToAdd]);
 
-    //PROPER CASE CONVERTER -----------------------------------------------------
+
     const toProperCase = (value) =>
         value
             .toLowerCase()
@@ -77,7 +76,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             )
             .join(" ");
 
-    //INPUT VALIDATION -----------------------------------------------------
+
     const validate = useCallback((field, value, currentValues = values) => {
         if (field === "role") {
             if (value === "") return "Role is required.";
@@ -123,7 +122,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         return "";
     }, [values]);
 
-    //CHECK FOR DUPLICATE USERNAME -----------------------------------------
+
     useEffect(() => {
         const frontEndError = validate("username", values.username) //reduces api requests, it skips api requests when it triggers a frontend validation
         if (frontEndError) return;
@@ -146,7 +145,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             });
     }, [values.username, validate]);
 
-    //CHECK FOR DUPLICATE EMAIL -----------------------------------------
+
     useEffect(() => {
         const frontEndError = validate("email", values.email);
         if (frontEndError) return;
@@ -169,14 +168,13 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             });
     }, [values.email, validate]);
 
-    //HANDLES CHANGES IN ALL FIELDS EXCEPT ROLE -----------------------------
+
     const valueHandler = (field, value) => {
         const updatedValues = { ...values, [field]: value };
         setValues(updatedValues);
         setError({ ...error, [field]: validate(field, value, updatedValues) });
     };
 
-    //IF ROLE IS CHANGED TO ADMIN OR EMPLOYEE, IT REMOVES THE PASSWORD FIELDS AND THEIR ERRORS ----------------
     const handleRoleChange = (roleValue) => {
         const updatedValues = {
             ...values,
@@ -192,7 +190,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         });
     };
 
-    //ADD USER -----------------------------------------------------
+
     const handleCreate = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -221,8 +219,8 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                 password: '',
                 confirmPassword: ''
             });
-            refreshData(); // Refresh the table
-            onClose(); // Close modal
+            refreshData();
+            onClose();
         } catch (err) {
             const errorMsg = err.data?.message || err.data?.error || "Failed to create user";
             notificationApi.error({

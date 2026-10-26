@@ -201,21 +201,15 @@ export default function UploadBookingInvoice() {
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
 
-            // Fixed footer positioning
             const footerMarginX = 28;
             const footerTextY = pdfHeight - 18;
             const footerLineY = footerTextY - 11;
 
-            // Prevent page content from overlapping the footer
             const maxContentHeight = footerLineY - 6;
 
             for (let i = 0; i < pages.length; i += 1) {
                 const pageEl = pages[i];
 
-                /*
-                 * Hide the existing HTML footer during capture because
-                 * the footer will be drawn directly through jsPDF.
-                 */
                 const htmlFooters = pageEl.querySelectorAll(
                     ".mrc-booking-invoice-footer"
                 );
@@ -237,7 +231,6 @@ export default function UploadBookingInvoice() {
                         backgroundColor: "#ffffff"
                     });
                 } finally {
-                    // Restore footer visibility after capturing
                     htmlFooters.forEach((footer, footerIndex) => {
                         footer.style.visibility =
                             previousFooterVisibility[footerIndex];
@@ -248,10 +241,6 @@ export default function UploadBookingInvoice() {
                     pdf.addPage();
                 }
 
-                /*
-                 * Scale the captured page so that it fits inside the
-                 * available space above the fixed PDF footer.
-                 */
                 const scale = Math.min(
                     pdfWidth / canvas.width,
                     maxContentHeight / canvas.height
@@ -272,7 +261,6 @@ export default function UploadBookingInvoice() {
                     imgHeight
                 );
 
-                // Footer separator line
                 pdf.setDrawColor(210, 210, 210);
                 pdf.setLineWidth(0.5);
 
@@ -283,7 +271,6 @@ export default function UploadBookingInvoice() {
                     footerLineY
                 );
 
-                // Footer text
                 pdf.setFont("helvetica", "normal");
                 pdf.setFontSize(8);
                 pdf.setTextColor(85, 85, 85);
@@ -375,7 +362,6 @@ export default function UploadBookingInvoice() {
             const updatedBooking = response?.booking || booking;
             setBooking(updatedBooking);
 
-            // IMPORTANT:
             // permanently disable only the traveler that was requested
             if (isSpecificTraveler) {
                 setRequestedTravelerIndexes((prev) => {
@@ -402,8 +388,6 @@ export default function UploadBookingInvoice() {
                 placement: "topRight"
             });
         } finally {
-            // This only stops the loading spinner.
-            // requestedTravelerIndexes keeps the clicked button disabled.
             if (isSpecificTraveler) {
                 setResubmittingTravelerIndex(null);
             } else {
@@ -538,7 +522,6 @@ export default function UploadBookingInvoice() {
                 console.error(err);
             }
 
-            // fallback
             const createdAtValue = booking.bookingDate || booking.createdAt;
             const createdAt = createdAtValue ? dayjs(createdAtValue) : null;
 

@@ -144,7 +144,7 @@ export default function UserQuotationRequest() {
     useEffect(() => {
         const latestRevision = quotation?.pdfRevisions?.filter(rev => rev?.url).slice(-1)[0];
         if (latestRevision) {
-            setSignedPdfUrl(latestRevision.url); // directly use the URL from DB
+            setSignedPdfUrl(latestRevision.url);
         } else {
             setSignedPdfUrl(null);
         }
@@ -168,7 +168,7 @@ export default function UserQuotationRequest() {
                         display: "flex",
                         justifyContent: "center",
                         alignItems: "center",
-                        height: "90vh", // fill most of the viewport
+                        height: "90vh",
                         flexDirection: "column",
                     }}>
                         <Spin spinning={true} description="Loading quotation..." size="large">
@@ -211,7 +211,6 @@ export default function UserQuotationRequest() {
 
 
                                 <div className="quotation-card">
-                                    {/* HEADER */}
                                     <div className="quotation-content">
                                         <h2 className="quotation-title">{quotation.packageName}</h2>
                                         <p className="quotation-details">

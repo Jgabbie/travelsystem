@@ -6,13 +6,10 @@ import upload from '../middleware/upload.js';
 
 const router = express.Router();
 
-// Reusable authorization middleware
+
 const staffOnly = authorizeRoles('Admin', 'Employee');
 router.use(userAuth);
 
-//to make sure that the admin-only routes are only accessible by admins, we create a middleware function that checks the user's role before allowing access to the route. 
-// This is done by fetching the user from the database using their ID (which is set in the userAuth middleware) and checking if their role is 'Admin'. 
-// If not, we return a 403 Forbidden response. If they are an admin, we call next() to proceed to the route handler.
 
 router.post(
     '/create-booking',

@@ -4,7 +4,6 @@ import userAuth from '../middleware/userAuth.js';
 
 const router = express.Router();
 
-// All wishlist routes require an authenticated user
 router.post(
     '/add',
     userAuth,

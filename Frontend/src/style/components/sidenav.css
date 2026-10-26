@@ -88,7 +88,6 @@
   gap: 6px;
 }
 
-/* Divider shown when a section is expanded */
 .nav-section.is-expanded .nav-section-items::before {
   content: "";
   display: block;
@@ -227,14 +226,10 @@
     z-index: 1200;
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 
-    /* Scrollable */
     overflow-y: auto;
     overflow-x: hidden;
 
-    /* Smooth mobile scrolling */
     -webkit-overflow-scrolling: touch;
-
-    /* Firefox */
     scrollbar-width: thin;
   }
 
@@ -242,12 +237,10 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    /* Firefox */
   }
 
   .sidenav.is-mobile::-webkit-scrollbar {
     display: none;
-    /* Chrome/Safari */
   }
 
   .sidenav.is-mobile::-webkit-scrollbar-track {

@@ -254,7 +254,6 @@
 }
 
 
-/* BUTTONS CSS */
 .user-invoice-back-button {
     font-family: "Montserrat", sans-serif;
     font-size: 15px;
@@ -327,7 +326,6 @@
 }
 
 
-/* Payment Card */
 .payment-card {
     border-radius: 16px;
     border: 1px solid #e7ecf7;
@@ -374,12 +372,10 @@
     border-inline-start-width: 1px !important;
 }
 
-/* Removes Ant Design's connecting line between radio buttons */
 .payment-methods-cards .ant-radio-button-wrapper.payment-card::before {
     display: none !important;
 }
 
-/* Ensure every corner remains rounded */
 .payment-methods-cards .ant-radio-button-wrapper:first-child,
 .payment-methods-cards .ant-radio-button-wrapper:last-child {
     border-radius: 16px !important;
@@ -395,20 +391,17 @@
     margin-bottom: 20px;
 }
 
-/* Remove the forced A4 height from visible registration pages */
 .form-content-wrapper.pdf-capture:not(.pdf-generating) .mrc-form-page.mrc-booking-invoice-page,
 .form-content-wrapper.pdf-capture:not(.pdf-generating) .mrc-form-page.mrc-registration-page {
     min-height: 0 !important;
     height: auto !important;
 }
 
-/* Do not push the footer to the bottom of an A4-height container */
 .form-content-wrapper.pdf-capture:not(.pdf-generating) .mrc-booking-invoice-footer,
 .form-content-wrapper.pdf-capture:not(.pdf-generating) .mrc-registration-page .mrc-booking-invoice-footer {
     margin-top: 20px !important;
 }
 
-/* Ensure the visible wrapper uses only the content's natural height */
 .form-content-wrapper.pdf-capture:not(.pdf-generating) {
     min-height: 0 !important;
     height: auto !important;

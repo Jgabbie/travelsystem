@@ -545,10 +545,6 @@ const refreshToken = async (req, res) => {
             );
 
         if (!tokenMatches) {
-            /*
-             * A mismatched refresh token may indicate reuse.
-             * Revoke the stored session.
-             */
             user.refreshToken = "";
             user.lastActivityAt = 0;
 
@@ -573,9 +569,6 @@ const refreshToken = async (req, res) => {
             });
         }
 
-        /*
-         * Rotate both tokens.
-         */
         const newAccessToken = createAccessToken(user._id);
         const newRefreshToken = createRefreshToken(user._id);
 
@@ -723,10 +716,6 @@ const logoutUser = async (req, res) => {
 
         clearAuthCookies(res);
 
-        /*
-         * Clear any old cookie that may remain from the
-         * previous authentication implementation.
-         */
         res.clearCookie("token", {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -757,9 +746,6 @@ const logoutUser = async (req, res) => {
     } catch (error) {
         console.error("Logout error:", error);
 
-        /*
-         * Clear browser cookies even if database cleanup fails.
-         */
         clearAuthCookies(res);
 
         return res.status(200).json({
@@ -867,10 +853,6 @@ const verifyEmail = async (req, res) => {
     try {
         const user = await UserModel.findOne({ email });
 
-        /*
-         * Use a generic message so this endpoint does not confirm
-         * whether the email exists.
-         */
         if (
             !user ||
             !user.emailVerifyOtp ||
@@ -1085,9 +1067,7 @@ const sendResetOtp = async (req, res) => {
     } catch (error) {
         console.error("Send reset OTP error:", error);
 
-        /*
-         * Keep the outward response generic.
-         */
+
         return res.status(200).json(genericResponse);
     }
 };
@@ -1246,9 +1226,6 @@ const resetPassword = async (req, res) => {
             });
         }
 
-        /*
-         * Optional password-history check.
-         */
         const sameAsCurrentPassword = await bcrypt.compare(
             newPassword,
             user.hashedPassword
@@ -1270,15 +1247,11 @@ const resetPassword = async (req, res) => {
         user.resetOtpAttempts = 0;
         user.resetOtpBlockedUntil = null;
 
-        /*
-         * Revoke active sessions after password reset.
-         */
+
         user.refreshToken = "";
         user.lastActivityAt = 0;
 
-        /*
-         * Do not automatically verify the email here.
-         */
+
         await user.save();
 
         clearAuthCookies(res);

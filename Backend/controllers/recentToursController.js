@@ -19,7 +19,7 @@ const uploadBufferToCloudinary = (file, folder) =>
     });
 
 
-// CREATE
+
 const createRecentTour = async (req, res) => {
     try {
 
@@ -48,7 +48,7 @@ const createRecentTour = async (req, res) => {
 };
 
 
-// READ
+
 const getRecentTours = async (req, res) => {
     try {
 
@@ -65,7 +65,6 @@ const getRecentTours = async (req, res) => {
 };
 
 
-// DELETE
 const deleteRecentTour = async (req, res) => {
     try {
 

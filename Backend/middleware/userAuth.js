@@ -36,7 +36,7 @@ const refreshTokenMatches = (rawToken, storedTokenHash) => {
     );
 };
 
-//This gatekeeps the cookie, and checks if the cookie is real.
+//this gatekeeps the cookie, and checks if the cookie is real
 const userAuth = async (req, res, next) => {
     const accessToken = req.cookies?.accessToken;
     const refreshToken = req.cookies?.refreshToken;
@@ -167,10 +167,7 @@ const userAuth = async (req, res, next) => {
 
                 return next();
             } catch (error) {
-                /*
-                 * The access token may be expired or invalid.
-                 * Attempt renewal using the refresh token.
-                 */
+
                 const refreshResult =
                     await renewSessionFromRefreshToken();
 
@@ -191,10 +188,7 @@ const userAuth = async (req, res, next) => {
             }
         }
 
-        /*
-         * The access-token cookie may already have expired,
-         * but the refresh-token cookie can still restore it.
-         */
+
         const refreshResult =
             await renewSessionFromRefreshToken();
 
@@ -218,10 +212,7 @@ const userAuth = async (req, res, next) => {
             error
         );
 
-        /*
-         * Do not report database or temporary server failures
-         * as an idle logout.
-         */
+
         return res.status(500).json({
             message: "Unable to verify the current session",
         });

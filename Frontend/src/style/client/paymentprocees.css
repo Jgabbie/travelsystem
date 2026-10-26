@@ -1,4 +1,3 @@
-/* LOADING CSS */
 .payment-loading-overlay {
     position: fixed;
     top: 0;
@@ -14,13 +13,11 @@
 }
 
 
-/* PAGE CONTAINER AND WHOLE PAGE CSS */
 .payment-process-container {
     padding: 40px;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-/* MODE OF PAYMENT AND INVOICE */
 .payment-top-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
@@ -179,7 +176,6 @@
     box-shadow: 0 16px 30px rgba(48, 87, 151, 0.16);
 }
 
-/* Deposit payment schedule */
 .deposit-frequency-select {
     width: 100%;
 }
@@ -228,9 +224,6 @@
 }
 
 
-
-
-/* PAYMENT METHOD CARDS */
 .payment-section .payment-methods-cards .ant-radio-wrapper {
     width: 100%;
     align-items: stretch;
@@ -307,7 +300,6 @@
     overflow: visible !important;
 }
 
-/* Ant Design places the Radio.Button content inside a span */
 .payment-cards-group .payment-card.ant-radio-button-wrapper>span:last-child {
     display: block;
     width: 100%;
@@ -339,9 +331,6 @@
 
 
 
-
-
-/* BUTTONS CSS */
 .payment-process-back-button {
     font-family: "Montserrat", sans-serif;
     font-size: 15px;
@@ -474,7 +463,7 @@
     padding: 18px;
 }
 
-/* Center images inside bank-item while keeping text left-aligned */
+
 .bank-item img {
     align-self: center;
     max-width: 100%;
@@ -531,7 +520,6 @@
 }
 
 
-/* remove the toolbar for document viewer */
 .pdf-toolbar-mask {
     position: absolute;
     top: 0;

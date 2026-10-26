@@ -6,9 +6,7 @@ const isLocalhost = typeof window !== 'undefined' &&
 
 const BASE_URL = isLocalhost ? API_BASE_URL : PROD_BASE_URL;
 
-/**
- * Custom fetch wrapper to mimic axiosInstance behavior
- */
+
 const apiFetch = async (endpoint, options = {}) => {
     const { params, withCredentials, ...rest } = options;
     const isAbsoluteUrl = /^https?:\/\//i.test(endpoint);
@@ -34,7 +32,6 @@ const apiFetch = async (endpoint, options = {}) => {
     }
 
     const defaultOptions = {
-        // Equivalent to withCredentials: true
         credentials: 'include',
         ...rest,
         headers,
@@ -42,7 +39,6 @@ const apiFetch = async (endpoint, options = {}) => {
 
     const response = await fetch(url.toString(), defaultOptions);
 
-    // Fetch doesn't throw on 4xx/5xx errors, so we handle it manually
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw {

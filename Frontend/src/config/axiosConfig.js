@@ -11,7 +11,7 @@ const BASE_URL = isLocalhost ? API_BASE_URL : PROD_BASE_URL;
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
-    withCredentials: true, // Required for cookies/sessions
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
     },

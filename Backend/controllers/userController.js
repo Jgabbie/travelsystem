@@ -108,11 +108,10 @@ const updateUserData = async (req, res) => {
         const emailChanged =
             normalizedEmail !== currentEmail
 
-        // Normalize incoming phone once and check duplicates while excluding current user
         const cleanedPhoneNum = phone.replace(/\D/g, ''); // removed spaces
 
 
-        // Check if email is already taken by another user (exclude current user)
+
         if (emailChanged) {
 
             const existingUser =
@@ -128,7 +127,6 @@ const updateUserData = async (req, res) => {
             }
         }
 
-        // Check if phone is already taken by another user (exclude current user)
         if (cleanedPhoneNum && cleanedPhoneNum !== user.phone) {
             const existingUser = await UserModel.findOne({ phone: cleanedPhoneNum, _id: { $ne: userId } })
             if (existingUser) {
@@ -522,7 +520,6 @@ const createUsers = async (req, res) => {
         }
 
         if (role === "Admin" || role === "Employee") {
-            // Generate a temporary random password (never sent) and store its hash so schema validation passes
             const tempPassword = Math.random().toString(36).slice(-12)
             const hashedTempPassword = await bcrypt.hash(tempPassword, 10)
 

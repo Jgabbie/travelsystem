@@ -73,7 +73,6 @@
 }
 
 
-/* QUOTATION PDF REVISIONS HISTORY CSS */
 .history-grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -160,7 +159,6 @@
 }
 
 
-/* INPUT REVISION REQUEST AND BUTTONS */
 .quotation-feedback-section {
     border-radius: 8px;
 }
@@ -289,10 +287,6 @@
 
 
 
-
-
-
-/*ACCEPT MODAL DESIGN */
 .userquotationrequest-accept-modal .ant-modal-content {
     border-radius: 16px;
     padding: 24px;
@@ -368,8 +362,6 @@
     color: #fff;
 }
 
-
-/*REVISION MODAL DESIGN */
 .userquotationrequest-revision-modal .ant-modal-content {
     border-radius: 16px;
     padding: 24px;
@@ -462,7 +454,6 @@
         font-size: 24px;
     }
 
-    /* Quotation Revision History */
     .history-grid-container {
         width: 100%;
         grid-template-columns: minmax(0, 1fr);
@@ -499,10 +490,7 @@
         overflow: hidden;
     }
 
-    /*
-     * Put the version and uploaded date on separate lines
-     * to prevent them from being compressed.
-     */
+
     .history-header {
         width: 100%;
         flex-direction: column;

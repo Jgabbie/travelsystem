@@ -25,7 +25,6 @@ export default function DestinationsPackages() {
 
     const [showScrollTop, setShowScrollTop] = useState(false)
 
-    // Track whether optional filters were explicitly used
     const [budgetFilterActive, setBudgetFilterActive] = useState(false)
     const [daysFilterActive, setDaysFilterActive] = useState(false)
 
@@ -327,7 +326,6 @@ export default function DestinationsPackages() {
                 packageType.includes(normalizedQuery) ||
                 tagMatches
 
-            // Search must match first
             if (!searchMatches) {
                 return false
             }
@@ -390,8 +388,6 @@ export default function DestinationsPackages() {
                 }
             }
 
-
-            // Package passed all active filters
             return true
         })
     })()
@@ -465,7 +461,7 @@ export default function DestinationsPackages() {
                                                 setBudgetFilterActive(true)
                                             }}
                                             formatter={(value) => `₱${value}`}
-                                            parser={(value) => Number(String(value).replace(/[^0-9]/g, ''))} // converts the value to a number and removes the non digit values like peso sign and commas
+                                            parser={(value) => Number(String(value).replace(/[^0-9]/g, ''))}
                                             onKeyDown={(e) => {
                                                 if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                                                     e.preventDefault()

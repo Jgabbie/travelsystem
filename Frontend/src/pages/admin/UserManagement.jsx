@@ -161,7 +161,6 @@ export default function UserManagement() {
     ]);
 
     try {
-      //logo
       const imgData = await getBase64ImageFromURL("/images/Logo.png");
       doc.addImage(imgData, "PNG", 14, 12, 24, 24);
     } catch (e) {
@@ -386,7 +385,7 @@ export default function UserManagement() {
 
       const normalizedMessage = String(errorMessage).toLowerCase();
 
-      // Maximum Admin limit
+
       if (
         normalizedMessage.includes("maximum") &&
         normalizedMessage.includes("admin")

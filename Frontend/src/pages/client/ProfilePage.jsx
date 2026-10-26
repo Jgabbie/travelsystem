@@ -656,7 +656,6 @@ export default function ProfilePage() {
     //cancel handler
     const handleCancel = () => {
         setEditing(false)
-        // Reset form to previous values
         if (userData) {
             setValues({
                 username: userData.username,
@@ -715,7 +714,6 @@ export default function ProfilePage() {
 
             const imageUrl = res.url
 
-            // save Cloudinary URL
             setProfileImage(imageUrl)
 
             notificationApi.success({ title: "Image uploaded successfully!", placement: 'topRight' })

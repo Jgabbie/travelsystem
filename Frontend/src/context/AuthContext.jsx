@@ -57,7 +57,6 @@ export const AuthProvider = ({ children }) => {
                 return;
             }
 
-            //ADD DEPENDENCY
 
             // if (isUnauthorizedError(err)) {
             //     setAuth(null);
@@ -92,7 +91,6 @@ export const AuthProvider = ({ children }) => {
                 return;
             }
 
-            //ADD DEPENDENCY
             if (err?.status === 401) {
                 setAuth(null);
                 return;
@@ -162,8 +160,7 @@ export const AuthProvider = ({ children }) => {
         };
     }, [auth, touchSession]);
 
-    //wraps the children components so the the values can be accessed
-    //children is the <App/> component stored in index.js
+
     return (
         <AuthContext.Provider value={{ auth, setAuth, authLoading, checkAuth }}>
             {children}

@@ -16,7 +16,6 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
     const [loading, setLoading] = useState(false);
     const scrollRef = useRef(null);
 
-    // Auto-scroll to the bottom of the chat list
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -52,14 +51,12 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
                 messages: recentMessages
             });
 
-            // Optional Chaining (?.) and a fallback message
             const botReply = response?.reply || "I received an empty response. Please try again.";
 
             setMessages([...updatedMessages, createMessage('assistant', botReply)]);
         } catch (error) {
-            console.error("Full Error Object:", error.response); // This is key to debugging!
+            console.error("Full Error Object:", error.response);
 
-            // Extract the error message from the backend if it exists
             const errorMsg = error.response?.data?.error || "Connection error. Check backend console.";
 
             setMessages([...updatedMessages, createMessage('assistant', `Error: ${errorMsg}`)]);

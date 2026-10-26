@@ -194,11 +194,6 @@ export default function UserTransactions() {
                 backgroundColor: "#ffffff",
                 logging: false,
 
-                /*
-                 * Force the cloned document to use a desktop viewport.
-                 * This prevents the 768px and 480px media queries from
-                 * changing the downloaded receipt layout.
-                 */
                 windowWidth: 1440,
                 windowHeight: 1600,
                 scrollX: 0,
@@ -211,10 +206,6 @@ export default function UserTransactions() {
 
                     if (!clonedElement) return;
 
-                    /*
-                     * Restore the receipt's original desktop width only
-                     * inside the cloned document used for PDF generation.
-                     */
                     clonedElement.style.width = "720px";
                     clonedElement.style.maxWidth = "720px";
                     clonedElement.style.minWidth = "720px";
@@ -234,10 +225,6 @@ export default function UserTransactions() {
                         clonedContent.style.boxSizing = "border-box";
                     }
 
-                    /*
-                     * Remove the modal's responsive scrolling and height
-                     * restrictions from the cloned export.
-                     */
                     const clonedModalBody = clonedDoc.querySelector(
                         ".transaction-receipt-modal .ant-modal-body"
                     );

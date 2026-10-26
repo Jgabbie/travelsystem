@@ -186,11 +186,6 @@ const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
         };
     }
 
-    // Special-case: if the status is 'Documents Submitted' and the applicant (user)
-    // is the one who completed that status, do not create a deadline or warning.
-    // This interprets "user complete the status" by checking the most recent
-    // statusHistory entry for 'Documents Submitted' and comparing changedBy
-    // to the application.userId.
     if (status === 'Documents Submitted') {
         try {
             const userIdStr = application.userId && typeof application.userId === 'object'
@@ -249,10 +244,6 @@ const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
     const preferredDate = normalizePassportDate(application.preferredDate);
 
 
-    // Determine deadline anchor:
-    // - For 'Processing by DFA' (or any mapping explicitly set to 0) we anchor to the appointment (`preferredDate`).
-    // - Otherwise the deadline is relative to when the status was set (statusHistory.changedAt),
-    //   i.e. deadline = statusSetDate + deadlineDays.
     let deadlineDate = null;
     if ((status === 'Processing by DFA' || deadlineDays === 0) && preferredDate) {
         deadlineDate = preferredDate.startOf('day');
@@ -848,7 +839,7 @@ const applyPassport = async (req, res) => {
 };
 
 
-//update passport application with documents ------------------------------------------------
+//update passport application with documents
 const updatePassportApplicationWithDocs = async (req, res) => {
 
     try {
@@ -1068,7 +1059,7 @@ const suggestAppointmentSchedules = async (req, res) => {
 };
 
 
-//choose chosen suggested appointment schedule ------------------------------------------------------
+//choose chosen suggested appointment schedule
 const chooseAppointment = async (req, res) => {
     const { id } = req.params;
     const { date, time } = req.body;
@@ -1343,7 +1334,7 @@ const updatePassportStatus = async (req, res) => {
 };
 
 
-//verify token checkout for passport payment ------------------------------------------------------
+//verify token checkout for passport payment
 const verifyTokenCheckout = async (req, res) => {
     const { token } = req.body;
     try {
@@ -1580,9 +1571,6 @@ const STEPS_ORDER = [
 ];
 
 
-// build a processSteps object keyed by step name with setDate and deadlineDate (YYYY-MM-DD or null).
-// deadline chaining rule: the first step's deadline = setDate + mapped days; subsequent deadlines
-// are computed by adding the mapped days to the previous step's computed deadline (if available).
 const buildProcessSteps = (application) => {
     const out = {};
     if (!application) return out;

@@ -962,8 +962,6 @@ const processVisaDeadlineAction = async (application) => {
         getCurrentVisaStatus(application) || ''
     ).trim();
 
-    // Clear penalty values when the application is not in
-    // Payment Completed or Documents Uploaded.
     if (!isVisaPenaltyEligibleStatus(currentStatus)) {
         const hasInvalidPenaltyState = Boolean(
             application.onPenalty ||

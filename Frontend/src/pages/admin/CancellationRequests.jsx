@@ -51,7 +51,7 @@ export default function CancellationRequests() {
     const [isRequestDeletedModalOpen, setIsRequestDeletedModalOpen] = useState(false)
     const [isRequestRestoredModalOpen, setIsRequestRestoredModalOpen] = useState(false)
     const [editingRequest, setEditingRequest] = useState(null)
-    const [pendingActionRequest, setPendingActionRequest] = useState(null); // Track which item is being clicked
+    const [pendingActionRequest, setPendingActionRequest] = useState(null);
     const [isFetchingRequests, setIsFetchingRequests] = useState(false)
 
     const { auth } = useAuth();
@@ -179,7 +179,6 @@ export default function CancellationRequests() {
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
 
-        // Column headers matching your screenshot table
         const tableColumn = [
             "Cancellation Request No.",
             "Customer Name",

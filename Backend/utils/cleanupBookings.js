@@ -31,12 +31,10 @@ const cleanupExpiredBookings = async () => {
 };
 
 const startCleanupScheduler = () => {
-    // Run once on startup
     cleanupExpiredBookings().catch((error) => {
         console.error('Cleanup scheduler startup run failed:', error);
     });
 
-    // Run every 5 minutes to catch expired bookings quickly
     setInterval(() => {
         cleanupExpiredBookings().catch((error) => {
             console.error('Cleanup scheduler interval run failed:', error);

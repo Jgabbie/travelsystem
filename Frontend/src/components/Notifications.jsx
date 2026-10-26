@@ -45,7 +45,6 @@ export default function Notifications() {
         }
     }, [auth])
 
-    // Fetch with configurable limit (used by drawer to fetch more)
     const fetchNotificationsWithLimit = useCallback(async (limit = 25) => {
         if (!auth) {
             setNotifications([])
@@ -99,7 +98,6 @@ export default function Notifications() {
     const openDrawer = async () => {
         setPopoverOpen(false)
         setDrawerOpen(true)
-        // fetch more notifications for the drawer
         await fetchNotificationsWithLimit(200)
     }
 

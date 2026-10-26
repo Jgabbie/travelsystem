@@ -229,11 +229,9 @@ export default function PackageManagement() {
       const response = await apiFetch.get('/package/get-packages');
 
       const sortedPackages = response.sort((a, b) => {
-        // Sort by creation date if you have it
         if (a.createdAt && b.createdAt) {
           return new Date(b.createdAt) - new Date(a.createdAt);
         }
-        // Fallback: sort by package item
         return String(b.packageItem || '').localeCompare(String(a.packageItem || ''));
       });
 
@@ -271,7 +269,7 @@ export default function PackageManagement() {
   //get total slots for function
   const availableSlots = (pkg) => {
     if (!pkg.packageSpecificDate || pkg.packageSpecificDate.length === 0) {
-      return 0; // No specific dates means no available slots
+      return 0;
     }
     const totalSlots = pkg.packageSpecificDate.reduce((total, dateRange) => {
       return total + (dateRange.slots || 0);

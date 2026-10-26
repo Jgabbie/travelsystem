@@ -248,7 +248,6 @@ const createTransaction = async (req, res) => {
                 : new Date(),
         };
 
-        // Keep these when the transaction is related to an existing booking.
         if (transactionPayload.bookingId) {
             transactionData.bookingId = transactionPayload.bookingId;
         }
@@ -319,7 +318,6 @@ const getTransactionsForApplication = async (req, res) => {
 
 
 //get all transactions function
-// get all transactions function
 const getAllTransactions = async (req, res) => {
     try {
         const {
@@ -374,12 +372,7 @@ const getAllTransactions = async (req, res) => {
         }
         //fix
 
-        /*
-         * Search username / firstname / lastname.
-         *
-         * We resolve matching users first instead of populating every
-         * transaction and filtering in JavaScript.
-         */
+
         if (trimmedSearch) {
             const searchRegex = new RegExp(trimmedSearch, 'i');
 
@@ -400,9 +393,7 @@ const getAllTransactions = async (req, res) => {
             const matchingUserIds = matchingUsers.map(user => user._id);
             const matchingPackageIds = matchingPackages.map(pkg => pkg._id);
 
-            /*
-             * Search transaction fields directly.
-             */
+
             transactionFilter.$or = [
                 { reference: searchRegex },
                 { invoiceNumber: searchRegex },
@@ -411,9 +402,7 @@ const getAllTransactions = async (req, res) => {
                 { status: searchRegex }
             ];
 
-            /*
-             * Include matching customers/packages.
-             */
+
             if (matchingUserIds.length > 0) {
                 transactionFilter.$or.push({
                     userId: { $in: matchingUserIds }
@@ -427,12 +416,7 @@ const getAllTransactions = async (req, res) => {
             }
         }
 
-        /*
-         * EXPORT MODE
-         *
-         * The normal table uses pagination.
-         * PDF export deliberately does NOT use pagination.
-         */
+
         const isExport = exportAll === 'true';
 
         let query = TransactionModel.find(transactionFilter)
@@ -457,11 +441,7 @@ const getAllTransactions = async (req, res) => {
             TransactionModel.countDocuments(transactionFilter)
         ]);
 
-        /*
-         * Statistics for the currently filtered dataset.
-         *
-         * These are NOT limited to the current page.
-         */
+
         const statistics = await TransactionModel.aggregate([
             {
                 $match: transactionFilter

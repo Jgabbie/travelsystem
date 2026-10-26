@@ -5,13 +5,13 @@ from typing import Optional
 from model_utils import get_hybrid_recs, run_training_cycle, models_exist
 import logging
 
-# Configure logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="TRAVEX Recommendation Service")
 
-# Add CORS middleware to allow Node.js backend to communicate
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -98,7 +98,7 @@ async def health_check():
     }
 
 
-# For local testing and for Render/Heroku compatibility use $PORT when present
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv('PORT', 5000))

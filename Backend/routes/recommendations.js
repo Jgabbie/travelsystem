@@ -13,7 +13,6 @@ router.get(
     recommendController.getRecommendations
 );
 
-// Manually retrain the recommendation models
 router.post(
     '/train',
     userAuth,
@@ -21,7 +20,6 @@ router.post(
     recommendController.trainModels
 );
 
-// Basic AI recommendation-service health check
 router.get(
     '/health',
     recommendController.checkHealth

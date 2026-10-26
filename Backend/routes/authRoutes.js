@@ -14,7 +14,7 @@ import {
 
 const router = express.Router();
 
-//Authentication Controllers
+//authentication Controllers
 router.post('/checkDups', authController.checkDups)
 router.post('/signupUser', signupLimiter, authController.signupUser)
 router.post('/loginUser', loginLimiter, authController.loginUser)

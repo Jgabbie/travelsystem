@@ -14,7 +14,6 @@
   box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
-/* Statistic card styling to match primary theme */
 .transaction-management-card {
   background-color: #305797 !important;
   color: #ffffff !important;
@@ -113,7 +112,6 @@
 }
 
 
-/* BUTTONS DESIGNS */
 .transactionmanagement-view-button,
 .transactionmanagement-viewproof-button {
   font-family: "Montserrat", sans-serif;
@@ -340,7 +338,6 @@
   color: #fff !important;
 }
 
-/* receipt format */
 .receipt-container {
   padding: 20px;
   font-family: 'Helvetica', sans-serif;
@@ -429,7 +426,6 @@
   gap: 40px;
 }
 
-/* Target only the Amount to Pay detail block */
 .detail-item.amount-to-pay {
   background-color: #1f2a44;
   padding: 8px 12px;
@@ -489,14 +485,11 @@
 
 
 
-
-/* View modal */
 .transaction-view-modal .ant-modal-content {
   border-radius: 16px;
   padding: 18px;
 }
 
-/* receipt format */
 .receipt-container {
   padding: 40px;
   font-family: 'Montserrat', sans-serif;
@@ -596,7 +589,6 @@
   gap: 0;
   border: 1px solid #E5E7EB;
   margin-left: 20px;
-  /* compact boxes that match the text height but can expand if extremely needed */
   grid-auto-rows: minmax(28px, auto);
   box-sizing: border-box;
 }
@@ -834,7 +826,6 @@
 }
 
 
-/* transaction modal payment proof */
 .transaction-proof-modal .ant-modal-content {
   padding: 18px;
   border-radius: 14px;

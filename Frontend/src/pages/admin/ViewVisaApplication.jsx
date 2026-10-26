@@ -83,29 +83,26 @@ export default function ViewVisaApplication() {
     const fetchApplicationAndService = useCallback(async () => {
         try {
             setLoading(true);
-            // 1. Fetch the application first
             const appData = await apiFetch.get(`/visa/applications/${applicationItem}`);
 
-            // 3. Fetch the service using serviceId from application
             if (appData.serviceId) {
                 try {
                     const serviceId = typeof appData.serviceId === "object" ? appData.serviceId._id : appData.serviceId;
                     const serviceData = await apiFetch.get(`/services/get-service/${serviceId}`);
 
-                    // Merge service info into application
                     setApplication({
                         ...appData,
                         visaName: serviceData.visaName,
                         visaPrice: serviceData.visaPrice,
                         visaRequirements: serviceData.visaRequirements,
-                        serviceName: serviceData.visaName // for your Tag
+                        serviceName: serviceData.visaName
                     });
                 } catch (err) {
                     console.error("Failed to fetch visa service:", err);
-                    setApplication(appData); // fallback if no serviceId
+                    setApplication(appData);
                 }
             } else {
-                setApplication(appData); // fallback if no serviceId
+                setApplication(appData);
             }
         } catch (err) {
             notificationApi.error({ title: "Failed to load application details", placement: "topRight" });
@@ -347,7 +344,6 @@ export default function ViewVisaApplication() {
     // status update handler
     const handleStepChange = async (stepIdx) => {
         if (!progressEditable || isUpdatingStatus) return;
-        // Map step index to status string
         const statusArr = processStepEntries.map((step) => step?.title).filter(Boolean);
         const newStatus = statusArr[stepIdx];
 
@@ -355,7 +351,6 @@ export default function ViewVisaApplication() {
 
         try {
             setIsUpdatingStatus(true);
-            // You should update this endpoint to PATCH/PUT to your backend for real update
             await apiFetch.put(`/visa/applications/${applicationItem}/status`, { status: newStatus });
             await fetchApplicationAndService();
             notificationApi.success({ title: `Status updated to ${newStatus}`, placement: "topRight" });
@@ -522,12 +517,10 @@ export default function ViewVisaApplication() {
             'Enter'
         ];
 
-        // Allow control/meta combos (copy/paste/select all, etc.)
         if (e.ctrlKey || e.metaKey) return;
 
         if (allowedKeys.includes(e.key)) return;
 
-        // Allow digits only
         if (/^\d$/.test(e.key)) return;
 
         e.preventDefault();
@@ -764,8 +757,6 @@ export default function ViewVisaApplication() {
                                                                     )}
 
 
-                                                                    {/* Download disabled */}
-
                                                                     <Button
                                                                         type="default"
                                                                         onClick={() => handleResubmitDocuments(documentKey)}
@@ -891,7 +882,6 @@ export default function ViewVisaApplication() {
                                                 <Steps
                                                     orientation="vertical"
                                                     current={currentStep}
-                                                    // This is the only place that should handle the click
                                                     onChange={undefined}
                                                     items={processStepEntries.map((step, idx) => {
                                                         const stepTitle = step.title;

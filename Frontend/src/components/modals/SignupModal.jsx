@@ -28,10 +28,8 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
         confirmPassword: '', email: '', phone: ''
     });
 
-    // ------------------------------------------------------------------------------------------------ FUNTIONS ------------------------------------------------------------------------------------------------
 
 
-    //PREVENT CLIPBOARD ACTIONS
     const blockClipboardKeys = (e) => {
         const isCtrlOrCmd = e.ctrlKey || e.metaKey;
 
@@ -50,13 +48,13 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     };
 
 
-    //PREVENT SHORTCUTS
+
     const blockShortcuts = (e) => {
         e.preventDefault();
     };
 
 
-    //FORCE FIRST NAME AND LAST NAME TO PROPER CASE
+
     const toProperCase = (value) =>
         value
             .toLowerCase()
@@ -73,7 +71,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
             .join(" ");
 
 
-    //INPUT VALIDATION
+
     const validate = (field, value, allValues) => {
         if (field === "username") {
             if (value === "") return "Username is required.";
@@ -118,12 +116,12 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     };
 
 
-    //CHECK IF FIELD HAS ERROR
+
     const hasFieldError = (fieldError) =>
         Array.isArray(fieldError) ? fieldError.length > 0 : Boolean(fieldError);
 
 
-    //RENDER ERROR MESSAGES
+
     const renderErrorMessages = (fieldError, fieldKey) => {
         if (Array.isArray(fieldError)) {
             return (
@@ -149,7 +147,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     };
 
 
-    //HANDLE INPUT CHANGES AND VALIDATION
+
     const valueHandler = (field, value) => {
         const nextValues = { ...values, [field]: value };
 
@@ -177,9 +175,9 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     };
 
 
-    //CHECK FOR DUPLICATE USERNAME
+
     useEffect(() => {
-        const frontEndError = validate("username", values.username) //reduces api requests, it skips api requests when it triggers a frontend validation
+        const frontEndError = validate("username", values.username)
         if (frontEndError) return;
 
         apiFetch.post('/auth/checkDups', { username: values.username })
@@ -201,7 +199,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     }, [values.username])
 
 
-    //CHECK FOR DUPLICATE EMAIL
+
     useEffect(() => {
         const frontEndError = validate("email", values.email);
         if (frontEndError) return;
@@ -225,7 +223,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     }, [values.email]);
 
 
-    //CHECK FOR DUPLICATE PHONE
+
     useEffect(() => {
         const frontEndError = validate("phone", values.phone);
         if (frontEndError) return;
@@ -249,7 +247,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     }, [values.phone]);
 
 
-    //HANDLE SIGNUP
+
     const handleSignup = async (e) => {
         e.preventDefault();
 
@@ -315,7 +313,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     };
 
 
-    //CLEAR FORMS
+
     const clearForms = () => {
         setError({
             username: '', firstname: '', lastname: '', password: [],
@@ -337,7 +335,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     }
 
 
-    //GO TO LOGIN
+
     const goToLogin = (e) => {
         e.preventDefault();
         if (onOpenLogin) {
@@ -394,7 +392,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                             return;
                                         }
 
-                                        // Allow Ctrl/Cmd+A
+
                                         if (
                                             (e.ctrlKey || e.metaKey) &&
                                             e.key.toLowerCase() === "a"
@@ -402,7 +400,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                             return;
                                         }
 
-                                        // Allow control/navigation keys
+
                                         if (
                                             [
                                                 "Backspace",
@@ -521,7 +519,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                             return;
                                         }
 
-                                        // Allow Ctrl/Cmd+A
+
                                         if (
                                             (e.ctrlKey || e.metaKey) &&
                                             e.key.toLowerCase() === "a"
@@ -529,7 +527,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                             return;
                                         }
 
-                                        // Allow control/navigation keys
+
                                         if (
                                             [
                                                 "Backspace",
@@ -543,7 +541,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                             return;
                                         }
 
-                                        // Block spaces
+
                                         if (!/^[A-Za-z0-9._%+\-@]$/.test(e.key)) {
                                             e.preventDefault();
                                         }
@@ -585,12 +583,12 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                     <div className="signup-input-group-modal">
                                         <label className='signup-labels-modal'>Password <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input.Password status={hasFieldError(error.password) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' onKeyDown={(e) => {
-                                            // Allow Tab
+
                                             if (e.key === "Tab") {
                                                 return;
                                             }
 
-                                            // Allow Ctrl/Cmd+A
+
                                             if (
                                                 (e.ctrlKey || e.metaKey) &&
                                                 e.key.toLowerCase() === "a"
@@ -598,7 +596,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                                 return;
                                             }
 
-                                            // Allow control/navigation keys
+
                                             if (
                                                 [
                                                     "Backspace",
@@ -612,7 +610,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                                 return;
                                             }
 
-                                            // Block spaces
+
                                             if (e.key === " ") {
                                                 e.preventDefault();
                                             }
@@ -624,12 +622,12 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                     <div className="signup-input-group-modal">
                                         <label className='signup-labels-modal'>Confirm Password <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input.Password status={hasFieldError(error.confirmPassword) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' onKeyDown={(e) => {
-                                            // Allow Tab
+
                                             if (e.key === "Tab") {
                                                 return;
                                             }
 
-                                            // Allow Ctrl/Cmd+A
+
                                             if (
                                                 (e.ctrlKey || e.metaKey) &&
                                                 e.key.toLowerCase() === "a"
@@ -637,7 +635,6 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                                 return;
                                             }
 
-                                            // Allow control/navigation keys
                                             if (
                                                 [
                                                     "Backspace",
@@ -651,7 +648,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                                 return;
                                             }
 
-                                            // Block spaces
+
                                             if (e.key === " ") {
                                                 e.preventDefault();
                                             }

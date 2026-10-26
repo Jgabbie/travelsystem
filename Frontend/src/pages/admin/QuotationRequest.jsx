@@ -85,7 +85,6 @@ export default function QuotationRequest() {
                 const adminName = `${adminNameFirstName} ${adminNameLastName}`;
 
                 setAdminName(adminName);
-                // Do something with the admin name if needed
             } catch (error) {
                 console.error("Error fetching admin name:", error);
             }
@@ -805,12 +804,12 @@ export default function QuotationRequest() {
         let errors = {};
 
         switch (previewStep) {
-            // Page 1
+
             case 0:
                 errors = validateForm();
                 break;
 
-            // Page 2 (Inclusions & Exclusions)
+
             case 1:
                 if (
                     !formData.inclusions ||
@@ -827,7 +826,7 @@ export default function QuotationRequest() {
                 }
                 break;
 
-            // Page 3 (Itinerary)
+
             case 2:
                 const hasValidItinerary = editableItinerary.every(
                     item => item.text.trim() !== ""

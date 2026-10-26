@@ -152,7 +152,6 @@ export default function QuotationManagement() {
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
 
-        // Headers updated to match your screenshot exactly
         const tableColumn = [
             "Quotation Reference",
             "Package Name",

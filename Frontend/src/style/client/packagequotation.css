@@ -52,8 +52,6 @@
 }
 
 
-
-/* Added Package Info Section */
 .package-image-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -356,7 +354,6 @@
 
 .flightdetails-right {
     flex: 0 0 250px;
-    /* fixed width for note */
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -377,7 +374,6 @@
     margin-bottom: 15px;
     font-size: 1.4rem;
     color: #305797;
-    /* matching your theme */
     grid-column-start: 1;
     grid-column-end: -1;
 }
@@ -442,7 +438,6 @@
     overflow: hidden;
 }
 
-/* Keep the carousel inside the card */
 .quotation-day-images .ant-carousel,
 .quotation-day-images .slick-slider,
 .quotation-day-images .slick-list {
@@ -450,7 +445,6 @@
     min-width: 0;
 }
 
-/* Do not apply max-width to slick-track */
 .quotation-day-images .slick-track {
     display: flex;
     align-items: stretch;
@@ -585,7 +579,6 @@
     margin-right: 8px;
 }
 
-/* Responsive Media Queries */
 @media (max-width: 900px) {
     .quotation-container {
         padding: 30px 24px;
@@ -597,10 +590,6 @@
         box-sizing: border-box;
     }
 
-    /*
-     * Stack the booking selection and required-details
-     * sections so neither side becomes compressed.
-     */
     .quotation-top-grid {
         grid-template-columns: minmax(0, 1fr);
         gap: 32px;
@@ -614,9 +603,6 @@
         min-width: 0;
     }
 
-    /*
-     * Arrangement and booking type cards
-     */
     .selection-cards {
         width: 100%;
         height: auto;
@@ -632,9 +618,7 @@
         box-sizing: border-box;
     }
 
-    /*
-     * Passenger counters
-     */
+
     .traveler-counters {
         width: 100%;
         padding: 14px;
@@ -661,9 +645,6 @@
         justify-content: center;
     }
 
-    /*
-     * Required quotation fields
-     */
     .quotation-grid {
         width: 100%;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -685,9 +666,6 @@
         box-sizing: border-box;
     }
 
-    /*
-     * Flight Details
-     */
     .quotation-flight-details {
         width: 100%;
         min-width: 0;
@@ -740,9 +718,6 @@
         box-sizing: border-box;
     }
 
-    /*
-     * Fixed itinerary
-     */
     .quotation-fixed-list {
         grid-template-columns: minmax(0, 1fr);
     }
@@ -854,10 +829,7 @@
         margin-bottom: 20px;
     }
 
-    /*
-     * Prevent the left and right quotation sections
-     * from being compressed beside each other.
-     */
+
     .quotation-top-grid {
         grid-template-columns: minmax(0, 1fr);
         gap: 28px;
@@ -884,7 +856,6 @@
         box-sizing: border-box;
     }
 
-    /* Required details fields */
     .quotation-grid {
         grid-template-columns: minmax(0, 1fr);
         gap: 14px;
@@ -909,9 +880,6 @@
         box-sizing: border-box;
     }
 
-    /*
-     * Passenger counters
-     */
     .traveler-counters {
         width: 100%;
         margin-top: 12px;
@@ -956,9 +924,6 @@
         font-size: 13px;
     }
 
-    /*
-     * Flight Details
-     */
     .quotation-flight-details {
         width: 100%;
         min-width: 0;
@@ -1009,7 +974,6 @@
         box-sizing: border-box;
     }
 
-    /* Fixed itinerary */
     .quotation-fixed-list {
         gap: 12px;
     }

@@ -1,4 +1,3 @@
-/* TAGS */
 .viewvisaapplication-tag-blue-container {
     margin-bottom: 16px;
     border-left: 4px solid #305797;
@@ -196,7 +195,6 @@
     margin-left: 0 !important;
 }
 
-/* BUTTONS */
 .viewvisaapplication-back-button {
     font-family: "Montserrat", sans-serif;
     font-size: 15px;
@@ -270,7 +268,6 @@
     color: #fff !important;
 }
 
-/* Preview button style to match provided design */
 
 .application-doc-preview-button {
     font-family: "Montserrat", sans-serif;
@@ -408,7 +405,6 @@
 
 @media (max-width: 468px) {
 
-    /* Main page wrapper */
     .viewvisaapplication-page-wrapper {
         width: 100%;
         max-width: 100%;
@@ -418,7 +414,6 @@
         overflow-x: hidden;
     }
 
-    /* Header */
     .app-detail-header {
         width: 100%;
         max-width: 100%;
@@ -438,7 +433,6 @@
         overflow-wrap: anywhere;
     }
 
-    /* Main application shell */
     .app-detail-shell {
         width: 100%;
         max-width: 100%;
@@ -464,7 +458,6 @@
         flex-basis: 100% !important;
     }
 
-    /* Application descriptions */
     .ant-descriptions {
         width: 100%;
         max-width: 100%;
@@ -501,7 +494,6 @@
         width: 40%;
     }
 
-    /* Appointment card */
     .viewvisaapplication-appointment-card {
         width: 100%;
         max-width: 100%;
@@ -553,7 +545,6 @@
         font-size: 12px;
     }
 
-    /* Submitted documents */
     .submitted-documents-section {
         width: 100%;
         max-width: 100%;
@@ -614,7 +605,6 @@
         word-break: break-word;
     }
 
-    /* Delivery details */
     .viewvisaapplication-delivery-details-card {
         width: 100%;
         max-width: 100%;
@@ -635,7 +625,7 @@
         min-width: 0;
     }
 
-    /* Buttons */
+
     .viewvisaapplication-back-button,
     .viewvisaapplication-submit-button,
     .viewvisaapplication-delivery-details-button,
@@ -648,7 +638,6 @@
         box-sizing: border-box;
     }
 
-    /* Overview content */
     .app-detail-kicker {
         font-size: 11px;
     }
@@ -661,7 +650,7 @@
         word-break: break-word;
     }
 
-    /* Progress tracker */
+
     .viewvisaapplication-progress-card {
         width: 100%;
         max-width: 100%;
@@ -722,7 +711,6 @@
         min-width: 0;
     }
 
-    /* Status notification boxes */
     .viewvisaapplication-tag-blue-container,
     .viewvisaapplication-tag-green-container,
     .viewvisaapplication-tag-yellow-container {
@@ -741,7 +729,6 @@
         word-break: break-word;
     }
 
-    /* Modal */
     .ant-modal {
         width: calc(100% - 24px) !important;
         max-width: 420px;

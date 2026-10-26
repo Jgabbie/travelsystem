@@ -261,13 +261,11 @@ body {
 }
 
 
-/* OTP MODAL */
 .login-otp-modal {
     width: 650px !important;
     max-width: calc(100vw - 32px) !important;
 }
 
-/* Do not make the Ant Design modal itself a flex container */
 .login-otp-modal .ant-modal-content {
     padding: 0 !important;
     border-radius: 12px;

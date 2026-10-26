@@ -21,13 +21,12 @@ export default function VisaApplication() {
     const [loading, setLoading] = useState(true);
     const [application, setApplication] = useState(null);
     const [uploading, setUploading] = useState(false);
-    // Dynamic requirements
     const [requirements, setRequirements] = useState([]);
     const [requirementFiles, setRequirementFiles] = useState({});
     const [servicePrice, setServicePrice] = useState(0);
     const [process, setProcess] = useState([]);
 
-    const [method, setMethod] = useState(null); // default selected payment method
+    const [method, setMethod] = useState(null);
     const [fileList, setFileList] = useState([]);
     const [, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
@@ -243,7 +242,6 @@ export default function VisaApplication() {
                 const res = await apiFetch.get(fetchVisaApplication);
                 setApplication(res);
                 setProcess(normalizeVisaProcessSteps(res?.processSteps || {}));
-                // If the application has a serviceId, fetch the service for requirements
                 if (res && res.serviceId) {
                     try {
                         const serviceId = res.serviceId._id || res.serviceId;
@@ -537,7 +535,6 @@ export default function VisaApplication() {
                 setPaymentCompleted(true);
 
             } else if (method === 'paymongo') {
-                // Make sure application exists
                 if (!application) {
                     notificationApi.error({ title: "Application not found.", placement: 'topRight' });
                     return;
@@ -553,7 +550,6 @@ export default function VisaApplication() {
                             : servicePrice,
                 };
 
-                // Send request to create checkout session
                 const endpoint = isDeliveryFeeStage
                     ? '/payment/create-checkout-session-delivery-fee'
                     : isPenaltyPayment
@@ -561,7 +557,6 @@ export default function VisaApplication() {
                         : '/payment/create-checkout-session-visa';
                 const paymongoResponse = await apiFetch.post(endpoint, payload);
                 const checkoutUrl = paymongoResponse?.data?.attributes?.checkout_url;
-                // Redirect user to PayMongo checkout
 
                 if (checkoutUrl) {
                     window.location.href = checkoutUrl;
@@ -717,7 +712,6 @@ export default function VisaApplication() {
                 time: timeToSend
             });
 
-            // optional: sync UI state after success
             setSelectedDate(dateToSend);
             setSelectedTime(timeToSend);
 
@@ -1193,7 +1187,6 @@ export default function VisaApplication() {
                                                                         );
                                                                     })}
 
-                                                                    {/* "Others" Option Card */}
                                                                     <div
                                                                         onClick={() => setSelectedSuggestedIndex('others')}
                                                                         className={`visaapplication-selection-card visaapplication-suggestedoption-card ${selectedSuggestedIndex === 'others' ? 'selected' : ''
@@ -1223,7 +1216,7 @@ export default function VisaApplication() {
                                                                                     disabledDate={disableDates}
                                                                                     placeholder="Select Date"
                                                                                     onChange={(date) => setCustomDateTime(prev => ({ ...prev, date }))}
-                                                                                    onClick={(e) => e.stopPropagation()} // Prevents card click trigger issues
+                                                                                    onClick={(e) => e.stopPropagation()}
                                                                                 />
                                                                                 <TimePicker
                                                                                     className='visaapplication-suggestedoptions-timepicker'
@@ -1858,7 +1851,6 @@ export default function VisaApplication() {
                                                                 const requirementKey = req.key || req.req || `${req.label}-${idx}`;
                                                                 const uploadedFile = requirementFiles[requirementKey]?.[0];
 
-                                                                // existing submission from server
                                                                 const submitted = application?.submittedDocuments || {};
                                                                 const existingValue = submitted[requirementKey];
                                                                 const existingUrl = Array.isArray(existingValue) ? existingValue[0] : existingValue || null;
@@ -1897,7 +1889,6 @@ export default function VisaApplication() {
                                                                         )}
 
                                                                         <div>
-                                                                            {/* Only allow upload when admin requested this specific requirement */}
                                                                             {isRequested ? (
                                                                                 !uploadedFile ? (
                                                                                     <Upload
@@ -1975,7 +1966,6 @@ export default function VisaApplication() {
                                                                                                 Preview
                                                                                             </Button>
 
-                                                                                            {/* Download disabled */}
                                                                                         </div>
                                                                                     ) : (
                                                                                         <div style={{ fontSize: 13, color: '#6b7280' }}>No file</div>

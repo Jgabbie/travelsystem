@@ -7,7 +7,7 @@ const router = express.Router();
 
 const staffOnly = authorizeRoles('Admin', 'Employee');
 
-// All notification routes require authentication
+
 router.use(userAuth);
 
 router.get(

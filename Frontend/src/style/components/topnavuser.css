@@ -298,7 +298,6 @@
     color: #305797;
 }
 
-/* --- Logout Confirmation Modal --- */
 .logout-confirm-modal .ant-modal-content {
     border-radius: 16px;
     padding: 24px;
@@ -378,7 +377,6 @@
     color: #fff !important;
 }
 
-/* Profile dropdown menu */
 .topnav-dropdown-menu {
     min-width: 190px;
     padding: 8px !important;

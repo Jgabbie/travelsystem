@@ -11,7 +11,6 @@
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
-/* Statistic card styling to match primary theme */
 .cancellation-management-card {
     background-color: #305797 !important;
     color: #ffffff !important;
@@ -24,7 +23,6 @@
     padding: 18px !important;
 }
 
-/* ensure all cancellation statistic cards share same height and centered layout */
 .cancellation-management-card {
     display: flex;
     align-items: center;
@@ -154,7 +152,6 @@
     min-width: 180px;
 }
 
-/* BUTTONS CSS */
 .cancellations-view-button {
     font-family: "Montserrat", sans-serif;
     font-size: 13px;
@@ -322,8 +319,6 @@
 }
 
 
-
-/* Table styling */
 .cancellations-container .ant-table {
     border-radius: 16px;
     overflow: hidden;
@@ -353,7 +348,6 @@
     background-color: #f9faff;
 }
 
-/* DatePicker */
 .cancellations-container .ant-picker {
     border-radius: 8px;
 }

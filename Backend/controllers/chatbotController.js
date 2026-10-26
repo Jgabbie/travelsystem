@@ -194,12 +194,6 @@ const buildPackageContext = async (message) => {
         };
     }
 
-    // Convert price safely into a number.
-    // Works even if your database stores values like:
-    // 15000
-    // "15000"
-    // "₱15,000"
-    // "PHP 15,000"
     const getNumericPrice = (price) => {
         if (typeof price === 'number') {
             return Number.isFinite(price) ? price : null;

@@ -273,8 +273,6 @@ def get_active_package_ids_from_mongodb():
             f'{error}'
         )
 
-        # None means the database check failed.
-        # Do not remove all recommendations because of a temporary DB error.
         return None
 
     finally:
@@ -288,10 +286,6 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
         packages_df = packages_df.copy()
         preferences_df = preferences_df.copy()
         ratings_df = ratings_df.copy()
-
-        # ============================================================
-        # PREPARE PACKAGES
-        # ============================================================
 
         if '_id' in packages_df.columns:
             packages_df['packageId'] = packages_df['_id'].astype(str)
@@ -319,10 +313,6 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
             axis=1
         )
 
-        # ============================================================
-        # CONTENT-BASED MODEL
-        # ============================================================
-
         print("[Training] Training Content-Based model from package tags...")
 
         tfidf = TfidfVectorizer(
@@ -333,10 +323,6 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
         tfidf_matrix = tfidf.fit_transform(
             packages_df['package_text'].fillna('')
         )
-
-        # ============================================================
-        # PREPARE USER PREFERENCES
-        # ============================================================
 
         preferences_df['userId'] = _series_or_empty(
             preferences_df,
@@ -364,10 +350,6 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
             axis=1
         )
 
-        # ============================================================
-        # PREPARE RATINGS
-        # ============================================================
-
         ratings_df['userId'] = _series_or_empty(
             ratings_df,
             'userId',
@@ -389,20 +371,12 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
             errors='coerce'
         )
 
-        # ------------------------------------------------------------
-        # Remove invalid user IDs
-        # ------------------------------------------------------------
-
         ratings_df = ratings_df[
             ratings_df['userId'].notna()
             & (ratings_df['userId'] != '')
             & (ratings_df['userId'].str.lower() != 'nan')
             & (ratings_df['userId'].str.lower() != 'none')
         ].copy()
-
-        # ------------------------------------------------------------
-        # Remove invalid package IDs
-        # ------------------------------------------------------------
 
         ratings_df = ratings_df[
             ratings_df['packageId'].notna()
@@ -411,19 +385,11 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
             & (ratings_df['packageId'].str.lower() != 'none')
         ].copy()
 
-        # ------------------------------------------------------------
-        # Remove invalid ratings
-        # ------------------------------------------------------------
-
         ratings_df = ratings_df[
             ratings_df['rating'].notna()
             & np.isfinite(ratings_df['rating'])
             & (ratings_df['rating'] > 0)
         ].copy()
-
-        # ------------------------------------------------------------
-        # Only keep ratings belonging to existing packages
-        # ------------------------------------------------------------
 
         ratings_df = ratings_df[
             ratings_df['packageId'].isin(
@@ -436,10 +402,6 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
             f"{len(ratings_df)}"
         )
 
-        # ============================================================
-        # PACKAGE INDEXES
-        # ============================================================
-
         package_ids = packages_df['packageId'].tolist()
 
         package_id_to_index = {
@@ -451,10 +413,6 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
             idx: package_id
             for package_id, idx in package_id_to_index.items()
         }
-
-        # ============================================================
-        # USER INDEXES
-        # ============================================================
 
         user_ids = sorted(
             ratings_df['userId']
@@ -472,10 +430,6 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
             idx: user_id
             for user_id, idx in user_id_to_index.items()
         }
-
-        # ============================================================
-        # SAFELY MAP RATINGS TO MATRIX INDEXES
-        # ============================================================
 
         user_indices = ratings_df['userId'].map(
             user_id_to_index
@@ -515,10 +469,6 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
             .to_numpy()
         )
 
-        # ============================================================
-        # USER-ITEM MATRIX
-        # ============================================================
-
         user_item_matrix = sparse.csr_matrix(
             (
                 rating_values,
@@ -543,10 +493,6 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
             f"[Training] Matrix ratings: "
             f"{user_item_matrix.nnz}"
         )
-
-        # ============================================================
-        # COLLABORATIVE FILTERING
-        # ============================================================
 
         rating_user_count = ratings_df['userId'].nunique()
         rated_package_count = ratings_df['packageId'].nunique()
@@ -587,10 +533,6 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
                 "successfully."
             )
 
-        # ============================================================
-        # SAVE MODELS
-        # ============================================================
-
         print("[Training] Saving models...")
 
         models_path = models_dir
@@ -598,10 +540,6 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
             parents=True,
             exist_ok=True
         )
-
-        # ------------------------------------------------------------
-        # Save / remove ALS model
-        # ------------------------------------------------------------
 
         als_path = models_path / 'als_model.pkl'
 
@@ -625,10 +563,6 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
                     f"{als_path}"
                 )
 
-        # ------------------------------------------------------------
-        # Save content-based model
-        # ------------------------------------------------------------
-
         joblib.dump(
             tfidf_matrix,
             str(models_path / 'tfidf_matrix.pkl')
@@ -639,18 +573,10 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
             str(models_path / 'tfidf_vectorizer.pkl')
         )
 
-        # ------------------------------------------------------------
-        # Save user-item matrix
-        # ------------------------------------------------------------
-
         joblib.dump(
             user_item_matrix,
             str(models_path / 'user_item_matrix.pkl')
         )
-
-        # ------------------------------------------------------------
-        # Save metadata
-        # ------------------------------------------------------------
 
         joblib.dump(
             {
@@ -911,9 +837,6 @@ def get_hybrid_recs(user_id, last_tour_name=None, num_recommendations=5):
             f"{len(rated_package_ids)} rated packages"
         )
 
-        # ========================================================
-        # HAS RATINGS: COLLABORATIVE FILTERING
-        # ========================================================
         if rated_package_ids:
             if model is not None and package_id_to_index:
                 live_user_row = _build_live_user_item_row(
@@ -1028,13 +951,6 @@ def get_hybrid_recs(user_id, last_tour_name=None, num_recommendations=5):
                     'Using reviewed-package similarity fallback.'
                 )
 
-            # ====================================================
-            # COLLABORATIVE FALLBACK
-            #
-            # This is only used when there are not enough community
-            # ratings to train ALS or ALS returns no candidates.
-            # It does not revert to user preferences.
-            # ====================================================
             reviewed_package_texts = []
 
             for _, rating_row in user_ratings.iterrows():
@@ -1100,9 +1016,6 @@ def get_hybrid_recs(user_id, last_tour_name=None, num_recommendations=5):
                 'recommendations': fallback_recommendations
             }
 
-        # ========================================================
-        # NO RATINGS: PREFERENCE-BASED CONTENT FILTERING
-        # ========================================================
         live_preferences = (
             get_user_preferences_from_mongodb(user_id)
         )

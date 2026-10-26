@@ -7,26 +7,21 @@
 .mrc-form-page {
     position: relative;
     max-width: 800px;
-    /* Limits the width of the form 'page' */
     margin: 0 auto;
     background: #fff;
     padding: 30px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     border-radius: 4px;
     overflow: hidden;
-    /* To handle potential blue wave overflow */
 }
 
-/* Blue Wave Decorator */
 .mrc-form-page::before,
 .mrc-form-page::after {
     content: '';
     position: absolute;
     width: 100%;
     height: 60px;
-    /* Adjust height based on wave design */
     background: #1ca8e0;
-    /* Blue color */
     left: 0;
     z-index: -1;
 }
@@ -34,13 +29,11 @@
 .mrc-form-page::before {
     top: -20px;
     border-radius: 0 0 100% 100%;
-    /* Curvature */
 }
 
 .mrc-form-page::after {
     bottom: -20px;
     border-radius: 100% 100% 0 0;
-    /* Curvature */
 }
 
 .mrc-form-header {
@@ -52,7 +45,6 @@
     max-height: 80px;
 }
 
-/* Specific Section Blocks */
 .mrc-main-form label {
     font-weight: 500;
     color: #555;
@@ -61,11 +53,8 @@
 
 .mrc-yn-dropdown .ant-select {
     width: 60px !important;
-    /* Forces the small Y/N dropdown box style */
 }
 
-
-/* --- Emergency Contact "Table" --- */
 .mrc-col-title {
     width: 100px;
     text-align: center;
@@ -79,7 +68,6 @@
     min-width: 700px;
 }
 
-/* travelers */
 .mrc-tour-details-input {
     border-radius: 0;
     height: 22px;
@@ -110,7 +98,6 @@
 
 
 
-/* DATE PICKER CSS */
 
 .mrc-date-picker.ant-picker {
     height: 16px;
@@ -168,7 +155,6 @@
     text-align: right;
 }
 
-/* Remove the blue wave decorations while generating the registration PDF */
 .pdf-capture.pdf-generating .mrc-form-page::before,
 .pdf-capture.pdf-generating .mrc-form-page::after {
     content: none !important;
@@ -176,7 +162,6 @@
     background: transparent !important;
 }
 
-/* Remove screen-only effects from the downloaded registration form */
 .pdf-capture.pdf-generating .mrc-form-page {
     box-shadow: none !important;
     border-radius: 0 !important;
@@ -274,9 +259,6 @@
         object-fit: contain;
     }
 
-    /*
-     * Stack the registration form's two-column sections.
-     */
     .mrc-tour-details>.ant-row>.ant-col,
     .mrc-lead-guest-section>.ant-row>.ant-col,
     .mrc-form-footer>.ant-row>.ant-col,
@@ -322,9 +304,6 @@
         box-sizing: border-box;
     }
 
-    /*
-     * Keep traveler and dietary tables usable through horizontal scrolling.
-     */
 
     .mrc-table-container .ant-row {
         min-width: 700px;
@@ -456,8 +435,6 @@
         margin-bottom: 6px !important;
     }
 
-
-    /* Stack the main two-column sections on mobile. */
     .mrc-tour-details>.ant-row>.ant-col,
     .mrc-lead-guest-section>.ant-row>.ant-col,
     .mrc-form-footer>.ant-row>.ant-col,
@@ -1251,7 +1228,6 @@
     font-weight: 500;
 }
 
-/* Preserve the desktop registration layout during PDF capture. */
 .pdf-capture.pdf-generating .mrc-registration-page {
     width: 794px !important;
     max-width: 794px !important;

@@ -17,7 +17,6 @@ export default function SuccessfulBooking() {
     const [countdown, setCountdown] = useState(10);
 
 
-    // Put it here
     useEffect(() => {
         const handleBrowserBack = () => {
             navigate('/user-bookings', { replace: true });
@@ -39,7 +38,6 @@ export default function SuccessfulBooking() {
         }
 
 
-        // Call backend API to verify payment using token
         apiFetch.post(`/booking/verify-payment`, { token })
             .then(res => {
                 clearQuotationBookingData();
@@ -53,7 +51,6 @@ export default function SuccessfulBooking() {
                 //notification.error({ message: 'Unable to verify booking.', placement: 'topRight' });
             });
 
-        // Ensure local state is cleared regardless
         clearQuotationBookingData();
         clearBookingData();
 

@@ -78,10 +78,8 @@ export default function UserPreference() {
             await apiFetch.post('/user/login-once', {}, { withCredentials: true });
             await checkAuth();
             notificationApi.success({ title: 'Preferences saved', placement: 'topRight' });
-            // Set flag in localStorage to show modal on homepage
             localStorage.setItem('showNextStepsModal', 'true');
             setIsLoading(false);
-            // Redirect to home page
             navigate('/home');
         } catch (error) {
             notificationApi.error({ title: 'Error Saving Preferences', placement: 'topRight' });

@@ -345,7 +345,6 @@ export default function AdminProfile() {
                         }
                     )
 
-                // Backend sent OTP
                 if (response?.requiresOTP) {
 
                     setOTP('')

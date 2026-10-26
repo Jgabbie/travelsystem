@@ -73,7 +73,6 @@
   font-size: 11px !important;
 }
 
-/* Stats cards in user management should match primary theme */
 .usermanagement-statistics {
   margin-bottom: 20px;
 }
@@ -84,7 +83,6 @@
   box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
-/* Statistic card styling to match primary theme */
 .usermanagement-card {
   background-color: #305797 !important;
   color: #ffffff !important;
@@ -97,7 +95,6 @@
   padding: 18px !important;
 }
 
-/* make all statistic cards uniform height and center content */
 .usermanagement-card {
   display: flex;
   align-items: center;
@@ -128,7 +125,7 @@
 
 
 
-/* BUTTONS CSS */
+
 .usermanagement-view-button {
   font-family: "Montserrat", sans-serif;
   font-size: 13px;
@@ -275,7 +272,6 @@
 }
 
 
-/* MODAL STYLES */
 .users-view-modal .ant-modal-content {
   border-radius: 18px;
   padding: 24px;

@@ -58,7 +58,6 @@ router.post(
 );
 
 
-/* Manual payments */
 
 router.post(
     '/manual',

@@ -663,7 +663,6 @@ export default function AddPackage() {
   const savePackage = async () => {
     let hasError = false;
 
-    // Validate each field manually
     const newErrors = {
       packageType: validate("packageType", values.packageType),
       visaRequired: validate("visaRequired", values.visaRequired),
@@ -687,7 +686,6 @@ export default function AddPackage() {
       images: validate("images", values.images),
     };
 
-    // Check if any field has error
     for (let field in newErrors) {
       if (newErrors[field]) hasError = true;
     }
@@ -813,7 +811,6 @@ export default function AddPackage() {
 
     setSavingPackage(true);
 
-    // Build payload
     const payload = {
       name: values.name,
       code: values.code,

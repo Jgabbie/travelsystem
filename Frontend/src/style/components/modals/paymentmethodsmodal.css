@@ -104,7 +104,6 @@
     color: #666;
 }
 
-/* hide default radio circle */
 .payment-card .ant-radio {
     display: none;
 }

@@ -105,14 +105,12 @@
     gap: 14px;
 }
 
-/* CLIENT VISA SERVICE CARD */
 .passport-card-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 18px;
 }
 
-/* PASSPORT SERVICE CARD */
 .passport-service-card.ant-card {
     width: 100%;
     overflow: hidden;
@@ -319,7 +317,6 @@
     text-align: center;
 }
 
-/* Visa image */
 .passandvisa-reference-cover {
     position: relative;
     width: 100%;
@@ -354,7 +351,6 @@
     text-transform: uppercase;
 }
 
-/* Processing badge */
 .passandvisa-reference-processing {
     position: absolute;
     left: 12px;
@@ -375,7 +371,7 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
 }
 
-/* Visa name */
+
 .passandvisa-reference-title {
     display: -webkit-box;
     width: 100%;
@@ -393,7 +389,6 @@
     -webkit-line-clamp: 2;
 }
 
-/* Description */
 .passandvisa-reference-description {
     display: -webkit-box;
     width: 100%;
@@ -410,7 +405,7 @@
     -webkit-line-clamp: 3;
 }
 
-/* Price */
+
 .passandvisa-reference-price {
     margin-bottom: 2px;
     color: #244574;
@@ -427,7 +422,6 @@
     font-size: 11px;
 }
 
-/* Visa type and processing details */
 .passandvisa-reference-details {
     display: flex;
     align-items: center;
@@ -447,7 +441,6 @@
     color: #b0b0b0;
 }
 
-/* Apply button */
 .passandvisa-reference-button.ant-btn {
     display: inline-flex;
     flex-shrink: 0;
@@ -571,7 +564,6 @@
 
 @media (max-width: 480px) {
 
-    /* Visa services mobile layout */
     .passport-assistance {
         padding: 30px 12px 24px;
     }
