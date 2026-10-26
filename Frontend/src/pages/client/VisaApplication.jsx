@@ -886,7 +886,7 @@ export default function VisaApplication() {
                                     <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
                                         <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63' }}>YOUR APPOINTMENT DATE AND TIME</h2>
                                         <p style={{ margin: 0, fontSize: 14 }}>
-                                            Your appointment has been scheduled for <strong>{application.suggestedAppointmentScheduleChosen.date === "" && application.suggestedAppointmentScheduleChosen.time === "" ? (dayjs(application.preferredDate).format('MMM D, YYYY')) : (dayjs(application.suggestedAppointmentScheduleChosen.date).format("MMM DD, YYYY"))}</strong> at <strong>{application.suggestedAppointmentScheduleChosen.time || application.preferredTime}</strong>.
+                                            Your appointment has been scheduled for <strong>{application.suggestedAppointmentScheduleChosen.date === "" ? dayjs(application.preferredDate).format('MMM D, YYYY') : dayjs(application.suggestedAppointmentScheduleChosen.date).format("MMM DD, YYYY")}</strong>{application.suggestedAppointmentScheduleChosen.time && <> at <strong>{application.suggestedAppointmentScheduleChosen.time}</strong></>}.
                                         </p>
                                     </div>
                                 )}
@@ -1029,10 +1029,6 @@ export default function VisaApplication() {
 
                                                     <Descriptions.Item label="Preferred Date" labelStyle={{ color: '#305797', fontWeight: 700 }}>
                                                         {application.preferredDate ? dayjs(application.preferredDate).format('MMM D, YYYY') : 'N/A'}
-                                                    </Descriptions.Item>
-
-                                                    <Descriptions.Item label="Preferred Time" labelStyle={{ color: '#305797', fontWeight: 700 }}>
-                                                        {application.preferredTime || 'N/A'}
                                                     </Descriptions.Item>
 
                                                     <Descriptions.Item label="Application Type" labelStyle={{ color: '#305797', fontWeight: 700 }}>

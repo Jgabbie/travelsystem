@@ -1664,11 +1664,10 @@
 .footer-section {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     align-items: center;
     justify-content: center;
-    padding: 20px 40px;
-    height: 250px;
+    padding: 32px 48px 20px;
+    min-height: 250px;
     background-color: #305797;
     width: 100%;
     box-sizing: border-box;
@@ -1695,11 +1694,9 @@
 }
 
 .footer-section-top {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 40px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 32px;
     width: 100%;
 }
 
@@ -1709,15 +1706,13 @@
 .footer-section-socials {
     display: flex;
     flex-direction: column;
-    width: 300px;
-    max-width: 100%;
+    min-width: 0;
 }
 
 .footer-divider {
     width: 100%;
     background-color: rgba(255, 255, 255, 0.5);
-    margin: 0 20px;
-    margin-top: 40px;
+    margin: 28px 0 0;
 }
 
 .footer-bottom-text {
@@ -1732,8 +1727,13 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
     margin-top: 10px;
+}
+
+.footer-section-socials .footer-text {
+    margin-top: 10px;
+    overflow-wrap: anywhere;
 }
 
 .socials-icon {
@@ -1855,6 +1855,19 @@
     .contactus-map-container {
         width: 62%;
         height: 400px;
+    }
+
+    .footer-section-top {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+    }
+
+    .footer-section-logo,
+    .footer-section-address,
+    .footer-section-hours,
+    .footer-section-socials {
+        width: auto;
+        max-width: none;
     }
 
     .contactus-map-title {
@@ -2093,16 +2106,16 @@
     }
 
     .footer-section-top {
+        grid-template-columns: 1fr;
         gap: 20px;
-        justify-content: center;
     }
 
     .footer-section-logo,
     .footer-section-address,
     .footer-section-hours,
     .footer-section-socials {
-        width: 100%;
-        max-width: 520px;
+        width: auto;
+        max-width: none;
     }
 
     .footer-divider {

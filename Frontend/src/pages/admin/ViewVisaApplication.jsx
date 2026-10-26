@@ -634,7 +634,6 @@ export default function ViewVisaApplication() {
                                             <Descriptions.Item label="Applicant Name">{applicantName || 'N/A'}</Descriptions.Item>
                                             <Descriptions.Item label="Purpose of Travel">{application?.purposeOfTravel}</Descriptions.Item>
                                             <Descriptions.Item label="Preferred Date">{application.preferredDate ? dayjs(application.preferredDate).format("MMM DD, YYYY") : "Not Set"}</Descriptions.Item>
-                                            <Descriptions.Item label="Preferred Time">{application.preferredTime || "Not Set"} </Descriptions.Item>
                                             <Descriptions.Item label="Visa Type">
                                                 <Tag color="blue">{application.serviceName}</Tag>
                                             </Descriptions.Item>

@@ -1,0 +1,123 @@
+.landingpage-footer {
+    width: 100%;
+}
+
+.footer-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 48px 20px;
+    min-height: 250px;
+    background-color: #305797;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.footer-header {
+    color: white;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+}
+
+.footer-text,
+.footer-text-link {
+    color: white;
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    margin: 0;
+}
+
+.footer-text-link:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.footer-section-top {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 32px;
+    width: 100%;
+}
+
+.footer-section-logo,
+.footer-section-address,
+.footer-section-hours,
+.footer-section-socials {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.footer-divider {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.5);
+    margin: 28px 0 0;
+}
+
+.footer-bottom-text {
+    color: white;
+    font-family: "Montserrat", sans-serif;
+    font-size: 12px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.footer-section-socials-icons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.footer-section-socials .footer-text {
+    margin-top: 10px;
+    overflow-wrap: anywhere;
+}
+
+.socials-icon {
+    font-size: 30px;
+    color: white;
+}
+
+@media (max-width: 1024px) {
+    .footer-section-top {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+    }
+
+    .footer-section-logo,
+    .footer-section-address,
+    .footer-section-hours,
+    .footer-section-socials {
+        width: auto;
+        max-width: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-section {
+        height: auto;
+        padding: 24px 20px;
+        gap: 20px;
+    }
+
+    .footer-section-top {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .footer-section-logo,
+    .footer-section-address,
+    .footer-section-hours,
+    .footer-section-socials {
+        width: auto;
+        max-width: none;
+    }
+
+    .footer-divider {
+        margin-top: 20px;
+    }
+}

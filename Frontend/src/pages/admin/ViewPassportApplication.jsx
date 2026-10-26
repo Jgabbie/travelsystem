@@ -662,6 +662,46 @@ export default function ViewPassportApplication() {
                                         </Descriptions.Item>
                                     </Descriptions>
 
+                                    {application?.passportDetails && (
+                                        <div style={{ marginTop: 20 }}>
+                                        <Title level={4}>Submitted Passport Information</Title>
+                                        <Title level={5}>Personal Information</Title>
+                                        <Descriptions bordered column={descriptionColumn} size="middle" labelStyle={{ color: "#305797", fontWeight: 700 }}>
+                                            <Descriptions.Item label="Name">{[application.passportDetails.givenName, application.passportDetails.middleName, application.passportDetails.lastName, application.passportDetails.suffix].filter(Boolean).join(" ") || "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Date of Birth">{application.passportDetails.dateOfBirth ? dayjs(application.passportDetails.dateOfBirth).format("MMM DD, YYYY") : "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Gender">{application.passportDetails.gender || "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Civil Status">{application.passportDetails.civilStatus || "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Citizenship">{application.passportDetails.citizenship || "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Birth Legitimacy">{application.passportDetails.birthLegitimacy || "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Birth Information">{[application.passportDetails.cityMunicipalityOfBirth, application.passportDetails.provinceOfBirth, application.passportDetails.countryOfBirth].filter(Boolean).join(", ") || "N/A"}</Descriptions.Item>
+                                        </Descriptions>
+                                        <Title level={5} style={{ marginTop: 20 }}>Contact Information</Title>
+                                        <Descriptions bordered column={descriptionColumn} size="middle" labelStyle={{ color: "#305797", fontWeight: 700 }}>
+                                            <Descriptions.Item label="Phone Number">{application.passportDetails.phoneNumber || "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Mobile Number">{application.passportDetails.mobileNumber || "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Email Address">{application.passportDetails.emailAddress || "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Travelling Companion">{[application.passportDetails.companionName, application.passportDetails.companionRelationship].filter(Boolean).join(" - ") || "N/A"}{application.passportDetails.companionContactNumber ? ` (${application.passportDetails.companionContactNumber})` : ""}</Descriptions.Item>
+                                            <Descriptions.Item label="Emergency Contact">{application.passportDetails.emergencyContactPerson || "N/A"}{application.passportDetails.emergencyContactNumber ? ` (${application.passportDetails.emergencyContactNumber})` : ""}</Descriptions.Item>
+                                            <Descriptions.Item label="Current Address">{[application.passportDetails.currentAddress, application.passportDetails.barangay, application.passportDetails.currentCity, application.passportDetails.currentProvince, application.passportDetails.zipCode].filter(Boolean).join(", ") || "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Occupation">{application.passportDetails.occupation || "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Office Number">{application.passportDetails.officeNumber || "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Office Address">{application.passportDetails.officeAddress || "N/A"}</Descriptions.Item>
+                                        </Descriptions>
+                                        <Title level={5} style={{ marginTop: 20 }}>Family Information</Title>
+                                        <Descriptions bordered column={descriptionColumn} size="middle" labelStyle={{ color: "#305797", fontWeight: 700 }}>
+                                            <Descriptions.Item label="Father's Information">{[application.passportDetails.fatherGivenName, application.passportDetails.fatherMiddleName, application.passportDetails.fatherLastName].filter(Boolean).join(" ") || "N/A"}{application.passportDetails.fatherCitizenship ? ` (${application.passportDetails.fatherCitizenship})` : ""}</Descriptions.Item>
+                                            <Descriptions.Item label="Mother's Information">{[application.passportDetails.motherGivenName, application.passportDetails.motherMiddleName, application.passportDetails.motherMaidenLastName].filter(Boolean).join(" ") || "N/A"}{application.passportDetails.motherCitizenship ? ` (${application.passportDetails.motherCitizenship})` : ""}</Descriptions.Item>
+                                            {application.applicationType === "Renewal Passport" && (
+                                                <>
+                                                    <Descriptions.Item label="Old Passport">{application.passportDetails.oldPassportNumber || "N/A"}</Descriptions.Item>
+                                                    <Descriptions.Item label="Date of Issue">{application.passportDetails.oldPassportDateOfIssue ? dayjs(application.passportDetails.oldPassportDateOfIssue).format("MMM DD, YYYY") : "N/A"}</Descriptions.Item>
+                                                    <Descriptions.Item label="Issuing Authority">{application.passportDetails.oldPassportIssuingAuthority || "N/A"}</Descriptions.Item>
+                                                </>
+                                            )}
+                                        </Descriptions>
+                                        </div>
+                                    )}
+
                                     {/* DFA APPROVE OR REJECT OPTION WHEN STATUS IS PROCESSING BY DFA */}
                                     {application.status && application.status.toLowerCase() === "processing by dfa" && (
                                         <div style={{ minWidth: 280, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>

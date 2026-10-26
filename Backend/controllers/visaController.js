@@ -1056,13 +1056,13 @@ const generateApplicationNumber = () => {
 
 //apply visa function
 const applyVisa = async (req, res) => {
-    const { serviceName, preferredDate, preferredTime, purposeOfTravel, status } = req.body
+    const { serviceName, preferredDate, purposeOfTravel, status } = req.body
     const userId = req.userId
     const initialStatus = String(status || 'Application Submitted').trim() || 'Application Submitted'
 
     const serviceId = await ServiceModel.findOne({ visaName: serviceName }).select('_id')
 
-    if (!serviceId || !preferredDate || !preferredTime || !purposeOfTravel) {
+    if (!serviceId || !preferredDate || !purposeOfTravel) {
         return res.status(400).json({ message: 'Missing required fields' })
     }
 
@@ -1085,7 +1085,6 @@ const applyVisa = async (req, res) => {
             serviceName: serviceName,
             applicantName,
             preferredDate,
-            preferredTime,
             purposeOfTravel,
             status: initialStatus,
             statusHistory: [{
@@ -1130,7 +1129,6 @@ const updateVisaApplicationWithDocs = async (req, res) => {
 
         const {
             preferredDate,
-            preferredTime,
             purposeOfTravel,
             submittedDocuments
         } = req.body;
@@ -1159,7 +1157,6 @@ const updateVisaApplicationWithDocs = async (req, res) => {
         application.penaltyDeadline = '';
 
         application.preferredDate = preferredDate || application.preferredDate
-        application.preferredTime = preferredTime || application.preferredTime
         application.purposeOfTravel = purposeOfTravel || application.purposeOfTravel
         application.submittedDocuments = submittedDocuments || application.submittedDocuments
         appendVisaStatusHistory(application, 'Documents Uploaded', userId)
@@ -1274,7 +1271,7 @@ const getVisaApplications = async (_req, res) => {
     try {
         const applications = await VisaModel.find({})
             .select(
-                "_id applicationNumber applicantName serviceName preferredDate preferredTime status userId"
+                "_id applicationNumber applicantName serviceName preferredDate status userId"
             )
             .populate({
                 path: "userId",
@@ -1438,7 +1435,6 @@ const chooseAppointment = async (req, res) => {
         application.suggestedAppointmentSchedules = [];
         application.suggestedAppointmentScheduleChosen = { date, time };
         application.preferredDate = date;
-        application.preferredTime = time;
 
         try {
             const serviceDoc = await ServiceModel.findById(application.serviceId).select('visaProcessSteps');
@@ -1904,7 +1900,6 @@ const archiveVisaApplication = async (req, res) => {
             serviceName: application.serviceName,
             applicantName: application.applicantName,
             preferredDate: application.preferredDate,
-            preferredTime: application.preferredTime,
             purposeOfTravel: application.purposeOfTravel,
             applicationNumber: application.applicationNumber,
             suggestedAppointmentSchedules: application.suggestedAppointmentSchedules,
@@ -2063,7 +2058,6 @@ const restoreArchivedVisaApplication = async (req, res) => {
             serviceName: archivedApplication.serviceName,
             applicantName: archivedApplication.applicantName,
             preferredDate: archivedApplication.preferredDate,
-            preferredTime: archivedApplication.preferredTime,
             purposeOfTravel: archivedApplication.purposeOfTravel,
             suggestedAppointmentSchedules: archivedApplication.suggestedAppointmentSchedules,
             suggestedAppointmentScheduleChosen: archivedApplication.suggestedAppointmentScheduleChosen,
@@ -2117,4 +2111,3 @@ export {
     buildProcessSteps,
     setVisaSecondChance
 };
-

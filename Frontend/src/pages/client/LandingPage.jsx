@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Button, Card, Input, Modal, Select, Image, ConfigProvider } from 'antd';
-import { SearchOutlined, FacebookFilled, InstagramFilled, LeftOutlined, RightOutlined, EnvironmentOutlined, ClockCircleOutlined, CompassOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
+import { SearchOutlined, FacebookFilled, InstagramFilled, LeftOutlined, RightOutlined, EnvironmentOutlined, ClockCircleOutlined, CompassOutlined, ShoppingCartOutlined, UserOutlined, PhoneFilled, MailFilled, PhoneOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/landingpage.css'
@@ -1593,6 +1593,20 @@ export default function LandingPage() {
                                     M&RC Travel and Tours is accredited by the Department of Tourism (DOT) of the Philippines, ensuring that we meet the highest standards of quality, safety, and customer service in the travel industry. Our accreditation reflects our commitment to providing exceptional travel experiences and our dedication to upholding the integrity and professionalism of our services.
                                 </p>
                             </div>
+
+                            <div className="aboutus-accreditation-item">
+                                <img
+                                    className='aboutus-accreditation-image'
+                                    style={{ width: 200, height: 200 }}
+                                    draggable={false}
+                                    alt="example"
+                                    src="/images/philtoa_logo.svg"
+                                />
+
+                                <p style={{ textAlign: "center", width: 600 }} className='aboutus-text'>
+                                    M&RC Travel and Tours is a proud member of the Philippine Tour Operators Association (PHILTOA), supporting professional standards and responsible practices in the Philippine travel and tourism industry.
+                                </p>
+                            </div>
                         </div>
 
                     </div>
@@ -1628,6 +1642,20 @@ export default function LandingPage() {
                                                 <div>
                                                     <p className='contact-info-heading'>Office hours</p>
                                                     <p className='contact-info-text'>Monday - Saturday: 9:00 AM - 6:00 PM</p>
+                                                </div>
+                                            </div>
+                                            <div className='contact-info-item'>
+                                                <PhoneOutlined className='contact-info-icon' />
+                                                <div>
+                                                    <p className='contact-info-heading'>Contact number</p>
+                                                    <p className='contact-info-text'>0969 055 4806</p>
+                                                </div>
+                                            </div>
+                                            <div className='contact-info-item'>
+                                                <MailOutlined className='contact-info-icon' />
+                                                <div>
+                                                    <p className='contact-info-heading'>Email address</p>
+                                                    <p className='contact-info-text'>info@mrctravels.com</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -1867,6 +1895,14 @@ export default function LandingPage() {
                                         <p className='footer-text-link' onClick={() => window.open('https://www.instagram.com/mrc_travelandtours?fbclid=IwY2xjawQVIU5leHRuA2FlbQIxMABicmlkETE1M0YwaFZ6SW1EQ0xTZnNrc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHgrnAZz5frwKYlnHCi-Txow7AV3kwbYXwWp0W7XV-_BZcoANgGr7hUQA3Eq6_aem_VyUBdOcsD0LsgGhYaEtNog', '_blank')} >@mrc_travel_tours</p>
                                     </div>
 
+                                    <div className='footer-section-socials-icons'>
+                                        <PhoneFilled className='socials-icon' />
+                                        <p className='footer-text'>0969 055 4806</p>
+                                    </div>
+                                    <div className='footer-section-socials-icons'>
+                                        <MailFilled className='socials-icon' />
+                                        <p className='footer-text'>info@mrctravels.com</p>
+                                    </div>
 
                                 </div>
                             </div>

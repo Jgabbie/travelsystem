@@ -60,15 +60,13 @@ export default function PackageDomesticQuotation() {
         }
     }, [packageItem, notificationApi])
 
-    const { hotels, airlines, fixedItinerary, days, basePrice, dateRanges, inclusions, exclusions, images } = useMemo(() => ({
+    const { hotels, airlines, fixedItinerary, days, basePrice, dateRanges, images } = useMemo(() => ({
         hotels: packageData?.packageHotels || [],
         airlines: packageData?.packageAirlines || [],
         fixedItinerary: packageData?.packageItineraries || [],
         days: packageData?.packageDuration || 0,
         basePrice: Number(packageData?.packagePricePerPax) || 0,
         dateRanges: packageData?.packageSpecificDate || [],
-        inclusions: packageData?.packageInclusions || [],
-        exclusions: packageData?.packageExclusions || [],
         images: packageData?.images || packageData?.packageImages || []
     }), [packageData]);
 
@@ -432,32 +430,6 @@ export default function PackageDomesticQuotation() {
                                 </div>
                                 <p className="info-description">{packageDescription}</p>
 
-                                <div className="package-info-lists">
-                                    <div className="info-list">
-                                        <h4 className="info-list-title">Inclusions</h4>
-                                        {inclusions.length ? (
-                                            <ul>
-                                                {inclusions.map((item, index) => (
-                                                    <li key={`inc-${index}`}>{item}</li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="info-list-empty">No inclusions listed.</p>
-                                        )}
-                                    </div>
-                                    <div className="info-list">
-                                        <h4 className="info-list-title">Exclusions</h4>
-                                        {exclusions.length ? (
-                                            <ul>
-                                                {exclusions.map((item, index) => (
-                                                    <li key={`exc-${index}`}>{item}</li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="info-list-empty">No exclusions listed.</p>
-                                        )}
-                                    </div>
-                                </div>
                             </div>
 
 

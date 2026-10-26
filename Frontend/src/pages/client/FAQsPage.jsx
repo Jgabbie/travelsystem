@@ -1,9 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { Button, Collapse, ConfigProvider, Input, Typography } from 'antd'
-import { FacebookFilled, InstagramFilled, SearchOutlined } from '@ant-design/icons'
+import { FacebookFilled, InstagramFilled, SearchOutlined, PhoneFilled, MailFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/faqspage.css'
+import '../../style/client/footer.css'
 
 const { Text } = Typography
 
@@ -181,6 +182,14 @@ export default function FAQsPage() {
                                         <p className='footer-text-link' onClick={() => window.open('https://www.instagram.com/mrc_travelandtours?fbclid=IwY2xjawQVIU5leHRuA2FlbQIxMABicmlkETE1M0YwaFZ6SW1EQ0xTZnNrc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHgrnAZz5frwKYlnHCi-Txow7AV3kwbYXwWp0W7XV-_BZcoANgGr7hUQA3Eq6_aem_VyUBdOcsD0LsgGhYaEtNog', '_blank')}>@mrc_travel_tours</p>
                                     </div>
 
+                                    <div className='footer-section-socials-icons'>
+                                        <PhoneFilled className='socials-icon' />
+                                        <p className='footer-text'>0969 055 4806</p>
+                                    </div>
+                                    <div className='footer-section-socials-icons'>
+                                        <MailFilled className='socials-icon' />
+                                        <p className='footer-text'>info@mrctravels.com</p>
+                                    </div>
 
                                 </div>
                             </div>

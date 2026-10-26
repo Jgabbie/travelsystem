@@ -55,6 +55,10 @@
     align-items: start;
 }
 
+.passport-info-wide > .passport-panel {
+    grid-column: 1 / -1;
+}
+
 .passport-column {
     display: flex;
     flex-direction: column;
@@ -154,7 +158,36 @@
 
 
 .passport-form {
-    gap: 16px 20px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 20px;
+}
+
+.passport-details-grid {
+    align-items: start;
+}
+
+.passport-content > .passport-panel {
+    margin-bottom: 24px;
+}
+
+.passport-content > .passport-panel:last-child {
+    margin-bottom: 0;
+}
+
+.passport-subsection {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #dce3ea;
+    color: #305797;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: "Montserrat", sans-serif;
+}
+
+.passport-subsection:not(:first-child) {
+    margin-top: 16px;
 }
 
 .passport-label {
@@ -165,7 +198,7 @@
 }
 
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 4px;
     max-width: 520px !important;
     width: 100% !important;
 }
