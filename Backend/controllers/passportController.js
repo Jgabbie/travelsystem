@@ -792,13 +792,32 @@ const generateApplicationNumber = () => {
 const applyPassport = async (req, res) => {
     try {
         const userId = req.userId
-        const { dfaLocation, preferredDate, preferredTime, applicationType } = req.body
+        const {
+            dfaLocation,
+            preferredDate,
+            preferredTime,
+            applicationType,
+            passportDetails
+        } = req.body
 
         if (!dfaLocation || !preferredDate || !preferredTime || !applicationType) {
             return res.status(400).json({ message: "All fields are required" })
         }
 
+        if (
+            applicationType === 'New Passport' &&
+            (!passportDetails || typeof passportDetails !== 'object')
+        ) {
+            return res.status(400).json({
+                message: "Passport personal, family, contact, and emergency details are required"
+            })
+        }
+
         const user = await UserModel.findById(userId)
+        if (!user) {
+            return res.status(404).json({ message: "User not found" })
+        }
+
         const username = user.username;
 
         const application = await PassportModel.create({
@@ -808,6 +827,7 @@ const applyPassport = async (req, res) => {
             preferredDate,
             preferredTime,
             applicationType,
+            ...(passportDetails ? { passportDetails } : {}),
             applicationNumber: generateApplicationNumber()
         })
 
@@ -1383,6 +1403,7 @@ const archivePassportApplication = async (req, res) => {
             preferredDate: application.preferredDate,
             preferredTime: application.preferredTime,
             applicationType: application.applicationType,
+            passportDetails: application.passportDetails,
             suggestedAppointmentSchedules: application.suggestedAppointmentSchedules,
             suggestedAppointmentScheduleChosen: application.suggestedAppointmentScheduleChosen,
             submittedDocuments: application.submittedDocuments,
@@ -1533,6 +1554,7 @@ const restoreArchivedPassportApplication = async (req, res) => {
             preferredDate: archivedApplication.preferredDate,
             preferredTime: archivedApplication.preferredTime,
             applicationType: archivedApplication.applicationType,
+            passportDetails: archivedApplication.passportDetails,
             suggestedAppointmentSchedules: archivedApplication.suggestedAppointmentSchedules,
             suggestedAppointmentScheduleChosen: archivedApplication.suggestedAppointmentScheduleChosen,
             submittedDocuments: archivedApplication.submittedDocuments,
@@ -1661,4 +1683,3 @@ export {
     processPassportDeadlineAction,
     setPassportSecondChance,
 };
-
