@@ -50,6 +50,7 @@ export default function AddTransaction() {
 
     const [invoiceNumber, setInvoiceNumber] = useState("PREVIEW");
     const [transactionDate] = useState(dayjs());
+    const [customerName, setCustomerName] = useState("");
     const [price, setPrice] = useState(0);
     const [items, setItems] = useState([createEmptyItem()]);
     const [errors, setErrors] = useState({});
@@ -129,6 +130,12 @@ export default function AddTransaction() {
     const validateForm = () => {
         const nextErrors = {};
 
+        if (!customerName.trim()) {
+            nextErrors.customerName = "Customer name is required.";
+        } else if (customerName.trim().length > 100) {
+            nextErrors.customerName = "Customer name must not exceed 100 characters.";
+        }
+
         if (!transactionDate || !dayjs(transactionDate).isValid()) {
             nextErrors.transactionDate = "Transaction date is required.";
         }
@@ -159,6 +166,7 @@ export default function AddTransaction() {
     };
 
     const clearForm = () => {
+        setCustomerName("");
         setItems([createEmptyItem()]);
         setPrice(0);
         setErrors({});
@@ -190,6 +198,7 @@ export default function AddTransaction() {
         }));
 
         const transactionPayload = {
+            customerName: customerName.trim(),
             amount: Number(price),
             transactionDate: dayjs(transactionDate).toISOString(),
             createdAt: dayjs(transactionDate).toISOString(),
@@ -263,6 +272,30 @@ export default function AddTransaction() {
                             <h2 className="add-transaction-section-title">Transaction Details</h2>
 
                             <div className="add-transaction-basic-grid">
+                                <div className="add-transaction-field">
+                                    <label>Customer Name <span style={{ color: "#ff0000" }}>*</span></label>
+                                    <Input
+                                        maxLength={100}
+                                        placeholder="Enter customer name"
+                                        value={customerName}
+                                        status={errors.customerName ? "error" : ""}
+                                        onChange={(event) => {
+                                            const value = event.target.value
+                                                .replace(/[^a-zA-Z\s.'-]/g, "")
+                                                .replace(/\s{2,}/g, " ")
+                                                .replace(/^\s+/, "");
+                                            setCustomerName(value);
+                                            setErrors((current) => ({
+                                                ...current,
+                                                customerName: value.trim()
+                                                    ? ""
+                                                    : "Customer name is required.",
+                                            }));
+                                        }}
+                                    />
+                                    <p className="add-transaction-error">{errors.customerName}</p>
+                                </div>
+
                                 <div className="add-transaction-field">
                                     <label>Transaction Date <span style={{ color: "#ff0000" }}>*</span></label>
                                     <DatePicker
@@ -448,7 +481,7 @@ export default function AddTransaction() {
                                 <div className="receipt-meta">
                                     <div className="billed-to">
                                         <span className="label-blue">Billed To</span>
-                                        <h3 className="customer-name">Walk-in Customer</h3>
+                                        <h3 className="customer-name">{customerName.trim()}</h3>
                                     </div>
 
                                     <div className="receipt-details">

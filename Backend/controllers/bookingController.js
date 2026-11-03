@@ -46,29 +46,178 @@ const generateCancellationReference = () => {
     return `CN-${timestamp}${random}`;
 }
 
+const isPlainObject = value =>
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value);
+
+const isValidAmount = value =>
+    typeof value === 'number' &&
+    Number.isFinite(value) &&
+    value > 0;
+
+const isValidDateValue = value =>
+    typeof value === 'string' &&
+    value.trim() !== '' &&
+    dayjs(value).isValid();
+
+const isValidEmail = value =>
+    typeof value === 'string' &&
+    value.length <= 254 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
+
+const isValidUrl = value => {
+    if (typeof value !== 'string' || value.length > 2048) {
+        return false;
+    }
+
+    try {
+        const url = new URL(value);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+        return false;
+    }
+};
+
+const validateBookingPayload = bookingPayload => {
+    const errors = [];
+
+    if (!isPlainObject(bookingPayload)) {
+        return ['bookingPayload must be an object'];
+    }
+
+    if (
+        typeof bookingPayload.packageId !== 'string' ||
+        !mongoose.Types.ObjectId.isValid(bookingPayload.packageId)
+    ) {
+        errors.push('A valid packageId is required');
+    }
+
+    const travelDate = bookingPayload.travelDate;
+    if (!isPlainObject(travelDate) ||
+        !isValidDateValue(travelDate.startDate) ||
+        !isValidDateValue(travelDate.endDate)) {
+        errors.push('travelDate must include valid startDate and endDate values');
+    } else if (dayjs(travelDate.endDate).isBefore(dayjs(travelDate.startDate), 'day')) {
+        errors.push('travelDate endDate cannot be before startDate');
+    }
+
+    const travelers = bookingPayload.travelers;
+    if (!isPlainObject(travelers)) {
+        errors.push('travelers must be an object');
+    } else {
+        const travelerCounts = ['adult', 'child', 'infant'];
+        const invalidCount = travelerCounts.some(key =>
+            !Number.isInteger(travelers[key]) ||
+            travelers[key] < 0 ||
+            travelers[key] > 100
+        );
+
+        if (invalidCount) {
+            errors.push('Traveler counts must be whole numbers from 0 to 100');
+        } else if (
+            travelers.adult + travelers.child + travelers.infant < 1
+        ) {
+            errors.push('At least one traveler is required');
+        }
+    }
+
+    if (!isPlainObject(bookingPayload.bookingDetails)) {
+        errors.push('bookingDetails must be an object');
+    } else {
+        const details = bookingPayload.bookingDetails;
+
+        if (details.leadEmail !== undefined && !isValidEmail(details.leadEmail)) {
+            errors.push('leadEmail must be a valid email address');
+        }
+
+        if (!isValidAmount(details.totalPrice)) {
+            errors.push('bookingDetails totalPrice must be a positive number');
+        }
+
+        if (!Array.isArray(details.travelers) || details.travelers.length > 100) {
+            errors.push('bookingDetails travelers must be an array with no more than 100 items');
+        } else if (details.travelers.some(traveler => !isPlainObject(traveler))) {
+            errors.push('bookingDetails travelers contains invalid entries');
+        }
+
+        if (!isPlainObject(details.paymentDetails)) {
+            errors.push('paymentDetails must be an object');
+        } else if (!['deposit', 'full'].includes(details.paymentDetails.paymentType)) {
+            errors.push('paymentDetails paymentType must be deposit or full');
+        } else if (
+            details.paymentDetails.depositAmount !== undefined &&
+            (!Number.isFinite(details.paymentDetails.depositAmount) ||
+                details.paymentDetails.depositAmount < 0)
+        ) {
+            errors.push('paymentDetails depositAmount must be a non-negative number');
+        }
+    }
+
+    if (!isValidAmount(bookingPayload.amount)) {
+        errors.push('amount must be a positive number');
+    }
+
+    if (!['deposit', 'full'].includes(bookingPayload.paymentType)) {
+        errors.push('paymentType must be deposit or full');
+    }
+
+    if (!['Deposit', 'Full Payment'].includes(bookingPayload.paymentMode)) {
+        errors.push('paymentMode is invalid');
+    }
+
+    for (const field of ['passportFiles', 'photoFiles']) {
+        if (bookingPayload[field] !== undefined) {
+            if (!Array.isArray(bookingPayload[field]) || bookingPayload[field].length > 100) {
+                errors.push(`${field} must be an array with no more than 100 items`);
+            } else if (bookingPayload[field].some(file => !isValidUrl(file))) {
+                errors.push(`${field} contains an invalid file URL`);
+            }
+        }
+    }
+
+    return errors;
+};
+
 
 //create booking function
 const createBooking = async (req, res) => {
 
-    const { bookingPayload } = req.body
-    const userId = req.userId
-
-    const packageId = bookingPayload.packageId
-    const travelDate = bookingPayload.travelDate
-    const travelers = bookingPayload.travelers
-    const bookingDate = new Date().toISOString()
-    const bookingDetails = bookingPayload.bookingDetails || null
-    const status = 'Not Paid'
-    const amount = bookingPayload.amount || 0
-    const passportFiles = bookingPayload.passportFiles || []
-    const photoFiles = bookingPayload.photoFiles || []
-    const expiresAt = dayjs().add(35, 'minutes').toDate() // 35 minutes from now
-
-    //find package by name to get its id, then create booking with that package id
     try {
+        const body = isPlainObject(req.body) ? req.body : {};
+        const bookingPayload = body.bookingPayload;
+        const userId = req.userId;
 
-        if (!userId || !bookingPayload) {
-            return res.status(400).json({ message: "Missing required fields" })
+        if (!userId) {
+            return res.status(401).json({ message: "User authentication is required" });
+        }
+
+        const validationErrors = validateBookingPayload(bookingPayload);
+        if (validationErrors.length > 0) {
+            return res.status(400).json({
+                message: "Invalid booking data",
+                errors: validationErrors
+            });
+        }
+
+        const {
+            packageId,
+            travelDate,
+            travelers,
+            bookingDetails,
+            amount,
+            passportFiles = [],
+            photoFiles = []
+        } = bookingPayload;
+        const bookingDate = new Date().toISOString();
+        const status = 'Not Paid';
+        const expiresAt = dayjs().add(35, 'minutes').toDate();
+        const packageData = await PackageModel.findById(packageId)
+            .select('packageName')
+            .lean();
+
+        if (!packageData) {
+            return res.status(404).json({ message: "Package not found" });
         }
 
         const newBooking = await BookingModel.create({
@@ -95,9 +244,7 @@ const createBooking = async (req, res) => {
             expiresAt,
         });
 
-        const packageName = await PackageModel.findById(packageId).select('packageName').lean()
-
-        logAction('BOOKING_CREATED', userId, { "Booking Created": `Booking Reference: ${newBooking.reference} | Package Name: ${packageName.packageName}` })
+        logAction('BOOKING_CREATED', userId, { "Booking Created": `Booking Reference: ${newBooking.reference} | Package Name: ${packageData.packageName}` })
 
         const io = req.app.get('io')
         if (io) {

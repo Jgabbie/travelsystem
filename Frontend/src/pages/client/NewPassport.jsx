@@ -429,7 +429,7 @@ export default function NewPassport({ isRenewal = false }) {
                         ? 4
                         : numericFields.includes(key)
                             ? 11
-                        : 120
+                            : 120
                 }
                 status={errors[key] ? 'error' : ''}
                 onChange={event => update(
@@ -438,7 +438,7 @@ export default function NewPassport({ isRenewal = false }) {
                         ? event.target.value.replace(/\D/g, '')
                         : lettersOnlyFields.includes(key)
                             ? event.target.value.replace(/[^A-Za-zÀ-ÿ ]/g, '')
-                        : event.target.value
+                            : event.target.value
                 )}
             />
 

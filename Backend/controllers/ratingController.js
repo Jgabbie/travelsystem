@@ -110,10 +110,31 @@ const queueRetrainSafely = (reason) => {
     }
 }
 
+const validateRatingInput = (packageId, rating, review) => {
+    const errors = []
+
+    if (!packageId || !mongoose.Types.ObjectId.isValid(packageId)) {
+        errors.push('A valid package ID is required.')
+    }
+
+    const numericRating = Number(rating)
+    if (!Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5) {
+        errors.push('Rating must be a whole number from 1 to 5.')
+    }
+
+    if (typeof review !== 'string' || !review.trim()) {
+        errors.push('Review comment is required.')
+    } else if (review.trim().length > 2000) {
+        errors.push('Review comment must not exceed 2000 characters.')
+    }
+
+    return errors
+}
+
 
 //submit rating function
 const submitRating = async (req, res) => {
-    const { packageId, rating, review } = req.body;
+    const { packageId, rating, review } = req.body || {};
     const userId = req.userId;
 
     try {
@@ -121,8 +142,17 @@ const submitRating = async (req, res) => {
             return res.status(401).json({ message: "Login required to submit a rating" })
         }
 
-        if (!packageId || !rating) {
-            return res.status(400).json({ message: "Missing required fields" });
+        const validationErrors = validateRatingInput(packageId, rating, review)
+        if (validationErrors.length) {
+            return res.status(400).json({
+                message: "Invalid rating data",
+                errors: validationErrors
+            })
+        }
+
+        const packageExists = await PackageModel.exists({ _id: packageId })
+        if (!packageExists) {
+            return res.status(404).json({ message: "Package not found" })
         }
 
         const existingRating = await Rating.findOne({ packageId, userId });
@@ -136,8 +166,8 @@ const submitRating = async (req, res) => {
         const newRating = await Rating.create({
             packageId,
             userId,
-            rating,
-            review
+            rating: Number(rating),
+            review: review.trim()
         });
 
         const io = req.app.get('io')

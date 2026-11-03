@@ -116,6 +116,7 @@ export default function TransactionManagement() {
     key: t._id,
     invoiceNumber: t.invoiceNumber || "",
     ref: t.reference,
+    customerName: t.customerName || t.userId?.username || "Walk-in Customer",
     username: t.userId?.username,
     firstname: t.userId?.firstname,
     lastname: t.userId?.lastname || "",
@@ -911,7 +912,7 @@ export default function TransactionManagement() {
     { title: "Invoice No.", dataIndex: "invoiceNumber" },
     { title: "Transaction Reference", dataIndex: "ref" },
     { title: "Item Description", dataIndex: "package" },
-    { title: "Customer Name", dataIndex: "username" },
+    { title: "Customer Name", dataIndex: "customerName" },
     {
       title: "Payment Date & Time",
       dataIndex: "date",
@@ -985,7 +986,7 @@ export default function TransactionManagement() {
   const archivedColumns = [
     { title: "Transaction Reference", dataIndex: "ref" },
     { title: "Item", dataIndex: "package" },
-    { title: "Customer Name", dataIndex: "username" },
+    { title: "Customer Name", dataIndex: "customerName" },
     {
       title: "Payment Date & Time",
       dataIndex: "date",
@@ -1559,8 +1560,7 @@ export default function TransactionManagement() {
                         className="customer-name"
                         style={{ margin: 0 }}
                       >
-                        {`${selectedTransaction.firstname || ""} ${selectedTransaction.lastname || ""
-                          }`.trim() ||
+                        {selectedTransaction.customerName ||
                           selectedTransaction.username ||
                           "Walk-in Customer"}
                       </h3>

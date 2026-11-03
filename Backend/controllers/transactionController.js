@@ -12,6 +12,7 @@ import baseTransporter from '../config/nodemailer.js'
 import { buildBrandedEmail } from '../utils/emailTemplate.js'
 import logAction from '../utils/logger.js'
 import dayjs from 'dayjs'
+import mongoose from 'mongoose'
 
 
 //custom transporter that uses the baseTransporter but modifies the subject and html to include branding
@@ -68,6 +69,113 @@ const generateTransactionInvoiceNumber = async (date = new Date()) => {
         sequence,
         month: monthKey
     }
+}
+
+const validateManualTransactionPayload = (payload) => {
+    const errors = []
+
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        return ['A valid transaction payload is required.']
+    }
+
+    if (
+        typeof payload.customerName !== 'string' ||
+        !payload.customerName.trim() ||
+        payload.customerName.trim().length > 100
+    ) {
+        errors.push('Customer name is required and must not exceed 100 characters.')
+    }
+
+    const amount = Number(payload.amount)
+    if (!Number.isFinite(amount) || amount <= 0) {
+        errors.push('Amount must be a positive number.')
+    } else if (Number(amount.toFixed(2)) !== amount) {
+        errors.push('Amount must have no more than two decimal places.')
+    }
+
+    if (typeof payload.method !== 'string' || !payload.method.trim()) {
+        errors.push('Payment method is required.')
+    } else if (payload.method.trim().length > 50) {
+        errors.push('Payment method must not exceed 50 characters.')
+    }
+
+    if (typeof payload.status !== 'string' || !payload.status.trim()) {
+        errors.push('Transaction status is required.')
+    } else if (payload.status.trim().length > 50) {
+        errors.push('Transaction status must not exceed 50 characters.')
+    }
+
+    if (
+        payload.applicationType !== undefined &&
+        (typeof payload.applicationType !== 'string' ||
+            !payload.applicationType.trim() ||
+            payload.applicationType.trim().length > 150)
+    ) {
+        errors.push('Application type must be a non-empty string of 150 characters or less.')
+    }
+
+    if (payload.transactionDate !== undefined) {
+        const transactionDate = new Date(payload.transactionDate)
+        if (Number.isNaN(transactionDate.getTime())) {
+            errors.push('Transaction date must be a valid date.')
+        } else if (transactionDate > new Date()) {
+            errors.push('Transaction date cannot be in the future.')
+        }
+    }
+
+    if (!Array.isArray(payload.items) || payload.items.length === 0) {
+        errors.push('At least one transaction item is required.')
+    } else if (payload.items.length > 100) {
+        errors.push('A transaction may contain up to 100 items.')
+    } else {
+        payload.items.forEach((item, index) => {
+            if (!item || typeof item !== 'object' || Array.isArray(item)) {
+                errors.push(`Item ${index + 1} must be a valid object.`)
+                return
+            }
+
+            const quantity = Number(item.quantity)
+            const unitPrice = Number(item.unitPrice)
+            const itemAmount = Number(item.amount)
+            const description = typeof item.description === 'string'
+                ? item.description.trim()
+                : ''
+
+            if (!description || description.length > 200) {
+                errors.push(`Item ${index + 1} description is required and must not exceed 200 characters.`)
+            }
+            if (!Number.isInteger(quantity) || quantity <= 0 || quantity > 100000) {
+                errors.push(`Item ${index + 1} quantity must be a positive whole number.`)
+            }
+            if (!Number.isFinite(unitPrice) || unitPrice < 0 || unitPrice > 100000000) {
+                errors.push(`Item ${index + 1} unit price must be a non-negative number.`)
+            }
+            if (!Number.isFinite(itemAmount) || itemAmount <= 0 || itemAmount > 100000000) {
+                errors.push(`Item ${index + 1} amount must be a positive number.`)
+            }
+            if (
+                Number.isFinite(quantity) &&
+                Number.isFinite(unitPrice) &&
+                Number.isFinite(itemAmount) &&
+                Math.abs(quantity * unitPrice - itemAmount) > 0.01
+            ) {
+                errors.push(`Item ${index + 1} amount does not match its quantity and unit price.`)
+            }
+        })
+    }
+
+    for (const field of ['bookingId', 'packageId']) {
+        if (
+            payload[field] !== undefined &&
+            payload[field] !== null &&
+            payload[field] !== '' &&
+            !mongoose.Types.ObjectId.isValid(payload[field])
+        ) {
+            errors.push(`${field} must be a valid ID.`)
+        }
+    }
+
+    return errors
 }
 
 
@@ -166,56 +274,26 @@ const incrementPackageSlotsForBooking = async (booking) => {
 
 //create transaction function
 const createTransaction = async (req, res) => {
-    const { transactionPayload } = req.body;
-    const userId = req.userId;
+    const transactionPayload = req.body?.transactionPayload
+    const userId = req.userId
 
     try {
-        if (!transactionPayload) {
+        const validationErrors = validateManualTransactionPayload(transactionPayload)
+        if (validationErrors.length) {
             return res.status(400).json({
-                message: "Transaction payload is required",
+                message: "Invalid transaction data",
+                errors: validationErrors
             });
         }
 
         const amount = Number(transactionPayload.amount);
 
-        if (
-            !Number.isFinite(amount) ||
-            amount <= 0 ||
-            !transactionPayload.method ||
-            !transactionPayload.status
-        ) {
-            return res.status(400).json({
-                message: "Amount, method, and status are required",
-            });
-        }
-
-        const items = Array.isArray(transactionPayload.items)
-            ? transactionPayload.items.map((item) => ({
+        const items = transactionPayload.items.map((item) => ({
                 quantity: Number(item.quantity),
                 description: String(item.description || "").trim(),
                 unitPrice: Number(item.unitPrice),
                 amount: Number(item.amount),
             }))
-            : [];
-
-        const hasInvalidItem =
-            items.length === 0 ||
-            items.some(
-                (item) =>
-                    !item.description ||
-                    !Number.isFinite(item.quantity) ||
-                    item.quantity <= 0 ||
-                    !Number.isFinite(item.unitPrice) ||
-                    item.unitPrice < 0 ||
-                    !Number.isFinite(item.amount) ||
-                    item.amount <= 0
-            );
-
-        if (hasInvalidItem) {
-            return res.status(400).json({
-                message: "At least one valid transaction item is required",
-            });
-        }
 
         const calculatedAmount = items.reduce(
             (total, item) => total + item.amount,
@@ -235,11 +313,12 @@ const createTransaction = async (req, res) => {
             userId,
             invoiceNumber,
             reference: generateTransactionReference(),
+            customerName: transactionPayload.customerName.trim(),
             amount,
-            method: transactionPayload.method,
-            status: transactionPayload.status,
+            method: transactionPayload.method.trim(),
+            status: transactionPayload.status.trim(),
             applicationType:
-                transactionPayload.applicationType ||
+                transactionPayload.applicationType?.trim() ||
                 items[0]?.description ||
                 "Manual Transaction",
             items,
@@ -421,7 +500,7 @@ const getAllTransactions = async (req, res) => {
 
         let query = TransactionModel.find(transactionFilter)
             .select(
-                "reference invoiceNumber amount method status transactionDate createdAt userId packageId applicationType proofImage proofImageType proofFileName items"
+                "reference invoiceNumber customerName amount method status transactionDate createdAt userId packageId applicationType proofImage proofImageType proofFileName items"
             )
             .populate("userId", "username firstname lastname")
             .populate("packageId", "packageName")
@@ -719,6 +798,7 @@ const deleteTransaction = async (req, res) => {
             packageId: transaction.packageId,
             userId: transaction.userId,
             invoiceNumber: transaction.invoiceNumber,
+            customerName: transaction.customerName,
             reference: transaction.reference,
             amount: transaction.amount,
             method: transaction.method,

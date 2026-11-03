@@ -1835,8 +1835,8 @@ export default function VisaApplication() {
 
 
 
-                                                {/* UPLOAD DOCUMENTS AND PAYMENT COMPLETE */}
-                                                {shouldShow && statusValue !== 'Documents Uploaded' && (
+                                                {/* Document uploads temporarily disabled. */}
+                                                {false && shouldShow && statusValue !== 'Documents Uploaded' && (
                                                     <div style={{ border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff', marginTop: 32, marginBottom: 32 }}>
                                                         <h3 style={{ marginTop: 0 }}>Upload Requirements</h3>
                                                         {requirements.length === 0 && (

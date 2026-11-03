@@ -32,6 +32,117 @@ const PENALTY_AMOUNT = 1500;
 const PENALTY_PAYMENT_WINDOW_DAYS = 1;
 const SECOND_CHANCE_EXTENSION_DAYS = 3;
 
+const isPlainObject = value =>
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value);
+
+const isValidDate = value =>
+    typeof value === 'string' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+    dayjs(value).isValid() &&
+    dayjs(value).format('YYYY-MM-DD') === value;
+
+const isValidTime = value =>
+    typeof value === 'string' &&
+    /^(0?[8-9]|10|11):(00|30)\s?AM$|^(12|0?[1-5]):(00|30)\s?PM$/i.test(value.trim());
+
+const isValidEmail = value =>
+    typeof value === 'string' &&
+    value.length <= 254 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
+
+const isValidPhone = value =>
+    typeof value === 'string' &&
+    /^\+?[0-9][0-9 ()-]{6,19}$/.test(value.trim());
+
+const validatePassportDetails = (details, applicationType) => {
+    const errors = [];
+    const requiredFields = [
+        'phoneNumber', 'mobileNumber', 'emailAddress', 'lastName',
+        'givenName', 'citizenship', 'dateOfBirth', 'gender', 'civilStatus',
+        'birthLegitimacy', 'countryOfBirth', 'provinceOfBirth',
+        'cityMunicipalityOfBirth', 'fatherLastName', 'fatherGivenName',
+        'fatherCitizenship', 'motherMaidenLastName', 'motherGivenName',
+        'motherCitizenship', 'emergencyContactPerson',
+        'emergencyContactNumber', 'currentAddress', 'barangay',
+        'currentCity', 'currentProvince', 'zipCode', 'occupation'
+    ];
+
+    if (!isPlainObject(details)) {
+        return ['passportDetails must be an object'];
+    }
+
+    for (const field of requiredFields) {
+        if (typeof details[field] !== 'string' || !details[field].trim()) {
+            errors.push(`${field} is required`);
+        } else if (details[field].trim().length > 150) {
+            errors.push(`${field} must not exceed 150 characters`);
+        }
+    }
+
+    if (details.emailAddress && !isValidEmail(details.emailAddress)) {
+        errors.push('emailAddress must be a valid email address');
+    }
+
+    for (const field of ['phoneNumber', 'mobileNumber', 'emergencyContactNumber']) {
+        if (details[field] && !isValidPhone(details[field])) {
+            errors.push(`${field} is invalid`);
+        }
+    }
+
+    if (details.dateOfBirth && !isValidDate(details.dateOfBirth)) {
+        errors.push('dateOfBirth must be a valid date in YYYY-MM-DD format');
+    }
+
+    if (details.zipCode && !/^\d{4}$/.test(details.zipCode.trim())) {
+        errors.push('zipCode must contain exactly 4 digits');
+    }
+
+    if (applicationType === 'Renewal Passport') {
+        for (const field of ['oldPassportNumber', 'oldPassportDateOfIssue', 'oldPassportIssuingAuthority']) {
+            if (typeof details[field] !== 'string' || !details[field].trim()) {
+                errors.push(`${field} is required for passport renewal`);
+            }
+        }
+
+        if (details.oldPassportDateOfIssue && !isValidDate(details.oldPassportDateOfIssue)) {
+            errors.push('oldPassportDateOfIssue must be a valid date in YYYY-MM-DD format');
+        }
+    }
+
+    return errors;
+};
+
+const validatePassportApplicationInput = body => {
+    const errors = [];
+    const payload = isPlainObject(body) ? body : {};
+    const applicationTypes = ['New Passport', 'Renewal Passport'];
+
+    if (typeof payload.dfaLocation !== 'string' ||
+        !payload.dfaLocation.trim() ||
+        payload.dfaLocation.trim().length > 150) {
+        errors.push('dfaLocation must be 1-150 characters');
+    }
+
+    if (!isValidDate(payload.preferredDate)) {
+        errors.push('preferredDate must be a valid date in YYYY-MM-DD format');
+    } else if (dayjs(payload.preferredDate).isBefore(dayjs().add(14, 'day'), 'day')) {
+        errors.push('preferredDate must be at least 14 days from today');
+    }
+
+    if (!isValidTime(payload.preferredTime)) {
+        errors.push('preferredTime must be between 8:00 AM and 5:00 PM');
+    }
+
+    if (!applicationTypes.includes(payload.applicationType)) {
+        errors.push('applicationType is invalid');
+    }
+
+    errors.push(...validatePassportDetails(payload.passportDetails, payload.applicationType));
+    return errors;
+};
+
 const PASSPORT_STATUS_DEADLINE_DAYS_MAP = {
     'Payment Completed': 5,
 };
@@ -671,27 +782,28 @@ const generateApplicationNumber = () => {
 //apply for passport function
 const applyPassport = async (req, res) => {
     try {
-        const userId = req.userId
+        const body = isPlainObject(req.body) ? req.body : {};
+        const userId = req.userId;
+
+        if (!userId) {
+            return res.status(401).json({ message: "User authentication is required" });
+        }
+
+        const validationErrors = validatePassportApplicationInput(body);
+        if (validationErrors.length > 0) {
+            return res.status(400).json({
+                message: "Invalid passport application data",
+                errors: validationErrors
+            });
+        }
+
         const {
             dfaLocation,
             preferredDate,
             preferredTime,
             applicationType,
             passportDetails
-        } = req.body
-
-        if (!dfaLocation || !preferredDate || !preferredTime || !applicationType) {
-            return res.status(400).json({ message: "All fields are required" })
-        }
-
-        if (
-            applicationType === 'New Passport' &&
-            (!passportDetails || typeof passportDetails !== 'object')
-        ) {
-            return res.status(400).json({
-                message: "Passport personal, family, contact, and emergency details are required"
-            })
-        }
+        } = body;
 
         const user = await UserModel.findById(userId)
         if (!user) {

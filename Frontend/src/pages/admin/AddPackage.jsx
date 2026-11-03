@@ -53,6 +53,9 @@ export default function AddPackage() {
     exclusions: "",
     termsConditions: "",
     itineraries: "",
+    itineraryImages: "",
+    images: "",
+    video: "",
   });
 
 
@@ -103,8 +106,10 @@ export default function AddPackage() {
       exclusions: validate("exclusions", updatedValues.exclusions),
       termsConditions: validate("termsConditions", updatedValues.termsConditions),
       itineraries: validate("itineraries", updatedValues.itineraries),
+      itineraryImages: validate("itineraryImages", updatedValues.itinerariesImages),
       tags: validate("tags", updatedValues.tags),
       images: validate("images", updatedValues.images),
+      video: validate("video", updatedValues.video),
     };
     setErrors(newErrors);
   };
@@ -250,6 +255,47 @@ export default function AddPackage() {
     }
     if (field === "images") {
       if (!value.length) return "At least one package image is required.";
+      if (value.some((image) =>
+        image instanceof File &&
+        (!image.type.startsWith("image/") || image.size > 2 * 1024 * 1024)
+      )) {
+        return "Package images must be image files no larger than 2MB.";
+      }
+    }
+    if (field === "itineraryImages") {
+      const itineraryDays = Object.entries(value || {});
+      const missingDayImages = itineraryDays.some(
+        ([, images]) => !Array.isArray(images) || images.length === 0
+      );
+
+      if (!itineraryDays.length || missingDayImages) {
+        return "At least one itinerary image is required for every day.";
+      }
+
+      const invalidDay = itineraryDays.find(([, images]) =>
+        !Array.isArray(images) ||
+        images.length > 3 ||
+        images.some((image) =>
+          image instanceof File &&
+          (!image.type.startsWith("image/") || image.size > 2 * 1024 * 1024)
+        )
+      );
+
+      if (invalidDay) {
+        return "Each itinerary day may contain up to 3 image files, each no larger than 2MB.";
+      }
+    }
+    if (field === "video") {
+      if (!value) {
+        return "A package video is required.";
+      }
+
+      if (
+        value instanceof File &&
+        (!value.type.startsWith("video/") || value.size > 100 * 1024 * 1024)
+      ) {
+        return "Video must be a video file no larger than 100MB.";
+      }
     }
     return "";
   };
@@ -502,13 +548,18 @@ export default function AddPackage() {
         return prev;
       }
 
-      return {
+      const updated = {
         ...prev,
         itinerariesImages: {
           ...(prev.itinerariesImages || {}),
           [day]: [...current, file],
         },
       };
+      setErrors((previousErrors) => ({
+        ...previousErrors,
+        itineraryImages: validate("itineraryImages", updated.itinerariesImages, updated),
+      }));
+      return updated;
     });
 
     event.target.value = "";
@@ -517,12 +568,17 @@ export default function AddPackage() {
 
   //remove itinerary image
   const removeItineraryImage = (day, index) => {
-    setValues((prev) => ({
-      ...prev,
+    const updated = {
+      ...values,
       itinerariesImages: {
-        ...(prev.itinerariesImages || {}),
-        [day]: (prev.itinerariesImages?.[day] || []).filter((_, i) => i !== index),
+        ...(values.itinerariesImages || {}),
+        [day]: (values.itinerariesImages?.[day] || []).filter((_, i) => i !== index),
       },
+    };
+    setValues(updated);
+    setErrors((prev) => ({
+      ...prev,
+      itineraryImages: validate("itineraryImages", updated.itinerariesImages, updated),
     }));
   };
 
@@ -682,8 +738,10 @@ export default function AddPackage() {
       exclusions: validate("exclusions", values.exclusions),
       termsConditions: validate("termsConditions", values.termsConditions),
       itineraries: validate("itineraries", values.itineraries),
+      itineraryImages: validate("itineraryImages", values.itinerariesImages),
       tags: validate("tags", values.tags),
       images: validate("images", values.images),
+      video: validate("video", values.video),
     };
 
     for (let field in newErrors) {
@@ -1852,7 +1910,14 @@ export default function AddPackage() {
                         </Button>
                       </div>
 
-                      <div style={{ flex: "1 1 260px" }}>
+                      <div
+                        style={{
+                          flex: "1 1 260px",
+                          border: errors.itineraryImages ? "2px solid #ff4d4f" : "2px solid transparent",
+                          borderRadius: 8,
+                          padding: 8,
+                        }}
+                      >
                         <div
                           style={{
                             display: "flex",
@@ -1885,6 +1950,9 @@ export default function AddPackage() {
                           style={{ display: "none" }}
                         />
                         <p className="package-image-help">PNG/JPG up to 2MB. Max 3 images.</p>
+                        {errors.itineraryImages && (
+                          <p className="add-package-error-message">{errors.itineraryImages}</p>
+                        )}
 
                         <div
                           style={{
@@ -1944,7 +2012,13 @@ export default function AddPackage() {
             <div className="add-package-section-half add-package-section" style={{ marginTop: 40 }}>
               <h2 className="section-headers">Package Image and Video <span style={{ color: "#ff0000" }}>*</span></h2>
               {/* PACKAGE IMAGE UPLOAD */}
-              <div>
+              <div
+                style={{
+                  border: errors.images || errors.video ? "2px solid #ff4d4f" : "2px solid transparent",
+                  borderRadius: 8,
+                  padding: 10,
+                }}
+              >
                 <input
                   ref={fileInputRef}
                   className="package-image-input"
@@ -1963,6 +2037,9 @@ export default function AddPackage() {
                   Upload Package Image
                 </Button>
                 <p className="package-image-help">PNG/JPG up to 2MB. Max 3 images.</p>
+                {errors.images && (
+                  <p className="add-package-error-message">{errors.images}</p>
+                )}
 
                 <div
                   className="package-image-preview"
@@ -2018,7 +2095,15 @@ export default function AddPackage() {
                 </div>
 
                 {/* PACKAGE VIDEO UPLOAD */}
-                <div style={{ marginTop: 18, textAlign: 'center' }}>
+                <div
+                  style={{
+                    marginTop: 18,
+                    textAlign: 'center',
+                    border: errors.video ? "2px solid #ff4d4f" : "2px solid transparent",
+                    borderRadius: 8,
+                    padding: 8,
+                  }}
+                >
                   <input
                     ref={videoInputRef}
                     className="package-video-input"
@@ -2038,6 +2123,9 @@ export default function AddPackage() {
                     Upload Video
                   </Button>
                   <p className="package-image-help">MP4/WEBM up to 100MB. One video.</p>
+                  {errors.video && (
+                    <p className="add-package-error-message">{errors.video}</p>
+                  )}
 
                   {values.video ? (
                     <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center' }}>

@@ -10,6 +10,140 @@ import baseTransporter from "../config/nodemailer.js";
 import { buildBrandedEmail } from "../utils/emailTemplate.js";
 import mongoose from "mongoose";
 
+const isPlainObject = value =>
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value);
+
+const isFiniteNumber = value =>
+    value !== "" &&
+    Number.isFinite(Number(value));
+
+const isNonNegativeNumber = value =>
+    isFiniteNumber(value) && Number(value) >= 0;
+
+const isSafeUrl = value => {
+    if (typeof value !== "string" || value.length > 2048) return false;
+    try {
+        const url = new URL(value);
+        return url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+        return false;
+    }
+};
+
+const validatePackageInput = body => {
+    const errors = [];
+    const payload = isPlainObject(body) ? body : {};
+    const requiredStrings = [
+        ["name", 150],
+        ["code", 50],
+        ["description", 10000],
+        ["packageType", 100]
+    ];
+
+    requiredStrings.forEach(([field, maxLength]) => {
+        if (typeof payload[field] !== "string" ||
+            !payload[field].trim() ||
+            payload[field].trim().length > maxLength) {
+            errors.push(`${field} must be a non-empty string of at most ${maxLength} characters`);
+        }
+    });
+
+    [
+        "pricePerPax",
+        "soloRate",
+        "childRate",
+        "infantRate",
+        "deposit",
+        "duration"
+    ].forEach(field => {
+        if (!isFiniteNumber(payload[field]) || Number(payload[field]) < 0) {
+            errors.push(`${field} must be a non-negative number`);
+        }
+    });
+
+    if (payload.availableSlots !== undefined &&
+        !isNonNegativeNumber(payload.availableSlots)) {
+        errors.push("availableSlots must be a non-negative number");
+    }
+    if (payload.visaRequired !== undefined &&
+        typeof payload.visaRequired !== "boolean" &&
+        !["true", "false"].includes(String(payload.visaRequired).toLowerCase())) {
+        errors.push("visaRequired must be a boolean");
+    }
+
+    [
+        ["hotels", 100],
+        ["airlines", 100],
+        ["inclusions", 200],
+        ["exclusions", 200],
+        ["termsAndConditions", 200],
+        ["tags", 100]
+    ].forEach(([field, maxItems]) => {
+        if (!Array.isArray(payload[field]) || payload[field].length > maxItems) {
+            errors.push(`${field} must be an array with up to ${maxItems} items`);
+        }
+    });
+
+    if (Array.isArray(payload.hotels) && payload.hotels.some(hotel =>
+        !isPlainObject(hotel) ||
+        typeof hotel.name !== "string" ||
+        !hotel.name.trim() ||
+        !isNonNegativeNumber(hotel.stars) ||
+        typeof hotel.type !== "string" ||
+        !hotel.type.trim()
+    )) {
+        errors.push("hotels contains invalid entries");
+    }
+
+    if (Array.isArray(payload.airlines) && payload.airlines.some(airline =>
+        !isPlainObject(airline) ||
+        typeof airline.name !== "string" ||
+        !airline.name.trim() ||
+        typeof airline.type !== "string" ||
+        !airline.type.trim()
+    )) {
+        errors.push("airlines contains invalid entries");
+    }
+
+    if (!isPlainObject(payload.itineraries)) {
+        errors.push("itineraries must be an object");
+    }
+
+    if (!Array.isArray(payload.dateRanges) || payload.dateRanges.length > 100) {
+        errors.push("dateRanges must be an array with no more than 100 items");
+    } else {
+        payload.dateRanges.forEach((range, index) => {
+            if (!isPlainObject(range) ||
+                !range.startdaterange ||
+                !range.enddaterange ||
+                !dayjs(range.startdaterange).isValid() ||
+                !dayjs(range.enddaterange).isValid() ||
+                dayjs(range.enddaterange).isBefore(dayjs(range.startdaterange), "day") ||
+                (range.extrarate !== "" && !isNonNegativeNumber(range.extrarate)) ||
+                !isNonNegativeNumber(range.slots)) {
+                errors.push(`dateRanges[${index}] is invalid`);
+            }
+        });
+    }
+
+    const imageFields = ["images"];
+    imageFields.forEach(field => {
+        if (!Array.isArray(payload[field]) || payload[field].length > 100 ||
+            payload[field].some(image => !isSafeUrl(image))) {
+            errors.push(`${field} must contain valid HTTP(S) image URLs`);
+        }
+    });
+
+    if (payload.video !== null && payload.video !== undefined && payload.video !== "" &&
+        !isSafeUrl(payload.video)) {
+        errors.push("video must be a valid HTTP(S) URL");
+    }
+
+    return errors;
+};
+
 
 //function to send email notifications to users on wishlist when a package becomes available
 const transporter = {
@@ -224,17 +358,16 @@ const notifyWishlistUsers = async ({
 
 //add package function
 const addPackage = async (req, res) => {
-    const { name, code, pricePerPax, soloRate, childRate, infantRate, deposit, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, termsAndConditions, inclusions, exclusions, itineraries, images, tags, visaRequired, video } = req.body;
     try {
-
-        if (name === null || code === null || pricePerPax === null
-            || availableSlots === null || description === null ||
-            packageType === null || duration === null || hotels === null
-            || airlines === null || termsAndConditions === null ||
-            inclusions === null || exclusions === null || itineraries === null
-            || tags === null || visaRequired === null) {
-            return res.status(400).json({ message: "Missing required fields" });
+        const validationErrors = validatePackageInput(req.body);
+        if (validationErrors.length > 0) {
+            return res.status(400).json({
+                message: "Invalid package data",
+                errors: validationErrors
+            });
         }
+
+        const { name, code, pricePerPax, soloRate, childRate, infantRate, deposit, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, termsAndConditions, inclusions, exclusions, itineraries, images, tags, visaRequired, video } = req.body;
 
         const newPackage = await PackageModel.create({
             packageName: name,
@@ -597,6 +730,18 @@ const updatePackage = async (req, res) => {
     const { id } = req.params;
 
     try {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid package identifier" });
+        }
+
+        const validationErrors = validatePackageInput(req.body);
+        if (validationErrors.length > 0) {
+            return res.status(400).json({
+                message: "Invalid package data",
+                errors: validationErrors
+            });
+        }
+
         const existingPackage = await PackageModel.findById(id);
         if (!existingPackage) {
             return res.status(404).json({ message: "Package not found" });
@@ -652,7 +797,7 @@ const updatePackage = async (req, res) => {
                 images: req.body.images || [],
                 packageVideo: req.body.video || req.body.packageVideo || null
             },
-            { new: true }
+            { new: true, runValidators: true }
         );
 
         const updatedSlots = sumSlots(

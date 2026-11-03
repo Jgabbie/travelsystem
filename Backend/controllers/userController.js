@@ -68,10 +68,123 @@ const createOtp = () => {
         .toString()
 }
 
+const validateProfileUpdateInput = (body = {}) => {
+    const errors = []
+    const requiredTextFields = ['firstname', 'lastname', 'email', 'phone']
+    const namePattern = /^[A-Za-z]+(?:[ '-][A-Za-z]+)*$/
+    const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
+    const optionalTextLimits = {
+        homeAddress: 300,
+        gender: 30,
+        nationality: 80
+    }
+    const allowedGenders = new Set([
+        '',
+        'Male',
+        'Female',
+        'Other',
+        'Prefer not to say'
+    ])
+
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        return ['A valid profile object is required.']
+    }
+
+    requiredTextFields.forEach((field) => {
+        if (typeof body[field] !== 'string' || !body[field].trim()) {
+            errors.push(`${field} is required.`)
+        }
+    })
+
+    if (typeof body.firstname === 'string') {
+        const firstname = body.firstname.trim()
+        if (firstname.length < 2 || firstname.length > 50) {
+            errors.push('First name must be between 2 and 50 characters.')
+        } else if (!namePattern.test(firstname)) {
+            errors.push('First name contains invalid characters.')
+        }
+    }
+
+    if (typeof body.lastname === 'string') {
+        const lastname = body.lastname.trim()
+        if (lastname.length < 2 || lastname.length > 50) {
+            errors.push('Last name must be between 2 and 50 characters.')
+        } else if (!namePattern.test(lastname)) {
+            errors.push('Last name contains invalid characters.')
+        }
+    }
+
+    if (typeof body.email === 'string') {
+        const email = body.email.trim().toLowerCase()
+        if (email.length > 254 || !emailPattern.test(email)) {
+            errors.push('A valid email address is required.')
+        }
+    }
+
+    if (typeof body.phone === 'string') {
+        const phone = body.phone.replace(/\D/g, '')
+        if (!/^09\d{9}$/.test(phone)) {
+            errors.push('Phone number must contain 11 digits and start with 09.')
+        }
+    }
+
+    Object.entries(optionalTextLimits).forEach(([field, maxLength]) => {
+        if (body[field] !== undefined && typeof body[field] !== 'string') {
+            errors.push(`${field} must be a string.`)
+        } else if (typeof body[field] === 'string' && body[field].trim().length > maxLength) {
+            errors.push(`${field} must not exceed ${maxLength} characters.`)
+        }
+    })
+
+    if (typeof body.gender === 'string' && !allowedGenders.has(body.gender)) {
+        errors.push('Gender is invalid.')
+    }
+
+    if (body.profileImage !== undefined && typeof body.profileImage !== 'string') {
+        errors.push('Profile image must be a string.')
+    } else if (typeof body.profileImage === 'string' && body.profileImage.length > 5 * 1024 * 1024) {
+        errors.push('Profile image must not exceed 5MB.')
+    }
+
+    if (body.birthdate !== undefined && body.birthdate !== '') {
+        if (typeof body.birthdate !== 'string') {
+            errors.push('Birthdate must be a valid date string.')
+        } else {
+            const parsedBirthdate = new Date(`${body.birthdate}T00:00:00.000Z`)
+            const isDateFormatValid = /^\d{4}-\d{2}-\d{2}$/.test(body.birthdate)
+            const isParsedDateValid = !Number.isNaN(parsedBirthdate.getTime())
+            const isCalendarDateValid =
+                isDateFormatValid &&
+                isParsedDateValid &&
+                parsedBirthdate.toISOString().slice(0, 10) === body.birthdate
+            if (
+                !isCalendarDateValid ||
+                parsedBirthdate > new Date()
+            ) {
+                errors.push('Birthdate must be a valid date that is not in the future.')
+            }
+        }
+    }
+
+    if (body.otp !== undefined && body.otp !== '' && !/^\d{6}$/.test(String(body.otp))) {
+        errors.push('OTP must be a 6-digit number.')
+    }
+
+    return errors
+}
+
 //update user data function
 const updateUserData = async (req, res) => {
     try {
         const { userId } = req
+        const validationErrors = validateProfileUpdateInput(req.body)
+        if (validationErrors.length) {
+            return res.status(400).json({
+                message: "Invalid profile data",
+                errors: validationErrors
+            })
+        }
+
         const {
             firstname,
             lastname,
@@ -85,20 +198,16 @@ const updateUserData = async (req, res) => {
             otp
         } = req.body
 
-        if (!firstname || !lastname || !email || !phone) {
-            return res.status(400).json({ message: "All fields are required" })
-        }
+        const normalizedFirstname = firstname.trim()
+        const normalizedLastname = lastname.trim()
+        const normalizedEmail = email.trim().toLowerCase()
+        const cleanedPhoneNum = phone.replace(/\D/g, '')
 
         const user = await UserModel.findById(userId)
 
         if (!user) {
             return res.status(409).json({ message: "User not found" })
         }
-
-        const normalizedEmail =
-            String(email)
-                .trim()
-                .toLowerCase()
 
         const currentEmail =
             String(user.email || '')
@@ -107,10 +216,6 @@ const updateUserData = async (req, res) => {
 
         const emailChanged =
             normalizedEmail !== currentEmail
-
-        const cleanedPhoneNum = phone.replace(/\D/g, ''); // removed spaces
-
-
 
         if (emailChanged) {
 
@@ -365,20 +470,20 @@ const updateUserData = async (req, res) => {
         const updatedFields = {}
         const changes = []
 
-        if (user.firstname !== firstname) {
-            updatedFields.firstname = { from: user.firstname, to: firstname }
+        if (user.firstname !== normalizedFirstname) {
+            updatedFields.firstname = { from: user.firstname, to: normalizedFirstname }
             changes.push('firstname')
         }
-        if (user.lastname !== lastname) {
-            updatedFields.lastname = { from: user.lastname, to: lastname }
+        if (user.lastname !== normalizedLastname) {
+            updatedFields.lastname = { from: user.lastname, to: normalizedLastname }
             changes.push('lastname')
         }
-        if (user.email !== email) {
-            updatedFields.email = { from: user.email, to: email }
+        if (user.email !== normalizedEmail) {
+            updatedFields.email = { from: user.email, to: normalizedEmail }
             changes.push('email')
         }
-        if (user.phone !== phone) {
-            updatedFields.phone = { from: user.phone, to: phone }
+        if (user.phone !== cleanedPhoneNum) {
+            updatedFields.phone = { from: user.phone, to: cleanedPhoneNum }
             changes.push('phone')
         }
         if (typeof profileImage === 'string' && user.profileImage !== profileImage) {
@@ -403,11 +508,9 @@ const updateUserData = async (req, res) => {
         }
 
 
-        const cleanedPhone = phone.replace(/\D/g, ''); //removed spaces
-
-        user.firstname = firstname
-        user.lastname = lastname
-        user.phone = cleanedPhone
+        user.firstname = normalizedFirstname
+        user.lastname = normalizedLastname
+        user.phone = cleanedPhoneNum
         if (typeof profileImage === 'string') {
             user.profileImage = profileImage
         }

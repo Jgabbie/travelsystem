@@ -33,6 +33,52 @@ const PENALTY_AMOUNT = 1500;
 const PENALTY_PAYMENT_WINDOW_DAYS = 1;
 const SECOND_CHANCE_EXTENSION_DAYS = 3;
 
+const isPlainObject = value =>
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value);
+
+const isValidDate = value =>
+    typeof value === 'string' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+    dayjs(value).isValid() &&
+    dayjs(value).format('YYYY-MM-DD') === value;
+
+const isValidEmail = value =>
+    typeof value === 'string' &&
+    value.length <= 254 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
+
+const validateVisaApplicationInput = body => {
+    const errors = [];
+    const payload = isPlainObject(body) ? body : {};
+
+    if (typeof payload.serviceName !== 'string' || !payload.serviceName.trim()) {
+        errors.push('serviceName is required');
+    } else if (payload.serviceName.trim().length > 150) {
+        errors.push('serviceName must not exceed 150 characters');
+    }
+
+    if (!isValidDate(payload.preferredDate)) {
+        errors.push('preferredDate must be a valid date in YYYY-MM-DD format');
+    } else if (dayjs(payload.preferredDate).isBefore(dayjs().add(14, 'day'), 'day')) {
+        errors.push('preferredDate must be at least 14 days from today');
+    }
+
+    if (typeof payload.purposeOfTravel !== 'string' ||
+        payload.purposeOfTravel.trim().length < 3 ||
+        payload.purposeOfTravel.trim().length > 500) {
+        errors.push('purposeOfTravel must be 3-500 characters');
+    }
+
+    if (payload.status !== undefined &&
+        (typeof payload.status !== 'string' || payload.status.trim().length > 100)) {
+        errors.push('status is invalid');
+    }
+
+    return errors;
+};
+
 const VISA_STATUS_TOTAL_DAYS_MAP = {
     'Application Submitted': 2,
     'Application Approved': 4,
@@ -1056,17 +1102,33 @@ const generateApplicationNumber = () => {
 
 //apply visa function
 const applyVisa = async (req, res) => {
-    const { serviceName, preferredDate, purposeOfTravel, status } = req.body
-    const userId = req.userId
-    const initialStatus = String(status || 'Application Submitted').trim() || 'Application Submitted'
-
-    const serviceId = await ServiceModel.findOne({ visaName: serviceName }).select('_id')
-
-    if (!serviceId || !preferredDate || !purposeOfTravel) {
-        return res.status(400).json({ message: 'Missing required fields' })
-    }
-
     try {
+        const body = isPlainObject(req.body) ? req.body : {};
+        const userId = req.userId;
+
+        if (!userId) {
+            return res.status(401).json({ message: 'User authentication is required' });
+        }
+
+        const validationErrors = validateVisaApplicationInput(body);
+        if (validationErrors.length > 0) {
+            return res.status(400).json({
+                message: 'Invalid visa application data',
+                errors: validationErrors
+            });
+        }
+
+        const serviceName = body.serviceName.trim();
+        const preferredDate = body.preferredDate;
+        const purposeOfTravel = body.purposeOfTravel.trim();
+        const status = typeof body.status === 'string' ? body.status : '';
+        const initialStatus = status.trim() || 'Application Submitted';
+        const serviceId = await ServiceModel.findOne({ visaName: serviceName }).select('_id');
+
+        if (!serviceId) {
+            return res.status(404).json({ message: 'Visa service not found' });
+        }
+
         const user = await UserModel.findById(userId).select('firstname lastname username')
         const serviceDoc = await ServiceModel.findById(serviceId).select('visaProcessSteps')
 

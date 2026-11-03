@@ -1,6 +1,8 @@
 import cloudinary from '../config/cloudinary.js'
+import mongoose from 'mongoose'
 import QuotationModel from '../models/quotations.js'
 import ArchivedQuotationModel from '../models/archivedquotations.js'
+import PackageModel from '../models/package.js'
 import UserModel from '../models/user.js'
 import NotificationModel from '../models/notification.js'
 import logAction from '../utils/logger.js'
@@ -15,28 +17,158 @@ const generateQuotationReference = () => {
     return `QT-${timestamp}${random}`
 }
 
+const validateQuotationInput = (packageId, quotationDetails) => {
+    const errors = []
+    const allowedPackageTypes = ['domestic', 'international']
+    const allowedCategories = ['All in Package', 'Land Arrangement']
+
+    if (!packageId) {
+        errors.push('Package ID is required.')
+    } else if (!mongoose.Types.ObjectId.isValid(packageId)) {
+        errors.push('Package ID is invalid.')
+    }
+
+    if (!quotationDetails || typeof quotationDetails !== 'object' || Array.isArray(quotationDetails)) {
+        return [...errors, 'Quotation details must be a valid object.']
+    }
+
+    if (!allowedPackageTypes.includes(quotationDetails.packageType)) {
+        errors.push('Package type is invalid.')
+    }
+    if (!allowedCategories.includes(quotationDetails.packageCategory)) {
+        errors.push('Package category is invalid.')
+    }
+
+    const travelers = quotationDetails.travelers
+    if (!travelers || typeof travelers !== 'object' || Array.isArray(travelers)) {
+        errors.push('Traveler details are required.')
+    } else {
+        for (const field of ['adult', 'child', 'infant']) {
+            if (!Number.isInteger(travelers[field]) || travelers[field] < 0 || travelers[field] > 100) {
+                errors.push(`${field} traveler count must be a non-negative whole number up to 100.`)
+            }
+        }
+
+        const totalTravelers =
+            Number(travelers.adult || 0) +
+            Number(travelers.child || 0) +
+            Number(travelers.infant || 0)
+
+        if (totalTravelers < 1 || totalTravelers > 100) {
+            errors.push('Total travelers must be between 1 and 100.')
+        }
+        if (quotationDetails.packageCategory !== 'Land Arrangement' &&
+            travelers.adult < 1) {
+            errors.push('At least one adult traveler is required.')
+        }
+    }
+
+    const stringFields = [
+        ['preferredAirlines', 100],
+        ['preferredHotels', 100],
+        ['preferredDates', 100]
+    ]
+    stringFields.forEach(([field, maxLength]) => {
+        if (typeof quotationDetails[field] !== 'string' ||
+            !quotationDetails[field].trim() ||
+            quotationDetails[field].trim().length > maxLength) {
+            errors.push(`${field} must be a non-empty string of ${maxLength} characters or less.`)
+        }
+    })
+
+    const budgetRange = quotationDetails.budgetRange
+    if (
+        !Array.isArray(budgetRange) ||
+        budgetRange.length !== 2 ||
+        !budgetRange.every((value) => Number.isFinite(Number(value)) && Number(value) >= 0) ||
+        Number(budgetRange[0]) > Number(budgetRange[1])
+    ) {
+        errors.push('Budget range must contain two non-negative numbers in ascending order.')
+    }
+
+    if (!Array.isArray(quotationDetails.itineraryNotes) ||
+        quotationDetails.itineraryNotes.length === 0 ||
+        quotationDetails.itineraryNotes.length > 30 ||
+        quotationDetails.itineraryNotes.some((note) =>
+            typeof note !== 'string' || !note.trim() || note.trim().length > 1000
+        )) {
+        errors.push('Itinerary notes must contain 1 to 30 non-empty entries of 1000 characters or less.')
+    }
+
+    if (quotationDetails.additionalComments !== undefined &&
+        (typeof quotationDetails.additionalComments !== 'string' ||
+            quotationDetails.additionalComments.length > 2000)) {
+        errors.push('Additional comments must be a string of 2000 characters or less.')
+    }
+
+    const flightDetails = quotationDetails.flightDetails
+    if (!flightDetails || typeof flightDetails !== 'object' || Array.isArray(flightDetails)) {
+        errors.push('Flight details are required.')
+    } else if (quotationDetails.packageCategory === 'Land Arrangement') {
+        if (typeof flightDetails.flightAirline !== 'string' ||
+            !flightDetails.flightAirline.trim() ||
+            flightDetails.flightAirline.trim().length > 100) {
+            errors.push('Flight airline is required for a land arrangement.')
+        }
+        if (typeof flightDetails.flightDate !== 'string' ||
+            !flightDetails.flightDate.trim() ||
+            Number.isNaN(new Date(flightDetails.flightDate).getTime()) ||
+            new Date(flightDetails.flightDate) < new Date()) {
+            errors.push('Flight date must be a valid date.')
+        }
+        if (typeof flightDetails.flightTime !== 'string' ||
+            !flightDetails.flightTime.trim() ||
+            flightDetails.flightTime.trim().length > 30) {
+            errors.push('Flight time is required and must be valid.')
+        }
+    }
+
+    return errors
+}
+
 
 //create quotation function
 const createQuotation = async (req, res) => {
-    const { packageId, quotationDetails } = req.body
+    const { packageId, quotationDetails } = req.body || {}
     const userId = req.userId
 
     try {
-        const userName = await UserModel.findById(userId).select('username')
+        const validationErrors = validateQuotationInput(packageId, quotationDetails)
+        if (validationErrors.length) {
+            return res.status(400).json({
+                message: 'Invalid quotation data',
+                errors: validationErrors
+            })
+        }
 
-        if (!packageId || !quotationDetails) {
-            return res.status(400).json({ message: "Missing required fields" })
+        if (!userId) {
+            return res.status(401).json({ message: 'Authentication is required.' })
+        }
+
+        const packageData = await PackageModel.findById(packageId).select('_id')
+        if (!packageData) {
+            return res.status(404).json({ message: 'Package not found.' })
         }
 
         const newQuotation = await QuotationModel.create({
             packageId,
             userId,
-            quotationDetails,
+            quotationDetails: {
+                ...quotationDetails,
+                travelers: {
+                    adult: quotationDetails.travelers.adult,
+                    child: quotationDetails.travelers.child,
+                    infant: quotationDetails.travelers.infant
+                },
+                preferredAirlines: quotationDetails.preferredAirlines.trim(),
+                preferredHotels: quotationDetails.preferredHotels.trim(),
+                preferredDates: quotationDetails.preferredDates.trim(),
+                itineraryNotes: quotationDetails.itineraryNotes.map((note) => note.trim()),
+                additionalComments: quotationDetails.additionalComments?.trim() || ''
+            },
             reference: generateQuotationReference(),
             status: 'Pending'
         })
-
-        const packageName = await QuotationModel.findById(packageId).select('packageName')
 
         logAction('QUOTATION_CREATED', userId, { "Quotation Created: ": `Reference: ${newQuotation.reference}` })
 

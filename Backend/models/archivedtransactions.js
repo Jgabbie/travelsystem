@@ -8,6 +8,7 @@ const ArchivedTransactionSchema = new mongoose.Schema({
     packageId: { type: mongoose.Schema.Types.ObjectId, ref: 'packages' },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
     invoiceNumber: { type: String },
+    customerName: { type: String, trim: true, maxlength: 100 },
     reference: { type: String, required: true },
     amount: { type: Number, required: true },
     method: { type: String, required: true },

@@ -29,6 +29,36 @@ const normalizeUsername = value => {
         : "";
 };
 
+const isValidEmail = email =>
+    email.length <= 254 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+
+const isValidUsername = username =>
+    /^[A-Za-z0-9]{8,20}$/.test(username);
+
+const isValidPersonName = name =>
+    name.length >= 2 &&
+    name.length <= 50 &&
+    /^[\p{L}][\p{L} .'-]*$/u.test(name);
+
+const isValidPhone = phone =>
+    /^09\d{9}$/.test(phone);
+
+const isValidPassword = password =>
+    password.length >= 8 &&
+    password.length <= 128 &&
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password) &&
+    /\d/.test(password) &&
+    /[^\w\s]|_/.test(password);
+
+const isValidOtp = otp =>
+    /^\d{6}$/.test(otp);
+
+const isValidResetToken = token =>
+    token.length >= 20 &&
+    token.length <= 4096;
+
 const hashToken = token => {
     return crypto
         .createHash("sha256")
@@ -142,45 +172,63 @@ const createVerificationLink = async (email, token) => {
 
 
 const signupUser = async (req, res) => {
-    const username = normalizeUsername(req.body.username);
+    const body = req.body && typeof req.body === "object" ? req.body : {};
+    const username = normalizeUsername(body.username);
     const firstname =
-        typeof req.body.firstname === "string"
-            ? req.body.firstname.trim()
+        typeof body.firstname === "string"
+            ? body.firstname.trim()
             : "";
 
     const lastname =
-        typeof req.body.lastname === "string"
-            ? req.body.lastname.trim()
+        typeof body.lastname === "string"
+            ? body.lastname.trim()
             : "";
 
-    const email = normalizeEmail(req.body.email);
+    const email = normalizeEmail(body.email);
 
     const password =
-        typeof req.body.password === "string"
-            ? req.body.password
+        typeof body.password === "string"
+            ? body.password
             : "";
 
     const phone =
-        typeof req.body.phone === "string"
-            ? req.body.phone.replace(/\D/g, "")
+        typeof body.phone === "string"
+            ? body.phone.replace(/\D/g, "")
             : "";
 
-    if (
-        !username ||
-        !firstname ||
-        !lastname ||
-        !email ||
-        !password ||
-        !phone
-    ) {
+    if (!username || !firstname || !lastname || !email || !password || !phone) {
         return res.status(400).json({
             message: "All fields are required"
         });
     }
 
-    if (password.length < 8) {
+    if (!isValidUsername(username)) {
         return res.status(400).json({
-            message: "Password must contain at least 8 characters"
+            message: "Username must be 8-20 characters and contain only letters and numbers"
+        });
+    }
+
+    if (!isValidPersonName(firstname) || !isValidPersonName(lastname)) {
+        return res.status(400).json({
+            message: "Names must be 2-50 characters and contain only valid name characters"
+        });
+    }
+
+    if (!isValidEmail(email)) {
+        return res.status(400).json({
+            message: "Please provide a valid email address"
+        });
+    }
+
+    if (!isValidPhone(phone)) {
+        return res.status(400).json({
+            message: "Phone number must contain 11 digits and start with 09"
+        });
+    }
+
+    if (!isValidPassword(password)) {
+        return res.status(400).json({
+            message: "Password must be 8-128 characters and contain uppercase, lowercase, number, and special characters"
         });
     }
 
@@ -257,18 +305,26 @@ const signupUser = async (req, res) => {
 
 //login function
 const loginUser = async (req, res) => {
-    const { username, password } = req.body;
+    const body = req.body && typeof req.body === "object" ? req.body : {};
     await connectToDatabase();
     try {
-        const login = typeof req.body.username === "string"
-            ? req.body.username.trim()
+        const login = typeof body.username === "string"
+            ? body.username.trim()
             : "";
 
-        const password = typeof req.body.password === "string"
-            ? req.body.password
+        const password = typeof body.password === "string"
+            ? body.password
             : "";
+
+        if (!login || !password) {
+            return res.status(400).json({ message: "Username and password are required" });
+        }
 
         const isEmail = login.includes("@");
+        if ((isEmail && !isValidEmail(normalizeEmail(login))) ||
+            (!isEmail && !isValidUsername(normalizeUsername(login)))) {
+            return res.status(400).json({ message: "Invalid login credentials format" });
+        }
 
         const user = await UserModel.findOne(
             isEmail
@@ -290,7 +346,7 @@ const loginUser = async (req, res) => {
 
         const matchPass = await bcrypt.compare(password, user.hashedPassword)
         if (!matchPass) {
-            user.loginAttempts += 1;
+            user.loginAttempts = (user.loginAttempts || 0) + 1;
 
             if (user.loginAttempts >= 3) {
                 user.loginBlockedUntil = Date.now() + 5 * 60 * 1000; // 5 minutes
@@ -300,7 +356,7 @@ const loginUser = async (req, res) => {
             await user.save();
 
             await logAction("LOGIN_FAILED", user._id, {
-                Username: username
+                Username: login
             });
 
             return res.status(401).json({
@@ -386,7 +442,13 @@ const loginUser = async (req, res) => {
 
 //allow login function (after OTP verification)
 const allowLogin = async (req, res) => {
-    const { email, otp } = req.body
+    const body = req.body && typeof req.body === "object" ? req.body : {};
+    const email = normalizeEmail(body.email);
+    const otp = typeof body.otp === "string" ? body.otp.trim() : "";
+
+    if (!isValidEmail(email) || !isValidOtp(otp)) {
+        return res.status(400).json({ message: "A valid email and 6-digit OTP are required" });
+    }
 
     const user = await UserModel.findOne({ email })
     if (!user) {
@@ -404,7 +466,7 @@ const allowLogin = async (req, res) => {
     const matchOtp = await bcrypt.compare(otp, user.verifyOtp)
 
     if (!matchOtp) {
-        user.otpAttempts += 1;
+        user.otpAttempts = (user.otpAttempts || 0) + 1;
 
         if (user.otpAttempts >= 3) {
             user.otpBlockedUntil = Date.now() + 5 * 60 * 1000
@@ -623,7 +685,30 @@ const refreshToken = async (req, res) => {
 
 //check duplicates function
 const checkDups = async (req, res) => {
-    const { username, email, phone } = req.body
+    const body = req.body && typeof req.body === "object" ? req.body : {};
+    const username = normalizeUsername(body.username);
+    const email = normalizeEmail(body.email);
+    const phone = typeof body.phone === "string"
+        ? body.phone.replace(/\D/g, "")
+        : "";
+
+    const suppliedFields = [username, email, phone].filter(Boolean).length;
+    if (suppliedFields !== 1) {
+        return res.status(400).json({
+            message: "Provide exactly one username, email, or phone number"
+        });
+    }
+
+    if (username && !isValidUsername(username)) {
+        return res.status(400).json({ message: "Invalid username format" });
+    }
+    if (email && !isValidEmail(email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+    }
+    if (phone && !isValidPhone(phone)) {
+        return res.status(400).json({ message: "Invalid phone number format" });
+    }
+
     await connectToDatabase();
     try {
         if (username) {
@@ -758,8 +843,12 @@ const logoutUser = async (req, res) => {
 //send verification OTP function
 const sendVerifyOtp = async (req, res) => {
     try {
-        const { email } = req.body
-        const user = await UserModel.findOne({ email: email })
+        const email = normalizeEmail(req.body?.email);
+        if (!isValidEmail(email)) {
+            return res.status(400).json({ message: "A valid email is required" });
+        }
+
+        const user = await UserModel.findOne({ email })
 
         if (!user) {
             return res.status(405).json({ message: "User not found" })
@@ -838,9 +927,9 @@ const sendVerifyOtp = async (req, res) => {
 
 
 const verifyEmail = async (req, res) => {
-    const email = normalizeEmail(req.body.email);
+    const email = normalizeEmail(req.body?.email);
     const token =
-        typeof req.body.token === "string"
+        typeof req.body?.token === "string"
             ? req.body.token.trim()
             : "";
 
@@ -1009,11 +1098,11 @@ const isUserVerified = async (req, res) => {
 
 
 const sendResetOtp = async (req, res) => {
-    const email = normalizeEmail(req.body.email);
+    const email = normalizeEmail(req.body?.email);
 
-    if (!email) {
+    if (!isValidEmail(email)) {
         return res.status(400).json({
-            message: "Email is required"
+            message: "A valid email is required"
         });
     }
 
@@ -1075,7 +1164,16 @@ const sendResetOtp = async (req, res) => {
 
 // check reset OTP function
 const checkResetOtp = async (req, res) => {
-    const { email, otp } = req.body
+    const email = normalizeEmail(req.body?.email);
+    const otp = typeof req.body?.otp === "string"
+        ? req.body.otp.trim()
+        : "";
+
+    if (!isValidEmail(email) || !isValidOtp(otp)) {
+        return res.status(400).json({
+            message: "A valid email and 6-digit OTP are required"
+        });
+    }
 
     const user = await UserModel.findOne({ email })
     if (!user) {
@@ -1174,24 +1272,24 @@ const checkResetOtp = async (req, res) => {
 
 const resetPassword = async (req, res) => {
     const token =
-        typeof req.body.token === "string"
+        typeof req.body?.token === "string"
             ? req.body.token.trim()
             : "";
 
     const newPassword =
-        typeof req.body.newPassword === "string"
+        typeof req.body?.newPassword === "string"
             ? req.body.newPassword
             : "";
 
-    if (!token || !newPassword) {
+    if (!isValidResetToken(token) || !newPassword) {
         return res.status(400).json({
             message: "Reset token and new password are required"
         });
     }
 
-    if (newPassword.length < 8) {
+    if (!isValidPassword(newPassword)) {
         return res.status(400).json({
-            message: "Password must contain at least 8 characters"
+            message: "Password must be 8-128 characters and contain uppercase, lowercase, number, and special characters"
         });
     }
 

@@ -4,6 +4,7 @@ const TransactionSchema = new mongoose.Schema({
     bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'bookings', required: false }, // make optional
     applicationId: { type: mongoose.Schema.Types.ObjectId, ref: 'passportApplications', required: false },
     applicationType: { type: String, required: false }, // ADD THIS
+    customerName: { type: String, required: true, trim: true, maxlength: 100 },
     packageId: { type: mongoose.Schema.Types.ObjectId, ref: 'packages', required: false },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
     invoiceNumber: { type: String, required: false },
