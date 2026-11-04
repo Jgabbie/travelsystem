@@ -11,6 +11,7 @@ import ArchivedBookingModel from '../models/archivedbookings.js';
 import ArchivedCancellationModel from '../models/archivedcancellations.js';
 import ArchivedPassportModel from '../models/archivedpassportapplications.js';
 import ArchivedVisaModel from '../models/archivedvisaapplications.js';
+import UserModel from '../models/user.js';
 
 
 //upload to cloudinary function
@@ -133,11 +134,11 @@ const userOwnsSensitiveFile = async (userId, publicId) => {
         archivedPassportApplications,
         archivedVisaApplications,
     ] = await Promise.all([
-        BookingModel.find({ userId }).select('passportFiles photoFiles').lean(),
+        BookingModel.find({ userId }).select('passportFiles photoFiles travelers').lean(),
         CancellationModel.find({ userId }).select('imageProof').lean(),
         PassportModel.find({ userId }).select('submittedDocuments').lean(),
         VisaModel.find({ userId }).select('submittedDocuments').lean(),
-        ArchivedBookingModel.find({ userId }).select('passportFiles photoFiles').lean(),
+        ArchivedBookingModel.find({ userId }).select('passportFiles photoFiles travelers').lean(),
         ArchivedCancellationModel.find({ userId }).select('imageProof').lean(),
         ArchivedPassportModel.find({ userId }).select('submittedDocuments').lean(),
         ArchivedVisaModel.find({ userId }).select('submittedDocuments').lean(),
@@ -162,7 +163,21 @@ const assertPrivateFileOwnership = async (req, res, publicId) => {
         return true;
     }
 
-    if (!req.userId || !(await userOwnsSensitiveFile(req.userId, publicId))) {
+    if (!req.userId) {
+        res.status(403).json({
+            message: 'You are not authorized to access this file',
+        });
+        return false;
+    }
+
+    const authenticatedUser = await UserModel.findById(req.userId)
+        .select('role')
+        .lean();
+
+    const isStaff = ['Admin', 'Employee'].includes(authenticatedUser?.role);
+    const isOwner = await userOwnsSensitiveFile(req.userId, publicId);
+
+    if (!isStaff && !isOwner) {
         res.status(403).json({
             message: 'You are not authorized to access this file',
         });
