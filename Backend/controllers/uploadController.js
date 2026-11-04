@@ -134,11 +134,11 @@ const userOwnsSensitiveFile = async (userId, publicId) => {
         archivedPassportApplications,
         archivedVisaApplications,
     ] = await Promise.all([
-        BookingModel.find({ userId }).select('passportFiles photoFiles travelers').lean(),
+        BookingModel.find({ userId }).select('passportFiles photoFiles travelers bookingDetails').lean(),
         CancellationModel.find({ userId }).select('imageProof').lean(),
         PassportModel.find({ userId }).select('submittedDocuments').lean(),
         VisaModel.find({ userId }).select('submittedDocuments').lean(),
-        ArchivedBookingModel.find({ userId }).select('passportFiles photoFiles travelers').lean(),
+        ArchivedBookingModel.find({ userId }).select('passportFiles photoFiles travelers bookingDetails').lean(),
         ArchivedCancellationModel.find({ userId }).select('imageProof').lean(),
         ArchivedPassportModel.find({ userId }).select('submittedDocuments').lean(),
         ArchivedVisaModel.find({ userId }).select('submittedDocuments').lean(),
@@ -174,7 +174,9 @@ const assertPrivateFileOwnership = async (req, res, publicId) => {
         .select('role')
         .lean();
 
-    const isStaff = ['Admin', 'Employee'].includes(authenticatedUser?.role);
+    const isStaff = ['admin', 'employee'].includes(
+        String(authenticatedUser?.role || '').trim().toLowerCase()
+    );
     const isOwner = await userOwnsSensitiveFile(req.userId, publicId);
 
     if (!isStaff && !isOwner) {
