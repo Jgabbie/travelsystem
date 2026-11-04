@@ -38,6 +38,9 @@ export default function CancellationRequests() {
     const [dateFilter, setDateFilter] = useState(null)
     const [isViewModalOpen, setIsViewModalOpen] = useState(false)
     const [selectedRequest, setSelectedRequest] = useState(null)
+    const [proofObjectUrl, setProofObjectUrl] = useState(null)
+    const [proofContentType, setProofContentType] = useState('')
+    const [proofLoading, setProofLoading] = useState(false)
     const [loading, setLoading] = useState(false)
     const [actionLoading, setActionLoading] = useState(false);
     const [actionType, setActionType] = useState("");
@@ -58,6 +61,53 @@ export default function CancellationRequests() {
 
     const [notificationApi, notificationContextHolder] =
         notification.useNotification();
+
+    useEffect(() => {
+        let objectUrl = null;
+
+        const loadProof = async () => {
+            setProofObjectUrl(null);
+            setProofContentType('');
+
+            if (!selectedRequest?.imageProof) {
+                return;
+            }
+
+            setProofLoading(true);
+
+            try {
+                const response = await fetch(selectedRequest.imageProof, {
+                    credentials: 'include',
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Unable to load proof (${response.status})`);
+                }
+
+                const blob = await response.blob();
+                objectUrl = URL.createObjectURL(blob);
+                setProofObjectUrl(objectUrl);
+                setProofContentType(blob.type);
+            } catch (error) {
+                console.error('Unable to load cancellation proof:', error);
+                notificationApi.error({
+                    title: 'Unable to load cancellation proof',
+                    description: 'The proof could not be retrieved for this session.',
+                    placement: 'topRight',
+                });
+            } finally {
+                setProofLoading(false);
+            }
+        };
+
+        loadProof();
+
+        return () => {
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl);
+            }
+        };
+    }, [selectedRequest, notificationApi]);
 
     //show confirm modal function
     const showConfirmModal = (record, type) => {
@@ -677,17 +727,15 @@ export default function CancellationRequests() {
                                 minHeight: 600,
                             }}
                         >
-                            {selectedRequest?.imageProof ? (
+                            {proofLoading ? (
+                                <Spin />
+                            ) : proofObjectUrl ? (
                                 (() => {
-                                    const proof = selectedRequest.imageProof;
-                                    const isPdf =
-                                        proof.toLowerCase().includes(".pdf") ||
-                                        proof.toLowerCase().includes("/pdf") ||
-                                        proof.toLowerCase().includes("application/pdf");
+                                    const isPdf = proofContentType === "application/pdf";
 
                                     return isPdf ? (
                                         <iframe
-                                            src={proof}
+                                            src={proofObjectUrl}
                                             title="Cancellation Proof"
                                             width="80%"
                                             height="600"
@@ -698,7 +746,7 @@ export default function CancellationRequests() {
                                         />
                                     ) : (
                                         <Image
-                                            src={proof}
+                                            src={proofObjectUrl}
                                             alt="Cancellation Proof"
                                             preview
                                             style={{
@@ -710,6 +758,10 @@ export default function CancellationRequests() {
                                         />
                                     );
                                 })()
+                            ) : selectedRequest?.imageProof ? (
+                                <div style={{ color: "#999" }}>
+                                    Unable to load proof.
+                                </div>
                             ) : (
                                 <div
                                     style={{
@@ -733,8 +785,12 @@ export default function CancellationRequests() {
                                 onClick={async () => {
                                     try {
                                         const response = await fetch(selectedRequest.imageProof, {
-                                            mode: "cors",
+                                            credentials: "include",
                                         });
+
+                                        if (!response.ok) {
+                                            throw new Error(`Unable to download proof (${response.status})`);
+                                        }
 
                                         const blob = await response.blob();
                                         const url = window.URL.createObjectURL(blob);
