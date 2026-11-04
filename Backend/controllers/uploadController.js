@@ -3,6 +3,14 @@ import cloudinary from '../config/cloudinary.js';
 import https from 'https';
 import streamifier from 'streamifier';
 import { upload } from '../middleware/uploadFile.js';
+import BookingModel from '../models/booking.js';
+import CancellationModel from '../models/cancellations.js';
+import PassportModel from '../models/passport.js';
+import VisaModel from '../models/visas.js';
+import ArchivedBookingModel from '../models/archivedbookings.js';
+import ArchivedCancellationModel from '../models/archivedcancellations.js';
+import ArchivedPassportModel from '../models/archivedpassportapplications.js';
+import ArchivedVisaModel from '../models/archivedvisaapplications.js';
 
 
 //upload to cloudinary function
@@ -40,7 +48,11 @@ const buildPrivateAccessUrl = (req, uploadResult) => {
         return null;
     }
 
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const baseUrl = (
+        process.env.BACKEND_URL ||
+        process.env.API_URL ||
+        'https://api.mrctravelandtours.com'
+    ).replace(/\/+$/, '');
     const params = new URLSearchParams({
         publicId: uploadResult.public_id,
         resourceType: uploadResult.resource_type || 'image',
@@ -52,6 +64,112 @@ const buildPrivateAccessUrl = (req, uploadResult) => {
     }
 
     return `${baseUrl}/api/upload/private-file?${params.toString()}`;
+};
+
+const sensitiveFolders = new Set([
+    'booking-documents',
+    'cancellation-proofs',
+    'passport-requirements',
+    'visa-requirements',
+]);
+
+const isSensitivePublicId = (publicId) =>
+    [...sensitiveFolders].some((folder) => publicId.startsWith(`${folder}/`));
+
+const valuesContainPublicId = (value, publicId) => {
+    if (typeof value === 'string') {
+        if (value === publicId) {
+            return true;
+        }
+
+        try {
+            const fileUrl = new URL(value);
+            const proxyPublicId = fileUrl.searchParams.get('publicId');
+            if (proxyPublicId === publicId) {
+                return true;
+            }
+
+            const pathname = fileUrl.pathname;
+            const uploadIndex = pathname.indexOf('/upload/');
+            if (uploadIndex === -1) {
+                return false;
+            }
+
+            const uploadedPath = pathname.slice(uploadIndex + '/upload/'.length);
+            const pathParts = uploadedPath.split('/');
+            const versionIndex = pathParts.findIndex((part) => /^v\d+$/.test(part));
+            const publicPath = (versionIndex >= 0
+                ? pathParts.slice(versionIndex + 1)
+                : pathParts
+            ).join('/');
+
+            return publicPath.replace(/\.[^/.]+$/, '') === publicId;
+        } catch {
+            return false;
+        }
+    }
+
+    if (Array.isArray(value)) {
+        return value.some((item) => valuesContainPublicId(item, publicId));
+    }
+
+    if (value && typeof value === 'object') {
+        return Object.values(value).some((item) =>
+            valuesContainPublicId(item, publicId)
+        );
+    }
+
+    return false;
+};
+
+const userOwnsSensitiveFile = async (userId, publicId) => {
+    const [
+        bookings,
+        cancellations,
+        passportApplications,
+        visaApplications,
+        archivedBookings,
+        archivedCancellations,
+        archivedPassportApplications,
+        archivedVisaApplications,
+    ] = await Promise.all([
+        BookingModel.find({ userId }).select('passportFiles photoFiles').lean(),
+        CancellationModel.find({ userId }).select('imageProof').lean(),
+        PassportModel.find({ userId }).select('submittedDocuments').lean(),
+        VisaModel.find({ userId }).select('submittedDocuments').lean(),
+        ArchivedBookingModel.find({ userId }).select('passportFiles photoFiles').lean(),
+        ArchivedCancellationModel.find({ userId }).select('imageProof').lean(),
+        ArchivedPassportModel.find({ userId }).select('submittedDocuments').lean(),
+        ArchivedVisaModel.find({ userId }).select('submittedDocuments').lean(),
+    ]);
+
+    return [
+        ...bookings,
+        ...cancellations,
+        ...passportApplications,
+        ...visaApplications,
+        ...archivedBookings,
+        ...archivedCancellations,
+        ...archivedPassportApplications,
+        ...archivedVisaApplications,
+    ].some((record) =>
+        Object.values(record).some((value) => valuesContainPublicId(value, publicId))
+    );
+};
+
+const assertPrivateFileOwnership = async (req, res, publicId) => {
+    if (!isSensitivePublicId(publicId)) {
+        return true;
+    }
+
+    if (!req.userId || !(await userOwnsSensitiveFile(req.userId, publicId))) {
+        res.status(403).json({
+            message: 'You are not authorized to access this file',
+        });
+        return false;
+    }
+
+    return true;
 };
 
 
@@ -89,7 +207,7 @@ const uploadBookingDocuments = async (req, res) => {
 
     try {
         const uploadPromises = req.files.map(file =>
-            uploadBufferToCloudinary(file, 'booking-documents').then(result => result?.secure_url || buildPrivateAccessUrl(req, result))
+            uploadBufferToCloudinary(file, 'booking-documents').then(result => buildPrivateAccessUrl(req, result))
         );
 
         const uploadedUrls = await Promise.all(uploadPromises);
@@ -122,7 +240,7 @@ const uploadPackageImage = async (req, res) => {
 
         return res.status(200).json({
             message: 'Files uploaded successfully.',
-            urls: uploadedResults.map(result => result?.secure_url || buildPrivateAccessUrl(req, result))
+            urls: uploadedResults.map(result => result?.secure_url)
         });
     } catch (err) {
         console.error(err);
@@ -233,7 +351,7 @@ const uploadPassportRequirements = async (req, res) => {
 
         return res.status(200).json({
             message: 'Files uploaded successfully.',
-            urls: uploadedResults.map(result => result?.secure_url || buildPrivateAccessUrl(req, result))
+            urls: uploadedResults.map(result => buildPrivateAccessUrl(req, result))
         });
 
     } catch (err) {
@@ -259,7 +377,7 @@ const uploadVisaRequirements = async (req, res) => {
 
         return res.status(200).json({
             message: 'Files uploaded successfully.',
-            urls: uploadedResults.map(result => result?.secure_url || buildPrivateAccessUrl(req, result))
+            urls: uploadedResults.map(result => buildPrivateAccessUrl(req, result))
         });
 
     } catch (err) {
@@ -279,7 +397,7 @@ const uploadCancellationProof = async (req, res) => {
     try {
 
         const uploadResult = await uploadBufferToCloudinary(req.file, 'cancellation-proofs');
-        const publicUrl = uploadResult?.secure_url || buildPrivateAccessUrl(req, uploadResult);
+        const publicUrl = buildPrivateAccessUrl(req, uploadResult);
 
         return res.status(200).json({
             message: 'File uploaded successfully.',
@@ -303,6 +421,10 @@ const viewQuotationPdf = async (req, res) => {
 
         if (!publicId) {
             return res.status(400).json({ message: 'publicId is required' });
+        }
+
+        if (!(await assertPrivateFileOwnership(req, res, publicId))) {
+            return;
         }
 
         const url = cloudinary.utils.private_download_url(publicId, format, {
