@@ -175,16 +175,22 @@ const assertPrivateFileOwnership = async (req, res, publicId) => {
         return false;
     }
 
-    const authenticatedUser = await UserModel.findById(req.userId)
+    const authenticatedUser = req.authUser || await UserModel.findById(req.userId)
         .select('role')
         .lean();
 
-    const isStaff = ['admin', 'employee'].includes(
-        String(authenticatedUser?.role || '').trim().toLowerCase()
-    );
+    const isStaffRole = (role) =>
+        ['admin', 'employee'].includes(
+            String(role || '').trim().toLowerCase()
+        );
+
+    if (isStaffRole(authenticatedUser?.role)) {
+        return true;
+    }
+
     const isOwner = await userOwnsSensitiveFile(req.userId, publicId);
 
-    if (!isStaff && !isOwner) {
+    if (!isOwner) {
         res.status(403).json({
             message: 'You are not authorized to access this file',
         });
