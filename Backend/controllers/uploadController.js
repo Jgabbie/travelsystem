@@ -90,18 +90,18 @@ const valuesContainPublicId = (value, publicId) => {
             }
 
             const pathname = fileUrl.pathname;
-            const uploadIndex = pathname.indexOf('/upload/');
-            if (uploadIndex === -1) {
+            const publicIdFolder = [...sensitiveFolders].find((folder) =>
+                pathname.includes(`/${folder}/`)
+            );
+            if (!publicIdFolder) {
                 return false;
             }
 
-            const uploadedPath = pathname.slice(uploadIndex + '/upload/'.length);
-            const pathParts = uploadedPath.split('/');
-            const versionIndex = pathParts.findIndex((part) => /^v\d+$/.test(part));
-            const publicPath = (versionIndex >= 0
-                ? pathParts.slice(versionIndex + 1)
-                : pathParts
-            ).join('/');
+            const publicPath = pathname
+                .slice(pathname.indexOf(`/${publicIdFolder}/`) + 1)
+                .split('/')[0] === publicIdFolder
+                ? pathname.slice(pathname.indexOf(`/${publicIdFolder}/`) + 1)
+                : '';
 
             return publicPath.replace(/\.[^/.]+$/, '') === publicId;
         } catch {
