@@ -75,18 +75,25 @@ const sensitiveFolders = new Set([
 ]);
 
 const isSensitivePublicId = (publicId) =>
-    [...sensitiveFolders].some((folder) => publicId.startsWith(`${folder}/`));
+    [...sensitiveFolders].some((folder) =>
+        decodeURIComponent(publicId).startsWith(`${folder}/`)
+    );
 
 const valuesContainPublicId = (value, publicId) => {
-    if (typeof value === 'string') {
-        if (value === publicId) {
-            return true;
-        }
+    const normalizedPublicId = decodeURIComponent(publicId).replace(/\.[^/.]+$/, '');
 
+    if (typeof value === 'string') {
         try {
+            if (decodeURIComponent(value).replace(/\.[^/.]+$/, '') === normalizedPublicId) {
+                return true;
+            }
+
             const fileUrl = new URL(value);
             const proxyPublicId = fileUrl.searchParams.get('publicId');
-            if (proxyPublicId === publicId) {
+            if (
+                proxyPublicId &&
+                decodeURIComponent(proxyPublicId).replace(/\.[^/.]+$/, '') === normalizedPublicId
+            ) {
                 return true;
             }
 
@@ -98,13 +105,11 @@ const valuesContainPublicId = (value, publicId) => {
                 return false;
             }
 
-            const publicPath = pathname
-                .slice(pathname.indexOf(`/${publicIdFolder}/`) + 1)
-                .split('/')[0] === publicIdFolder
-                ? pathname.slice(pathname.indexOf(`/${publicIdFolder}/`) + 1)
-                : '';
+            const publicPath = pathname.slice(
+                pathname.indexOf(`/${publicIdFolder}/`) + 1
+            );
 
-            return publicPath.replace(/\.[^/.]+$/, '') === publicId;
+            return decodeURIComponent(publicPath).replace(/\.[^/.]+$/, '') === normalizedPublicId;
         } catch {
             return false;
         }
