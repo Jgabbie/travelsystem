@@ -44,6 +44,10 @@ const isValidDate = value =>
     dayjs(value).isValid() &&
     dayjs(value).format('YYYY-MM-DD') === value;
 
+const isValidAppointmentTime = value =>
+    typeof value === 'string' &&
+    /^(?:0?[1-9]|1[0-2]):(?:00|30) (?:AM|PM)$/.test(value);
+
 const isValidEmail = value =>
     typeof value === 'string' &&
     value.length <= 254 &&
@@ -63,6 +67,10 @@ const validateVisaApplicationInput = body => {
         errors.push('preferredDate must be a valid date in YYYY-MM-DD format');
     } else if (dayjs(payload.preferredDate).isBefore(dayjs().add(14, 'day'), 'day')) {
         errors.push('preferredDate must be at least 14 days from today');
+    }
+
+    if (!isValidAppointmentTime(payload.preferredTime)) {
+        errors.push('preferredTime must be a valid appointment time in h:mm A format');
     }
 
     if (typeof payload.purposeOfTravel !== 'string' ||
@@ -1120,6 +1128,7 @@ const applyVisa = async (req, res) => {
 
         const serviceName = body.serviceName.trim();
         const preferredDate = body.preferredDate;
+        const preferredTime = body.preferredTime;
         const purposeOfTravel = body.purposeOfTravel.trim();
         const status = typeof body.status === 'string' ? body.status : '';
         const initialStatus = status.trim() || 'Application Submitted';
@@ -1147,6 +1156,7 @@ const applyVisa = async (req, res) => {
             serviceName: serviceName,
             applicantName,
             preferredDate,
+            preferredTime,
             purposeOfTravel,
             status: initialStatus,
             statusHistory: [{
@@ -1962,6 +1972,7 @@ const archiveVisaApplication = async (req, res) => {
             serviceName: application.serviceName,
             applicantName: application.applicantName,
             preferredDate: application.preferredDate,
+            preferredTime: application.preferredTime,
             purposeOfTravel: application.purposeOfTravel,
             applicationNumber: application.applicationNumber,
             suggestedAppointmentSchedules: application.suggestedAppointmentSchedules,
@@ -2120,6 +2131,7 @@ const restoreArchivedVisaApplication = async (req, res) => {
             serviceName: archivedApplication.serviceName,
             applicantName: archivedApplication.applicantName,
             preferredDate: archivedApplication.preferredDate,
+            preferredTime: archivedApplication.preferredTime,
             purposeOfTravel: archivedApplication.purposeOfTravel,
             suggestedAppointmentSchedules: archivedApplication.suggestedAppointmentSchedules,
             suggestedAppointmentScheduleChosen: archivedApplication.suggestedAppointmentScheduleChosen,

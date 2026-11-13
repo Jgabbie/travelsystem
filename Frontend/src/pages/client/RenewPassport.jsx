@@ -275,70 +275,6 @@ export default function RenewPassport({ isRenewal = true }) {
     const validate = () => {
         const nextErrors = {};
 
-        requiredFields.forEach(([key, label]) => {
-            if (!String(details[key] || '').trim()) {
-                nextErrors[key] = `${label} is required.`;
-            }
-        });
-
-        if (isRenewal) {
-            [
-                ['oldPassportNumber', 'Previous passport number'],
-                ['oldPassportDateOfIssue', 'Previous passport date of issue'],
-                ['oldPassportIssuingAuthority', 'Previous passport issuing authority']
-            ].forEach(([key, label]) => {
-                if (!String(details[key] || '').trim()) {
-                    nextErrors[key] = `${label} is required.`;
-                }
-            });
-        }
-
-        if (
-            details.emailAddress &&
-            !emailPattern.test(details.emailAddress.trim())
-        ) {
-            nextErrors.emailAddress = 'Enter a valid email address.';
-        }
-
-        lettersOnlyFields.forEach(key => {
-            const value = String(details[key] || '').trim();
-
-            if (value && !lettersOnlyPattern.test(value)) {
-                nextErrors[key] =
-                    'Use letters and spaces only.';
-            }
-        });
-
-        [
-            'phoneNumber',
-            'mobileNumber',
-            'companionContactNumber',
-            'emergencyContactNumber',
-            'officeNumber'
-        ].forEach(key => {
-            if (
-                details[key] &&
-                !phonePattern.test(details[key].trim())
-            ) {
-                nextErrors[key] = 'Enter exactly 11 digits starting with 09.';
-            }
-        });
-
-        if (details.zipCode && !zipCodePattern.test(details.zipCode.trim())) {
-            nextErrors.zipCode = 'Enter a valid 4-digit ZIP code.';
-        }
-
-        if (details.dateOfBirth) {
-            const dateOfBirth = dayjs(details.dateOfBirth);
-
-            if (!dateOfBirth.isValid()) {
-                nextErrors.dateOfBirth = 'Enter a valid date of birth.';
-            } else if (dateOfBirth.isAfter(dayjs(), 'day')) {
-                nextErrors.dateOfBirth =
-                    'Date of birth cannot be in the future.';
-            }
-        }
-
         if (!location) {
             nextErrors.location = 'Please select a DFA location.';
         }
@@ -390,9 +326,6 @@ export default function RenewPassport({ isRenewal = true }) {
                 preferredDate: preferredDate.format('YYYY-MM-DD'),
                 preferredTime: preferredTime.format('h:mm A'),
                 applicationType,
-                passportDetails: {
-                    ...details
-                }
             });
 
             setSuccessOpen(true);
@@ -590,7 +523,8 @@ export default function RenewPassport({ isRenewal = true }) {
                             </div>
                         </section>
 
-                        {section('Personal Information', <>
+                        {/* Temporarily disabled while the shortened appointment form is in use. */}
+                        {false && (<>{section('Personal Information', <>
                             <div className="passport-subsection">Contact Information</div>
                             {field('phoneNumber', 'Phone Number', 'tel', true)}
                             {field('mobileNumber', 'Mobile Number', 'tel', true)}
@@ -758,10 +692,10 @@ export default function RenewPassport({ isRenewal = true }) {
                             {field('occupation', 'Occupation', 'text', true)}
                             {field('officeNumber', 'Office Number', 'tel')}
                             {field('officeAddress', 'Office Address')}
-                        </>)}
+                        </>)}</>)}
 
                         <section className="passport-panel">
-                            <h3>Appointment Schedule</h3>
+                            <h3>Temporary Appointment Details</h3>
 
                             <div className="passport-form passport-details-grid">
                                 <div className="form-group">
@@ -788,7 +722,7 @@ export default function RenewPassport({ isRenewal = true }) {
 
                                 <div className="form-group">
                                     <label className="passport-label">
-                                        Appointment Date <span style={{ color: '#d00' }}>*</span>
+                                        Preferred Date <span style={{ color: '#d00' }}>*</span>
                                     </label>
                                     <DatePicker
                                         className="passport-input"
@@ -804,7 +738,7 @@ export default function RenewPassport({ isRenewal = true }) {
 
                                 <div className="form-group">
                                     <label className="passport-label">
-                                        Appointment Time <span style={{ color: '#d00' }}>*</span>
+                                        Preferred Time <span style={{ color: '#d00' }}>*</span>
                                     </label>
                                     <TimePicker
                                         className="passport-input"

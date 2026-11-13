@@ -7,6 +7,7 @@ const ArchivedVisaApplicationSchema = new mongoose.Schema({
     serviceName: { type: String, required: true },
     applicantName: { type: String, required: true },
     preferredDate: { type: String, required: true },
+    preferredTime: { type: String, default: '' },
     purposeOfTravel: { type: String, required: true },
     applicationNumber: { type: String, required: true },
     suggestedAppointmentSchedules: { type: Array, default: [] },

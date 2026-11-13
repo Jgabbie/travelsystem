@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Input, Button, ConfigProvider, DatePicker, Modal } from 'antd'
+import { Input, Button, ConfigProvider, DatePicker, Modal, TimePicker } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -17,6 +17,7 @@ export default function ApplyVisa() {
     const [services, setServices] = useState([])
     const [selectedServiceId, setSelectedServiceId] = useState('')
     const [preferredDate, setPreferredDate] = useState('')
+    const [preferredTime, setPreferredTime] = useState('')
     const [purpose, setPurpose] = useState('')
 
     const { auth } = useAuth()
@@ -37,6 +38,7 @@ export default function ApplyVisa() {
     const [error, setError] = useState({
         selectedServiceId: '',
         preferredDate: '',
+        preferredTime: '',
         purpose: ''
     })
 
@@ -131,6 +133,7 @@ export default function ApplyVisa() {
         const newErrors = {
             selectedServiceId: '',
             preferredDate: '',
+            preferredTime: '',
             purpose: '',
         }
 
@@ -144,13 +147,17 @@ export default function ApplyVisa() {
             newErrors.preferredDate = 'Please select a preferred submission date'
         }
 
+        if (!preferredTime) {
+            newErrors.preferredTime = 'Please select a preferred appointment time'
+        }
+
         if (!purpose.trim()) {
             newErrors.purpose = 'Please provide your purpose of travel'
         }
 
         setError(newErrors)
 
-        if (newErrors.selectedServiceId || newErrors.preferredDate || newErrors.purpose) {
+        if (newErrors.selectedServiceId || newErrors.preferredDate || newErrors.preferredTime || newErrors.purpose) {
             return
         }
 
@@ -165,6 +172,7 @@ export default function ApplyVisa() {
             await apiFetch.post('/visa/apply', {
                 serviceName: selectedService?.visaName || selectedServiceId,
                 preferredDate,
+                preferredTime,
                 purposeOfTravel: purpose,
                 applicationType: 'Visa',
                 status: typeof steps[0] === 'string' ? steps[0] : (steps[0]?.title || '')
@@ -243,9 +251,11 @@ export default function ApplyVisa() {
                             setSentModalVisible(false)
                             setPurpose('')
                             setPreferredDate(null)
+                            setPreferredTime('')
                             setError({
                                 purpose: '',
                                 preferredDate: '',
+                                preferredTime: '',
                             })
                             window.location.reload()
                         }}
@@ -370,6 +380,24 @@ export default function ApplyVisa() {
                                                         className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
                                                     />
                                                     <p className="error-message">{error.preferredDate || ''}</p>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="passport-label">Preferred appointment time <span style={{ color: "#ff0000" }}>*</span></label>
+                                                    <TimePicker
+                                                        value={preferredTime ? dayjs(preferredTime, 'h:mm A') : null}
+                                                        inputReadOnly
+                                                        format="h:mm A"
+                                                        use12Hours
+                                                        showNow={false}
+                                                        minuteStep={30}
+                                                        disabledTime={() => ({
+                                                            disabledHours: () => Array.from({ length: 24 }, (_, hour) => hour).filter((hour) => hour < 8 || hour > 17)
+                                                        })}
+                                                        onChange={(time) => setPreferredTime(time ? time.format('h:mm A') : '')}
+                                                        className={`passport-input ${error.preferredTime ? 'input-error' : ''}`}
+                                                    />
+                                                    <p className="error-message">{error.preferredTime || ''}</p>
                                                 </div>
 
                                                 <div className="form-group">
