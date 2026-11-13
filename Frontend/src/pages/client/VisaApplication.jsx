@@ -1281,7 +1281,7 @@ export default function VisaApplication() {
                                                                 <Radio.Button
                                                                     value="paymongo"
                                                                     className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                                                    style={{ display: "none", flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                                    style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                                 >
                                                                     {method === "paymongo" && (
                                                                         <span className="payment-card-selected-tag">
@@ -1475,7 +1475,7 @@ export default function VisaApplication() {
                                                                 <Radio.Button
                                                                     value="paymongo"
                                                                     className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                                                    style={{ display: "none", flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                                    style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                                 >
 
                                                                     {method === "paymongo" && (
@@ -1673,7 +1673,7 @@ export default function VisaApplication() {
                                                                 <Radio.Button
                                                                     value="paymongo"
                                                                     className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                                                    style={{ display: "none", flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                                    style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                                 >
                                                                     {method === "paymongo" && (
                                                                         <span className="payment-card-selected-tag">
@@ -1835,8 +1835,7 @@ export default function VisaApplication() {
 
 
 
-                                                {/* Document uploads temporarily disabled. */}
-                                                {false && shouldShow && statusValue !== 'Documents Uploaded' && (
+                                                {shouldShow && statusValue !== 'Documents Uploaded' && (
                                                     <div style={{ border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff', marginTop: 32, marginBottom: 32 }}>
                                                         <h3 style={{ marginTop: 0 }}>Upload Requirements</h3>
                                                         {requirements.length === 0 && (

@@ -975,7 +975,7 @@ export default function QuotationsPaymentProcess() {
                                 <Radio.Button
                                     value="paymongo"
                                     className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                    style={{ display: "none", flex: 1, height: 'auto', padding: '20px' }}
+                                    style={{ flex: 1, height: 'auto', padding: '20px' }}
                                 >
                                     {method === "paymongo" && (
                                         <span className="payment-card-selected-tag">
@@ -1197,4 +1197,3 @@ export default function QuotationsPaymentProcess() {
         </div>
     )
 }
-
