@@ -695,7 +695,7 @@ export default function NewPassport({ isRenewal = false }) {
                             </>)}</>)}
 
                         <section className="passport-panel">
-                            <h3>Temporary Appointment Details</h3>
+                            <h3>Appointment Details</h3>
 
                             <div className="passport-form passport-details-grid">
                                 <div className="form-group">
@@ -759,11 +759,6 @@ export default function NewPassport({ isRenewal = false }) {
                                     )}
                                 </div>
                             </div>
-
-                            <p>
-                                Appointment date and time are preferences and remain subject
-                                to confirmation.
-                            </p>
                         </section>
 
                         <Button
