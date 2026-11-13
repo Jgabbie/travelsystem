@@ -600,99 +600,99 @@ export default function NewPassport({ isRenewal = false }) {
                             {field('companionContactNumber', 'Companion Contact Number', 'tel')}
                         </>)}
 
-                        {section('Family Information', <>
-                            <div className="passport-subsection">Father's Information</div>
-                            {field('fatherLastName', "Father's Last Name", 'text', true)}
-                            {field('fatherGivenName', "Father's Given Name", 'text', true)}
-                            {field('fatherMiddleName', "Father's Middle Name")}
-                            {field('fatherCitizenship', "Father's Citizenship", 'text', true)}
+                            {section('Family Information', <>
+                                <div className="passport-subsection">Father's Information</div>
+                                {field('fatherLastName', "Father's Last Name", 'text', true)}
+                                {field('fatherGivenName', "Father's Given Name", 'text', true)}
+                                {field('fatherMiddleName', "Father's Middle Name")}
+                                {field('fatherCitizenship', "Father's Citizenship", 'text', true)}
 
-                            <div className="passport-subsection">Mother's Information</div>
-                            {field(
-                                'motherMaidenLastName',
-                                "Mother's Maiden Last Name",
-                                'text',
-                                true
-                            )}
-                            {field('motherGivenName', "Mother's Given Name", 'text', true)}
-                            {field('motherMiddleName', "Mother's Middle Name")}
-                            {field('motherCitizenship', "Mother's Citizenship", 'text', true)}
-                        </>)}
+                                <div className="passport-subsection">Mother's Information</div>
+                                {field(
+                                    'motherMaidenLastName',
+                                    "Mother's Maiden Last Name",
+                                    'text',
+                                    true
+                                )}
+                                {field('motherGivenName', "Mother's Given Name", 'text', true)}
+                                {field('motherMiddleName', "Mother's Middle Name")}
+                                {field('motherCitizenship', "Mother's Citizenship", 'text', true)}
+                            </>)}
 
-                        {section('Application Information', <>
-                            {isRenewal && (
-                                <>
-                                    {field(
-                                        'oldPassportNumber',
-                                        'Previous Passport Number',
-                                        'text',
-                                        true
-                                    )}
-                                    <div className="form-group">
-                                        <label className="passport-label">
-                                            Previous Passport Date of Issue
-                                            <span style={{ color: '#d00' }}> *</span>
-                                        </label>
-                                        <DatePicker
-                                            className="passport-input"
-                                            value={
-                                                details.oldPassportDateOfIssue
-                                                    ? dayjs(details.oldPassportDateOfIssue)
-                                                    : null
-                                            }
-                                            disabledDate={date =>
-                                                date && date.isAfter(dayjs(), 'day')
-                                            }
-                                            onChange={date =>
-                                                update(
-                                                    'oldPassportDateOfIssue',
-                                                    date ? date.format('YYYY-MM-DD') : ''
-                                                )
-                                            }
-                                        />
-                                        {errors.oldPassportDateOfIssue && (
-                                            <p className="error-message">
-                                                {errors.oldPassportDateOfIssue}
-                                            </p>
+                            {section('Application Information', <>
+                                {isRenewal && (
+                                    <>
+                                        {field(
+                                            'oldPassportNumber',
+                                            'Previous Passport Number',
+                                            'text',
+                                            true
                                         )}
-                                    </div>
-                                    {field(
-                                        'oldPassportIssuingAuthority',
-                                        'Previous Passport Issuing Authority',
-                                        'text',
-                                        true
-                                    )}
-                                </>
-                            )}
-                            <div className="form-group">
-                                <label className="passport-label">Application Type</label>
-                                <Input value={isRenewal ? 'Renewal' : 'New'} readOnly />
-                            </div>
+                                        <div className="form-group">
+                                            <label className="passport-label">
+                                                Previous Passport Date of Issue
+                                                <span style={{ color: '#d00' }}> *</span>
+                                            </label>
+                                            <DatePicker
+                                                className="passport-input"
+                                                value={
+                                                    details.oldPassportDateOfIssue
+                                                        ? dayjs(details.oldPassportDateOfIssue)
+                                                        : null
+                                                }
+                                                disabledDate={date =>
+                                                    date && date.isAfter(dayjs(), 'day')
+                                                }
+                                                onChange={date =>
+                                                    update(
+                                                        'oldPassportDateOfIssue',
+                                                        date ? date.format('YYYY-MM-DD') : ''
+                                                    )
+                                                }
+                                            />
+                                            {errors.oldPassportDateOfIssue && (
+                                                <p className="error-message">
+                                                    {errors.oldPassportDateOfIssue}
+                                                </p>
+                                            )}
+                                        </div>
+                                        {field(
+                                            'oldPassportIssuingAuthority',
+                                            'Previous Passport Issuing Authority',
+                                            'text',
+                                            true
+                                        )}
+                                    </>
+                                )}
+                                <div className="form-group">
+                                    <label className="passport-label">Application Type</label>
+                                    <Input value={isRenewal ? 'Renewal' : 'New'} readOnly />
+                                </div>
 
-                            {field(
-                                'emergencyContactPerson',
-                                'Emergency Contact Person',
-                                'text',
-                                true
-                            )}
-                            {field(
-                                'emergencyContactNumber',
-                                'Emergency Contact Number',
-                                'tel',
-                                true
-                            )}
-                        </>)}
+                                {field(
+                                    'emergencyContactPerson',
+                                    'Emergency Contact Person',
+                                    'text',
+                                    true
+                                )}
+                                {field(
+                                    'emergencyContactNumber',
+                                    'Emergency Contact Number',
+                                    'tel',
+                                    true
+                                )}
+                            </>)}
 
-                        {section('Contact Information', <>
-                            {field('currentAddress', 'Current Address', 'text', true)}
-                            {field('barangay', 'Barangay', 'text', true)}
-                            {field('currentCity', 'City', 'text', true)}
-                            {field('currentProvince', 'Province', 'text', true)}
-                            {field('zipCode', 'ZIP Code', 'text', true)}
-                            {field('occupation', 'Occupation', 'text', true)}
-                            {field('officeNumber', 'Office Number', 'tel')}
-                            {field('officeAddress', 'Office Address')}
-                        </>)}</>)}
+                            {section('Contact Information', <>
+                                {field('currentAddress', 'Current Address', 'text', true)}
+                                {field('barangay', 'Barangay', 'text', true)}
+                                {field('currentCity', 'City', 'text', true)}
+                                {field('currentProvince', 'Province', 'text', true)}
+                                {field('zipCode', 'ZIP Code', 'text', true)}
+                                {field('occupation', 'Occupation', 'text', true)}
+                                {field('officeNumber', 'Office Number', 'tel')}
+                                {field('officeAddress', 'Office Address')}
+                            </>)}</>)}
 
                         <section className="passport-panel">
                             <h3>Temporary Appointment Details</h3>

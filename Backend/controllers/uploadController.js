@@ -79,6 +79,11 @@ const isSensitivePublicId = (publicId) =>
         decodeURIComponent(publicId).startsWith(`${folder}/`)
     );
 
+const isStaffRole = (role) =>
+    ['admin', 'employee'].includes(
+        String(role || '').trim().toLowerCase()
+    );
+
 const valuesContainPublicId = (value, publicId) => {
     const normalizedPublicId = decodeURIComponent(publicId).replace(/\.[^/.]+$/, '');
 
@@ -175,14 +180,11 @@ const assertPrivateFileOwnership = async (req, res, publicId) => {
         return false;
     }
 
-    const authenticatedUser = req.authUser || await UserModel.findById(req.userId)
-        .select('role')
-        .lean();
-
-    const isStaffRole = (role) =>
-        ['admin', 'employee'].includes(
-            String(role || '').trim().toLowerCase()
-        );
+    const authenticatedUser = req.authUser?.role
+        ? req.authUser
+        : await UserModel.findById(req.userId)
+            .select('role')
+            .lean();
 
     if (isStaffRole(authenticatedUser?.role)) {
         return true;

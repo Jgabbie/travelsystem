@@ -139,7 +139,9 @@ const validatePassportApplicationInput = body => {
         errors.push('applicationType is invalid');
     }
 
-    errors.push(...validatePassportDetails(payload.passportDetails, payload.applicationType));
+    if (payload.passportDetails !== undefined) {
+        errors.push(...validatePassportDetails(payload.passportDetails, payload.applicationType));
+    }
     return errors;
 };
 
