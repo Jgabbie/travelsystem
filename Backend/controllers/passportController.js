@@ -1256,7 +1256,8 @@ const updatePassportStatus = async (req, res) => {
             'Documents Submitted',
             'Processing by DFA',
             'DFA Approved',
-            'Passport Released'
+            'Passport Released',
+            'Rejected'
         ];
         if (!status || !validStatuses.includes(status)) {
             return res.status(400).json({ message: "Invalid or missing status" });

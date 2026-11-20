@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Descriptions, Tag, Steps, Button, Spin, Typography, ConfigProvider, Switch, Checkbox, DatePicker, TimePicker, Modal, notification } from "antd";
-import { ArrowLeftOutlined, CheckCircleFilled, EyeOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, CheckCircleFilled, CloseCircleOutlined, EyeOutlined } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/viewpassportapplication.css";
@@ -20,6 +20,7 @@ const statusSteps = [
     { title: "Processing by DFA", summary: "Processing by DFA" },
     { title: "DFA Approved", summary: "DFA Approved" },
     { title: "Passport Released", summary: "Passport Released" },
+    { title: "Rejected", summary: "Rejected" },
 ];
 
 const PASSPORT_STATUS_COLORS = {
@@ -35,6 +36,7 @@ const PASSPORT_STATUS_COLORS = {
     "Processing by DFA": "geekblue",
     "DFA Approved": "green",
     "Passport Released": "green",
+    Rejected: "red",
 };
 
 const PASSPORT_DEADLINE_STOP_STATUSES = new Set([
@@ -44,6 +46,7 @@ const PASSPORT_DEADLINE_STOP_STATUSES = new Set([
     "Processing by DFA",
     "DFA Approved",
     "Passport Released",
+    "Rejected",
 ]);
 
 export default function ViewPassportApplication() {
@@ -466,6 +469,20 @@ export default function ViewPassportApplication() {
         }
     }
 
+    //dfa rejected handler
+    const handleDFARejected = async () => {
+        try {
+            setIsUpdatingStatus(true);
+            await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: "Rejected" });
+            await fetchApplication();
+            notificationApi.success({ title: "Application rejected", placement: "topRight" });
+        } catch (err) {
+            notificationApi.error({ title: "Failed to reject application", placement: "topRight" });
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    }
+
 
     //disable dates for date picker
     const disableDates = (current) => {
@@ -654,6 +671,9 @@ export default function ViewPassportApplication() {
                                             <h3 style={{ marginTop: 0 }}>DFA Processing Actions</h3>
                                             <Button type="primary" onClick={handleDFAApproved} className="viewpassportapplication-dfa-processing-approve-button">
                                                 DFA Approved
+                                            </Button>
+                                            <Button danger icon={<CloseCircleOutlined />} onClick={handleDFARejected} style={{ marginLeft: 8 }}>
+                                                Reject
                                             </Button>
                                         </div>
                                     )}

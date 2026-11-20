@@ -421,6 +421,7 @@ export default function PassportApplications() {
                     'Processing by DFA': 'geekblue',
                     'DFA Approved': 'green',
                     'Passport Released': 'green',
+                    Rejected: 'red',
                 };
 
                 const fallbackColors = ['magenta', 'volcano', 'gold', 'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'];
