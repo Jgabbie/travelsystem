@@ -1343,7 +1343,7 @@ const getVisaApplications = async (_req, res) => {
     try {
         const applications = await VisaModel.find({})
             .select(
-                "_id applicationNumber applicantName serviceName preferredDate status userId"
+                "_id applicationNumber applicantName serviceName preferredDate preferredTime status userId"
             )
             .populate({
                 path: "userId",
